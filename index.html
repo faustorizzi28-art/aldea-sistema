@@ -1427,7 +1427,7 @@ function guardarPrecios(){
   localStorage.setItem('aldea_carta',JSON.stringify(carta));preciosModificados=false;
   document.querySelectorAll('.precio-input.modified').forEach(i=>i.classList.remove('modified'));
   const url=localStorage.getItem('aldea_carta_url');
-  if(url)fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'precios',carta})}).catch(()=>{});
+  if(url)fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({tipo:'precios',carta})}).then(r=>r.json()).then(j=>console.log('Precios guardados',j)).catch(e=>console.log('Precios error',e));
   document.getElementById('save-msg').textContent='✅ Precios guardados';setTimeout(()=>document.getElementById('save-bar').classList.remove('visible'),2000);
 }
 function descartarPrecios(){carta=JSON.parse(localStorage.getItem('aldea_carta')||'null')||JSON.parse(JSON.stringify(cartaInicial));renderCartaPrecios();document.getElementById('save-bar').classList.remove('visible');}
@@ -1496,7 +1496,10 @@ async function enviarASheets(){
   const cmdQr=historialTurno.filter(h=>h.metodo==='transferencia').reduce((a,h)=>a+h.total,0);
   const payload={tipo:'caja',fecha:document.getElementById('f-fecha').value,turno:document.getElementById('f-turno').value,responsable:resp||'—',ef_cantina:ef,qr_cantina:qr,cancha,comanda_ef:cmdEf,comanda_qr:cmdQr,eventos:ev,otros_in:oi,total_in:totalIn,insumos:ins,proveedores:prov,personal:pers,otros_eg:oeg,total_eg:ins+prov+pers+oeg,neto:totalIn-(ins+prov+pers+oeg),diferencia:document.getElementById('f-diferencia').value,dif_monto:val('f-dif-monto'),observaciones:document.getElementById('f-obs').value};
   btn.textContent='⏳ Enviando…';btn.disabled=true;
-  try{await fetch(sheetUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});btn.textContent='✅ Guardado en Sheets';btn.style.background='#1A7A55';btn.style.color='white';btn.style.borderColor='#1A7A55';}
+  try{const resp1 = await fetch(sheetUrl,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const result1 = await resp1.json();
+    if(result1.ok){btn.textContent='✅ Guardado en Sheets';btn.style.background='#1A7A55';btn.style.color='white';btn.style.borderColor='#1A7A55';}
+    else{btn.textContent='❌ Error: '+result1.error;btn.disabled=false;}}
   catch(e){btn.textContent='❌ Error';btn.disabled=false;}
 }
 function nuevoCierre(){
@@ -1950,11 +1953,12 @@ async function sincronizarEventoASheets(ev) {
   const url = localStorage.getItem('aldea_sheet_url');
   if (!url) return;
   try {
-    await fetch(url, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
+    const re = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({tipo:'evento', ...ev})
     });
+    const rj = await re.json(); if(rj.ok) console.log('Evento guardado en Sheets');
   } catch(e) { console.log('Sheets sync error:', e); }
 }
 
@@ -2144,11 +2148,12 @@ async function sincronizarCanchaASheets(r) {
   const url = localStorage.getItem('aldea_sheet_url');
   if (!url) return;
   try {
-    await fetch(url, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
+    const rc = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({tipo:'cancha', ...r})
     });
+    const rcj = await rc.json(); if(rcj.ok) console.log('Cancha guardada en Sheets');
   } catch(e) { console.log('Sheets sync error:', e); }
 }
 
@@ -2545,8 +2550,9 @@ async function resGuardarSheets() {
   };
   if(btn){btn.textContent='⏳ Guardando…';btn.disabled=true;}
   try {
-    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(btn){btn.textContent='✅ Guardado en Sheets';btn.style.color='var(--verde)';}
+    const rres = await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const jres = await rres.json();
+    if(btn){btn.textContent=jres.ok?'✅ Guardado en Sheets':'❌ Error';btn.style.color=jres.ok?'var(--verde)':'var(--rojo)';}
   } catch(e) {
     if(btn){btn.textContent='❌ Error';btn.disabled=false;}
   }
@@ -2673,8 +2679,9 @@ async function crGuardarSheets() {
   if(!r){alert('No hay reserva reciente para guardar.');return;}
   if(btn){btn.textContent='⏳ Guardando…';btn.disabled=true;}
   try{
-    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo:'cancha',...r})});
-    if(btn){btn.textContent='✅ Guardado';btn.style.color='var(--verde)';}
+    const rcrs = await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({tipo:'cancha',...r})});
+    const jcrs = await rcrs.json();
+    if(btn){btn.textContent=jcrs.ok?'✅ Guardado':'❌ Error';btn.style.color=jcrs.ok?'var(--verde)':'var(--rojo)';}
   }catch(e){if(btn){btn.textContent='❌ Error';btn.disabled=false;}}
 }
 
@@ -2789,8 +2796,8 @@ function guardarTF() {
   // Sincronizar con Sheets
   const url = localStorage.getItem('aldea_sheet_url');
   if (url) {
-    fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ tipo:'turno_fijo', turnosFijos }) }).catch(() => {});
+    fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ tipo:'turno_fijo', turnosFijos }) }).then(r=>r.json()).then(j=>console.log('TF guardado',j)).catch(e=>console.log('TF error',e));
   }
 }
 
