@@ -1517,15 +1517,14 @@ function guardarResponsables(){const lines=document.getElementById('cfg-responsa
 function cambiarModulo(id,tabEl){
   document.querySelectorAll('.modulo').forEach(m=>m.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  const modId='mod-'+id;
-  const mod=document.getElementById(modId);
-  if(mod)mod.classList.add('active');
-  if(tabEl)tabEl.classList.add('active');
-  if(id==='comanda')renderPanelMesas();
-  if(id==='eventos')renderEventos();
-  if(id==='canchas')renderCalendarioCanchas();
-  if(id==='proximos')cargarProximosEventos();
-  if(id==='canchasres'){renderCrCalendario();}
+  const mod=document.getElementById('mod-'+id);
+  if(mod) mod.classList.add('active');
+  if(tabEl) tabEl.classList.add('active');
+  if(id==='comanda') renderPanelMesas();
+  if(id==='eventos') renderEventos();
+  if(id==='canchas') renderCalendarioCanchas();
+  if(id==='proximos') cargarProximosEventos();
+  if(id==='canchasres'){ setTimeout(function(){renderCrCalendario();renderTurnosFijos();},50); }
   window.scrollTo(0,0);
 }
 
@@ -2941,12 +2940,7 @@ function renderProximos(lista) {
   container.innerHTML = parts.join('');
 }
 
-// Re-hook cambiarModulo for canchasres to also render turnos fijos
-const _origCambiarModulo = cambiarModulo;
-function cambiarModulo(id, tabEl) {
-  _origCambiarModulo(id, tabEl);
-  if (id === 'canchasres') { setTimeout(renderTurnosFijos, 50); }
-}
+// renderTurnosFijos is called inside cambiarModulo directly — no re-hook needed
 
 
 // ─── INIT ───
