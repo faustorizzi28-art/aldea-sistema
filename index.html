@@ -75,9 +75,9 @@
   header{background:var(--verde);color:white;padding:16px 20px 0;position:sticky;top:0;z-index:20;}
   header .logo{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:2px;}
   header h1{font-size:18px;font-weight:600;}
-  .tabs{display:flex;gap:0;margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs{display:flex;gap:0;margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-webkit-user-select:none;user-select:none;}
   .tabs::-webkit-scrollbar{display:none;}
-  .tab{flex:0 0 auto;padding:10px 16px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;color:rgba(255,255,255,.65);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+  .tab{flex:0 0 auto;padding:12px 18px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;color:rgba(255,255,255,.65);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;-webkit-tap-highlight-color:rgba(255,255,255,.2);touch-action:manipulation;}
   .tab.active{color:white;border-bottom:3px solid white;}
   .container{max-width:540px;margin:0 auto;padding:0 16px;}
   .modulo{display:none;}.modulo.active{display:block;}
@@ -405,14 +405,14 @@
 <header>
   <div class="logo">Aldea del Valle</div>
   <h1>Aldea del Valle — Sistema</h1>
-  <div class="tabs">
-    <div class="tab active" onclick="cambiarModulo('caja',this)">💵 Caja</div>
-    <div class="tab" onclick="cambiarModulo('comanda',this)">🧾 Comanda</div>
-    <div class="tab" onclick="cambiarModulo('proximos',this)">📅 Eventos</div>
-    <div class="tab" onclick="cambiarModulo('reservas',this)">📋 Reservas</div>
-    <div class="tab" onclick="cambiarModulo('canchasres',this)">🎾 Canchas</div>
-    <div class="tab" onclick="cambiarModulo('carta',this)">🍽️ Precios</div>
-    <div class="tab" onclick="cambiarModulo('config',this)">⚙️ Config</div>
+  <div class="tabs" id="main-tabs">
+    <div class="tab active" data-mod="caja">💵 Caja</div>
+    <div class="tab" data-mod="comanda">🧾 Comanda</div>
+    <div class="tab" data-mod="proximos">📅 Eventos</div>
+    <div class="tab" data-mod="reservas">📋 Reservas</div>
+    <div class="tab" data-mod="canchasres">🎾 Canchas</div>
+    <div class="tab" data-mod="carta">🍽️ Precios</div>
+    <div class="tab" data-mod="config">⚙️ Config</div>
   </div>
 </header>
 
@@ -2957,6 +2957,22 @@ renderCalendarioCanchas();
 (function(){const f=document.getElementById('cr-fecha');if(f)f.value=new Date().toISOString().split('T')[0];})();
 // Auto-load proximos if URL is set
 if(localStorage.getItem('aldea_sheet_url')){setTimeout(cargarProximosEventos,1200);}
+
+// Tab click handlers — works on mobile and desktop
+document.querySelectorAll('#main-tabs .tab').forEach(function(tab) {
+  tab.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var mod = this.getAttribute('data-mod');
+    cambiarModulo(mod, this);
+  });
+  tab.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var mod = this.getAttribute('data-mod');
+    cambiarModulo(mod, this);
+  });
+});
 // Init grilla turnos fijos
 renderTurnosFijos();
 
