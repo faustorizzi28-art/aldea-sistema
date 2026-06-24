@@ -171,6 +171,18 @@
   .bar-track{height:7px;background:var(--gris-claro);border-radius:6px;overflow:hidden;}
   .bar-fill{height:100%;border-radius:6px;}
 
+  /* ───── PRECIOS (editor) ───── */
+  .precio-cat-head{font-size:11.5px;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;display:flex;align-items:center;gap:8px;}
+  .precio-cat-head:first-child{margin-top:0;}
+  .precio-cat-head::after{content:'';flex:1;height:1px;background:var(--borde);}
+  .precio-item{display:flex;align-items:center;gap:10px;background:var(--blanco);border:1px solid var(--borde);border-radius:12px;padding:10px 12px;margin-bottom:7px;}
+  .precio-item .pn{flex:1;font-size:13px;font-weight:600;}
+  .precio-item .pinput-wrap{position:relative;flex-shrink:0;width:96px;}
+  .precio-item .pinput-wrap span{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;color:var(--gris);font-size:13px;}
+  .precio-item input{width:100%;padding:8px 8px 8px 20px;font-family:'DM Mono',monospace;font-size:13.5px;background:var(--gris-claro);border:1.5px solid transparent;border-radius:8px;}
+  .precio-item input:focus{outline:none;border-color:var(--cantina);background:white;}
+  .precio-item input.modificado{border-color:var(--warn);background:var(--cantina-suave);}
+
   /* ───── CONFIG ───── */
   .config-box{background:var(--blanco);border:1px solid var(--borde);border-radius:16px;padding:18px;}
 
@@ -253,6 +265,7 @@
     <div class="nav-btn c-cancha" data-v="cancha"><span>⚽</span>Cancha</div>
     <div class="nav-btn c-cantina" data-v="cantina"><span>🍔</span>Cantina</div>
     <div class="nav-btn c-gastos" data-v="gastos"><span>💸</span>Gastos</div>
+    <div class="nav-btn c-cantina" data-v="precios"><span>🍽️</span>Precios</div>
     <div class="nav-btn c-config" data-v="config"><span>⚙️</span>Config</div>
   </div>
 </header>
@@ -348,6 +361,17 @@
     <div id="ga-agenda"></div>
   </div>
 
+  <!-- ════════ PRECIOS ════════ -->
+  <div class="vista" id="v-precios">
+    <div class="panel-section">
+      <h3>🍽️ Precios de la carta — Cantina <span id="precios-sync-badge" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--gris-claro);color:var(--gris);">cargando…</span></h3>
+      <div style="font-size:12px;color:var(--gris);">Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.</div>
+    </div>
+    <div id="precios-cats"></div>
+    <button class="btn btn-cantina" style="position:sticky;bottom:10px;margin-top:10px;" onclick="guardarTodosLosPrecios()">💾 Guardar precios</button>
+    <div class="msg" id="precios-msg"></div>
+  </div>
+
   <!-- ════════ CONFIG ════════ -->
   <div class="vista" id="v-config">
     <div class="config-box">
@@ -433,6 +457,7 @@ function irA(v){
   if(['eventos','cancha','cantina'].includes(v)) renderSector(v);
   if(v==='gastos') renderGastos();
   if(v==='panel') renderPanel();
+  if(v==='precios') renderPrecios();
   window.scrollTo(0,0);
 }
 
@@ -871,14 +896,16 @@ function eliminarTF(){
    (carta de partida: la misma que ya tenían cargada.
    Avisame si querés que actualice algún precio.)
    ═══════════════════════════════════════════════ */
-const CARTA_VERSION = 2; // subir este número si se reemplaza la carta entera
+const CARTA_VERSION = 5; // subir este número si se reemplaza la carta entera
 const CARTA_DEFAULT = {
+  'Cafetería': [
+    ['Café chico',2700],['Café grande',3500],['Medialuna',1000],['Ficha de Metegol',1000],
+  ],
   'Sin alcohol': [
     ['Coca Cola / Zero 500ml',3800],['Fanta / Sprite 500ml',3800],['Gatorade (azul/manzana/roja) 500ml',3800],['Speed 473ml',5000],
     ['Coca Cola / Zero 1,25lt',4500],['Sprite 1,5lt',5300],['Coca Cola / Zero 1,5lt',5500],['Coca Cola 2,5lt',6300],['Pritty 3lt',6500],
     ['Agua 500ml',2600],['Agua 2lt',4300],['Soda 500ml',2600],['Cepita 1lt',4500],
     ['Levite 500ml (nar/man/pom)',3500],['Levite 1,5lt (nar/man/pom)',4500],['Levite 2,25lt (nar/man/pom)',5300],
-    ['Café chico',2700],['Café grande',3500],
   ],
   'Cerveza': [['Stella Artois (botella)',9800],['Vaso copón',9000]],
   'Vino y Champagne': [['Vino Huelga de Amores',14500],['Vino Trumpeter',17000],['Vino',19500],['Champagne Nieto',28000]],
@@ -892,7 +919,7 @@ const CARTA_DEFAULT = {
     ['Promo Carpano + Cepita',47000],['Promo Fernet + 2 Coca',47000],['Promo Gin + Cepita',47000],['Promo Vodka Skyy Durazno',47000],
     ['Promo Vodka Skyy Frutos Rojos',47000],['Promo Vodka Smirnoff Frutos Rojos',47000],['Promo Vodka Smirnoff Manzana Verde',47000],
   ],
-  'Para comer': [['Empanadas árabes (c/u)',3000],['Media luna (c/u)',1000],['PBT Salame',4000],['PBT Jamón',4000]],
+  'Para comer': [['Empanadas árabes (c/u)',3000],['PBT Salame',4000],['PBT Jamón',4000]],
   'Extras': [['Cubiertos',2500],['Hielo',0],['Carbón',7000],['Leña',7000]],
   'Kiosco': [
     ['Rasta 70g',2000],['Alfajor Bombón Bonobon',2500],['Alfajor Cofler Block',2500],['Alfajor Minitorta Águila',2500],['Alfajor Terrabusi',2000],
@@ -901,7 +928,7 @@ const CARTA_DEFAULT = {
     ['Papas Quento grandes',3500],['Papas Quento chicas',2000],
     ['Caramelos Misky (2x$100)',100],['Caramelos Relleno (2x$100)',100],['Gomitas Conitos (2x$100)',100],['Gomitas Redondas (2x$100)',100],
     ['Pastillas Bulldog',1000],['Flynn Paff',200],['Chicles Topline "7"',2000],
-    ['Álbum Mundial 2026',24000],['Sobre de figuritas (c/u)',4000],
+    ['Álbum Mundial 2026',24000],['Sobre de figuritas (c/u)',3500],
   ],
 };
 let carta = (parseInt(localStorage.getItem('aldea_carta_version')||'0') === CARTA_VERSION)
@@ -911,11 +938,102 @@ if(parseInt(localStorage.getItem('aldea_carta_version')||'0') !== CARTA_VERSION)
   localStorage.setItem('aldea_carta', JSON.stringify(CARTA_DEFAULT));
   localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
 }
-const CAT_EMOJI = {'Sin alcohol':'🥤','Cerveza':'🍺','Vino y Champagne':'🍷','Tragos (vaso grande)':'🥃','Botellas':'🍾','Promos':'🔥','Para comer':'🥙','Extras':'🧊','Kiosco':'🍬'};
+const CAT_EMOJI = {'Cafetería':'☕','Sin alcohol':'🥤','Cerveza':'🍺','Vino y Champagne':'🍷','Tragos (vaso grande)':'🥃','Botellas':'🍾','Promos':'🔥','Para comer':'🥙','Extras':'🧊','Kiosco':'🍬'};
 
 let mesas = JSON.parse(localStorage.getItem('aldea_mesas')||'null') || Array.from({length:6},(_,i)=>({nombre:'Mesa '+(i+1), items:{}}));
 let mesaActual = null;
 let catActual = Object.keys(carta)[0];
+
+/* ───── PRECIOS — editor en vivo, sincronizado por Sheets ───── */
+function renderPrecios(){
+  const host = document.getElementById('precios-cats');
+  host.innerHTML = Object.entries(carta).map(([cat, items])=>`
+    <div class="precio-cat-head">${CAT_EMOJI[cat]||'🍽️'} ${cat}</div>
+    ${items.map(([nombre,precio],idx)=>`
+      <div class="precio-item">
+        <div class="pn">${nombre}</div>
+        <div class="pinput-wrap"><span>$</span><input type="number" data-cat="${cat}" data-idx="${idx}" value="${precio}" oninput="this.classList.add('modificado')"/></div>
+        <button class="entry-del" onclick="borrarProducto('${cat}',${idx})" title="Eliminar producto">🗑</button>
+      </div>`).join('')}
+  `).join('') + `
+    <div class="panel-section" style="margin-top:16px;">
+      <h3>＋ Agregar producto nuevo</h3>
+      <div class="field"><label>Categoría</label>
+        <select id="np-cat">${Object.keys(carta).map(c=>`<option>${c}</option>`).join('')}</select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Nombre</label><input type="text" id="np-nombre" placeholder="ej: Limonada"/></div>
+        <div class="field"><label>Precio</label><div class="input-prefix"><span>$</span><input type="number" id="np-precio" placeholder="0"/></div></div>
+      </div>
+      <button class="btn btn-cantina" onclick="agregarProductoNuevo()">Agregar a la carta</button>
+    </div>
+  `;
+}
+
+function agregarProductoNuevo(){
+  const cat = document.getElementById('np-cat').value;
+  const nombre = document.getElementById('np-nombre').value.trim();
+  const precio = parseFloat(document.getElementById('np-precio').value)||0;
+  if(!nombre){ alert('Escribí el nombre del producto.'); return; }
+  carta[cat].push([nombre, precio]);
+  document.getElementById('np-nombre').value=''; document.getElementById('np-precio').value='';
+  renderPrecios();
+  document.getElementById('precios-msg').textContent = 'Agregado. No te olvides de tocar "💾 Guardar precios" para que se suba a todos los dispositivos.';
+  document.getElementById('precios-msg').className = 'msg';
+}
+
+function borrarProducto(cat, idx){
+  if(!confirm(`¿Eliminar "${carta[cat][idx][0]}" de la carta?`)) return;
+  carta[cat].splice(idx,1);
+  renderPrecios();
+  document.getElementById('precios-msg').textContent = 'Eliminado. No te olvides de tocar "💾 Guardar precios" para confirmar el cambio.';
+  document.getElementById('precios-msg').className = 'msg';
+}
+
+async function guardarTodosLosPrecios(){
+  document.querySelectorAll('#precios-cats .precio-item input').forEach(inp=>{
+    const cat = inp.dataset.cat, idx = parseInt(inp.dataset.idx);
+    if(carta[cat] && carta[cat][idx]) carta[cat][idx][1] = parseFloat(inp.value)||0;
+  });
+  localStorage.setItem('aldea_carta', JSON.stringify(carta));
+  localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+  document.querySelectorAll('#precios-cats input.modificado').forEach(i=>i.classList.remove('modificado'));
+
+  const msgEl = document.getElementById('precios-msg');
+  msgEl.textContent='⏳ Guardando para todos los dispositivos…'; msgEl.className='msg';
+  const url = getUrl();
+  if(!url){ msgEl.textContent='✅ Guardado en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar)'; msgEl.className='msg ok'; return; }
+  try{
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
+    const j = await r.json();
+    msgEl.textContent = j.ok ? '✅ Precios guardados para todos' : '❌ '+j.error;
+    msgEl.className = j.ok ? 'msg ok' : 'msg err';
+    if(j.ok) renderPrecios();
+  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
+}
+
+async function cargarPreciosDesdeSheets(){
+  const url = getUrl();
+  if(!url) return;
+  const badge = document.getElementById('precios-sync-badge');
+  try{
+    const res = await fetch(url + '?tipo=precios&t=' + Date.now());
+    const data = await res.json();
+    if(data.ok && data.items && data.items.length>0){
+      const ultimo = data.items[data.items.length-1];
+      const cartaRemota = JSON.parse(ultimo.cartaJSON);
+      carta = cartaRemota;
+      localStorage.setItem('aldea_carta', JSON.stringify(carta));
+      localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+      catActual = Object.keys(carta)[0];
+      if(badge){ badge.textContent='✓ sincronizado'; badge.style.background='var(--ok-suave)'; badge.style.color='var(--ok)'; }
+      const vistaPrecios = document.getElementById('v-precios');
+      if(vistaPrecios && vistaPrecios.classList.contains('active')) renderPrecios();
+    } else if(badge){
+      badge.textContent='usando valores locales';
+    }
+  }catch(e){ if(badge) badge.textContent='sin conexión'; }
+}
 
 function guardarMesas(){ localStorage.setItem('aldea_mesas', JSON.stringify(mesas)); }
 function totalMesa(m){ return Object.values(m.items).reduce((a,it)=>a+it.precio*it.qty,0); }
@@ -1175,7 +1293,7 @@ function imprimirCierreDelDia(){
   renderPanel();
   ['eventos','cancha','cantina'].forEach(renderSector);
   renderGastos();
-  if(url) cargarTodo();
+  if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
 })();
 </script>
 </body>
