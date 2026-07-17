@@ -240,6 +240,45 @@
   .ticket-qty button{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--borde);background:var(--gris-claro);font-size:14px;font-weight:700;cursor:pointer;}
   .ticket-sub{font-family:'DM Mono',monospace;min-width:64px;text-align:right;}
   .cobro-box{background:var(--gris-claro);border-radius:11px;padding:12px;margin-top:10px;}
+
+  /* ───── BUSCADOR (cantina) ───── */
+  .buscador{position:relative;margin-bottom:10px;}
+  .buscador input{width:100%;background:var(--gris-claro);border:1.5px solid transparent;border-radius:9px;padding:11px 12px 11px 36px;font-size:14px;font-family:inherit;}
+  .buscador input:focus{outline:none;border-color:var(--cantina);background:white;}
+  .buscador .bi{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gris);font-size:14px;}
+  .buscador .bx{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gris);font-size:15px;cursor:pointer;padding:4px;display:none;}
+  .buscador.tiene-texto .bx{display:block;}
+
+  /* ───── MES (agenda) ───── */
+  .month-head{font-size:12.5px;font-weight:800;color:var(--tinta);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 10px;padding:9px 12px;background:var(--gris-claro);border-radius:10px;}
+  .month-head:first-child{margin-top:0;}
+
+  /* ───── TURNO DE CAJA ───── */
+  .turno-estado{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .turno-info .tl{font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+  .turno-info .tn{font-size:16px;font-weight:800;margin-top:2px;}
+  .turno-info .tn.abierto{color:var(--ok);}
+  .turno-info .tn.cerrado{color:var(--gris);}
+  .turno-sub{font-size:11.5px;color:var(--gris);margin-top:2px;}
+
+  /* ───── SEMANA CANCHA ───── */
+  .semana-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+  .semana-nav button{background:var(--gris-claro);border:none;border-radius:9px;width:34px;height:34px;font-size:15px;cursor:pointer;flex-shrink:0;}
+  .semana-nav .stitulo{font-size:12.5px;font-weight:700;text-align:center;flex:1;}
+  .cancha-legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:10.5px;color:var(--gris);}
+  .cancha-legend span{display:inline-flex;align-items:center;gap:4px;}
+  .cancha-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+
+  /* ───── MODO EMPLEADO / DUEÑO ───── */
+  .oculto-val{letter-spacing:1px;}
+  .eventos-proximos-card{background:linear-gradient(135deg,var(--eventos),var(--eventos-deep));border-radius:16px;padding:16px;margin-bottom:16px;color:white;}
+  .eventos-proximos-card h3{font-size:13.5px;font-weight:700;margin-bottom:10px;color:white;}
+  .ep-row{background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .ep-row:last-child{margin-bottom:0;}
+  .ep-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .ep-nombre{font-weight:700;font-size:13.5px;}
+  .ep-fecha{font-size:11px;font-family:'DM Mono',monospace;opacity:.9;white-space:nowrap;}
+  .ep-meta{font-size:11.5px;opacity:.85;margin-top:3px;}
 </style>
 </head>
 <body>
@@ -256,6 +295,10 @@
       <div class="sync-pill" onclick="cargarTodo()">
         <span class="sync-dot off" id="sync-dot"></span>
         <span id="sync-texto">Sin conectar</span>
+      </div>
+      <div class="sync-pill" onclick="toggleModoDueno()" id="modo-pill" style="margin-top:6px;">
+        <span id="modo-icon">🔒</span>
+        <span id="modo-texto">Modo empleado</span>
       </div>
     </div>
   </div>
@@ -316,7 +359,23 @@
       <div id="panel-feed"></div>
     </div>
 
-    <button class="btn btn-ghost" style="background:var(--tinta);color:white;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre de caja del día</button>
+    <div class="panel-section" id="turno-card">
+      <h3>🗝️ Turno de caja</h3>
+      <div class="turno-estado">
+        <div class="turno-info">
+          <div class="tl">Estado</div>
+          <div class="tn cerrado" id="turno-estado-txt">Cerrado</div>
+          <div class="turno-sub" id="turno-sub-txt">No hay ningún turno abierto</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn btn-eventos" style="width:auto;padding:10px 16px;" id="turno-btn-abrir" onclick="abrirTurno()">Abrir turno</button>
+          <button class="btn btn-gastos" style="width:auto;padding:10px 16px;display:none;" id="turno-btn-cerrar" onclick="cerrarTurno()">Cerrar e imprimir</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--gris);margin-top:10px;">El cierre se calcula desde que se abre el turno hasta que se cierra, aunque pase la medianoche — no por fecha calendario.</div>
+    </div>
+
+    <button class="btn btn-ghost" style="background:var(--tinta);color:white;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre por fecha (histórico)</button>
   </div>
 
   <!-- ════════ SECTORES (eventos / cancha / cantina) ════════ -->
@@ -382,6 +441,19 @@
       <div class="msg" id="cfg-msg"></div>
       <div style="font-size:11px;color:var(--gris);margin-top:10px;">Solo cambiá esto si en algún momento creás un Google Sheet distinto para el predio.</div>
     </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">🔒 Modo dueño</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Por defecto la app oculta los totales de ingresos (Panel, sectores, actividad reciente) para que los empleados no vean cuánta plata entra. Esa información completa siempre queda en el Google Sheet. Destrabá el Modo dueño con el candado del encabezado para verla también acá.</div>
+      <button class="btn btn-ghost" onclick="cambiarPinDueno()">Cambiar PIN de dueño</button>
+    </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Importar eventos confirmados</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Carga los <span id="import-count">19</span> eventos del Excel "EVENTOS_CONFIRMADOS" (Julio a Noviembre) directamente al sector Eventos y al Google Sheet. Solo hace falta hacerlo una vez.</div>
+      <button class="btn btn-eventos" id="btn-import-eventos" onclick="importarEventosExcel()">Importar eventos del Excel</button>
+      <div class="msg" id="import-msg"></div>
+    </div>
   </div>
 
 </div>
@@ -395,21 +467,40 @@ const SECTORES = {
     label:'Eventos', icon:'🎉', tipo:'eventos',
     nombreLbl:'Cliente / Evento', nombrePh:'ej: Cumple de Mateo',
     horario:true,
-    extra: { id:'tipoevento', label:'Tipo de evento', opciones:['Cumpleaños','Fiesta de 15','Egreso/Recibida','Evento empresa','Casamiento','Aniversario','Otro'] },
+    extra: { id:'tipoevento', label:'Motivo', opciones:['Cumpleaños','Cumple infantil','Fiesta de 15','Egreso/Recibida','Evento empresa','Casamiento','Aniversario','Otro'] },
+    camposExtra: [
+      { id:'contacto', label:'Contacto', ph:'ej: 351 123 4567', tipo:'text' },
+      { id:'personas', label:'Cant. de personas', ph:'ej: 60', tipo:'text' },
+      { id:'montototal', label:'Monto total acordado', ph:'0', tipo:'money' },
+      { id:'sena', label:'Seña', ph:'0', tipo:'money' },
+    ],
   },
   cancha: {
     label:'Cancha', icon:'⚽', tipo:'cancha',
     nombreLbl:'Equipo / Persona', nombrePh:'ej: Los Pibes FC',
     horario:true,
     extra: { id:'cancha_sel', label:'Cancha', opciones:['Fútbol 11','Media Cancha 11','Sintético 7'] },
+    camposExtra: [],
   },
   cantina: {
     label:'Cantina', icon:'🍔', tipo:'cantina',
     nombreLbl:'Turno / detalle', nombrePh:'ej: Turno tarde sábado',
     horario:false,
     extra: null,
+    camposExtra: [],
   },
 };
+const CANCHA_COLOR = {
+  'Fútbol 11': { fuerte:'#0E8F5C', suave:'#E6F7EE' },
+  'Media Cancha 11': { fuerte:'#1A5F9E', suave:'#DBEAFE' },
+  'Sintético 7': { fuerte:'#7C3AED', suave:'#F2EBFD' },
+};
+
+/* Eventos confirmados cargados desde EVENTOS_CONFIRMADOS.xlsx (Julio–Noviembre 2026).
+   "montototal"/"sena" son datos del acuerdo tal como estaban en el Excel; no se
+   suman como efectivo/transferencia cobrados porque el Excel no especifica el
+   medio de pago — el equipo debe confirmar el cobro real desde el sector Eventos. */
+const EVENTOS_IMPORT_EXCEL = [{"fecha":"2026-07-09","horario":"12 a 16hs","nombre":"Melina","extra":"15 años varon","contacto":"3516 75-2201","personas":"20","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"uso de canchas y asadores","creado":"2026-07-17T20:13:48.215166Z"},{"fecha":"2026-07-11","horario":"13 A 18HS","nombre":"Pia Gonzalez Firpo","extra":"cumple infantil","contacto":"3885 81-1022","personas":"60","montototal":280000,"sena":100000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"usa el salon, va una hora y media antes a decorar | Monto (texto original): $280.000 | Seña (texto original): seña $ 100.000","creado":"2026-07-17T20:13:48.215408Z"},{"fecha":"2026-07-16","horario":"","nombre":"Diego Flores","extra":"","contacto":"","personas":"","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"","creado":"2026-07-17T20:13:48.215470Z"},{"fecha":"2026-07-18","horario":"19 a 2am","nombre":"antonella","extra":"cumple 40","contacto":"351512357680","personas":"100","montototal":1000000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"VAJILLA, CUIDADOR DE AUTOS necesita chulengo/estufita $60,000 mas (COBRAR) VAN A IR EL DIA VIERNES A ARREGLAR LAS COSAS","creado":"2026-07-17T20:13:48.215512Z"},{"fecha":"2026-07-25","horario":"14:30 A 18:30","nombre":"Juli Bonino","extra":"cumple infantil","contacto":"3585 41-5199","personas":"80","montototal":300000,"sena":150000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"Monto (texto original): $ 300.000 | Seña (texto original): seña $150.000","creado":"2026-07-17T20:13:48.215558Z"},{"fecha":"2026-07-31","horario":"22:30 a 3am","nombre":"Valen konigheim","extra":"recibida","contacto":"3516 34-7657","personas":"70","montototal":385000,"sena":115000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"USA EL SALON CERRADO","creado":"2026-07-17T20:13:48.215600Z"},{"fecha":"2026-08-01","horario":"13 a 16hs","nombre":"Ana Paris","extra":"CUMPLE INFANTIL","contacto":"3516 98-5802","personas":"50","montototal":150000,"sena":50000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CANCHA DE FUTBOL | Monto (texto original): $150.000","creado":"2026-07-17T20:13:48.215890Z"},{"fecha":"2026-08-07","horario":"16:45 - 19:30","nombre":"LUCRECIA","extra":"CUMPLE INFANTIL","contacto":"3512415215","personas":"30","montototal":350000,"sena":150000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"CANCHA + 2 PROFES | Monto (texto original): $350.000 | Seña (texto original): $150.000","creado":"2026-07-17T20:13:48.215935Z"},{"fecha":"2026-08-15","horario":"21hs a 3am APROX","nombre":"Jorge","extra":"cumple 40","contacto":"","personas":"100","montototal":425000,"sena":300000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CANCHA DE FUTBOL NOCHE | Monto (texto original): $425.000 | Seña (texto original): $300.000","creado":"2026-07-17T20:13:48.216150Z"},{"fecha":"2026-08-15","horario":"16 a 18:30hs","nombre":"gabriela","extra":"Cumple infantil","contacto":"3516 45-0535","personas":"30 NIÑOS","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"CANCHA | Monto (texto original): $300.000 | Seña (texto original): $90.000","creado":"2026-07-17T20:13:48.216200Z"},{"fecha":"2026-08-16","horario":"MEDIODIA","nombre":"FRANCO PERALTA","extra":"CUMPLE DE 30","contacto":"","personas":"80 - 100 p","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"TODO EL PREDIO","creado":"2026-07-17T20:13:48.216265Z"},{"fecha":"2026-08-22","horario":"mediodia","nombre":"Cristian (fausto)","extra":"cumple infantil","contacto":"3516335339","personas":"50","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.216390Z"},{"fecha":"2026-09-06","horario":"13 a 17","nombre":"Valentina Carranza","extra":"cumple 40 años","contacto":"3512820592","personas":"40","montototal":280000,"sena":84000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"RESERVA CON EL 30% DE 4O PERSONAS SI ESE DIA SON MAS SE ABONA LO EXTRA ESE DIA. | Monto (texto original): 7mil por persona/      40p: $280.000          50p: $300.000 | Seña (texto original): $84.000","creado":"2026-07-17T20:13:48.217334Z"},{"fecha":"2026-09-11","horario":"14 a 17","nombre":"Vero","extra":"Cumple infantil","contacto":"3513417872","personas":"60","montototal":350000,"sena":40000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CERRO QUE LE HACIAN PIZZAS Y DEMAS CONSULTAR DE NUEVO SOBRE LA FECHA | Monto (texto original): $350.000 | Seña (texto original): $40.000","creado":"2026-07-17T20:13:48.217373Z"},{"fecha":"2026-09-25","horario":"20 a 3 am","nombre":"Martin Aguar","extra":"cumple 40 años","contacto":"3517313086","personas":"30","montototal":600000,"sena":200000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"parrillero y 2 barman(100.000) sal 500.000 | Monto (texto original): $ 600.000 | Seña (texto original): $ 200.000","creado":"2026-07-17T20:13:48.217415Z"},{"fecha":"2026-09-26","horario":"","nombre":"Claudio Nati","extra":"60 años","contacto":"","personas":"","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.217473Z"},{"fecha":"2026-09-05","horario":"","nombre":"Desi","extra":"","contacto":"","personas":"","montototal":300000,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"Monto (texto original): $300.000 | ⚠️ Fecha original ambigua en el Excel (\"05/0\"), verificar con el cliente","creado":"2026-07-17T20:13:48.217517Z"},{"fecha":"2026-10-10","horario":"12 a 17","nombre":"Daniela","extra":"Cumpleaños 1 año","contacto":"3515927923","personas":"40","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"Por 40 personas, en caso de que sean más se cobra $8.000 por persona )","creado":"2026-07-17T20:13:48.218047Z"},{"fecha":"2026-11-21","horario":"19:30 A 1AM","nombre":"DANIELA","extra":"CUMPLE DE 50","contacto":"3516 81-8387","personas":"120","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.218643Z"}];
 const ESTADOS = ['🔵 Reservado','🟢 Confirmado','✅ Cobrado','❌ Cancelado'];
 function estadoClase(e){
   if(!e) return 'reservado';
@@ -429,6 +520,37 @@ const SHEET_URL_FIJA = 'https://script.google.com/macros/s/AKfycbzG3xhRbMDGZsCNk
 function fmt(n){ n=Number(n)||0; return '$'+Math.round(n).toLocaleString('es-AR'); }
 function hoyISO(){ return new Date().toISOString().split('T')[0]; }
 function getUrl(){ return localStorage.getItem('aldea_sheet_url') || SHEET_URL_FIJA; }
+
+/* ───── Modo empleado / dueño — oculta montos agregados ───── */
+function modoDueno(){ return localStorage.getItem('aldea_modo_dueno')==='1'; }
+function getPinDueno(){ return localStorage.getItem('aldea_pin_dueno') || '2026'; }
+function fmtDash(n){ return modoDueno() ? fmt(n) : '••••'; }
+function toggleModoDueno(){
+  if(modoDueno()){
+    localStorage.setItem('aldea_modo_dueno','0');
+  } else {
+    const pin = prompt('PIN de dueño:');
+    if(pin===null) return;
+    if(pin !== getPinDueno()){ alert('PIN incorrecto.'); return; }
+    localStorage.setItem('aldea_modo_dueno','1');
+  }
+  actualizarModoPill();
+  renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
+}
+function actualizarModoPill(){
+  const on = modoDueno();
+  document.getElementById('modo-icon').textContent = on?'🔓':'🔒';
+  document.getElementById('modo-texto').textContent = on?'Modo dueño':'Modo empleado';
+}
+function cambiarPinDueno(){
+  const actual = prompt('PIN actual de dueño (para confirmar el cambio):');
+  if(actual===null) return;
+  if(actual !== getPinDueno()){ alert('PIN incorrecto.'); return; }
+  const nuevo = prompt('Nuevo PIN de dueño:');
+  if(!nuevo) return;
+  localStorage.setItem('aldea_pin_dueno', nuevo.trim());
+  alert('✅ PIN actualizado.');
+}
 
 /* ───── Reloj y saludo ───── */
 function tickReloj(){
@@ -482,6 +604,11 @@ function montarSector(key){
       </div>
       <div class="field"><label>${s.nombreLbl}</label><input type="text" id="${key}-nombre" placeholder="${s.nombrePh}"/></div>
       ${s.extra ? `<div class="field"><label>${s.extra.label}</label><select id="${key}-extra">${s.extra.opciones.map(o=>`<option>${o}</option>`).join('')}</select></div>` : ''}
+      ${(s.camposExtra||[]).map(c=> c.tipo==='money'
+        ? `<div class="field"><label>${c.label}</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-${c.id}" placeholder="${c.ph}"/></div></div>`
+        : `<div class="field"><label>${c.label}</label><input type="text" id="${key}-${c.id}" placeholder="${c.ph}"/></div>`
+      ).join('')}
+      ${key==='eventos' ? `<div style="font-size:11px;color:var(--gris);margin:-4px 0 13px;">"Monto total" y "Seña" son datos del acuerdo. Abajo cargá el pago que estás registrando ahora (la seña, un pago parcial, o el saldo final).</div>` : ''}
       <div class="row2">
         <div class="field"><label>Efectivo $</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-efectivo" placeholder="0"/></div></div>
         <div class="field"><label>Transferencia $</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-transferencia" placeholder="0"/></div></div>
@@ -496,7 +623,7 @@ function montarSector(key){
     ${key==='cancha' ? `
     <div class="subtabs">
       <div class="subtab active c-cancha" data-sub="reservas" onclick="cambiarSubtab('cancha','reservas',this)">📅 Reservas</div>
-      <div class="subtab c-cancha" data-sub="fijos" onclick="cambiarSubtab('cancha','fijos',this)">📋 Turnos fijos</div>
+      <div class="subtab c-cancha" data-sub="fijos" onclick="cambiarSubtab('cancha','fijos',this)">🗓️ Semana</div>
     </div>` : ''}
     ${key==='cantina' ? `
     <div class="subtabs">
@@ -504,6 +631,7 @@ function montarSector(key){
       <div class="subtab c-cantina" data-sub="comanda" onclick="cambiarSubtab('cantina','comanda',this)">🧾 Comanda</div>
     </div>` : ''}
     <div class="subview active" id="${key}-sub-reservas">
+      ${key==='eventos' ? `<div id="eventos-proximos"></div>` : ''}
       <div id="${key}-agenda" style="margin-top:${key==='eventos'?'18px':'0'};"></div>
     </div>
     ${key==='cancha' ? `<div class="subview" id="cancha-sub-fijos"></div>` : ''}
@@ -555,11 +683,17 @@ async function guardarRegistro(key){
     estado, responsable, obs,
     creado: new Date().toISOString()
   };
+  (s.camposExtra||[]).forEach(c=>{
+    const el = document.getElementById(key+'-'+c.id);
+    registro[c.id] = c.tipo==='money' ? (parseFloat(el.value)||0) : el.value.trim();
+  });
 
   msgEl.textContent='⏳ Guardando…'; msgEl.className='msg';
   datos[key].push(registro);
   renderSector(key); renderPanel();
+  if(key==='eventos') renderEventosProximos();
   ['nombre','efectivo','transferencia','responsable','obs','horario'].forEach(f=>document.getElementById(key+'-'+f).value='');
+  (s.camposExtra||[]).forEach(c=> document.getElementById(key+'-'+c.id).value='');
 
   const url = getUrl();
   if(!url){ msgEl.textContent='✅ Guardado localmente (configurá Sheets en ⚙️ Config)'; msgEl.className='msg ok'; return; }
@@ -571,18 +705,49 @@ async function guardarRegistro(key){
   }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
 }
 
+const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+/* ───── Tarjeta de próximos eventos (info fresca dentro del sector) ───── */
+function renderEventosProximos(){
+  const host = document.getElementById('eventos-proximos');
+  if(!host) return;
+  const hoy = hoyISO();
+  const proximos = (datos.eventos||[])
+    .filter(x=> x.fecha >= hoy && !(x.estado||'').includes('Cancelado'))
+    .sort((a,b)=> new Date(a.fecha)-new Date(b.fecha))
+    .slice(0,5);
+  if(proximos.length===0){
+    host.innerHTML = `<div class="eventos-proximos-card"><h3>🔮 Próximos eventos</h3><div style="font-size:12.5px;opacity:.9;">Todavía no hay eventos próximos cargados.</div></div>`;
+    return;
+  }
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  host.innerHTML = `<div class="eventos-proximos-card">
+    <h3>🔮 Próximos eventos</h3>
+    ${proximos.map(p=>{
+      const d = new Date(p.fecha+'T12:00:00');
+      const meta = [p.extra, p.personas?p.personas+' pers.':'', p.contacto, p.horario].filter(Boolean).join(' · ');
+      return `<div class="ep-row">
+        <div class="ep-top"><span class="ep-nombre">${p.nombre}</span><span class="ep-fecha">${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}</span></div>
+        ${meta ? `<div class="ep-meta">${meta}</div>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 /* ───── Render de agenda por sector ───── */
 function renderSector(key){
   const s = SECTORES[key];
   const lista = datos[key]||[];
   const hoy = hoyISO();
+  if(key==='eventos') renderEventosProximos();
   const semanaInicio = new Date(); semanaInicio.setDate(semanaInicio.getDate()-7);
 
   const totalHoy = lista.filter(x=>x.fecha===hoy).reduce((a,x)=>a+(Number(x.efectivo)||0)+(Number(x.transferencia)||0),0);
   const totalSemana = lista.filter(x=> new Date(x.fecha) >= semanaInicio).reduce((a,x)=>a+(Number(x.efectivo)||0)+(Number(x.transferencia)||0),0);
 
-  document.getElementById(key+'-stat-hoy').textContent = fmt(totalHoy);
-  document.getElementById(key+'-stat-semana').textContent = fmt(totalSemana);
+  document.getElementById(key+'-stat-hoy').textContent = fmtDash(totalHoy);
+  document.getElementById(key+'-stat-semana').textContent = fmtDash(totalSemana);
   document.getElementById(key+'-stat-cant').textContent = lista.length;
 
   const agenda = document.getElementById(key+'-agenda');
@@ -591,11 +756,17 @@ function renderSector(key){
     return;
   }
   const ordenado = lista.slice().sort((a,b)=> new Date(b.fecha+'T'+(b.horario&&b.horario.match(/^\d/)?b.horario:'00:00')) - new Date(a.fecha+'T'+(a.horario&&a.horario.match(/^\d/)?a.horario:'00:00')));
-  let html = ''; let diaActual = '';
+  let html = ''; let diaActual = ''; let mesActual = '';
   ordenado.forEach((it,idx)=>{
+    const d = new Date(it.fecha+'T12:00:00');
+    const claveMes = it.fecha.slice(0,7);
+    if(claveMes !== mesActual){
+      mesActual = claveMes;
+      html += `<div class="month-head">📆 ${MESES_LARGO[d.getMonth()]} ${d.getFullYear()}</div>`;
+      diaActual = '';
+    }
     if(it.fecha !== diaActual){
       diaActual = it.fecha;
-      const d = new Date(it.fecha+'T12:00:00');
       const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
       const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
       html += `<div class="day-head">${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}${it.fecha===hoy?' · HOY':''}</div>`;
@@ -603,12 +774,15 @@ function renderSector(key){
     const realIdx = lista.indexOf(it);
     const monto = (Number(it.efectivo)||0)+(Number(it.transferencia)||0);
     const metodoIcon = Number(it.transferencia)>0 && Number(it.efectivo)>0 ? '💵📲' : Number(it.transferencia)>0 ? '📲' : '💵';
+    const metaBase = [it.extra, it.contacto, it.personas?it.personas+' personas':'', it.responsable, it.obs].filter(Boolean).join(' · ');
+    const metaMonto = [it.montototal?'Total: '+fmt(it.montototal):'', it.sena?'Seña: '+fmt(it.sena):''].filter(Boolean).join(' · ');
     html += `
       <div class="entry">
         ${s.horario ? `<div class="entry-time">${it.horario||'—'}</div>` : ''}
         <div class="entry-body">
           <div class="entry-name">${it.nombre}</div>
-          <div class="entry-meta">${it.extra?it.extra+' · ':''}${it.responsable?it.responsable+' · ':''}${it.obs||''}</div>
+          <div class="entry-meta">${metaBase}</div>
+          ${metaMonto ? `<div class="entry-meta mono" style="color:var(--tinta2);">${metaMonto}</div>` : ''}
           <span class="pill pill-${estadoClase(it.estado)}">${it.estado||'🔵 Reservado'}</span>
         </div>
         <div class="entry-right">
@@ -703,18 +877,18 @@ function renderPanel(){
   const hoy = hoyISO();
   ['eventos','cancha','cantina'].forEach(key=>{
     const lista = datos[key]||[];
-    document.getElementById('card-'+key+'-hoy').textContent = fmt(totalDia(lista,hoy));
+    document.getElementById('card-'+key+'-hoy').textContent = fmtDash(totalDia(lista,hoy));
     document.getElementById('card-'+key+'-meta').textContent = lista.filter(x=>x.fecha===hoy).length + ' movimiento(s) hoy';
   });
 
   const ev=totalIngresos(datos.eventos), ca=totalIngresos(datos.cancha), ct=totalIngresos(datos.cantina);
   const ingresoTotal = ev.ef+ev.tr+ca.ef+ca.tr+ct.ef+ct.tr;
   const gastoTotal = (datos.gastos||[]).reduce((a,g)=>a+(Number(g.monto)||0),0);
-  document.getElementById('kpi-ingreso').textContent = fmt(ingresoTotal);
-  document.getElementById('kpi-gasto').textContent = fmt(gastoTotal);
-  document.getElementById('kpi-neto').textContent = fmt(ingresoTotal-gastoTotal);
-  document.getElementById('kpi-ef').textContent = fmt(ev.ef+ca.ef+ct.ef);
-  document.getElementById('kpi-tr').textContent = fmt(ev.tr+ca.tr+ct.tr);
+  document.getElementById('kpi-ingreso').textContent = fmtDash(ingresoTotal);
+  document.getElementById('kpi-gasto').textContent = fmtDash(gastoTotal);
+  document.getElementById('kpi-neto').textContent = fmtDash(ingresoTotal-gastoTotal);
+  document.getElementById('kpi-ef').textContent = fmtDash(ev.ef+ca.ef+ct.ef);
+  document.getElementById('kpi-tr').textContent = fmtDash(ev.tr+ca.tr+ct.tr);
 
   // Próximos en agenda (eventos + cancha con fecha >= hoy)
   const proximos = [].concat(
@@ -731,7 +905,7 @@ function renderPanel(){
       return `<div class="feed-row">
         <div class="feed-tag c-${p.sector}">${s.icon}</div>
         <div class="feed-body"><div class="feed-title">${p.nombre}</div><div class="feed-sub">${p.fecha} ${p.horario||''}</div></div>
-        <div class="feed-amt in">${fmt((Number(p.efectivo)||0)+(Number(p.transferencia)||0))}</div>
+        <div class="feed-amt in">${fmtDash((Number(p.efectivo)||0)+(Number(p.transferencia)||0))}</div>
       </div>`;
     }).join('');
   }
@@ -751,7 +925,7 @@ function renderPanel(){
       <div class="feed-row">
         <div class="feed-tag c-${f.sector}">${f.icon}</div>
         <div class="feed-body"><div class="feed-title">${f.nombre}</div><div class="feed-sub">${f.fecha}</div></div>
-        <div class="feed-amt ${f.signo}">${f.signo==='out'?'-':'+'}${fmt(f.monto)}</div>
+        <div class="feed-amt ${f.signo}">${f.signo==='out'?'-':'+'}${fmtDash(f.monto)}</div>
       </div>`).join('');
   }
 }
@@ -791,30 +965,115 @@ function guardarUrl(){
   cargarTodo();
 }
 
+/* ───── Importación única de eventos confirmados desde el Excel ───── */
+async function importarEventosExcel(){
+  const msgEl = document.getElementById('import-msg');
+  const btn = document.getElementById('btn-import-eventos');
+  if(localStorage.getItem('aldea_eventos_excel_importado')==='1'){
+    if(!confirm('Ya importaste estos eventos antes. ¿Importarlos de nuevo? (puede duplicar registros)')) return;
+  } else if(!confirm(`Se van a cargar ${EVENTOS_IMPORT_EXCEL.length} eventos al sector Eventos y al Google Sheet. ¿Continuar?`)){
+    return;
+  }
+  const url = getUrl();
+  btn.disabled = true;
+  let ok = 0, fail = 0;
+  for(let i=0;i<EVENTOS_IMPORT_EXCEL.length;i++){
+    const registro = EVENTOS_IMPORT_EXCEL[i];
+    msgEl.textContent = `⏳ Importando ${i+1}/${EVENTOS_IMPORT_EXCEL.length}…`; msgEl.className='msg';
+    datos.eventos.push(registro);
+    if(url){
+      try{
+        const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'eventos', ...registro }) });
+        const j = await r.json();
+        if(j.ok) ok++; else fail++;
+      }catch(e){ fail++; }
+    }
+  }
+  localStorage.setItem('aldea_eventos_excel_importado','1');
+  renderSector('eventos'); renderPanel();
+  msgEl.textContent = url ? `✅ Listo: ${ok} guardados en Sheets${fail?`, ${fail} con error`:''}.` : '✅ Cargados localmente (configurá Sheets en ⚙️ Config para sincronizar).';
+  msgEl.className = 'msg ok';
+  btn.disabled = false;
+}
+
 /* ═══════════════════════════════════════════════
-   TURNOS FIJOS — grilla semanal de Cancha
+   SEMANA DE CANCHA — grilla combinada: turnos fijos + reservas puntuales
    ═══════════════════════════════════════════════ */
-const TF_DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
-const TF_HORAS = ['17:00','18:00','19:00','20:00','21:00','22:00','23:00'];
+const TF_DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const TF_HORAS = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'];
 let turnosFijos = JSON.parse(localStorage.getItem('aldea_turnosfijos')||'[]');
 let tfEditando = null; // {diaIdx, hora}
+let semanaOffset = 0;
 
 function tfBuscar(diaIdx, hora){ return turnosFijos.find(t=>t.diaIdx===diaIdx && t.hora===hora); }
 
+function inicioSemana(offset){
+  const d = new Date();
+  const dow = d.getDay(); // 0=domingo..6=sábado
+  const diffLunes = (dow===0 ? -6 : 1-dow);
+  d.setDate(d.getDate()+diffLunes+offset*7);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function fechaDia(offset, diaIdx){ const d = inicioSemana(offset); d.setDate(d.getDate()+diaIdx); return d; }
+function fechaISODia(offset, diaIdx){ return fechaDia(offset,diaIdx).toISOString().split('T')[0]; }
+function horarioCubreHora(horarioStr, horaHH){
+  if(!horarioStr) return false;
+  const nums = horarioStr.match(/\d{1,2}(:\d{2})?/g);
+  if(!nums || nums.length<1) return false;
+  const toH = s=>parseInt(s.split(':')[0]);
+  let ini = toH(nums[0]);
+  let fin = nums.length>1 ? toH(nums[1]) : ini+1;
+  if(fin<=ini) fin += 24;
+  let h = toH(horaHH);
+  return h>=ini && h<fin;
+}
+function reservaEnCelda(offset, diaIdx, hora){
+  const fecha = fechaISODia(offset, diaIdx);
+  return (datos.cancha||[]).find(r=> r.fecha===fecha && !(r.estado||'').includes('Cancelado') && horarioCubreHora(r.horario, hora));
+}
+
 function renderTurnosFijos(){
   const host = document.getElementById('cancha-sub-fijos');
+  const lunes = inicioSemana(semanaOffset);
+  const domingo = fechaDia(semanaOffset,6);
+  const mesesCorto=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const tituloSemana = semanaOffset===0 ? 'Esta semana' : (semanaOffset>0?`${semanaOffset} semana(s) después`:`${-semanaOffset} semana(s) antes`);
+
   let filas = TF_HORAS.map(hora=>{
     let celdas = TF_DIAS.map((dia,diaIdx)=>{
-      const t = tfBuscar(diaIdx,hora);
-      return `<td><div class="tf-cell ${t?'ocupado':'libre'}" onclick="abrirFormTF(${diaIdx},'${hora}')">
-        ${t ? `<div class="tfn">${t.nombre}</div><div class="tfm">${t.monto?fmt(t.monto)+'/mes':''}</div>` : '+'}
-      </div></td>`;
+      const reserva = reservaEnCelda(semanaOffset, diaIdx, hora);
+      const fijo = tfBuscar(diaIdx,hora);
+      const cancha = reserva ? reserva.extra : (fijo ? fijo.cancha : null);
+      const col = CANCHA_COLOR[cancha];
+      const estilo = col ? `style="background:${col.suave};"` : '';
+      const estiloNombre = col ? `style="color:${col.fuerte};"` : '';
+      if(reserva){
+        return `<td><div class="tf-cell ocupado" ${estilo} onclick="abrirCeldaReserva('${reserva.fecha}','${hora}')">
+          <div class="tfn" ${estiloNombre}>📅 ${reserva.nombre}</div><div class="tfm">${reserva.extra||''}</div>
+        </div></td>`;
+      }
+      if(fijo){
+        return `<td><div class="tf-cell ocupado" ${estilo} onclick="abrirFormTF(${diaIdx},'${hora}')">
+          <div class="tfn" ${estiloNombre}>🔁 ${fijo.nombre}</div><div class="tfm">${fijo.cancha||''}</div>
+        </div></td>`;
+      }
+      return `<td><div class="tf-cell libre" onclick="elegirTipoCelda(${diaIdx},'${hora}')">+</div></td>`;
     }).join('');
     return `<tr><td class="tf-hora">${hora}</td>${celdas}</tr>`;
   }).join('');
 
   host.innerHTML = `
-    <div class="panel-section" id="tf-form-card" style="display:none;margin-top:14px;">
+    <div class="semana-nav" style="margin-top:14px;">
+      <button onclick="cambiarSemana(-1)">←</button>
+      <div class="stitulo">${tituloSemana}<br><span class="mono" style="font-weight:400;color:var(--gris);">${lunes.getDate()} ${mesesCorto[lunes.getMonth()]} — ${domingo.getDate()} ${mesesCorto[domingo.getMonth()]}</span></div>
+      <button onclick="cambiarSemana(1)">→</button>
+    </div>
+    <div class="cancha-legend">
+      ${Object.entries(CANCHA_COLOR).map(([nombre,c])=>`<span><i style="background:${c.fuerte};"></i>${nombre}</span>`).join('')}
+      <span>📅 reserva puntual · 🔁 turno fijo</span>
+    </div>
+    <div class="panel-section" id="tf-form-card" style="display:none;margin-bottom:14px;">
       <h3 id="tf-form-titulo">Nuevo turno fijo</h3>
       <div class="row2">
         <div class="field"><label>Día</label><select id="tf-dia">${TF_DIAS.map((d,i)=>`<option value="${i}">${d}</option>`).join('')}</select></div>
@@ -833,12 +1092,43 @@ function renderTurnosFijos(){
       </div>
       <button class="btn btn-gastos" id="tf-del-btn" style="margin-top:8px;display:none;" onclick="eliminarTF()">Eliminar turno fijo</button>
     </div>
-    <div class="tf-wrap" style="margin-top:14px;">
+    <div class="tf-wrap">
       <table class="tf-table"><thead><tr><th class="hcol">Hora</th>${TF_DIAS.map(d=>`<th>${d}</th>`).join('')}</tr></thead>
       <tbody>${filas}</tbody></table>
     </div>
-    <div style="font-size:11px;color:var(--gris);margin-top:8px;">Tocá una celda para agregar o editar un turno fijo. Esto es independiente de las reservas individuales de arriba.</div>
+    <div style="font-size:11px;color:var(--gris);margin-top:8px;">Tocá una celda libre para agregar un turno fijo (se repite todas las semanas) o una reserva puntual (solo esta fecha). Tocá una celda ocupada para editarla.</div>
   `;
+}
+
+function cambiarSemana(delta){ semanaOffset += delta; renderTurnosFijos(); }
+
+function elegirTipoCelda(diaIdx, hora){
+  const esPuntual = confirm('¿Es una reserva puntual solo para este día?\n\nAceptar = Reserva puntual (esta fecha)\nCancelar = Turno fijo (se repite cada semana)');
+  if(esPuntual){
+    abrirReservaPuntual(diaIdx, hora);
+  } else {
+    abrirFormTF(diaIdx, hora);
+  }
+}
+
+function abrirReservaPuntual(diaIdx, hora){
+  const fecha = fechaISODia(semanaOffset, diaIdx);
+  irA('cancha');
+  document.getElementById('form-cancha').classList.add('open');
+  document.getElementById('cancha-fecha').value = fecha;
+  document.getElementById('cancha-horario').value = hora;
+  document.getElementById('cancha-nombre').focus();
+  document.getElementById('form-cancha').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function abrirCeldaReserva(fecha, hora){
+  const idx = (datos.cancha||[]).findIndex(r=> r.fecha===fecha && horarioCubreHora(r.horario, hora));
+  if(idx===-1) return;
+  const r = datos.cancha[idx];
+  if(confirm(`${r.nombre} — ${r.extra||''} — ${r.horario||''}\n${r.obs||''}\n\n¿Quitar esta reserva de la vista local? (el historial en Sheets no se borra)`)){
+    datos.cancha.splice(idx,1);
+    renderSector('cancha'); renderPanel(); renderTurnosFijos();
+  }
 }
 
 function abrirFormTF(diaIdx, hora){
@@ -943,6 +1233,9 @@ const CAT_EMOJI = {'Cafetería':'☕','Sin alcohol':'🥤','Cerveza':'🍺','Vin
 let mesas = JSON.parse(localStorage.getItem('aldea_mesas')||'null') || Array.from({length:6},(_,i)=>({nombre:'Mesa '+(i+1), items:{}}));
 let mesaActual = null;
 let catActual = Object.keys(carta)[0];
+let ventaRapida = { nombre:'⚡ Venta rápida', items:{} };
+let busquedaProd = '';
+function mesaObj(){ return mesaActual===-1 ? ventaRapida : mesas[mesaActual]; }
 
 /* ───── PRECIOS — editor en vivo, sincronizado por Sheets ───── */
 function renderPrecios(){
@@ -1041,7 +1334,9 @@ function itemsMesa(m){ return Object.values(m.items).reduce((a,it)=>a+it.qty,0);
 
 function renderComandaMesas(){
   const host = document.getElementById('cantina-sub-comanda');
-  host.innerHTML = `<div class="mesas-grid" id="mesas-grid"></div>`;
+  host.innerHTML = `
+    <button class="btn btn-cantina btn-fab" style="margin-bottom:12px;" onclick="abrirMesa(-1)">⚡ Venta rápida</button>
+    <div class="mesas-grid" id="mesas-grid"></div>`;
   pintarMesas();
 }
 function pintarMesas(){
@@ -1058,12 +1353,20 @@ function pintarMesas(){
 
 function abrirMesa(i){
   mesaActual = i;
+  if(i===-1) ventaRapida = { nombre:'⚡ Venta rápida', items:{} };
+  busquedaProd = '';
   const host = document.getElementById('cantina-sub-comanda');
+  const m = mesaObj();
   host.innerHTML = `
     <div class="cmd-header">
       <button class="cmd-back" onclick="renderComandaMesas()">←</button>
-      <div class="cmd-title">${mesas[i].nombre}</div>
-      <button class="cmd-back" onclick="renombrarMesa(${i})" title="Renombrar">✏️</button>
+      <div class="cmd-title">${m.nombre}</div>
+      ${i>=0 ? `<button class="cmd-back" onclick="renombrarMesa(${i})" title="Renombrar">✏️</button>` : ''}
+    </div>
+    <div class="buscador" id="prod-buscador">
+      <span class="bi">🔍</span>
+      <input type="text" id="prod-search" placeholder="Buscar producto…" oninput="filtrarProductos(this.value)"/>
+      <button class="bx" onclick="limpiarBusqueda()">✕</button>
     </div>
     <div class="cat-pills" id="cat-pills"></div>
     <div class="prod-grid" id="prod-grid"></div>
@@ -1082,8 +1385,8 @@ function abrirMesa(i){
           <button class="btn btn-cantina" style="margin-top:6px;" onclick="confirmarCobroMesa()">Confirmar cobro</button>
         </div>
         <div class="row2" style="margin-top:10px;">
-          <button class="btn btn-ghost" onclick="limpiarMesa()">Vaciar mesa</button>
-          <button class="btn btn-cantina" onclick="abrirCobro()">Cobrar mesa</button>
+          <button class="btn btn-ghost" onclick="limpiarMesa()">Vaciar ${i===-1?'pedido':'mesa'}</button>
+          <button class="btn btn-cantina" onclick="abrirCobro()">Cobrar</button>
         </div>
       </div>
     </div>
@@ -1102,41 +1405,66 @@ function renderCatPills(){
 }
 function cambiarCat(cat){ catActual = cat; renderCatPills(); renderProdGrid(cat); }
 
+function filtrarProductos(v){
+  busquedaProd = v.trim().toLowerCase();
+  document.getElementById('prod-buscador').classList.toggle('tiene-texto', busquedaProd.length>0);
+  document.getElementById('cat-pills').style.display = busquedaProd ? 'none' : 'flex';
+  renderProdGrid(catActual);
+}
+function limpiarBusqueda(){
+  const input = document.getElementById('prod-search');
+  if(input) input.value = '';
+  filtrarProductos('');
+}
+
 function renderProdGrid(cat){
   const host = document.getElementById('prod-grid');
-  const m = mesas[mesaActual];
-  host.innerHTML = carta[cat].map(([nombre,precio],idx)=>{
-    const key = cat+'_'+idx;
+  const m = mesaObj();
+  let entradas;
+  if(busquedaProd){
+    entradas = [];
+    Object.entries(carta).forEach(([c,items])=>{
+      items.forEach(([nombre,precio],idx)=>{ if(nombre.toLowerCase().includes(busquedaProd)) entradas.push([c,idx,nombre,precio]); });
+    });
+  } else {
+    entradas = carta[cat].map(([nombre,precio],idx)=>[cat,idx,nombre,precio]);
+  }
+  if(entradas.length===0){
+    host.innerHTML = `<div class="vacio" style="grid-column:1/-1;padding:26px 10px;"><div class="vi">🔍</div>Sin resultados${busquedaProd?' para "'+busquedaProd+'"':''}.</div>`;
+    return;
+  }
+  host.innerHTML = entradas.map(([c,idx,nombre,precio])=>{
+    const key = c+'_'+idx;
     const qty = m.items[key]?.qty || 0;
-    return `<div class="prod-btn ${qty>0?'activo':''}" onclick="agregarProducto('${cat}',${idx},'${nombre.replace(/'/g,"\\'")}',${precio})">
+    return `<div class="prod-btn ${qty>0?'activo':''}" onclick="agregarProducto('${c}',${idx},'${nombre.replace(/'/g,"\\'")}',${precio})">
       ${qty>0?`<div class="qty-badge">${qty}</div>`:''}
-      <div class="prod-emoji">${CAT_EMOJI[cat]||'🍽️'}</div>
+      <div class="prod-emoji">${CAT_EMOJI[c]||'🍽️'}</div>
       <div class="prod-nombre">${nombre}</div>
-      <div class="prod-precio">${fmt(precio)}</div>
+      <div class="prod-precio">${fmt(precio)}${busquedaProd?` · ${c}`:''}</div>
     </div>`;
   }).join('');
 }
 
 function agregarProducto(cat, idx, nombre, precio){
-  const m = mesas[mesaActual];
+  const m = mesaObj();
   const key = cat+'_'+idx;
   if(!m.items[key]) m.items[key] = {nombre, precio, qty:0};
   m.items[key].qty++;
-  guardarMesas();
+  if(mesaActual!==-1) guardarMesas();
   renderProdGrid(catActual); renderTicket();
   document.getElementById('ticket-bar').classList.remove('cerrado');
 }
 function cambiarQtyTicket(key, delta){
-  const m = mesas[mesaActual];
+  const m = mesaObj();
   if(!m.items[key]) return;
   m.items[key].qty += delta;
   if(m.items[key].qty<=0) delete m.items[key];
-  guardarMesas();
+  if(mesaActual!==-1) guardarMesas();
   renderProdGrid(catActual); renderTicket();
 }
 
 function renderTicket(){
-  const m = mesas[mesaActual];
+  const m = mesaObj();
   const total = totalMesa(m), count = itemsMesa(m);
   document.getElementById('t-total').textContent = fmt(total);
   document.getElementById('t-count').textContent = count>0 ? count+' ítem(s)' : 'Sin pedidos';
@@ -1150,26 +1478,27 @@ function renderTicket(){
   if(count===0) document.getElementById('ticket-bar').classList.add('cerrado');
 }
 function toggleTicket(){
-  if(itemsMesa(mesas[mesaActual])===0) return;
+  if(itemsMesa(mesaObj())===0) return;
   document.getElementById('ticket-bar').classList.toggle('cerrado');
 }
 function limpiarMesa(){
-  if(!confirm('¿Vaciar todos los pedidos de esta mesa?')) return;
-  mesas[mesaActual].items = {};
-  guardarMesas(); renderProdGrid(catActual); renderTicket();
+  if(!confirm('¿Vaciar todos los pedidos?')) return;
+  mesaObj().items = {};
+  if(mesaActual!==-1) guardarMesas();
+  renderProdGrid(catActual); renderTicket();
   document.getElementById('ticket-bar').classList.add('cerrado');
 }
 
 function abrirCobro(){
-  const total = totalMesa(mesas[mesaActual]);
-  if(total===0){ alert('Esta mesa no tiene pedidos.'); return; }
+  const total = totalMesa(mesaObj());
+  if(total===0){ alert('Todavía no hay pedidos cargados.'); return; }
   document.getElementById('cobro-ef').value = total;
   document.getElementById('cobro-tr').value = 0;
   document.getElementById('cobro-box').style.display='block';
 }
 
 async function confirmarCobroMesa(){
-  const m = mesas[mesaActual];
+  const m = mesaObj();
   const total = totalMesa(m);
   const ef = parseFloat(document.getElementById('cobro-ef').value)||0;
   const tr = parseFloat(document.getElementById('cobro-tr').value)||0;
@@ -1247,6 +1576,92 @@ function imprimirTicketVenta(nombreMesa, items, ef, tr){
   `);
 }
 
+/* ═══════════════════════════════════════════════
+   TURNO DE CAJA — apertura/cierre independiente de la fecha calendario
+   ═══════════════════════════════════════════════ */
+let turnoActual = JSON.parse(localStorage.getItem('aldea_turno_actual')||'null');
+
+function actualizarTurnoUI(){
+  const el = document.getElementById('turno-estado-txt');
+  if(!el) return;
+  const sub = document.getElementById('turno-sub-txt');
+  const btnAbrir = document.getElementById('turno-btn-abrir');
+  const btnCerrar = document.getElementById('turno-btn-cerrar');
+  if(turnoActual){
+    el.textContent = 'Abierto'; el.className = 'tn abierto';
+    const ini = new Date(turnoActual.inicio);
+    sub.textContent = `${turnoActual.responsable} · desde las ${ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
+    btnAbrir.style.display = 'none'; btnCerrar.style.display = 'block';
+  } else {
+    el.textContent = 'Cerrado'; el.className = 'tn cerrado';
+    sub.textContent = 'No hay ningún turno abierto';
+    btnAbrir.style.display = 'block'; btnCerrar.style.display = 'none';
+  }
+}
+
+function abrirTurno(){
+  const responsable = prompt('¿Quién abre el turno? (ej: Pache, Juan, Mili)');
+  if(!responsable || !responsable.trim()) return;
+  turnoActual = { responsable: responsable.trim(), inicio: new Date().toISOString() };
+  localStorage.setItem('aldea_turno_actual', JSON.stringify(turnoActual));
+  actualizarTurnoUI();
+}
+
+async function cerrarTurno(){
+  if(!turnoActual) return;
+  if(!confirm(`¿Cerrar el turno de ${turnoActual.responsable} e imprimir el cierre de caja?`)) return;
+  const fin = new Date().toISOString();
+  imprimirCierreDeTurno(turnoActual.responsable, turnoActual.inicio, fin);
+  const url = getUrl();
+  if(url){
+    try{ await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({tipo:'cierre_turno', responsable:turnoActual.responsable, inicio:turnoActual.inicio, fin})}); }catch(e){}
+  }
+  turnoActual = null;
+  localStorage.removeItem('aldea_turno_actual');
+  actualizarTurnoUI();
+}
+
+function imprimirCierreDeTurno(responsable, inicioISO, finISO){
+  const inicio = new Date(inicioISO), fin = new Date(finISO);
+  const enTurno = x => x.creado && new Date(x.creado) >= inicio && new Date(x.creado) <= fin;
+  const sumarTurno = lista => (lista||[]).filter(enTurno).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0});
+  const ev = sumarTurno(datos.eventos), ca = sumarTurno(datos.cancha), ct = sumarTurno(datos.cantina);
+  const ingresoEf = ev.ef+ca.ef+ct.ef, ingresoTr = ev.tr+ca.tr+ct.tr;
+  const ingresoTotal = ingresoEf+ingresoTr;
+
+  const gastosTurno = (datos.gastos||[]).filter(enTurno);
+  const gastoTotal = gastosTurno.reduce((a,g)=>a+(Number(g.monto)||0),0);
+  const gastoLineas = gastosTurno.map(g=>`<div class="fila chico"><span class="izq">${g.concepto} (${g.area||'General'})</span><span class="der">${fmt(g.monto)}</span></div>`).join('') || '<div class="chico tc">Sin gastos registrados en el turno</div>';
+
+  const neto = ingresoTotal - gastoTotal;
+  const ahora = new Date();
+
+  abrirImpresion(`
+    <div class="tc"><div class="logo">ALDEA DEL VALLE</div><div class="chico">CIERRE DE CAJA — TURNO</div></div>
+    <hr class="sep"/>
+    <div class="fila chico"><span class="izq">Responsable</span><span class="der">${responsable}</span></div>
+    <div class="fila chico"><span class="izq">Desde</span><span class="der">${inicio.toLocaleString('es-AR')}</span></div>
+    <div class="fila chico"><span class="izq">Hasta</span><span class="der">${fin.toLocaleString('es-AR')}</span></div>
+    <hr class="sep"/>
+    <div class="bold chico">INGRESOS POR SECTOR</div>
+    <div class="fila chico"><span class="izq">🎉 Eventos</span><span class="der">${fmt(ev.ef+ev.tr)}</span></div>
+    <div class="fila chico"><span class="izq">⚽ Cancha</span><span class="der">${fmt(ca.ef+ca.tr)}</span></div>
+    <div class="fila chico"><span class="izq">🍔 Cantina</span><span class="der">${fmt(ct.ef+ct.tr)}</span></div>
+    <hr class="sep"/>
+    <div class="fila chico"><span class="izq">💵 Total efectivo</span><span class="der">${fmt(ingresoEf)}</span></div>
+    <div class="fila chico"><span class="izq">📲 Total transferencia</span><span class="der">${fmt(ingresoTr)}</span></div>
+    <div class="fila bold"><span class="izq">TOTAL INGRESOS</span><span class="der">${fmt(ingresoTotal)}</span></div>
+    <hr class="sep"/>
+    <div class="bold chico">GASTOS DEL TURNO</div>
+    ${gastoLineas}
+    <div class="fila bold"><span class="izq">TOTAL GASTOS</span><span class="der">${fmt(gastoTotal)}</span></div>
+    <hr class="sep"/>
+    <div class="tot" style="background:${neto>=0?'#0a3018':'#7a1010'};"><div class="chico">NETO DEL TURNO</div><div class="m">${neto>=0?'+':''}${fmt(neto)}</div></div>
+    <div class="tc chico" style="margin-top:8px;">Impreso ${ahora.toLocaleString('es-AR')}</div>
+    <div style="height:18mm;"></div>
+  `);
+}
+
 function imprimirCierreDelDia(){
   const hoy = hoyISO();
   const sumarDia = lista => (lista||[]).filter(x=>x.fecha===hoy).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0});
@@ -1290,9 +1705,11 @@ function imprimirCierreDelDia(){
   const url = getUrl();
   if(url) document.getElementById('cfg-url').value = url;
   getUrlOk();
+  actualizarModoPill();
   renderPanel();
   ['eventos','cancha','cantina'].forEach(renderSector);
   renderGastos();
+  actualizarTurnoUI();
   if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
 })();
 </script>
