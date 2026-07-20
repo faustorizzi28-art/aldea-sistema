@@ -375,7 +375,7 @@
       <div style="font-size:11px;color:var(--gris);margin-top:10px;">El cierre se calcula desde que se abre el turno hasta que se cierra, aunque pase la medianoche — no por fecha calendario.</div>
     </div>
 
-    <button class="btn btn-ghost" style="background:var(--tinta);color:white;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre por fecha (histórico)</button>
+    <button class="btn btn-ghost" id="btn-cierre-historico" style="background:var(--tinta);color:white;display:none;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre por fecha (histórico)</button>
   </div>
 
   <!-- ════════ SECTORES (eventos / cancha / cantina) ════════ -->
@@ -541,6 +541,8 @@ function actualizarModoPill(){
   const on = modoDueno();
   document.getElementById('modo-icon').textContent = on?'🔓':'🔒';
   document.getElementById('modo-texto').textContent = on?'Modo dueño':'Modo empleado';
+  const btnHist = document.getElementById('btn-cierre-historico');
+  if(btnHist) btnHist.style.display = on ? 'block' : 'none';
 }
 function cambiarPinDueno(){
   const actual = prompt('PIN actual de dueño (para confirmar el cambio):');
@@ -775,7 +777,7 @@ function renderSector(key){
     const monto = (Number(it.efectivo)||0)+(Number(it.transferencia)||0);
     const metodoIcon = Number(it.transferencia)>0 && Number(it.efectivo)>0 ? '💵📲' : Number(it.transferencia)>0 ? '📲' : '💵';
     const metaBase = [it.extra, it.contacto, it.personas?it.personas+' personas':'', it.responsable, it.obs].filter(Boolean).join(' · ');
-    const metaMonto = [it.montototal?'Total: '+fmt(it.montototal):'', it.sena?'Seña: '+fmt(it.sena):''].filter(Boolean).join(' · ');
+    const metaMonto = [it.montototal?'Total: '+fmtDash(it.montototal):'', it.sena?'Seña: '+fmtDash(it.sena):''].filter(Boolean).join(' · ');
     html += `
       <div class="entry">
         ${s.horario ? `<div class="entry-time">${it.horario||'—'}</div>` : ''}
@@ -786,7 +788,7 @@ function renderSector(key){
           <span class="pill pill-${estadoClase(it.estado)}">${it.estado||'🔵 Reservado'}</span>
         </div>
         <div class="entry-right">
-          <div class="entry-amt">${metodoIcon} ${fmt(monto)}</div>
+          <div class="entry-amt">${metodoIcon} ${fmtDash(monto)}</div>
           <button class="entry-del" onclick="borrarRegistro('${key}',${realIdx})" title="Quitar de la vista local">🗑</button>
         </div>
       </div>`;
@@ -861,7 +863,7 @@ function renderGastos(){
           <div class="entry-meta">${it.area||'General'}${it.responsable?' · '+it.responsable:''}${it.obs?' · '+it.obs:''}</div>
         </div>
         <div class="entry-right">
-          <div class="entry-amt" style="color:var(--gastos);">${it.metodo==='transferencia'?'📲':'💵'} ${fmt(it.monto)}</div>
+          <div class="entry-amt" style="color:var(--gastos);">${it.metodo==='transferencia'?'📲':'💵'} ${fmtDash(it.monto)}</div>
           <button class="entry-del" onclick="borrarRegistro('gastos',${realIdx})">🗑</button>
         </div>
       </div>`;
