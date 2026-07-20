@@ -700,11 +700,26 @@ async function guardarRegistro(key){
   const url = getUrl();
   if(!url){ msgEl.textContent='✅ Guardado localmente (configurá Sheets en ⚙️ Config)'; msgEl.className='msg ok'; return; }
   try{
-    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo: s.tipo, ...registro }) });
+    const obsParaSheet = obsConExtras(s, registro);
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo: s.tipo, ...registro, obs: obsParaSheet }) });
     const j = await r.json();
     msgEl.textContent = j.ok ? '✅ Guardado en Sheets' : '❌ '+j.error;
     msgEl.className = j.ok ? 'msg ok' : 'msg err';
   }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
+}
+
+/* El Google Sheet conectado solo guarda columnas fijas (fecha, horario, nombre,
+   extra, efectivo, transferencia, estado, responsable, obs, creado) y descarta
+   cualquier campo nuevo que no reconozca (contacto, personas, monto total, seña…).
+   Hasta que se actualice el Apps Script del otro lado, estos campos se pliegan
+   dentro de "obs" para que no se pierdan al llegar al Sheet. */
+function obsConExtras(s, registro){
+  const extras = (s.camposExtra||[]).map(c=>{
+    const v = registro[c.id];
+    if(!v) return '';
+    return `${c.label}: ${c.tipo==='money' ? fmt(v) : v}`;
+  }).filter(Boolean).join(' | ');
+  return extras ? (registro.obs ? registro.obs+' | '+extras : extras) : (registro.obs||'');
 }
 
 const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -985,7 +1000,8 @@ async function importarEventosExcel(){
     datos.eventos.push(registro);
     if(url){
       try{
-        const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'eventos', ...registro }) });
+        const obsParaSheet = obsConExtras(SECTORES.eventos, registro);
+        const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'eventos', ...registro, obs: obsParaSheet }) });
         const j = await r.json();
         if(j.ok) ok++; else fail++;
       }catch(e){ fail++; }
