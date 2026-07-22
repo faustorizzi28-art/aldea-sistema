@@ -349,6 +349,18 @@
       <div class="kpi"><div class="kv" id="kpi-tr">$0</div><div class="kl">Transferencia</div></div>
     </div>
 
+    <div class="panel-section" id="caja-hoy-card">
+      <h3>💰 Movimiento de caja de hoy</h3>
+      <div class="kpi-strip" style="margin-bottom:0;">
+        <div class="kpi"><div class="kv" id="hoy-ingreso" style="color:var(--ok)">$0</div><div class="kl">Ingresos</div></div>
+        <div class="kpi"><div class="kv" id="hoy-gasto" style="color:var(--gastos)">$0</div><div class="kl">Egresos</div></div>
+        <div class="kpi"><div class="kv" id="hoy-neto" style="color:var(--azul)">$0</div><div class="kl">Neto</div></div>
+        <div class="kpi"><div class="kv" id="hoy-ef">$0</div><div class="kl">Efectivo</div></div>
+        <div class="kpi"><div class="kv" id="hoy-tr">$0</div><div class="kl">Transferencia</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--gris);margin-top:10px;" id="caja-hoy-nota"></div>
+    </div>
+
     <div class="panel-section">
       <h3>📋 Próximo en la agenda</h3>
       <div id="panel-proximos"></div>
@@ -525,6 +537,13 @@ function getUrl(){ return localStorage.getItem('aldea_sheet_url') || SHEET_URL_F
 function modoDueno(){ return localStorage.getItem('aldea_modo_dueno')==='1'; }
 function getPinDueno(){ return localStorage.getItem('aldea_pin_dueno') || '2026'; }
 function fmtDash(n){ return modoDueno() ? fmt(n) : '••••'; }
+/* Visible si el dueño destrabó el candado, o si hay un turno abierto y el
+   monto es de hoy (el operador identificado ya sabe esa plata: es la que
+   está manejando en su propia caja). Los días anteriores siguen ocultos. */
+function fmtHoy(n, fecha){
+  const esHoy = fecha===undefined || fecha===hoyISO();
+  return (modoDueno() || (turnoActual && esHoy)) ? fmt(n) : '••••';
+}
 function toggleModoDueno(){
   if(modoDueno()){
     localStorage.setItem('aldea_modo_dueno','0');
@@ -763,7 +782,7 @@ function renderSector(key){
   const totalHoy = lista.filter(x=>x.fecha===hoy).reduce((a,x)=>a+(Number(x.efectivo)||0)+(Number(x.transferencia)||0),0);
   const totalSemana = lista.filter(x=> new Date(x.fecha) >= semanaInicio).reduce((a,x)=>a+(Number(x.efectivo)||0)+(Number(x.transferencia)||0),0);
 
-  document.getElementById(key+'-stat-hoy').textContent = fmtDash(totalHoy);
+  document.getElementById(key+'-stat-hoy').textContent = fmtHoy(totalHoy, hoy);
   document.getElementById(key+'-stat-semana').textContent = fmtDash(totalSemana);
   document.getElementById(key+'-stat-cant').textContent = lista.length;
 
@@ -792,7 +811,7 @@ function renderSector(key){
     const monto = (Number(it.efectivo)||0)+(Number(it.transferencia)||0);
     const metodoIcon = Number(it.transferencia)>0 && Number(it.efectivo)>0 ? '💵📲' : Number(it.transferencia)>0 ? '📲' : '💵';
     const metaBase = [it.extra, it.contacto, it.personas?it.personas+' personas':'', it.responsable, it.obs].filter(Boolean).join(' · ');
-    const metaMonto = [it.montototal?'Total: '+fmtDash(it.montototal):'', it.sena?'Seña: '+fmtDash(it.sena):''].filter(Boolean).join(' · ');
+    const metaMonto = [it.montototal?'Total: '+fmtHoy(it.montototal, it.fecha):'', it.sena?'Seña: '+fmtHoy(it.sena, it.fecha):''].filter(Boolean).join(' · ');
     html += `
       <div class="entry">
         ${s.horario ? `<div class="entry-time">${it.horario||'—'}</div>` : ''}
@@ -803,7 +822,7 @@ function renderSector(key){
           <span class="pill pill-${estadoClase(it.estado)}">${it.estado||'🔵 Reservado'}</span>
         </div>
         <div class="entry-right">
-          <div class="entry-amt">${metodoIcon} ${fmtDash(monto)}</div>
+          <div class="entry-amt">${metodoIcon} ${fmtHoy(monto, it.fecha)}</div>
           <button class="entry-del" onclick="borrarRegistro('${key}',${realIdx})" title="Quitar de la vista local">🗑</button>
         </div>
       </div>`;
@@ -878,7 +897,7 @@ function renderGastos(){
           <div class="entry-meta">${it.area||'General'}${it.responsable?' · '+it.responsable:''}${it.obs?' · '+it.obs:''}</div>
         </div>
         <div class="entry-right">
-          <div class="entry-amt" style="color:var(--gastos);">${it.metodo==='transferencia'?'📲':'💵'} ${fmtDash(it.monto)}</div>
+          <div class="entry-amt" style="color:var(--gastos);">${it.metodo==='transferencia'?'📲':'💵'} ${fmtHoy(it.monto, it.fecha)}</div>
           <button class="entry-del" onclick="borrarRegistro('gastos',${realIdx})">🗑</button>
         </div>
       </div>`;
@@ -894,7 +913,7 @@ function renderPanel(){
   const hoy = hoyISO();
   ['eventos','cancha','cantina'].forEach(key=>{
     const lista = datos[key]||[];
-    document.getElementById('card-'+key+'-hoy').textContent = fmtDash(totalDia(lista,hoy));
+    document.getElementById('card-'+key+'-hoy').textContent = fmtHoy(totalDia(lista,hoy), hoy);
     document.getElementById('card-'+key+'-meta').textContent = lista.filter(x=>x.fecha===hoy).length + ' movimiento(s) hoy';
   });
 
@@ -906,6 +925,20 @@ function renderPanel(){
   document.getElementById('kpi-neto').textContent = fmtDash(ingresoTotal-gastoTotal);
   document.getElementById('kpi-ef').textContent = fmtDash(ev.ef+ca.ef+ct.ef);
   document.getElementById('kpi-tr').textContent = fmtDash(ev.tr+ca.tr+ct.tr);
+
+  // Movimiento de caja de HOY — visible con turno abierto (operador identificado) o modo dueño
+  const sumarHoy = lista => (lista||[]).filter(x=>x.fecha===hoy).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0});
+  const evH=sumarHoy(datos.eventos), caH=sumarHoy(datos.cancha), ctH=sumarHoy(datos.cantina);
+  const ingresoHoy = evH.ef+evH.tr+caH.ef+caH.tr+ctH.ef+ctH.tr;
+  const efHoy = evH.ef+caH.ef+ctH.ef, trHoy = evH.tr+caH.tr+ctH.tr;
+  const gastoHoy = (datos.gastos||[]).filter(g=>g.fecha===hoy).reduce((a,g)=>a+(Number(g.monto)||0),0);
+  document.getElementById('hoy-ingreso').textContent = fmtHoy(ingresoHoy, hoy);
+  document.getElementById('hoy-gasto').textContent = fmtHoy(gastoHoy, hoy);
+  document.getElementById('hoy-neto').textContent = fmtHoy(ingresoHoy-gastoHoy, hoy);
+  document.getElementById('hoy-ef').textContent = fmtHoy(efHoy, hoy);
+  document.getElementById('hoy-tr').textContent = fmtHoy(trHoy, hoy);
+  document.getElementById('caja-hoy-nota').textContent = modoDueno() ? ''
+    : (turnoActual ? `Turno abierto: ${turnoActual.responsable}` : 'Abrí tu turno (⬇ más abajo) para ver el movimiento de hoy.');
 
   // Próximos en agenda (eventos + cancha con fecha >= hoy)
   const proximos = [].concat(
@@ -922,7 +955,7 @@ function renderPanel(){
       return `<div class="feed-row">
         <div class="feed-tag c-${p.sector}">${s.icon}</div>
         <div class="feed-body"><div class="feed-title">${p.nombre}</div><div class="feed-sub">${p.fecha} ${p.horario||''}</div></div>
-        <div class="feed-amt in">${fmtDash((Number(p.efectivo)||0)+(Number(p.transferencia)||0))}</div>
+        <div class="feed-amt in">${fmtHoy((Number(p.efectivo)||0)+(Number(p.transferencia)||0), p.fecha)}</div>
       </div>`;
     }).join('');
   }
@@ -942,7 +975,7 @@ function renderPanel(){
       <div class="feed-row">
         <div class="feed-tag c-${f.sector}">${f.icon}</div>
         <div class="feed-body"><div class="feed-title">${f.nombre}</div><div class="feed-sub">${f.fecha}</div></div>
-        <div class="feed-amt ${f.signo}">${f.signo==='out'?'-':'+'}${fmtDash(f.monto)}</div>
+        <div class="feed-amt ${f.signo}">${f.signo==='out'?'-':'+'}${fmtHoy(f.monto, f.fecha)}</div>
       </div>`).join('');
   }
 }
@@ -1489,11 +1522,24 @@ function renderTicket(){
   document.getElementById('t-label').textContent = m.nombre;
   document.getElementById('t-lineas').innerHTML = Object.entries(m.items).map(([key,it])=>`
     <div class="ticket-linea">
-      <div style="flex:1;">${it.nombre}</div>
+      <div style="flex:1;">${it.nombre}<div style="font-size:10.5px;color:var(--gris);">${fmt(it.precio)} c/u · <span style="text-decoration:underline;cursor:pointer;" onclick="editarPrecioTicket('${key}')">✏️ editar precio</span></div></div>
       <div class="ticket-qty"><button onclick="cambiarQtyTicket('${key}',-1)">−</button><span class="mono">${it.qty}</span><button onclick="cambiarQtyTicket('${key}',1)">+</button></div>
       <div class="ticket-sub">${fmt(it.precio*it.qty)}</div>
     </div>`).join('');
   if(count===0) document.getElementById('ticket-bar').classList.add('cerrado');
+}
+
+function editarPrecioTicket(key){
+  const m = mesaObj();
+  const it = m.items[key];
+  if(!it) return;
+  const nuevo = prompt(`Nuevo precio para "${it.nombre}" (solo para esta venta):`, it.precio);
+  if(nuevo===null) return;
+  const val = parseFloat(nuevo);
+  if(isNaN(val) || val<0){ alert('Precio inválido.'); return; }
+  it.precio = val;
+  if(mesaActual!==-1) guardarMesas();
+  renderTicket();
 }
 function toggleTicket(){
   if(itemsMesa(mesaObj())===0) return;
@@ -1618,11 +1664,12 @@ function actualizarTurnoUI(){
 }
 
 function abrirTurno(){
-  const responsable = prompt('¿Quién abre el turno? (ej: Pache, Juan, Mili)');
+  const responsable = prompt('¿Quién ingresa? Escribí tu nombre para abrir el turno de caja:');
   if(!responsable || !responsable.trim()) return;
   turnoActual = { responsable: responsable.trim(), inicio: new Date().toISOString() };
   localStorage.setItem('aldea_turno_actual', JSON.stringify(turnoActual));
   actualizarTurnoUI();
+  renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
 }
 
 async function cerrarTurno(){
@@ -1637,6 +1684,7 @@ async function cerrarTurno(){
   turnoActual = null;
   localStorage.removeItem('aldea_turno_actual');
   actualizarTurnoUI();
+  renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
 }
 
 function imprimirCierreDeTurno(responsable, inicioISO, finISO){
@@ -1729,6 +1777,7 @@ function imprimirCierreDelDia(){
   renderGastos();
   actualizarTurnoUI();
   if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
+  if(!turnoActual){ setTimeout(abrirTurno, 400); }
 })();
 </script>
 </body>
