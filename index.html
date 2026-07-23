@@ -5,32 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Aldea del Valle — Centro de Gestión</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
   :root{
-    --tinta:#13151A; --tinta2:#3A3D45; --gris:#6E7177; --gris-claro:#EEF0F2; --borde:#E2E4E8; --fondo:#F5F6F8; --blanco:#FFFFFF;
-    --panel:#0F1B2E; --panel2:#16263F;
+    --tinta:#15140F; --tinta2:#3A3D45; --gris:#6E6A5C; --gris-claro:#F1EDDF; --borde:#E6E1D0; --fondo:#F6F3E9; --blanco:#FFFEFA;
+    --panel:#0F2318; --panel2:#1F3D2B;
+    --marca:#1F3D2B; --marca-suave:#E3EDE4; --acento:#EFC42C;
     --eventos:#7C3AED; --eventos-suave:#F2EBFD; --eventos-deep:#3B1E78;
     --cancha:#0E8F5C; --cancha-suave:#E6F7EE; --cancha-deep:#0B4A30;
     --cantina:#E0631E; --cantina-suave:#FDEBE0; --cantina-deep:#7A340E;
-    --gastos:#D6334B; --gastos-suave:#FCE8EB;
-    --ok:#0E8F5C; --warn:#E0631E; --azul:#1A5F9E;
-    --sombra:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -8px rgba(15,23,42,.10);
-    --sombra-fuerte:0 18px 40px -16px rgba(15,23,42,.28);
+    --gastos:#7A2E2E; --gastos-suave:#F6E3E3;
+    --ok:#2E5A3F; --warn:#E0631E; --azul:#1A5F9E;
+    --sombra:0 1px 2px rgba(15,20,15,.05), 0 8px 24px -8px rgba(15,20,15,.12);
+    --sombra-fuerte:0 18px 40px -16px rgba(15,20,15,.32);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--fondo);color:var(--tinta);min-height:100vh;}
   body{padding-bottom:40px;-webkit-font-smoothing:antialiased;}
   .mono{font-family:'DM Mono',monospace;}
+  .serif{font-family:'Instrument Serif',serif;font-style:italic;}
 
   /* ───── HEADER ───── */
   header{background:linear-gradient(160deg,var(--panel),var(--panel2));color:white;padding:18px 18px 0;position:sticky;top:0;z-index:30;box-shadow:var(--sombra-fuerte);}
-  .head-row{display:flex;justify-content:space-between;align-items:flex-start;}
-  .brand .logo{font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#9FB4D8;}
-  .brand h1{font-size:19px;font-weight:800;margin-top:3px;letter-spacing:-.01em;}
-  .head-meta{text-align:right;font-size:11px;color:#A7B6CE;}
+  .head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .logo-img{width:30px;height:30px;flex-shrink:0;}
+  .brand .logo{font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--acento);}
+  .brand h1{font-family:'Instrument Serif',serif;font-style:italic;font-size:21px;font-weight:400;margin-top:1px;letter-spacing:-.01em;}
+  .head-meta{text-align:right;font-size:11px;color:#B9C7B4;}
   .head-meta .clock{font-family:'DM Mono',monospace;font-size:13px;color:white;font-weight:600;}
   .sync-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:4px 10px;font-size:11px;margin-top:6px;cursor:pointer;}
-  .sync-dot{width:6px;height:6px;border-radius:50%;background:#5BD68A;}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--acento);}
   .sync-dot.off{background:#E0631E;}
 
   .nav{display:flex;gap:4px;margin-top:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
@@ -42,15 +46,15 @@
   .nav-btn.active.c-cancha{border-bottom-color:var(--cancha);}
   .nav-btn.active.c-cantina{border-bottom-color:var(--cantina);}
   .nav-btn.active.c-gastos{border-bottom-color:var(--gastos);}
-  .nav-btn.active.c-panel{border-bottom-color:#9FB4D8;}
-  .nav-btn.active.c-config{border-bottom-color:#9FB4D8;}
+  .nav-btn.active.c-panel{border-bottom-color:var(--acento);}
+  .nav-btn.active.c-config{border-bottom-color:var(--acento);}
 
   .container{max-width:680px;margin:0 auto;padding:0 16px;}
   .vista{display:none;padding-top:18px;}
   .vista.active{display:block;}
 
   /* ───── PANEL: tarjetas de sector ───── */
-  .saludo{font-size:21px;font-weight:800;letter-spacing:-.01em;margin-bottom:2px;}
+  .saludo{font-family:'Instrument Serif',serif;font-style:italic;font-size:28px;font-weight:400;letter-spacing:-.01em;margin-bottom:2px;}
   .saludo-sub{font-size:13px;color:var(--gris);margin-bottom:18px;}
 
   .sector-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px;}
@@ -104,7 +108,7 @@
   .sector-banner.c-cantina{background:linear-gradient(135deg,var(--cantina),var(--cantina-deep));}
   .sb-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
   .sb-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;}
-  .sb-title{font-size:17px;font-weight:800;}
+  .sb-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:22px;font-weight:400;}
   .sb-sub{font-size:11.5px;opacity:.85;}
   .sb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .sb-stat{background:rgba(255,255,255,.13);border-radius:12px;padding:10px 8px;text-align:center;}
@@ -271,6 +275,34 @@
 
   /* ───── MODO EMPLEADO / DUEÑO ───── */
   .oculto-val{letter-spacing:1px;}
+  /* ───── PANTALLA DE BIENVENIDA ───── */
+  .welcome-overlay{position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,var(--panel),var(--panel2));display:none;align-items:center;justify-content:center;padding:24px;}
+  .welcome-overlay.show{display:flex;}
+  .welcome-card{width:100%;max-width:380px;background:var(--fondo);border-radius:20px;padding:32px 28px;text-align:center;}
+  .welcome-card img{width:52px;height:52px;object-fit:contain;margin:0 auto 14px;display:block;}
+  .welcome-logo{font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);}
+  .welcome-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:28px;margin-top:4px;color:var(--tinta);}
+  .welcome-sub{font-size:13px;color:var(--gris);margin-top:6px;margin-bottom:20px;}
+  .welcome-input{width:100%;background:var(--blanco);border:1.5px solid var(--borde);border-radius:10px;padding:12px 14px;font-size:15px;text-align:center;margin-bottom:12px;font-family:inherit;}
+  .welcome-input:focus{outline:none;border-color:var(--marca);}
+  .welcome-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;}
+  .welcome-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--marca-suave);color:var(--marca);cursor:pointer;}
+  .welcome-btn{width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:700;border:none;cursor:pointer;background:var(--marca);color:white;}
+
+  /* ───── MODAL CIERRE DEL DÍA ───── */
+  .cierre-overlay{position:fixed;inset:0;z-index:190;background:rgba(15,20,15,.55);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+  .cierre-overlay.show{display:flex;}
+  .cierre-card{width:100%;max-width:480px;background:var(--blanco);border-radius:16px;padding:26px;}
+  .cierre-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .cierre-logo{font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris);}
+  .cierre-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:22px;color:var(--tinta);}
+  .cierre-sub{font-size:12px;color:var(--gris);margin-top:2px;}
+  .cierre-close{color:var(--gris);font-size:18px;cursor:pointer;background:none;border:none;}
+  .cierre-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+  .cierre-stat{border-radius:12px;padding:12px 8px;text-align:center;}
+  .cierre-stat .v{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;}
+  .cierre-stat .l{font-size:9.5px;color:var(--gris);text-transform:uppercase;margin-top:2px;}
+
   .eventos-proximos-card{background:linear-gradient(135deg,var(--eventos),var(--eventos-deep));border-radius:16px;padding:16px;margin-bottom:16px;color:white;}
   .eventos-proximos-card h3{font-size:13.5px;font-weight:700;margin-bottom:10px;color:white;}
   .ep-row{background:rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
@@ -283,11 +315,48 @@
 </head>
 <body>
 
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-card">
+    <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAEvklEQVR42u3cwU0kSxBFURKVBfjvFKZgQbBCKhArOhq9yDxnNav+dFb9mw9pNOvj/e0FYIJXRwAIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWgGABggUgWACCBQgWgGABCBYgWACCBSBYgGABCBaAYAGCBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWMBUlyPgpm5/Xn4WBIv0UCX/fMLlV0IOD1UFRqz+8PNiYWFRWVxYWOQtqpSw1RO/DxYWFpXFhYVFRqzKz4pgAQgWP3T8mvQfy6VCviuCBSBY7LGyrCsECxAsrCzrCsECECxSV5Z1hWABgoWV1bmMrCsECxAsrKzOhWRdIViAYGFldS4l6wrBAgQLK6tzMVlXCBYgWFhZncvJukKwAMHCyupcWdYVggUIFlZW58qyrhAsQLCwsjpXlnWFYAGCBZ0ry7pCsADBgrRlY10hWIBgYWVZVwgWgGCRunSsKwQLECysLOsKwQIQLFKXj3WFYAGChZVlXSFYAIJF6hKyrhAsQLBghX4WggUgWACCBQgWfKnQz0KwAAQL68rKQrAAwYIa+tkIFoBgcd66srIQLECwsK6sLAQLQLCYtnisLAQLECysKysLwQIQLKYsHCsLwQIEC+vKykKwAASLKYvGykKwAMHCurKyECwAwWLKgrGyECxAsLCurCwECxAsrCs/M4IFIFicvFSsLMECECwsFN8BwQIEC+vKd0GwAASLkxeJlSVYAIKFJeK7IViAYGGB+I4IFoBgcfLysLIEC0CwsDh8ZwQLECwsDd8dwQIQLAvDGSBYAIKFZeEsECxAsLAonAmCBSBYloSzQbAABAsLwhkhWIBgYTk4KwQLQLAsBmeGYAEIFpaCsxMsAMHCQnCGCBYgWFgGzhLBAhAsiwBnKlgAgoUl4GwRLECwsACcMYIFIFhufpy1YAEIFm58Z45gAYKFm97ZI1gAguWGxzMQLADBcrPjWSBYgGDhRvdMECwAwXKT49kIFoBgucHxjATLEQCChZvbs0KwAMHCjY1nJlgAguWmxrMTLADBwg3tGSJYgGDhZsazFCwAwXIj45lu7XIEPGD5nxwLy02MZ4tgEbCuQLDcwGLnGQsWgGBZV3jWCBYgWLhxb1bIZ3jmggUgWNYVnj2CBQgWbtjf+Auj3gHB4kjih2C5WfEuCBaAYLlR8U4gWHRbQz4TwcJNindDsAAEyw2Kd0SwONMa+tkIFm5OvCuCBSBYbky8M4IFIFhuyihrk/8GggW47ATLCwd8czmCrX/Ncia5l1Z5ByysKevKiyquCBYcd/kJFtYVnqVgAVaWYFlXWFmCBVhZgmVdYWUhWGBlCZYXyQ2MZyxYgJUlWG5eECw3Hjz3cvLOCZZ1hWe+A/9ag5cP742FBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWIFiOABAsAMECBAtAsAAECxAsAMECECxAsAAEC0CwAMECECwAwQIEC0CwAAQLECwAwQIQLECwAAQLQLCAsT4BYsXDySxvrZ8AAAAASUVORK5CYII="/>
+    <div class="welcome-logo">Aldea del Valle</div>
+    <div class="welcome-title">Bienvenido</div>
+    <div class="welcome-sub">Decinos quién inicia sesión hoy</div>
+    <input type="text" id="welcome-input" class="welcome-input" placeholder="Tu nombre" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
+    <div class="welcome-chips" id="welcome-chips"></div>
+    <button class="welcome-btn" onclick="confirmarIngreso()">Ingresar al sistema</button>
+  </div>
+</div>
+
+<div class="cierre-overlay" id="cierre-overlay">
+  <div class="cierre-card">
+    <div class="cierre-top">
+      <div>
+        <div class="cierre-logo">Aldea del Valle</div>
+        <div class="cierre-title">Cierre del turno</div>
+        <div class="cierre-sub" id="cierre-modal-sub"></div>
+      </div>
+      <button class="cierre-close" onclick="cerrarModalCierre()">✕</button>
+    </div>
+    <div class="cierre-stats">
+      <div class="cierre-stat" style="background:var(--marca-suave);"><div class="v" style="color:var(--marca);" id="cierre-modal-ingreso">$0</div><div class="l">Ingresos</div></div>
+      <div class="cierre-stat" style="background:var(--gastos-suave);"><div class="v" style="color:var(--gastos);" id="cierre-modal-gasto">$0</div><div class="l">Gastos</div></div>
+      <div class="cierre-stat" style="background:var(--gris-claro);"><div class="v" id="cierre-modal-neto">$0</div><div class="l">Neto</div></div>
+    </div>
+    <div class="row2">
+      <button class="btn btn-ghost" onclick="cerrarModalCierre()">Cancelar</button>
+      <button class="btn" style="background:var(--marca);color:white;" onclick="confirmarCierreModal()">🖨️ Confirmar e imprimir</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="head-row">
     <div class="brand">
-      <div class="logo">Aldea del Valle</div>
-      <h1>Centro de Gestión</h1>
+      <img class="logo-img" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAEvklEQVR42u3cwU0kSxBFURKVBfjvFKZgQbBCKhArOhq9yDxnNav+dFb9mw9pNOvj/e0FYIJXRwAIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWgGABggUgWACCBQgWgGABCBYgWACCBSBYgGABCBaAYAGCBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWMBUlyPgpm5/Xn4WBIv0UCX/fMLlV0IOD1UFRqz+8PNiYWFRWVxYWOQtqpSw1RO/DxYWFpXFhYVFRqzKz4pgAQgWP3T8mvQfy6VCviuCBSBY7LGyrCsECxAsrCzrCsECECxSV5Z1hWABgoWV1bmMrCsECxAsrKzOhWRdIViAYGFldS4l6wrBAgQLK6tzMVlXCBYgWFhZncvJukKwAMHCyupcWdYVggUIFlZW58qyrhAsQLCwsjpXlnWFYAGCBZ0ry7pCsADBgrRlY10hWIBgYWVZVwgWgGCRunSsKwQLECysLOsKwQIQLFKXj3WFYAGChZVlXSFYAIJF6hKyrhAsQLBghX4WggUgWACCBQgWfKnQz0KwAAQL68rKQrAAwYIa+tkIFoBgcd66srIQLECwsK6sLAQLQLCYtnisLAQLECysKysLwQIQLKYsHCsLwQIEC+vKykKwAASLKYvGykKwAMHCurKyECwAwWLKgrGyECxAsLCurCwECxAsrCs/M4IFIFicvFSsLMECECwsFN8BwQIEC+vKd0GwAASLkxeJlSVYAIKFJeK7IViAYGGB+I4IFoBgcfLysLIEC0CwsDh8ZwQLECwsDd8dwQIQLAvDGSBYAIKFZeEsECxAsLAonAmCBSBYloSzQbAABAsLwhkhWIBgYTk4KwQLQLAsBmeGYAEIFpaCsxMsAMHCQnCGCBYgWFgGzhLBAhAsiwBnKlgAgoUl4GwRLECwsACcMYIFIFhufpy1YAEIFm58Z45gAYKFm97ZI1gAguWGxzMQLADBcrPjWSBYgGDhRvdMECwAwXKT49kIFoBgucHxjATLEQCChZvbs0KwAMHCjY1nJlgAguWmxrMTLADBwg3tGSJYgGDhZsazFCwAwXIj45lu7XIEPGD5nxwLy02MZ4tgEbCuQLDcwGLnGQsWgGBZV3jWCBYgWLhxb1bIZ3jmggUgWNYVnj2CBQgWbtjf+Auj3gHB4kjih2C5WfEuCBaAYLlR8U4gWHRbQz4TwcJNindDsAAEyw2Kd0SwONMa+tkIFm5OvCuCBSBYbky8M4IFIFhuyihrk/8GggW47ATLCwd8czmCrX/Ncia5l1Z5ByysKevKiyquCBYcd/kJFtYVnqVgAVaWYFlXWFmCBVhZgmVdYWUhWGBlCZYXyQ2MZyxYgJUlWG5eECw3Hjz3cvLOCZZ1hWe+A/9ag5cP742FBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWIFiOABAsAMECBAtAsAAECxAsAMECECxAsAAEC0CwAMECECwAwQIEC0CwAAQLECwAwQIQLECwAAQLQLCAsT4BYsXDySxvrZ8AAAAASUVORK5CYII="/>
+      <div>
+        <div class="logo">Aldea del Valle</div>
+        <h1>Centro de Gestión</h1>
+      </div>
     </div>
     <div class="head-meta">
       <div class="clock" id="reloj">--:--</div>
@@ -381,7 +450,7 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <button class="btn btn-eventos" style="width:auto;padding:10px 16px;" id="turno-btn-abrir" onclick="abrirTurno()">Abrir turno</button>
-          <button class="btn btn-gastos" style="width:auto;padding:10px 16px;display:none;" id="turno-btn-cerrar" onclick="cerrarTurno()">Cerrar e imprimir</button>
+          <button class="btn btn-gastos" style="width:auto;padding:10px 16px;display:none;" id="turno-btn-cerrar" onclick="abrirModalCierre()">Cerrar e imprimir</button>
         </div>
       </div>
       <div style="font-size:11px;color:var(--gris);margin-top:10px;">El cierre se calcula desde que se abre el turno hasta que se cierra, aunque pase la medianoche — no por fecha calendario.</div>
@@ -1663,18 +1732,69 @@ function actualizarTurnoUI(){
   }
 }
 
-function abrirTurno(){
-  const responsable = prompt('¿Quién ingresa? Escribí tu nombre para abrir el turno de caja:');
-  if(!responsable || !responsable.trim()) return;
-  turnoActual = { responsable: responsable.trim(), inicio: new Date().toISOString() };
+/* ───── Usuarios recientes (chips de la pantalla de bienvenida) ───── */
+function getUsuariosRecientes(){ return JSON.parse(localStorage.getItem('aldea_usuarios_recientes')||'[]'); }
+function agregarUsuarioReciente(nombre){
+  let lista = getUsuariosRecientes().filter(u=> u.toLowerCase()!==nombre.toLowerCase());
+  lista.unshift(nombre);
+  localStorage.setItem('aldea_usuarios_recientes', JSON.stringify(lista.slice(0,5)));
+}
+
+function mostrarBienvenida(){
+  const chips = document.getElementById('welcome-chips');
+  chips.innerHTML = getUsuariosRecientes().map(u=>`<div class="welcome-chip" onclick="document.getElementById('welcome-input').value='${u.replace(/'/g,"\\'")}';confirmarIngreso();">${u}</div>`).join('');
+  document.getElementById('welcome-input').value = '';
+  document.getElementById('welcome-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('welcome-input').focus(), 150);
+}
+function ocultarBienvenida(){ document.getElementById('welcome-overlay').classList.remove('show'); }
+function confirmarIngreso(){
+  const nombre = document.getElementById('welcome-input').value.trim();
+  if(!nombre){ alert('Escribí tu nombre para continuar.'); return; }
+  agregarUsuarioReciente(nombre);
+  abrirTurnoConNombre(nombre);
+  ocultarBienvenida();
+}
+
+function abrirTurnoConNombre(nombre){
+  turnoActual = { responsable: nombre.trim(), inicio: new Date().toISOString() };
   localStorage.setItem('aldea_turno_actual', JSON.stringify(turnoActual));
   actualizarTurnoUI();
   renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
 }
+function abrirTurno(){ mostrarBienvenida(); }
+
+/* ───── Cierre de turno — cálculo compartido entre el modal y el ticket impreso ───── */
+function calcularTotalesTurno(inicioISO, finISO){
+  const inicio = new Date(inicioISO), fin = new Date(finISO);
+  const enTurno = x => x.creado && new Date(x.creado) >= inicio && new Date(x.creado) <= fin;
+  const sumarTurno = lista => (lista||[]).filter(enTurno).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0});
+  const ev = sumarTurno(datos.eventos), ca = sumarTurno(datos.cancha), ct = sumarTurno(datos.cantina);
+  const ingresoEf = ev.ef+ca.ef+ct.ef, ingresoTr = ev.tr+ca.tr+ct.tr;
+  const ingresoTotal = ingresoEf+ingresoTr;
+  const gastosTurno = (datos.gastos||[]).filter(enTurno);
+  const gastoTotal = gastosTurno.reduce((a,g)=>a+(Number(g.monto)||0),0);
+  return { inicio, fin, ev, ca, ct, ingresoEf, ingresoTr, ingresoTotal, gastosTurno, gastoTotal, neto: ingresoTotal-gastoTotal };
+}
+
+function abrirModalCierre(){
+  if(!turnoActual) return;
+  const t = calcularTotalesTurno(turnoActual.inicio, new Date().toISOString());
+  document.getElementById('cierre-modal-sub').textContent = `${turnoActual.responsable} · desde las ${t.inicio.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('cierre-modal-ingreso').textContent = fmt(t.ingresoTotal);
+  document.getElementById('cierre-modal-gasto').textContent = fmt(t.gastoTotal);
+  document.getElementById('cierre-modal-neto').textContent = fmt(t.neto);
+  document.getElementById('cierre-overlay').classList.add('show');
+}
+function cerrarModalCierre(){ document.getElementById('cierre-overlay').classList.remove('show'); }
+
+async function confirmarCierreModal(){
+  cerrarModalCierre();
+  await cerrarTurno();
+}
 
 async function cerrarTurno(){
   if(!turnoActual) return;
-  if(!confirm(`¿Cerrar el turno de ${turnoActual.responsable} e imprimir el cierre de caja?`)) return;
   const fin = new Date().toISOString();
   imprimirCierreDeTurno(turnoActual.responsable, turnoActual.inicio, fin);
   const url = getUrl();
@@ -1688,18 +1808,9 @@ async function cerrarTurno(){
 }
 
 function imprimirCierreDeTurno(responsable, inicioISO, finISO){
-  const inicio = new Date(inicioISO), fin = new Date(finISO);
-  const enTurno = x => x.creado && new Date(x.creado) >= inicio && new Date(x.creado) <= fin;
-  const sumarTurno = lista => (lista||[]).filter(enTurno).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0});
-  const ev = sumarTurno(datos.eventos), ca = sumarTurno(datos.cancha), ct = sumarTurno(datos.cantina);
-  const ingresoEf = ev.ef+ca.ef+ct.ef, ingresoTr = ev.tr+ca.tr+ct.tr;
-  const ingresoTotal = ingresoEf+ingresoTr;
-
-  const gastosTurno = (datos.gastos||[]).filter(enTurno);
-  const gastoTotal = gastosTurno.reduce((a,g)=>a+(Number(g.monto)||0),0);
+  const t = calcularTotalesTurno(inicioISO, finISO);
+  const { inicio, fin, ev, ca, ct, ingresoEf, ingresoTr, ingresoTotal, gastosTurno, gastoTotal, neto } = t;
   const gastoLineas = gastosTurno.map(g=>`<div class="fila chico"><span class="izq">${g.concepto} (${g.area||'General'})</span><span class="der">${fmt(g.monto)}</span></div>`).join('') || '<div class="chico tc">Sin gastos registrados en el turno</div>';
-
-  const neto = ingresoTotal - gastoTotal;
   const ahora = new Date();
 
   abrirImpresion(`
@@ -1777,7 +1888,7 @@ function imprimirCierreDelDia(){
   renderGastos();
   actualizarTurnoUI();
   if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
-  if(!turnoActual){ setTimeout(abrirTurno, 400); }
+  if(!turnoActual){ setTimeout(mostrarBienvenida, 300); }
 })();
 </script>
 </body>
