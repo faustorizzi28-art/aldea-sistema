@@ -535,6 +535,13 @@
       <button class="btn btn-eventos" id="btn-import-eventos" onclick="importarEventosExcel()">Importar eventos del Excel</button>
       <div class="msg" id="import-msg"></div>
     </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Cargar pagos de alquiler</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Carga los 3 pagos de alquiler pendientes (Actividades deportivas $1.200.000, Escuela de fútbol $1.100.000, Lasallano $800.000 — por transferencia, con fecha de hoy) al sector Cancha, etiquetados como "Alquiler".</div>
+      <button class="btn btn-cancha" id="btn-import-alquileres" onclick="importarAlquileres()">Cargar pagos de alquiler</button>
+      <div class="msg" id="import-alquileres-msg"></div>
+    </div>
   </div>
 
 </div>
@@ -560,7 +567,7 @@ const SECTORES = {
     label:'Cancha', icon:'⚽', tipo:'cancha',
     nombreLbl:'Equipo / Persona', nombrePh:'ej: Los Pibes FC',
     horario:true,
-    extra: { id:'cancha_sel', label:'Cancha', opciones:['Fútbol 11','Media Cancha 11','Sintético 7'] },
+    extra: { id:'cancha_sel', label:'Cancha', opciones:['Fútbol 11','Media Cancha 11','Sintético 7','Alquiler'] },
     camposExtra: [],
   },
   cantina: {
@@ -582,6 +589,16 @@ const CANCHA_COLOR = {
    suman como efectivo/transferencia cobrados porque el Excel no especifica el
    medio de pago — el equipo debe confirmar el cobro real desde el sector Eventos. */
 const EVENTOS_IMPORT_EXCEL = [{"fecha":"2026-07-09","horario":"12 a 16hs","nombre":"Melina","extra":"15 años varon","contacto":"3516 75-2201","personas":"20","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"uso de canchas y asadores","creado":"2026-07-17T20:13:48.215166Z"},{"fecha":"2026-07-11","horario":"13 A 18HS","nombre":"Pia Gonzalez Firpo","extra":"cumple infantil","contacto":"3885 81-1022","personas":"60","montototal":280000,"sena":100000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"usa el salon, va una hora y media antes a decorar | Monto (texto original): $280.000 | Seña (texto original): seña $ 100.000","creado":"2026-07-17T20:13:48.215408Z"},{"fecha":"2026-07-16","horario":"","nombre":"Diego Flores","extra":"","contacto":"","personas":"","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"","creado":"2026-07-17T20:13:48.215470Z"},{"fecha":"2026-07-18","horario":"19 a 2am","nombre":"antonella","extra":"cumple 40","contacto":"351512357680","personas":"100","montototal":1000000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"VAJILLA, CUIDADOR DE AUTOS necesita chulengo/estufita $60,000 mas (COBRAR) VAN A IR EL DIA VIERNES A ARREGLAR LAS COSAS","creado":"2026-07-17T20:13:48.215512Z"},{"fecha":"2026-07-25","horario":"14:30 A 18:30","nombre":"Juli Bonino","extra":"cumple infantil","contacto":"3585 41-5199","personas":"80","montototal":300000,"sena":150000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"Monto (texto original): $ 300.000 | Seña (texto original): seña $150.000","creado":"2026-07-17T20:13:48.215558Z"},{"fecha":"2026-07-31","horario":"22:30 a 3am","nombre":"Valen konigheim","extra":"recibida","contacto":"3516 34-7657","personas":"70","montototal":385000,"sena":115000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"USA EL SALON CERRADO","creado":"2026-07-17T20:13:48.215600Z"},{"fecha":"2026-08-01","horario":"13 a 16hs","nombre":"Ana Paris","extra":"CUMPLE INFANTIL","contacto":"3516 98-5802","personas":"50","montototal":150000,"sena":50000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CANCHA DE FUTBOL | Monto (texto original): $150.000","creado":"2026-07-17T20:13:48.215890Z"},{"fecha":"2026-08-07","horario":"16:45 - 19:30","nombre":"LUCRECIA","extra":"CUMPLE INFANTIL","contacto":"3512415215","personas":"30","montototal":350000,"sena":150000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"CANCHA + 2 PROFES | Monto (texto original): $350.000 | Seña (texto original): $150.000","creado":"2026-07-17T20:13:48.215935Z"},{"fecha":"2026-08-15","horario":"21hs a 3am APROX","nombre":"Jorge","extra":"cumple 40","contacto":"","personas":"100","montototal":425000,"sena":300000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CANCHA DE FUTBOL NOCHE | Monto (texto original): $425.000 | Seña (texto original): $300.000","creado":"2026-07-17T20:13:48.216150Z"},{"fecha":"2026-08-15","horario":"16 a 18:30hs","nombre":"gabriela","extra":"Cumple infantil","contacto":"3516 45-0535","personas":"30 NIÑOS","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"CANCHA | Monto (texto original): $300.000 | Seña (texto original): $90.000","creado":"2026-07-17T20:13:48.216200Z"},{"fecha":"2026-08-16","horario":"MEDIODIA","nombre":"FRANCO PERALTA","extra":"CUMPLE DE 30","contacto":"","personas":"80 - 100 p","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"TODO EL PREDIO","creado":"2026-07-17T20:13:48.216265Z"},{"fecha":"2026-08-22","horario":"mediodia","nombre":"Cristian (fausto)","extra":"cumple infantil","contacto":"3516335339","personas":"50","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.216390Z"},{"fecha":"2026-09-06","horario":"13 a 17","nombre":"Valentina Carranza","extra":"cumple 40 años","contacto":"3512820592","personas":"40","montototal":280000,"sena":84000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Mili","obs":"RESERVA CON EL 30% DE 4O PERSONAS SI ESE DIA SON MAS SE ABONA LO EXTRA ESE DIA. | Monto (texto original): 7mil por persona/      40p: $280.000          50p: $300.000 | Seña (texto original): $84.000","creado":"2026-07-17T20:13:48.217334Z"},{"fecha":"2026-09-11","horario":"14 a 17","nombre":"Vero","extra":"Cumple infantil","contacto":"3513417872","personas":"60","montototal":350000,"sena":40000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"CERRO QUE LE HACIAN PIZZAS Y DEMAS CONSULTAR DE NUEVO SOBRE LA FECHA | Monto (texto original): $350.000 | Seña (texto original): $40.000","creado":"2026-07-17T20:13:48.217373Z"},{"fecha":"2026-09-25","horario":"20 a 3 am","nombre":"Martin Aguar","extra":"cumple 40 años","contacto":"3517313086","personas":"30","montototal":600000,"sena":200000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"Franco","obs":"parrillero y 2 barman(100.000) sal 500.000 | Monto (texto original): $ 600.000 | Seña (texto original): $ 200.000","creado":"2026-07-17T20:13:48.217415Z"},{"fecha":"2026-09-26","horario":"","nombre":"Claudio Nati","extra":"60 años","contacto":"","personas":"","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.217473Z"},{"fecha":"2026-09-05","horario":"","nombre":"Desi","extra":"","contacto":"","personas":"","montototal":300000,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"Monto (texto original): $300.000 | ⚠️ Fecha original ambigua en el Excel (\"05/0\"), verificar con el cliente","creado":"2026-07-17T20:13:48.217517Z"},{"fecha":"2026-10-10","horario":"12 a 17","nombre":"Daniela","extra":"Cumpleaños 1 año","contacto":"3515927923","personas":"40","montototal":300000,"sena":90000,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"Por 40 personas, en caso de que sean más se cobra $8.000 por persona )","creado":"2026-07-17T20:13:48.218047Z"},{"fecha":"2026-11-21","horario":"19:30 A 1AM","nombre":"DANIELA","extra":"CUMPLE DE 50","contacto":"3516 81-8387","personas":"120","montototal":0,"sena":0,"efectivo":0,"transferencia":0,"estado":"🟢 Confirmado","responsable":"","obs":"","creado":"2026-07-17T20:13:48.218643Z"}];
+/* Pagos de alquiler pendientes de cargar (predio/cancha para actividades deportivas).
+   Se guardan como registros de Cancha con extra:"Alquiler" para que sincronicen
+   con el mismo mecanismo ya probado — no hay una hoja de Sheets separada para
+   "Alquileres" todavía. */
+const ALQUILERES_IMPORT = [
+  { nombre:'Alquiler actividades deportivas', transferencia:1200000 },
+  { nombre:'Escuela de fútbol', transferencia:1100000 },
+  { nombre:'Lasallano', transferencia:800000 },
+];
+
 const ESTADOS = ['🔵 Reservado','🟢 Confirmado','✅ Cobrado','❌ Cancelado'];
 function estadoClase(e){
   if(!e) return 'reservado';
@@ -1111,6 +1128,42 @@ async function importarEventosExcel(){
   }
   localStorage.setItem('aldea_eventos_excel_importado','1');
   renderSector('eventos'); renderPanel();
+  msgEl.textContent = url ? `✅ Listo: ${ok} guardados en Sheets${fail?`, ${fail} con error`:''}.` : '✅ Cargados localmente (configurá Sheets en ⚙️ Config para sincronizar).';
+  msgEl.className = 'msg ok';
+  btn.disabled = false;
+}
+
+async function importarAlquileres(){
+  const msgEl = document.getElementById('import-alquileres-msg');
+  const btn = document.getElementById('btn-import-alquileres');
+  if(localStorage.getItem('aldea_alquileres_importado')==='1'){
+    if(!confirm('Ya cargaste estos pagos de alquiler antes. ¿Cargarlos de nuevo? (puede duplicar registros)')) return;
+  } else if(!confirm(`Se van a cargar ${ALQUILERES_IMPORT.length} pagos de alquiler al sector Cancha con fecha de hoy. ¿Continuar?`)){
+    return;
+  }
+  const url = getUrl();
+  btn.disabled = true;
+  let ok = 0, fail = 0;
+  for(let i=0;i<ALQUILERES_IMPORT.length;i++){
+    const base = ALQUILERES_IMPORT[i];
+    const registro = {
+      fecha: hoyISO(), horario:'', nombre: base.nombre, extra:'Alquiler',
+      efectivo: 0, transferencia: base.transferencia,
+      estado:'✅ Cobrado', responsable:'', obs:'Alquiler de predio/cancha para actividades deportivas',
+      creado: new Date().toISOString()
+    };
+    msgEl.textContent = `⏳ Cargando ${i+1}/${ALQUILERES_IMPORT.length}…`; msgEl.className='msg';
+    datos.cancha.push(registro);
+    if(url){
+      try{
+        const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'cancha', ...registro }) });
+        const j = await r.json();
+        if(j.ok) ok++; else fail++;
+      }catch(e){ fail++; }
+    }
+  }
+  localStorage.setItem('aldea_alquileres_importado','1');
+  renderSector('cancha'); renderPanel();
   msgEl.textContent = url ? `✅ Listo: ${ok} guardados en Sheets${fail?`, ${fail} con error`:''}.` : '✅ Cargados localmente (configurá Sheets en ⚙️ Config para sincronizar).';
   msgEl.className = 'msg ok';
   btn.disabled = false;
