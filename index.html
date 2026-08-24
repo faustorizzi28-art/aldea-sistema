@@ -203,13 +203,16 @@
   .tf-table{width:100%;border-collapse:collapse;min-width:480px;}
   .tf-table th{background:var(--gris-claro);font-size:10.5px;font-weight:700;color:var(--gris);text-align:center;padding:8px 4px;text-transform:uppercase;}
   .tf-table th.hcol{text-align:left;padding-left:10px;min-width:54px;}
-  .tf-table td{border-top:1px solid var(--gris-claro);padding:4px;vertical-align:top;min-width:88px;}
+  .tf-table td{border-top:1px solid var(--gris-claro);padding:4px;vertical-align:top;min-width:92px;}
   .tf-hora{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--gris);padding-left:6px;white-space:nowrap;}
-  .tf-cell{border-radius:9px;padding:7px 8px;min-height:50px;cursor:pointer;}
-  .tf-cell.libre{display:flex;align-items:center;justify-content:center;color:var(--borde);font-size:16px;}
+  .tf-cell-stack{display:flex;flex-direction:column;gap:3px;min-height:50px;}
+  .tf-cell{border-radius:9px;padding:6px 8px;cursor:pointer;}
+  .tf-cell.libre{display:flex;align-items:center;justify-content:center;color:var(--borde);font-size:16px;min-height:50px;}
   .tf-cell.ocupado{background:var(--cancha-suave);}
   .tf-cell .tfn{font-size:11px;font-weight:700;color:var(--cancha-deep);line-height:1.25;}
   .tf-cell .tfm{font-size:9.5px;font-family:'DM Mono',monospace;color:var(--gris);margin-top:2px;}
+  .tf-cell-add{display:flex;align-items:center;justify-content:center;color:var(--borde);font-size:13px;border-radius:9px;padding:3px;cursor:pointer;border:1.5px dashed var(--borde);}
+  .tf-cell-add:hover{color:var(--cancha);border-color:var(--cancha);}
 
   /* ───── COMANDA (mesas + productos + ticket) ───── */
   .mesas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -1178,7 +1181,11 @@ let turnosFijos = JSON.parse(localStorage.getItem('aldea_turnosfijos')||'[]');
 let tfEditando = null; // {diaIdx, hora}
 let semanaOffset = 0;
 
-function tfBuscar(diaIdx, hora){ return turnosFijos.find(t=>t.diaIdx===diaIdx && t.hora===hora); }
+function tfBuscar(diaIdx, hora, cancha){
+  if(cancha!==undefined) return turnosFijos.find(t=>t.diaIdx===diaIdx && t.hora===hora && t.cancha===cancha);
+  return turnosFijos.find(t=>t.diaIdx===diaIdx && t.hora===hora);
+}
+function tfBuscarTodos(diaIdx, hora){ return turnosFijos.filter(t=>t.diaIdx===diaIdx && t.hora===hora); }
 
 function inicioSemana(offset){
   const d = new Date();
@@ -1201,9 +1208,13 @@ function horarioCubreHora(horarioStr, horaHH){
   let h = toH(horaHH);
   return h>=ini && h<fin;
 }
-function reservaEnCelda(offset, diaIdx, hora){
+function reservasEnCelda(offset, diaIdx, hora){
   const fecha = fechaISODia(offset, diaIdx);
-  return (datos.cancha||[]).find(r=> r.fecha===fecha && !(r.estado||'').includes('Cancelado') && horarioCubreHora(r.horario, hora));
+  const out = [];
+  (datos.cancha||[]).forEach((r,idx)=>{
+    if(r.fecha===fecha && !(r.estado||'').includes('Cancelado') && horarioCubreHora(r.horario, hora)) out.push({r, idx});
+  });
+  return out;
 }
 
 function renderTurnosFijos(){
@@ -1215,23 +1226,28 @@ function renderTurnosFijos(){
 
   let filas = TF_HORAS.map(hora=>{
     let celdas = TF_DIAS.map((dia,diaIdx)=>{
-      const reserva = reservaEnCelda(semanaOffset, diaIdx, hora);
-      const fijo = tfBuscar(diaIdx,hora);
-      const cancha = reserva ? reserva.extra : (fijo ? fijo.cancha : null);
-      const col = CANCHA_COLOR[cancha];
-      const estilo = col ? `style="background:${col.suave};"` : '';
-      const estiloNombre = col ? `style="color:${col.fuerte};"` : '';
-      if(reserva){
-        return `<td><div class="tf-cell ocupado" ${estilo} onclick="abrirCeldaReserva('${reserva.fecha}','${hora}')">
-          <div class="tfn" ${estiloNombre}>📅 ${reserva.nombre}</div><div class="tfm">${reserva.extra||''}</div>
-        </div></td>`;
+      const reservas = reservasEnCelda(semanaOffset, diaIdx, hora);
+      const fijos = tfBuscarTodos(diaIdx, hora);
+      if(reservas.length===0 && fijos.length===0){
+        return `<td><div class="tf-cell libre" onclick="elegirTipoCelda(${diaIdx},'${hora}')">+</div></td>`;
       }
-      if(fijo){
-        return `<td><div class="tf-cell ocupado" ${estilo} onclick="abrirFormTF(${diaIdx},'${hora}')">
+      const chipsReservas = reservas.map(({r,idx})=>{
+        const col = CANCHA_COLOR[r.extra];
+        const estilo = col ? `style="background:${col.suave};"` : '';
+        const estiloNombre = col ? `style="color:${col.fuerte};"` : '';
+        return `<div class="tf-cell ocupado" ${estilo} onclick="abrirCeldaReserva(${idx})">
+          <div class="tfn" ${estiloNombre}>📅 ${r.nombre}</div><div class="tfm">${r.extra||''}</div>
+        </div>`;
+      }).join('');
+      const chipsFijos = fijos.map(fijo=>{
+        const col = CANCHA_COLOR[fijo.cancha];
+        const estilo = col ? `style="background:${col.suave};"` : '';
+        const estiloNombre = col ? `style="color:${col.fuerte};"` : '';
+        return `<div class="tf-cell ocupado" ${estilo} onclick="editarTF(${diaIdx},'${hora}','${(fijo.cancha||'').replace(/'/g,"\\'")}')">
           <div class="tfn" ${estiloNombre}>🔁 ${fijo.nombre}</div><div class="tfm">${fijo.cancha||''}</div>
-        </div></td>`;
-      }
-      return `<td><div class="tf-cell libre" onclick="elegirTipoCelda(${diaIdx},'${hora}')">+</div></td>`;
+        </div>`;
+      }).join('');
+      return `<td><div class="tf-cell-stack">${chipsReservas}${chipsFijos}<div class="tf-cell-add" onclick="elegirTipoCelda(${diaIdx},'${hora}')">+ agregar</div></div></td>`;
     }).join('');
     return `<tr><td class="tf-hora">${hora}</td>${celdas}</tr>`;
   }).join('');
@@ -1294,10 +1310,9 @@ function abrirReservaPuntual(diaIdx, hora){
   document.getElementById('form-cancha').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-function abrirCeldaReserva(fecha, hora){
-  const idx = (datos.cancha||[]).findIndex(r=> r.fecha===fecha && horarioCubreHora(r.horario, hora));
-  if(idx===-1) return;
+function abrirCeldaReserva(idx){
   const r = datos.cancha[idx];
+  if(!r) return;
   if(confirm(`${r.nombre} — ${r.extra||''} — ${r.horario||''}\n${r.obs||''}\n\n¿Quitar esta reserva de la vista local? (el historial en Sheets no se borra)`)){
     datos.cancha.splice(idx,1);
     renderSector('cancha'); renderPanel(); renderTurnosFijos();
@@ -1305,17 +1320,34 @@ function abrirCeldaReserva(fecha, hora){
 }
 
 function abrirFormTF(diaIdx, hora){
-  tfEditando = {diaIdx, hora};
-  const t = tfBuscar(diaIdx, hora);
-  document.getElementById('tf-form-titulo').textContent = t ? 'Editar turno fijo' : 'Nuevo turno fijo';
+  const yaOcupadas = tfBuscarTodos(diaIdx, hora).map(t=>t.cancha);
+  const canchaDefault = SECTORES.cancha.extra.opciones.find(o=>!yaOcupadas.includes(o)) || SECTORES.cancha.extra.opciones[0];
+  tfEditando = {diaIdx, hora, cancha:null};
+  document.getElementById('tf-form-titulo').textContent = 'Nuevo turno fijo';
   document.getElementById('tf-dia').value = diaIdx;
   document.getElementById('tf-hora').value = hora;
-  document.getElementById('tf-nombre').value = t?.nombre || '';
-  document.getElementById('tf-tel').value = t?.tel || '';
-  document.getElementById('tf-cancha').value = t?.cancha || SECTORES.cancha.extra.opciones[0];
-  document.getElementById('tf-monto').value = t?.monto || '';
-  document.getElementById('tf-obs').value = t?.obs || '';
-  document.getElementById('tf-del-btn').style.display = t ? 'block' : 'none';
+  document.getElementById('tf-nombre').value = '';
+  document.getElementById('tf-tel').value = '';
+  document.getElementById('tf-cancha').value = canchaDefault;
+  document.getElementById('tf-monto').value = '';
+  document.getElementById('tf-obs').value = '';
+  document.getElementById('tf-del-btn').style.display = 'none';
+  document.getElementById('tf-form-card').style.display = 'block';
+  document.getElementById('tf-form-card').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function editarTF(diaIdx, hora, cancha){
+  const t = tfBuscar(diaIdx, hora, cancha);
+  if(!t) return;
+  tfEditando = {diaIdx, hora, cancha};
+  document.getElementById('tf-form-titulo').textContent = 'Editar turno fijo';
+  document.getElementById('tf-dia').value = diaIdx;
+  document.getElementById('tf-hora').value = hora;
+  document.getElementById('tf-nombre').value = t.nombre || '';
+  document.getElementById('tf-tel').value = t.tel || '';
+  document.getElementById('tf-cancha').value = t.cancha || SECTORES.cancha.extra.opciones[0];
+  document.getElementById('tf-monto').value = t.monto || '';
+  document.getElementById('tf-obs').value = t.obs || '';
+  document.getElementById('tf-del-btn').style.display = 'block';
   document.getElementById('tf-form-card').style.display = 'block';
   document.getElementById('tf-form-card').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -1325,16 +1357,22 @@ async function guardarTF(){
   const diaIdx = parseInt(document.getElementById('tf-dia').value);
   const hora = document.getElementById('tf-hora').value;
   const nombre = document.getElementById('tf-nombre').value.trim();
+  const cancha = document.getElementById('tf-cancha').value;
   if(!nombre){ alert('Escribí el nombre del equipo.'); return; }
-  const existente = tfBuscar(diaIdx,hora);
-  if(existente && (!tfEditando || tfEditando.diaIdx!==diaIdx || tfEditando.hora!==hora)){
-    if(!confirm(`${TF_DIAS[diaIdx]} ${hora} ya tiene a "${existente.nombre}". ¿Reemplazar?`)) return;
+  const esNuevaCanchaOTramo = !tfEditando || tfEditando.cancha!==cancha || tfEditando.diaIdx!==diaIdx || tfEditando.hora!==hora;
+  const existente = tfBuscar(diaIdx,hora,cancha);
+  if(existente && esNuevaCanchaOTramo){
+    if(!confirm(`${TF_DIAS[diaIdx]} ${hora} — ${cancha} ya tiene a "${existente.nombre}". ¿Reemplazar?`)) return;
   }
-  turnosFijos = turnosFijos.filter(t=> !(t.diaIdx===diaIdx && t.hora===hora));
+  // saca el registro original que se está editando (si cambió de cancha/horario) y el que se reemplaza
+  if(tfEditando && tfEditando.cancha!==null){
+    turnosFijos = turnosFijos.filter(t=> !(t.diaIdx===tfEditando.diaIdx && t.hora===tfEditando.hora && t.cancha===tfEditando.cancha));
+  }
+  turnosFijos = turnosFijos.filter(t=> !(t.diaIdx===diaIdx && t.hora===hora && t.cancha===cancha));
   const turno = {
     diaIdx, hora, nombre,
     tel: document.getElementById('tf-tel').value.trim(),
-    cancha: document.getElementById('tf-cancha').value,
+    cancha,
     monto: parseFloat(document.getElementById('tf-monto').value)||0,
     obs: document.getElementById('tf-obs').value.trim(),
   };
@@ -1347,9 +1385,9 @@ async function guardarTF(){
 }
 
 function eliminarTF(){
-  if(!tfEditando) return;
+  if(!tfEditando || tfEditando.cancha===null) return;
   if(!confirm('¿Eliminar este turno fijo?')) return;
-  turnosFijos = turnosFijos.filter(t=> !(t.diaIdx===tfEditando.diaIdx && t.hora===tfEditando.hora));
+  turnosFijos = turnosFijos.filter(t=> !(t.diaIdx===tfEditando.diaIdx && t.hora===tfEditando.hora && t.cancha===tfEditando.cancha));
   localStorage.setItem('aldea_turnosfijos', JSON.stringify(turnosFijos));
   cerrarFormTF(); renderTurnosFijos();
 }
