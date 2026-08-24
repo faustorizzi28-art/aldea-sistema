@@ -214,6 +214,18 @@
   .tf-cell-add{display:flex;align-items:center;justify-content:center;color:var(--borde);font-size:13px;border-radius:9px;padding:3px;cursor:pointer;border:1.5px dashed var(--borde);}
   .tf-cell-add:hover{color:var(--cancha);border-color:var(--cancha);}
 
+  /* ───── CALENDARIO (vista de mes) ───── */
+  .cal-wrap{overflow-x:auto;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;min-width:620px;}
+  .cal-dow{font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;text-align:center;padding:4px 0;}
+  .cal-day{background:var(--blanco);border:1px solid var(--borde);border-radius:10px;padding:4px;min-height:82px;display:flex;flex-direction:column;gap:2px;}
+  .cal-day.fuera{opacity:.4;}
+  .cal-day.hoy{border-color:var(--marca);border-width:2px;}
+  .cal-daynum{font-size:11px;font-weight:700;color:var(--tinta);padding:1px 2px 2px;}
+  .cal-chip{border-radius:6px;padding:2px 5px;font-size:9.5px;font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-add{font-size:12px;color:var(--borde);text-align:center;cursor:pointer;border-radius:6px;padding:1px;margin-top:auto;}
+  .cal-add:hover{color:var(--marca);}
+
   /* ───── COMANDA (mesas + productos + ticket) ───── */
   .mesas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .mesa-card{background:var(--blanco);border:2px solid var(--borde);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;}
@@ -384,6 +396,7 @@
   </div>
   <div class="nav" id="nav">
     <div class="nav-btn active c-panel" data-v="panel"><span>🏠</span>Panel</div>
+    <div class="nav-btn c-panel" data-v="calendario"><span>📅</span>Calendario</div>
     <div class="nav-btn c-eventos" data-v="eventos"><span>🎉</span>Eventos</div>
     <div class="nav-btn c-cancha" data-v="cancha"><span>⚽</span>Cancha</div>
     <div class="nav-btn c-cantina" data-v="cantina"><span>🍔</span>Cantina</div>
@@ -468,6 +481,18 @@
     </div>
 
     <button class="btn btn-ghost" id="btn-cierre-historico" style="background:var(--tinta);color:white;display:none;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre por fecha (histórico)</button>
+  </div>
+
+  <div class="vista" id="v-calendario">
+    <div class="panel-section" style="padding:12px;">
+      <div class="semana-nav">
+        <button onclick="cambiarMes(-1)">←</button>
+        <div class="stitulo" id="calendario-titulo">Mes</div>
+        <button onclick="cambiarMes(1)">→</button>
+      </div>
+      <div class="cancha-legend" id="calendario-legend"></div>
+      <div class="cal-wrap"><div class="cal-grid" id="calendario-grid"></div></div>
+    </div>
   </div>
 
   <!-- ════════ SECTORES (eventos / cancha / cantina) ════════ -->
@@ -573,12 +598,14 @@ const SECTORES = {
     label:'Eventos', icon:'🎉', tipo:'eventos',
     nombreLbl:'Cliente / Evento', nombrePh:'ej: Cumple de Mateo',
     horario:true,
-    extra: { id:'tipoevento', label:'Motivo', opciones:['Cumpleaños','Cumple infantil','Fiesta de 15','Egreso/Recibida','Evento empresa','Casamiento','Aniversario','Otro'] },
+    extra: { id:'tipoevento', label:'Tipo de evento', opciones:['Cumpleaños infantil','Evento adultos','15 años / Casamiento','Asado de cancha','Otro'] },
     camposExtra: [
       { id:'contacto', label:'Contacto', ph:'ej: 351 123 4567', tipo:'text' },
       { id:'personas', label:'Cant. de personas', ph:'ej: 60', tipo:'text' },
       { id:'montototal', label:'Monto total acordado', ph:'0', tipo:'money' },
       { id:'sena', label:'Seña', ph:'0', tipo:'money' },
+      { id:'extras', label:'Extras acordados', ph:'ej: 2 profes de animación, +1hr', tipo:'text' },
+      { id:'pileta', label:'🏊 Incluye pileta', tipo:'checkbox' },
     ],
   },
   cancha: {
@@ -600,6 +627,29 @@ const CANCHA_COLOR = {
   'Fútbol 11': { fuerte:'#0E8F5C', suave:'#E6F7EE' },
   'Media Cancha 11': { fuerte:'#1A5F9E', suave:'#DBEAFE' },
   'Sintético 7': { fuerte:'#7C3AED', suave:'#F2EBFD' },
+};
+
+/* Paquetes y precios reales (agosto–octubre 2026, según lista de precios del predio). */
+const PAQUETES_EVENTO = {
+  'Cumpleaños infantil': [
+    { label:'Opción 1 — Cancha + asador', precio:380000, incluye:'25 niños + 6 gaseosas + encargado + 2,5hs de evento. Limpieza luego del evento.' },
+    { label:'Opción 2 — Espacio semi cubierto + cancha y asador', precio:430000, incluye:'25 niños + 6 gaseosas + encargado + 2,5hs de evento. Limpieza luego del evento.' },
+    { label:'Opción 3 — Salón techado + canchas', precio:450000, incluye:'25 niños + 6 gaseosas + encargado + 2,5hs de evento. Limpieza luego del evento.' },
+    { label:'Opción 4 — Semi cubierto y patio de piedras', precio:450000, incluye:'25 niños + 6 gaseosas + encargado + 2,5hs de evento. Hora extra: $45.000.' },
+    { label:'Opción 5 — Espacio completo (uso exclusivo)', precio:530000, incluye:'2,5hs de evento exclusivo. Hora extra: $45.000.' },
+  ],
+  'Evento adultos': [
+    { label:'Opción 1 — Patio de piedras y espacio semi cubierto', precio:470000, incluye:'3hs de evento, 20 a 45 personas, encargado + limpieza + consumo en cantina.' },
+    { label:'Opción 2 — Patio de piedras, asadores y canchas', precio:490000, incluye:'3hs de evento, 20 a 45 personas, encargado + limpieza + consumo en cantina. Hora extra: $45.000.' },
+    { label:'Opción 3 — Salón con espacio semi cubierto', precio:470000, incluye:'3hs de evento, 20 a 45 personas. Valor extra por persona: $9.000.' },
+    { label:'Opción 4 — Espacio completo, uso exclusivo', precio:630000, incluye:'3hs de evento, uso exclusivo del predio.' },
+    { label:'Especial — Evento de menos de 20 personas', precio:350000, incluye:'Consultar detalles si son menos de 20 personas.' },
+  ],
+  '15 años / Casamiento': [
+    { label:'Uso completo y exclusivo — 50 a 65 personas', precio:980000, incluye:'4/5hs de evento, limpieza al momento, vajilla (170 vasos), encargado, consumo de bebidas en cantina.' },
+    { label:'Uso completo y exclusivo — 70 personas', precio:1120000, incluye:'4/5hs de evento, limpieza al momento, vajilla (170 vasos), encargado, consumo de bebidas en cantina.' },
+    { label:'Uso completo y exclusivo — 100 personas', precio:1400000, incluye:'4/5hs de evento, limpieza al momento, vajilla (170 vasos), encargado, consumo de bebidas en cantina.' },
+  ],
 };
 
 /* Eventos confirmados cargados desde EVENTOS_CONFIRMADOS.xlsx (Julio–Noviembre 2026).
@@ -705,6 +755,7 @@ function irA(v){
   if(v==='gastos') renderGastos();
   if(v==='panel') renderPanel();
   if(v==='precios') renderPrecios();
+  if(v==='calendario') renderCalendario();
   window.scrollTo(0,0);
 }
 
@@ -728,9 +779,17 @@ function montarSector(key){
         ${s.horario ? `<div class="field"><label>Horario</label><input type="text" id="${key}-horario" placeholder="ej: 18:00-20:00"/></div>` : `<div class="field"><label>Turno</label><input type="text" id="${key}-horario" placeholder="ej: Tarde"/></div>`}
       </div>
       <div class="field"><label>${s.nombreLbl}</label><input type="text" id="${key}-nombre" placeholder="${s.nombrePh}"/></div>
-      ${s.extra ? `<div class="field"><label>${s.extra.label}</label><select id="${key}-extra">${s.extra.opciones.map(o=>`<option>${o}</option>`).join('')}</select></div>` : ''}
+      ${s.extra ? `<div class="field"><label>${s.extra.label}</label><select id="${key}-extra" ${key==='eventos'?'onchange="actualizarPaquetesEvento()"':''}>${s.extra.opciones.map(o=>`<option>${o}</option>`).join('')}</select></div>` : ''}
+      ${key==='eventos' ? `
+      <div class="field" id="eventos-paquete-field" style="display:none;">
+        <label>Paquete / espacio</label>
+        <select id="eventos-paquete" onchange="elegirPaqueteEvento()"></select>
+        <div style="font-size:11px;color:var(--gris);margin-top:5px;" id="eventos-paquete-info"></div>
+      </div>` : ''}
       ${(s.camposExtra||[]).map(c=> c.tipo==='money'
         ? `<div class="field"><label>${c.label}</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-${c.id}" placeholder="${c.ph}"/></div></div>`
+        : c.tipo==='checkbox'
+        ? `<div class="field"><label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="${key}-${c.id}" style="width:16px;height:16px;"/> ${c.label}</label></div>`
         : `<div class="field"><label>${c.label}</label><input type="text" id="${key}-${c.id}" placeholder="${c.ph}"/></div>`
       ).join('')}
       ${key==='eventos' ? `<div style="font-size:11px;color:var(--gris);margin:-4px 0 13px;">"Monto total" y "Seña" son datos del acuerdo. Abajo cargá el pago que estás registrando ahora (la seña, un pago parcial, o el saldo final).</div>` : ''}
@@ -767,7 +826,8 @@ function montarSector(key){
 Object.keys(SECTORES).forEach(montarSector);
 
 function toggleForm(key){
-  document.getElementById('form-'+key).classList.toggle('open');
+  const abierto = document.getElementById('form-'+key).classList.toggle('open');
+  if(key==='eventos' && abierto) actualizarPaquetesEvento();
 }
 function selMetodo(key, el){
   metodoSel[key] = el.dataset.m;
@@ -810,8 +870,15 @@ async function guardarRegistro(key){
   };
   (s.camposExtra||[]).forEach(c=>{
     const el = document.getElementById(key+'-'+c.id);
-    registro[c.id] = c.tipo==='money' ? (parseFloat(el.value)||0) : el.value.trim();
+    registro[c.id] = c.tipo==='money' ? (parseFloat(el.value)||0) : c.tipo==='checkbox' ? (el.checked?'Sí':'No') : el.value.trim();
   });
+  if(key==='eventos'){
+    const pf = document.getElementById('eventos-paquete-field');
+    if(pf && pf.style.display!=='none'){
+      const sel = document.getElementById('eventos-paquete');
+      if(sel.value) registro.paquete = sel.value;
+    }
+  }
 
   msgEl.textContent='⏳ Guardando…'; msgEl.className='msg';
   datos[key].push(registro);
@@ -840,9 +907,37 @@ function obsConExtras(s, registro){
   const extras = (s.camposExtra||[]).map(c=>{
     const v = registro[c.id];
     if(!v) return '';
+    if(c.tipo==='checkbox') return v==='Sí' ? c.label : '';
     return `${c.label}: ${c.tipo==='money' ? fmt(v) : v}`;
-  }).filter(Boolean).join(' | ');
-  return extras ? (registro.obs ? registro.obs+' | '+extras : extras) : (registro.obs||'');
+  }).filter(Boolean);
+  if(registro.paquete) extras.unshift(`Paquete: ${registro.paquete}`);
+  const extrasStr = extras.join(' | ');
+  return extrasStr ? (registro.obs ? registro.obs+' | '+extrasStr : extrasStr) : (registro.obs||'');
+}
+
+/* ───── Paquetes de Eventos (dependen del "Tipo de evento" elegido) ───── */
+function actualizarPaquetesEvento(){
+  const tipo = document.getElementById('eventos-extra').value;
+  const campo = document.getElementById('eventos-paquete-field');
+  const sel = document.getElementById('eventos-paquete');
+  const opciones = PAQUETES_EVENTO[tipo];
+  if(!opciones){
+    campo.style.display = 'none';
+    sel.innerHTML = '';
+    document.getElementById('eventos-paquete-info').textContent = '';
+    return;
+  }
+  campo.style.display = 'block';
+  sel.innerHTML = `<option value="">— Elegí un paquete —</option>` + opciones.map(o=>`<option value="${o.label.replace(/"/g,'&quot;')}">${o.label} — ${fmt(o.precio)}</option>`).join('');
+  document.getElementById('eventos-paquete-info').textContent = '';
+}
+function elegirPaqueteEvento(){
+  const tipo = document.getElementById('eventos-extra').value;
+  const sel = document.getElementById('eventos-paquete');
+  const opciones = PAQUETES_EVENTO[tipo] || [];
+  const elegido = opciones.find(o=>o.label===sel.value);
+  document.getElementById('eventos-paquete-info').textContent = elegido ? 'Incluye: '+elegido.incluye : '';
+  if(elegido) document.getElementById('eventos-montototal').value = elegido.precio;
 }
 
 const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1342,6 +1437,83 @@ function renderTurnosFijos(){
 }
 
 function cambiarSemana(delta){ semanaOffset += delta; renderTurnosFijos(); }
+
+/* ═══════════════════════════════════════════════
+   CALENDARIO — vista de mes con Eventos + Cancha + Cantina
+   ═══════════════════════════════════════════════ */
+let mesOffset = 0;
+function cambiarMes(delta){ mesOffset += delta; renderCalendario(); }
+
+const COLOR_SECTOR_CAL = {
+  eventos: { fuerte:'#7C3AED', suave:'#F2EBFD' },
+  cancha:  { fuerte:'#0E8F5C', suave:'#E6F7EE' },
+  cantina: { fuerte:'#E0631E', suave:'#FDEBE0' },
+};
+
+function renderCalendario(){
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth()+mesOffset);
+  const anio = base.getFullYear(), mes = base.getMonth();
+  document.getElementById('calendario-titulo').textContent = `${MESES_LARGO[mes]} ${anio}`;
+
+  const rol = turnoActual && turnoActual.rol;
+  const cfg = rol && ROLES[rol];
+  const sectoresVisibles = ['eventos','cancha','cantina'].filter(s=> !cfg || cfg.tabs.includes(s));
+  const puedeAgregarEventos = sectoresVisibles.includes('eventos');
+
+  document.getElementById('calendario-legend').innerHTML = sectoresVisibles.map(s=>
+    `<span><i style="background:${COLOR_SECTOR_CAL[s].fuerte};"></i>${SECTORES[s].label}</span>`
+  ).join('');
+
+  const primerDiaSemana = (new Date(anio, mes, 1).getDay()+6)%7; // lunes=0
+  const diasEnMes = new Date(anio, mes+1, 0).getDate();
+  const hoy = hoyISO();
+  const dows = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+  let html = dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<primerDiaSemana;i++) html += `<div class="cal-day fuera"></div>`;
+
+  for(let dia=1; dia<=diasEnMes; dia++){
+    const fechaISO = `${anio}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const esHoy = fechaISO===hoy;
+    const items = [];
+    sectoresVisibles.forEach(s=>{
+      (datos[s]||[]).forEach((it,idx)=>{
+        if(it.fecha===fechaISO && !(it.estado||'').includes('Cancelado')) items.push({sector:s, idx, it});
+      });
+    });
+    const chips = items.slice(0,3).map(({sector,idx,it})=>{
+      const col = COLOR_SECTOR_CAL[sector];
+      return `<div class="cal-chip" style="background:${col.suave};color:${col.fuerte};" onclick="verItemCalendario('${sector}',${idx})">${SECTORES[sector].icon} ${it.nombre}</div>`;
+    }).join('');
+    const masTexto = items.length>3 ? `<div style="font-size:9px;color:var(--gris);text-align:center;">+${items.length-3} más</div>` : '';
+    const addBtn = puedeAgregarEventos ? `<div class="cal-add" onclick="abrirDiaCalendario('${fechaISO}')">+ agregar</div>` : '';
+    html += `<div class="cal-day ${esHoy?'hoy':''}">
+      <div class="cal-daynum">${dia}</div>
+      ${chips}${masTexto}
+      ${addBtn}
+    </div>`;
+  }
+
+  document.getElementById('calendario-grid').innerHTML = html;
+}
+
+function verItemCalendario(sector, idx){
+  const it = (datos[sector]||[])[idx];
+  if(!it) return;
+  const s = SECTORES[sector];
+  alert(`${s.icon} ${s.label}\n${it.nombre}\n${it.fecha}${it.horario?' · '+it.horario:''}${it.extra?'\n'+it.extra:''}${it.obs?'\n'+it.obs:''}`);
+}
+
+function abrirDiaCalendario(fechaISO){
+  irA('eventos');
+  document.getElementById('form-eventos').classList.add('open');
+  document.getElementById('eventos-fecha').value = fechaISO;
+  actualizarPaquetesEvento();
+  document.getElementById('eventos-nombre').focus();
+  document.getElementById('form-eventos').scrollIntoView({behavior:'smooth', block:'start'});
+}
 
 function elegirTipoCelda(diaIdx, hora){
   const esPuntual = confirm('¿Es una reserva puntual solo para este día?\n\nAceptar = Reserva puntual (esta fecha)\nCancelar = Turno fijo (se repite cada semana)');
@@ -1879,10 +2051,10 @@ function actualizarTurnoUI(){
 
 /* ───── Roles ───── */
 const ROLES = {
-  admin:          { label:'Admin',          sub:'Ve todo',        icon:'👑', tabs:['panel','eventos','cancha','cantina','gastos','precios','config'], autoDueno:true },
-  administrativo: { label:'Administrativo', sub:'Hace todo',      icon:'🗂️', tabs:['panel','eventos','cancha','cantina','gastos','precios','config'], autoDueno:false },
-  cantina:        { label:'Cantina',        sub:'Cancha y barra', icon:'🍔', tabs:['panel','cancha','cantina'],                                        autoDueno:false },
-  eventos:        { label:'Eventos',        sub:'Registrar evento', icon:'🎉', tabs:['panel','eventos'],                                               autoDueno:false },
+  admin:          { label:'Admin',          sub:'Ve todo',        icon:'👑', tabs:['panel','calendario','eventos','cancha','cantina','gastos','precios','config'], autoDueno:true },
+  administrativo: { label:'Administrativo', sub:'Hace todo',      icon:'🗂️', tabs:['panel','calendario','eventos','cancha','cantina','gastos','precios','config'], autoDueno:false },
+  cantina:        { label:'Cantina',        sub:'Cancha y barra', icon:'🍔', tabs:['panel','calendario','cancha','cantina'],                                        autoDueno:false },
+  eventos:        { label:'Eventos',        sub:'Registrar evento', icon:'🎉', tabs:['panel','calendario','eventos'],                                               autoDueno:false },
 };
 let welcomeRolElegido = null;
 
