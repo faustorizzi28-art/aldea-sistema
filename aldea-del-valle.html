@@ -198,11 +198,23 @@
   .act-when{font-family:'DM Mono',monospace; font-size:11px; color:var(--gris); padding-top:10px; border-top:1px solid var(--borde);}
 
   /* ============ CONVENIOS ============ */
+  /* ============ CARTA ============ */
+  .carta{padding-bottom:92px;}
+  .menu-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px 48px;}
+  @media (max-width:700px){ .menu-grid{grid-template-columns:1fr;} }
+  .menu-cat{background:var(--panel); border:1px solid var(--borde); border-radius:16px; padding:20px 22px;}
+  .menu-cat h3{font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; font-size:20px; color:var(--marca); margin-bottom:10px;}
+  :root[data-theme="dark"] .menu-cat h3{color:var(--cancha);}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .menu-cat h3{color:var(--cancha);} }
+  .menu-row{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:7px 0; border-bottom:1px dashed var(--borde); font-size:13.5px;}
+  .menu-row:last-child{border-bottom:none;}
+  .menu-row .mp{font-family:'DM Mono',monospace; font-weight:600; color:var(--tinta-suave); white-space:nowrap;}
+
   .convenios{background:var(--marca-suave); padding:88px 0;}
-  .conv-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .conv-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
   @media (max-width:760px){ .conv-grid{grid-template-columns:repeat(2,1fr);} }
   .conv-card{
-    background:var(--panel); border:1px dashed var(--borde); border-radius:14px; padding:18px;
+    background:var(--panel); border:1px solid var(--borde); border-radius:14px; padding:18px;
     display:flex; align-items:center; gap:12px; min-height:76px;
   }
   .conv-avatar{width:38px; height:38px; border-radius:10px; background:var(--marca); color:var(--crema); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-weight:500; font-size:13px; flex-shrink:0;}
@@ -252,7 +264,7 @@
     <nav class="links">
       <a href="#filosofia">Nosotros</a>
       <a href="#actividades">Actividades</a>
-      <a href="#escuelas">Escuelas</a>
+      <a href="#carta">Carta</a>
       <a href="#convenios">Convenios</a>
       <a href="#contacto">Contacto</a>
     </nav>
@@ -265,7 +277,7 @@
   <div class="wrap mobile-panel" id="mobilePanel">
     <a href="#filosofia">Nosotros</a>
     <a href="#actividades">Actividades</a>
-    <a href="#escuelas">Escuelas</a>
+    <a href="#carta">Carta</a>
     <a href="#convenios">Convenios</a>
     <a href="#contacto">Contacto</a>
   </div>
@@ -348,6 +360,16 @@
   <!-- ============ ESCUELAS (ancla, contenido dentro del grid) ============ -->
   <span id="escuelas" style="scroll-margin-top:76px;"></span>
 
+  <!-- ============ CARTA (cantina) ============ -->
+  <section class="carta wrap" id="carta">
+    <div class="shead reveal">
+      <p class="eyebrow">Cantina</p>
+      <h2>La carta de la cantina.</h2>
+      <p>Abre todos los días de 17 a 00hs. Una selección de lo que vas a encontrar en la barra.</p>
+    </div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </section>
+
   <!-- ============ CONVENIOS ============ -->
   <section class="convenios" id="convenios">
     <div class="wrap">
@@ -357,7 +379,7 @@
         <p>Socios y socias acceden a beneficios junto a comercios y empresas aliadas de la zona.</p>
       </div>
       <div class="conv-grid reveal" id="convGrid"></div>
-      <p class="conv-note">✎ Espacios de convenio a confirmar — sumamos tu marca o comercio acá.</p>
+      <p class="conv-note">✎ ¿Tenés un comercio o marca y querés sumarte como convenio? Escribinos.</p>
     </div>
   </section>
 
@@ -440,12 +462,13 @@
     {cat:'deporte', icon:'🤼', tag:'Deporte', title:'Jiujitsu', when:'Lunes, miércoles y viernes de 20 a 22hs', text:'Jiujitsu para sumar una disciplina de lucha y trabajo de piso.'},
     {cat:'deporte', icon:'⛸️', tag:'Deporte', title:'Patín artístico', when:'Hasta 9 años 17-18hs · adolescentes 18-19hs', text:'Clases de patín artístico separadas por edad, en un ambiente relajado para animarse a probar.'},
     {cat:'deporte', icon:'🤸', tag:'Deporte', title:'Gimnasia artística', when:'19 a 20hs', text:'Trabajo de flexibilidad, coordinación y fuerza para todas las edades.'},
-    {cat:'eventos', icon:'🎊', tag:'Eventos', title:'Eventos sociales', when:'Reservá tu fecha', text:'Aniversarios, despedidas y encuentros de amigos en un espacio verde con todo listo.'},
-    {cat:'eventos', icon:'🏢', tag:'Eventos', title:'Eventos empresariales', when:'Jornadas a medida', text:'Team building, capacitaciones al aire libre y festejos de empresa.'},
-    {cat:'eventos', icon:'🎂', tag:'Eventos', title:'Cumpleaños', when:'Salón y espacio verde', text:'Festejá en grande, con lugar para correr y una cantina que se ocupa del resto.'},
-    {cat:'servicio', icon:'🍔', tag:'Servicio', title:'Cantina', when:'Lunes a sábados, 17 a 00hs', text:'Parrilla, barra y mesas al aire libre: el punto de encuentro después del partido y los asados con amigos.'},
-    {cat:'servicio', icon:'🏊', tag:'Servicio', title:'Pileta', when:'Temporada de verano — horario a confirmar', text:'Pileta recreativa para socios y familias durante la temporada de calor.'},
-    {cat:'escuela', icon:'☀️', tag:'Escuela', title:'Escuela de verano', when:'Fechas a confirmar', text:'La colonia de vacaciones que marcó el crecimiento de Aldea: deporte, juego y aire libre todos los días.'},
+    {cat:'eventos', icon:'🎊', tag:'Eventos', title:'Eventos sociales', when:'Desde $470.000 (temporada ago-oct)', text:'Cumpleaños de adultos, recibidas, babyshower y encuentros: 3hs de evento, hasta 45 personas, con encargado, limpieza y consumo en cantina.'},
+    {cat:'eventos', icon:'🏢', tag:'Eventos', title:'Eventos empresariales', when:'Capacidad: 390 personas · 180 sentadas', text:'Espacios cerrados y abiertos para team building, capacitaciones o festejos de empresa. Sin paquetes fijos: se contrata el servicio premium con todo incluido, o se alquila solo el espacio.'},
+    {cat:'eventos', icon:'🎂', tag:'Eventos', title:'Cumpleaños infantil', when:'Desde $380.000 (temporada ago-oct)', text:'Base de 25 niños, 6 gaseosas, encargado y 2,5hs de evento con limpieza incluida. Desde cancha + asador hasta el espacio completo exclusivo. Animación y comida a cargo aparte.'},
+    {cat:'eventos', icon:'💍', tag:'Eventos', title:'15 años y casamientos', when:'Desde $980.000 (temporada ago-oct)', text:'Uso exclusivo del predio, 4 a 5hs de evento, con vajilla, encargado y guardia. Desde 50 hasta 100 personas según el espacio elegido.'},
+    {cat:'servicio', icon:'🍔', tag:'Servicio', title:'Cantina', when:'Abre a las 17hs, lunes a sábados', text:'Parrilla, barra y mesas al aire libre: el punto de encuentro después del partido y los asados con amigos. Mirá la carta completa más abajo.'},
+    {cat:'servicio', icon:'🏊', tag:'Servicio', title:'Pileta', when:'Disponible para eventos desde noviembre', text:'Pileta recreativa para socios y familias durante la temporada de calor.'},
+    {cat:'escuela', icon:'☀️', tag:'Escuela', title:'Escuela de verano', when:'Comienza en diciembre', text:'La colonia de vacaciones que marcó el crecimiento de Aldea: deporte, juego y aire libre todos los días. Programa y precios: a confirmar.'},
     {cat:'escuela', icon:'❄️', tag:'Escuela', title:'Escuela de invierno', when:'Fechas a confirmar', text:'Colonia de vacaciones de invierno para no parar de jugar en el receso escolar.'},
   ];
   document.getElementById('actGrid').innerHTML = actividades.map(a=>`
@@ -461,12 +484,35 @@
   `).join('');
   document.querySelectorAll('#actGrid .reveal').forEach(el=> io.observe(el));
 
+  // ---- Carta de cantina (selección — precios tomados del sistema interno) ----
+  const menu = [
+    {cat:'Para comer', items:[['Empanadas árabes (c/u)',3000],['Promo tabla de empanadas',30000],['Promo 2 hamburguesas',25000],['Promo 2 lomos completos',34000],['El Milton — lomo pizza',48000],['Promo 2 pizzas',28000],['Promo papas grandes',8000]]},
+    {cat:'Sin alcohol', items:[['Café',2700],['Gaseosa 500ml',3800],['Agua 500ml',2600],['Cepita 1lt',4500],['Speed 473ml',5000]]},
+    {cat:'Cerveza, vino y tragos', items:[['Stella Artois (botella)',9800],['Vaso copón',9000],['Vino',19500],['Fernet (vaso)',18000],['Fernet 750ml (botella)',38000]]},
+    {cat:'Kiosco', items:[['Alfajores',2500],['Papas Quento chicas',2000],['Golosinas y caramelos',1000],['Sobre de figuritas',3500]]},
+  ];
+  const fmtPesos = n => '$' + n.toLocaleString('es-AR');
+  document.getElementById('menuGrid').innerHTML = menu.map(m=>`
+    <div class="menu-cat reveal">
+      <h3>${m.cat}</h3>
+      ${m.items.map(([nombre,precio])=>`
+        <div class="menu-row"><span>${nombre}</span><span class="mp">${fmtPesos(precio)}</span></div>
+      `).join('')}
+    </div>
+  `).join('');
+  document.querySelectorAll('#menuGrid .reveal').forEach(el=> io.observe(el));
+
   // ---- Convenios data (editable — reemplazar por los convenios reales) ----
   const convenios = [
-    {ini:'IN', name:'Convenio a confirmar', cat:'Indumentaria deportiva'},
-    {ini:'SA', name:'Convenio a confirmar', cat:'Salud y bienestar'},
-    {ini:'GA', name:'Convenio a confirmar', cat:'Gastronomía'},
-    {ini:'ED', name:'Convenio a confirmar', cat:'Educación'},
+    {ini:'NX', name:'Nexa', cat:'Constructora'},
+    {ini:'CL', name:'Club Lasallano', cat:'Club social'},
+    {ini:'BD', name:'Bunkai Dojo', cat:'Artes marciales'},
+    {ini:'O2', name:'Espacio O2 Padel', cat:'Pádel'},
+    {ini:'JC', name:'Escuela de Jiujitsu Carveglia', cat:'Jiujitsu'},
+    {ini:'AP', name:'Anima Patín', cat:'Patín'},
+    {ini:'GL', name:'Helados Glups', cat:'Heladería'},
+    {ini:'AH', name:'Aguas Hilda', cat:'Agua y bebidas'},
+    {ini:'AK', name:'Asoc. Civil Artes Marciales Córdoba Kimekan', cat:'Artes marciales'},
   ];
   document.getElementById('convGrid').innerHTML = convenios.map(c=>`
     <div class="conv-card">
