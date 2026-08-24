@@ -329,8 +329,9 @@
     <div class="welcome-logo">Aldea del Valle</div>
     <div class="welcome-title">Bienvenido</div>
     <div class="welcome-sub">Decinos quién inicia sesión hoy</div>
-    <input type="text" id="welcome-input" class="welcome-input" placeholder="Tu nombre" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
+    <input type="text" id="welcome-input" class="welcome-input" placeholder="Tu nombre" onkeydown="if(event.key==='Enter') document.getElementById('welcome-email').focus()"/>
     <div class="welcome-chips" id="welcome-chips"></div>
+    <input type="email" id="welcome-email" class="welcome-input" placeholder="Tu email (para el resumen de cada turno)" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
     <div class="welcome-role-label">¿Con qué rol entrás?</div>
     <div class="welcome-roles" id="welcome-roles"></div>
     <button class="welcome-btn" onclick="confirmarIngreso()">Ingresar al sistema</button>
@@ -1892,6 +1893,17 @@ function agregarUsuarioReciente(nombre, rol){
   lista.unshift({nombre, rol});
   localStorage.setItem('aldea_usuarios_recientes', JSON.stringify(lista.slice(0,5)));
 }
+function getEmailsPorUsuario(){ return JSON.parse(localStorage.getItem('aldea_email_por_usuario')||'{}'); }
+function guardarEmailUsuario(nombre, email){
+  const mapa = getEmailsPorUsuario();
+  mapa[nombre] = email;
+  localStorage.setItem('aldea_email_por_usuario', JSON.stringify(mapa));
+}
+function elegirUsuarioBienvenida(nombre, rol){
+  document.getElementById('welcome-input').value = nombre;
+  document.getElementById('welcome-email').value = getEmailsPorUsuario()[nombre] || '';
+  elegirRolBienvenida(rol);
+}
 
 function renderWelcomeRoles(){
   const host = document.getElementById('welcome-roles');
@@ -1907,8 +1919,9 @@ function elegirRolBienvenida(rol){
 function mostrarBienvenida(){
   renderWelcomeRoles();
   const chips = document.getElementById('welcome-chips');
-  chips.innerHTML = getUsuariosRecientes().map(u=>`<div class="welcome-chip" onclick="document.getElementById('welcome-input').value='${u.nombre.replace(/'/g,"\\'")}';elegirRolBienvenida('${u.rol}');">${u.nombre}</div>`).join('');
+  chips.innerHTML = getUsuariosRecientes().map(u=>`<div class="welcome-chip" onclick="elegirUsuarioBienvenida('${u.nombre.replace(/'/g,"\\'")}','${u.rol}')">${u.nombre}</div>`).join('');
   document.getElementById('welcome-input').value = '';
+  document.getElementById('welcome-email').value = '';
   welcomeRolElegido = null;
   document.getElementById('welcome-overlay').classList.add('show');
   setTimeout(()=>document.getElementById('welcome-input').focus(), 150);
@@ -1916,7 +1929,9 @@ function mostrarBienvenida(){
 function ocultarBienvenida(){ document.getElementById('welcome-overlay').classList.remove('show'); }
 function confirmarIngreso(){
   const nombre = document.getElementById('welcome-input').value.trim();
+  const email = document.getElementById('welcome-email').value.trim();
   if(!nombre){ alert('Escribí tu nombre para continuar.'); return; }
+  if(!email || !email.includes('@')){ alert('Escribí tu email para recibir el resumen de cada turno.'); return; }
   if(!welcomeRolElegido){ alert('Elegí con qué rol entrás.'); return; }
   if(ROLES[welcomeRolElegido].autoDueno && !modoDueno()){
     const pin = prompt('El rol Admin ve los números generales de la empresa.\nPIN de dueño:');
@@ -1925,12 +1940,13 @@ function confirmarIngreso(){
     localStorage.setItem('aldea_modo_dueno','1');
   }
   agregarUsuarioReciente(nombre, welcomeRolElegido);
-  abrirTurnoConNombre(nombre, welcomeRolElegido);
+  guardarEmailUsuario(nombre, email);
+  abrirTurnoConNombre(nombre, welcomeRolElegido, email);
   ocultarBienvenida();
 }
 
-function abrirTurnoConNombre(nombre, rol){
-  turnoActual = { responsable: nombre.trim(), rol, inicio: new Date().toISOString() };
+function abrirTurnoConNombre(nombre, rol, email){
+  turnoActual = { responsable: nombre.trim(), rol, email: email||'', inicio: new Date().toISOString() };
   localStorage.setItem('aldea_turno_actual', JSON.stringify(turnoActual));
   actualizarTurnoUI();
   aplicarFiltroRol();
@@ -1988,7 +2004,19 @@ async function cerrarTurno(){
   imprimirCierreDeTurno(turnoActual.responsable, turnoActual.inicio, fin);
   const url = getUrl();
   if(url){
-    try{ await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({tipo:'cierre_turno', responsable:turnoActual.responsable, inicio:turnoActual.inicio, fin})}); }catch(e){}
+    const t = calcularTotalesTurno(turnoActual.inicio, fin);
+    const movimientosTurno = ['eventos','cancha','cantina'].reduce((a,k)=>{
+      const enTurno = x => x.creado && new Date(x.creado) >= t.inicio && new Date(x.creado) <= t.fin;
+      return a + (datos[k]||[]).filter(enTurno).length;
+    }, 0) + t.gastosTurno.length;
+    const payload = {
+      tipo:'cierre_turno', responsable:turnoActual.responsable, email:turnoActual.email||'',
+      inicio:turnoActual.inicio, fin,
+      ingresoEf:t.ingresoEf, ingresoTr:t.ingresoTr, ingresoTotal:t.ingresoTotal,
+      ingresoEventos: t.ev.ef+t.ev.tr, ingresoCancha: t.ca.ef+t.ca.tr, ingresoCantina: t.ct.ef+t.ct.tr,
+      gastoTotal:t.gastoTotal, neto:t.neto, cantidadMovimientos: movimientosTurno,
+    };
+    try{ await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); }catch(e){}
   }
   turnoActual = null;
   localStorage.removeItem('aldea_turno_actual');
