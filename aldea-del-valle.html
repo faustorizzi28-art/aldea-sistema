@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Aldea del Valle</title>
+<title>Aldea de Valle</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%231F3D2B'/%3E%3Cpath d='M100,66 L154,179 L140,179 L112,158 L88,158 L60,179 L46,179 Z' fill='%23EFC42C'/%3E%3Cpath d='M78,32 L112,110 L96,120 Z' fill='%23EFC42C'/%3E%3Cpath d='M122,32 L88,110 L104,120 Z' fill='%23EFC42C'/%3E%3C/svg%3E"/>
-<meta name="description" content="Aldea del Valle: fútbol, deportes, pileta, cantina, eventos y escuelas de vacaciones. El lugar donde la comunidad se encuentra, todo el año, al aire libre."/>
+<meta name="description" content="Aldea de Valle: fútbol, deportes, pileta, cantina, eventos y escuelas de vacaciones. El lugar donde la comunidad se encuentra, todo el año, al aire libre."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -211,6 +211,16 @@
   .menu-row:last-child{border-bottom:none;}
   .menu-row .mp{font-family:'DM Mono',monospace; font-weight:600; color:var(--tinta-suave); white-space:nowrap;}
 
+  /* ============ MOMENTOS ============ */
+  .momentos{padding-bottom:92px;}
+  .momentos-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  @media (max-width:900px){ .momentos-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){ .momentos-grid{grid-template-columns:1fr;} }
+  .momento{position:relative; margin:0; border-radius:16px; overflow:hidden; aspect-ratio:3/4; background:var(--marca-suave); box-shadow:var(--sombra);}
+  .momento img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s ease;}
+  .momento:hover img{transform:scale(1.05);}
+  .momento figcaption{position:absolute; left:0; right:0; bottom:0; padding:16px 12px 10px; font-size:12.5px; font-weight:700; color:#fff; background:linear-gradient(180deg, transparent, rgba(10,15,10,.75));}
+
   .convenios{background:var(--marca-suave); padding:88px 0;}
   .conv-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
   @media (max-width:760px){ .conv-grid{grid-template-columns:repeat(2,1fr);} }
@@ -261,12 +271,13 @@
         <path d="M78,32 L112,110 L96,120 Z"/>
         <path d="M122,32 L88,110 L104,120 Z"/>
       </svg>
-      <span class="brand-name">Aldea <em>del Valle</em></span>
+      <span class="brand-name">Aldea <em>de Valle</em></span>
     </a>
     <nav class="links">
       <a href="#filosofia">Nosotros</a>
       <a href="#actividades">Actividades</a>
       <a href="#carta">Carta</a>
+      <a href="#momentos">Fotos</a>
       <a href="#convenios">Convenios</a>
       <a href="#contacto">Contacto</a>
     </nav>
@@ -280,6 +291,7 @@
     <a href="#filosofia">Nosotros</a>
     <a href="#actividades">Actividades</a>
     <a href="#carta">Carta</a>
+    <a href="#momentos">Fotos</a>
     <a href="#convenios">Convenios</a>
     <a href="#contacto">Contacto</a>
   </div>
@@ -293,7 +305,7 @@
       <div>
         <p class="eyebrow">Complejo social y deportivo · desde 2019</p>
         <h1>Un valle para<span class="line2 serif">encontrarse.</span></h1>
-        <p class="lead">Aldea del Valle es donde el barrio juega, festeja y descansa: fútbol, karate, kickboxing, jiujitsu, patín y gimnasia, pileta y cantina, eventos para toda ocasión y escuelas de vacaciones.</p>
+        <p class="lead">Aldea de Valle es donde el barrio juega, festeja y descansa: fútbol, karate, kickboxing, jiujitsu, patín y gimnasia, pileta y cantina, eventos para toda ocasión y escuelas de vacaciones.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#actividades">Ver actividades</a>
           <a class="btn btn-ghost" href="#contacto">Escribinos por WhatsApp</a>
@@ -372,6 +384,25 @@
     <div class="menu-grid" id="menuGrid"></div>
   </section>
 
+  <!-- ============ MOMENTOS (galería) ============ -->
+  <section class="momentos wrap" id="momentos">
+    <div class="shead reveal">
+      <p class="eyebrow">Así se vive</p>
+      <h2>Un rato en la aldea.</h2>
+      <p>Postales reales de partidos, clases, cumpleaños y colonias.</p>
+    </div>
+    <div class="momentos-grid">
+      <figure class="momento reveal"><img src="img/cancha-futbol.jpg" alt="Cancha de fútbol 11 de Aldea de Valle" loading="lazy"/><figcaption>Cancha de fútbol 11</figcaption></figure>
+      <figure class="momento reveal"><img src="img/clase-karate.jpg" alt="Clase de karate en Aldea de Valle" loading="lazy"/><figcaption>Clase de karate</figcaption></figure>
+      <figure class="momento reveal"><img src="img/kickboxing.jpg" alt="Entrenamiento de kickboxing en Aldea de Valle" loading="lazy"/><figcaption>Entrenamiento de kickboxing</figcaption></figure>
+      <figure class="momento reveal"><img src="img/cumpleanos-infantil.jpg" alt="Cumpleaños infantil en Aldea de Valle" loading="lazy"/><figcaption>Cumpleaños infantil</figcaption></figure>
+      <figure class="momento reveal"><img src="img/escuela-verano.jpg" alt="Cierre de la escuela de verano en Aldea de Valle" loading="lazy"/><figcaption>Cierre de la escuela de verano</figcaption></figure>
+      <figure class="momento reveal"><img src="img/clase-chicos.jpg" alt="Clase de los más chicos en Aldea de Valle" loading="lazy"/><figcaption>Los más chicos, en clase</figcaption></figure>
+      <figure class="momento reveal"><img src="img/evento-social.jpg" alt="Festejo en Aldea de Valle" loading="lazy"/><figcaption>Un festejo más en la aldea</figcaption></figure>
+      <figure class="momento reveal"><img src="img/equipo-profes.jpg" alt="Equipo de Bunkai Dojo en Aldea de Valle" loading="lazy"/><figcaption>El equipo de Bunkai Dojo</figcaption></figure>
+    </div>
+  </section>
+
   <!-- ============ CONVENIOS ============ -->
   <section class="convenios" id="convenios">
     <div class="wrap">
@@ -414,7 +445,7 @@
 
 <footer class="wrap">
   <div class="foot-row">
-    <span class="foot-brand">Aldea <em>del Valle</em> — hecho con cariño para la comunidad.</span>
+    <span class="foot-brand">Aldea <em>de Valle</em> — hecho con cariño para la comunidad.</span>
     <div class="foot-links">
       <a href="#filosofia">Nosotros</a>
       <a href="#actividades">Actividades</a>
@@ -524,7 +555,7 @@
   `).join('');
 
   // ---- WhatsApp CTA (editar número real en formato 549XXXXXXXXXX) ----
-  document.getElementById('waBtn').href = 'https://wa.me/5493515308489?text=' + encodeURIComponent('Hola! Quiero consultar sobre Aldea del Valle.');
+  document.getElementById('waBtn').href = 'https://wa.me/5493515308489?text=' + encodeURIComponent('Hola! Quiero consultar sobre Aldea de Valle.');
 </script>
 
 </body>
