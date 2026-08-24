@@ -290,6 +290,11 @@
   .welcome-input:focus{outline:none;border-color:var(--marca);}
   .welcome-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;}
   .welcome-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--marca-suave);color:var(--marca);cursor:pointer;}
+  .welcome-role-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);margin-bottom:8px;}
+  .welcome-roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+  .welcome-role{border:1.5px solid var(--borde);background:var(--blanco);border-radius:10px;padding:10px 6px;font-size:12px;font-weight:700;color:var(--tinta);cursor:pointer;text-align:center;line-height:1.3;}
+  .welcome-role .wr-sub{display:block;font-size:9.5px;font-weight:500;color:var(--gris);margin-top:2px;}
+  .welcome-role.active{border-color:var(--marca);background:var(--marca-suave);color:var(--marca);}
   .welcome-btn{width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:700;border:none;cursor:pointer;background:var(--marca);color:white;}
 
   /* ───── MODAL CIERRE DEL DÍA ───── */
@@ -326,6 +331,8 @@
     <div class="welcome-sub">Decinos quién inicia sesión hoy</div>
     <input type="text" id="welcome-input" class="welcome-input" placeholder="Tu nombre" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
     <div class="welcome-chips" id="welcome-chips"></div>
+    <div class="welcome-role-label">¿Con qué rol entrás?</div>
+    <div class="welcome-roles" id="welcome-roles"></div>
     <button class="welcome-btn" onclick="confirmarIngreso()">Ingresar al sistema</button>
   </div>
 </div>
@@ -544,6 +551,13 @@
       <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Carga los 3 pagos de alquiler pendientes (Actividades deportivas $1.200.000, Escuela de fútbol $1.100.000, Lasallano $800.000 — por transferencia, con fecha de hoy) al sector Cancha, etiquetados como "Alquiler".</div>
       <button class="btn btn-cancha" id="btn-import-alquileres" onclick="importarAlquileres()">Cargar pagos de alquiler</button>
       <div class="msg" id="import-alquileres-msg"></div>
+    </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Cargar promos nuevas a la carta</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Agrega a "Promos" de Cantina: 2 Hamburguesas $25.000, 2 Lomos completos $34.000, El Milton (lomo pizza) $48.000, 2 Pizzas $28.000, Tabla de empanadas $30.000, Papas grandes $8.000 — y lo guarda para todos los dispositivos.</div>
+      <button class="btn btn-cantina" id="btn-import-promos" onclick="importarPromosNuevas()">Cargar promos nuevas</button>
+      <div class="msg" id="import-promos-msg"></div>
     </div>
   </div>
 
@@ -1172,6 +1186,43 @@ async function importarAlquileres(){
   btn.disabled = false;
 }
 
+const PROMOS_NUEVAS = [
+  ['Promo 2 Hamburguesas',25000],['Promo 2 Lomos completos',34000],['Promo El Milton (lomo pizza)',48000],
+  ['Promo 2 Pizzas',28000],['Promo Tabla de empanadas',30000],['Promo Papas grandes',8000],
+];
+
+async function importarPromosNuevas(){
+  const msgEl = document.getElementById('import-promos-msg');
+  const btn = document.getElementById('btn-import-promos');
+  if(!confirm(`Se van a agregar ${PROMOS_NUEVAS.length} promos nuevas a la categoría "Promos" de Cantina, para todos los dispositivos. ¿Continuar?`)) return;
+  btn.disabled = true;
+  msgEl.textContent = '⏳ Agregando…'; msgEl.className = 'msg';
+
+  if(!carta['Promos']) carta['Promos'] = [];
+  let agregadas = 0;
+  PROMOS_NUEVAS.forEach(([nombre, precio])=>{
+    const yaExiste = carta['Promos'].some(([n])=> n.toLowerCase()===nombre.toLowerCase());
+    if(!yaExiste){ carta['Promos'].push([nombre, precio]); agregadas++; }
+  });
+  localStorage.setItem('aldea_carta', JSON.stringify(carta));
+  localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+  if(document.getElementById('v-precios')?.classList.contains('active')) renderPrecios();
+  if(document.getElementById('v-cantina')?.classList.contains('active')) renderComandaMesas();
+
+  const url = getUrl();
+  if(!url){
+    msgEl.textContent = `✅ ${agregadas} promo(s) agregada(s) en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar).`;
+    msgEl.className = 'msg ok'; btn.disabled = false; return;
+  }
+  try{
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
+    const j = await r.json();
+    msgEl.textContent = j.ok ? `✅ ${agregadas} promo(s) nueva(s) guardadas para todos los dispositivos.` : '❌ '+j.error;
+    msgEl.className = j.ok ? 'msg ok' : 'msg err';
+  }catch(e){ msgEl.textContent = '⚠️ Agregado local, sin conexión con Sheets — probá de nuevo cuando tengas señal.'; msgEl.className = 'msg err'; }
+  btn.disabled = false;
+}
+
 /* ═══════════════════════════════════════════════
    SEMANA DE CANCHA — grilla combinada: turnos fijos + reservas puntuales
    ═══════════════════════════════════════════════ */
@@ -1419,6 +1470,8 @@ const CARTA_DEFAULT = {
     ['Promo Gancia',38000],['Promo Vino + 2 Coca',32000],['Promo Aperol + Cepita',40000],['Promo Campari + Cepita',42000],
     ['Promo Carpano + Cepita',47000],['Promo Fernet + 2 Coca',47000],['Promo Gin + Cepita',47000],['Promo Vodka Skyy Durazno',47000],
     ['Promo Vodka Skyy Frutos Rojos',47000],['Promo Vodka Smirnoff Frutos Rojos',47000],['Promo Vodka Smirnoff Manzana Verde',47000],
+    ['Promo 2 Hamburguesas',25000],['Promo 2 Lomos completos',34000],['Promo El Milton (lomo pizza)',48000],
+    ['Promo 2 Pizzas',28000],['Promo Tabla de empanadas',30000],['Promo Papas grandes',8000],
   ],
   'Para comer': [['Empanadas árabes (c/u)',3000],['PBT Salame',4000],['PBT Jamón',4000]],
   'Extras': [['Cubiertos',2500],['Hielo',0],['Carbón',7000],['Leña',7000]],
@@ -1823,18 +1876,40 @@ function actualizarTurnoUI(){
   }
 }
 
+/* ───── Roles ───── */
+const ROLES = {
+  admin:          { label:'Admin',          sub:'Ve todo',        icon:'👑', tabs:['panel','eventos','cancha','cantina','gastos','precios','config'], autoDueno:true },
+  administrativo: { label:'Administrativo', sub:'Hace todo',      icon:'🗂️', tabs:['panel','eventos','cancha','cantina','gastos','precios','config'], autoDueno:false },
+  cantina:        { label:'Cantina',        sub:'Cancha y barra', icon:'🍔', tabs:['panel','cancha','cantina'],                                        autoDueno:false },
+  eventos:        { label:'Eventos',        sub:'Registrar evento', icon:'🎉', tabs:['panel','eventos'],                                               autoDueno:false },
+};
+let welcomeRolElegido = null;
+
 /* ───── Usuarios recientes (chips de la pantalla de bienvenida) ───── */
 function getUsuariosRecientes(){ return JSON.parse(localStorage.getItem('aldea_usuarios_recientes')||'[]'); }
-function agregarUsuarioReciente(nombre){
-  let lista = getUsuariosRecientes().filter(u=> u.toLowerCase()!==nombre.toLowerCase());
-  lista.unshift(nombre);
+function agregarUsuarioReciente(nombre, rol){
+  let lista = getUsuariosRecientes().filter(u=> u.nombre.toLowerCase()!==nombre.toLowerCase());
+  lista.unshift({nombre, rol});
   localStorage.setItem('aldea_usuarios_recientes', JSON.stringify(lista.slice(0,5)));
 }
 
+function renderWelcomeRoles(){
+  const host = document.getElementById('welcome-roles');
+  host.innerHTML = Object.entries(ROLES).map(([key,r])=>
+    `<div class="welcome-role" id="wr-${key}" onclick="elegirRolBienvenida('${key}')">${r.icon} ${r.label}<span class="wr-sub">${r.sub}</span></div>`
+  ).join('');
+}
+function elegirRolBienvenida(rol){
+  welcomeRolElegido = rol;
+  document.querySelectorAll('.welcome-role').forEach(el=> el.classList.toggle('active', el.id==='wr-'+rol));
+}
+
 function mostrarBienvenida(){
+  renderWelcomeRoles();
   const chips = document.getElementById('welcome-chips');
-  chips.innerHTML = getUsuariosRecientes().map(u=>`<div class="welcome-chip" onclick="document.getElementById('welcome-input').value='${u.replace(/'/g,"\\'")}';confirmarIngreso();">${u}</div>`).join('');
+  chips.innerHTML = getUsuariosRecientes().map(u=>`<div class="welcome-chip" onclick="document.getElementById('welcome-input').value='${u.nombre.replace(/'/g,"\\'")}';elegirRolBienvenida('${u.rol}');">${u.nombre}</div>`).join('');
   document.getElementById('welcome-input').value = '';
+  welcomeRolElegido = null;
   document.getElementById('welcome-overlay').classList.add('show');
   setTimeout(()=>document.getElementById('welcome-input').focus(), 150);
 }
@@ -1842,18 +1917,41 @@ function ocultarBienvenida(){ document.getElementById('welcome-overlay').classLi
 function confirmarIngreso(){
   const nombre = document.getElementById('welcome-input').value.trim();
   if(!nombre){ alert('Escribí tu nombre para continuar.'); return; }
-  agregarUsuarioReciente(nombre);
-  abrirTurnoConNombre(nombre);
+  if(!welcomeRolElegido){ alert('Elegí con qué rol entrás.'); return; }
+  if(ROLES[welcomeRolElegido].autoDueno && !modoDueno()){
+    const pin = prompt('El rol Admin ve los números generales de la empresa.\nPIN de dueño:');
+    if(pin===null) return;
+    if(pin !== getPinDueno()){ alert('PIN incorrecto.'); return; }
+    localStorage.setItem('aldea_modo_dueno','1');
+  }
+  agregarUsuarioReciente(nombre, welcomeRolElegido);
+  abrirTurnoConNombre(nombre, welcomeRolElegido);
   ocultarBienvenida();
 }
 
-function abrirTurnoConNombre(nombre){
-  turnoActual = { responsable: nombre.trim(), inicio: new Date().toISOString() };
+function abrirTurnoConNombre(nombre, rol){
+  turnoActual = { responsable: nombre.trim(), rol, inicio: new Date().toISOString() };
   localStorage.setItem('aldea_turno_actual', JSON.stringify(turnoActual));
   actualizarTurnoUI();
+  aplicarFiltroRol();
   renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
 }
 function abrirTurno(){ mostrarBienvenida(); }
+
+function aplicarFiltroRol(){
+  const rol = turnoActual && turnoActual.rol;
+  const cfg = rol && ROLES[rol];
+  const tabsPermitidas = cfg ? cfg.tabs : Object.keys(SECTORES).concat(['panel','gastos','precios','config']);
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.style.display = tabsPermitidas.includes(b.dataset.v) ? '' : 'none';
+  });
+  ['eventos','cancha','cantina'].forEach(key=>{
+    const card = document.querySelector('.sector-card.c-'+key);
+    if(card) card.style.display = tabsPermitidas.includes(key) ? '' : 'none';
+  });
+  const activo = document.querySelector('.nav-btn.active');
+  if(activo && activo.style.display==='none') irA('panel');
+}
 
 /* ───── Cierre de turno — cálculo compartido entre el modal y el ticket impreso ───── */
 function calcularTotalesTurno(inicioISO, finISO){
@@ -1895,6 +1993,7 @@ async function cerrarTurno(){
   turnoActual = null;
   localStorage.removeItem('aldea_turno_actual');
   actualizarTurnoUI();
+  aplicarFiltroRol();
   renderPanel(); ['eventos','cancha','cantina'].forEach(renderSector); renderGastos();
 }
 
@@ -1978,6 +2077,7 @@ function imprimirCierreDelDia(){
   ['eventos','cancha','cantina'].forEach(renderSector);
   renderGastos();
   actualizarTurnoUI();
+  aplicarFiltroRol();
   if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
   if(!turnoActual){ setTimeout(mostrarBienvenida, 300); }
 })();
