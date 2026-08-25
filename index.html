@@ -1459,7 +1459,7 @@ function renderCalendario(){
 
   const rol = turnoActual && turnoActual.rol;
   const cfg = rol && ROLES[rol];
-  const sectoresVisibles = ['eventos','cancha','cantina'].filter(s=> !cfg || cfg.tabs.includes(s));
+  const sectoresVisibles = ['eventos','cancha'].filter(s=> !cfg || cfg.tabs.includes(s));
   const puedeAgregarEventos = sectoresVisibles.includes('eventos');
 
   document.getElementById('calendario-legend').innerHTML = sectoresVisibles.map(s=>
