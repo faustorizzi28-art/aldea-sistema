@@ -545,7 +545,7 @@
   <div class="vista" id="v-precios">
     <div class="panel-section">
       <h3>🍽️ Precios de la carta — Cantina <span id="precios-sync-badge" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--gris-claro);color:var(--gris);">cargando…</span></h3>
-      <div style="font-size:12px;color:var(--gris);">Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.</div>
+      <div style="font-size:12px;color:var(--gris);" id="precios-descripcion">Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.</div>
     </div>
     <div id="precios-cats"></div>
     <button class="btn btn-cantina" style="position:sticky;bottom:10px;margin-top:10px;" onclick="guardarTodosLosPrecios()">💾 Guardar precios</button>
@@ -1690,9 +1690,19 @@ function mesaObj(){ return mesaActual===-1 ? ventaRapida : mesas[mesaActual]; }
 /* ───── PRECIOS — editor en vivo, sincronizado por Sheets ───── */
 function renderPrecios(){
   const host = document.getElementById('precios-cats');
+  const soloAgregar = turnoActual && turnoActual.rol === 'cantina';
+  const desc = document.getElementById('precios-descripcion');
+  if(desc) desc.textContent = soloAgregar
+    ? 'Podés agregar productos nuevos a la carta. Para cambiar o borrar un precio existente, pedile a un Admin o Administrativo.'
+    : 'Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.';
+
   host.innerHTML = Object.entries(carta).map(([cat, items])=>`
     <div class="precio-cat-head">${CAT_EMOJI[cat]||'🍽️'} ${cat}</div>
-    ${items.map(([nombre,precio],idx)=>`
+    ${items.map(([nombre,precio],idx)=> soloAgregar ? `
+      <div class="precio-item">
+        <div class="pn">${nombre}</div>
+        <div class="pinput-wrap"><span>$</span>${Math.round(precio).toLocaleString('es-AR')}</div>
+      </div>` : `
       <div class="precio-item">
         <div class="pn">${nombre}</div>
         <div class="pinput-wrap"><span>$</span><input type="number" data-cat="${cat}" data-idx="${idx}" value="${precio}" oninput="this.classList.add('modificado')"/></div>
@@ -2066,7 +2076,7 @@ function actualizarTurnoUI(){
 const ROLES = {
   admin:          { label:'Admin',          sub:'Ve todo',        icon:'👑', tabs:['panel','calendario','eventos','cancha','cantina','gastos','precios','config'], autoDueno:true },
   administrativo: { label:'Administrativo', sub:'Hace todo',      icon:'🗂️', tabs:['panel','calendario','eventos','cancha','cantina','gastos','precios','config'], autoDueno:false },
-  cantina:        { label:'Cantina',        sub:'Cancha y barra', icon:'🍔', tabs:['panel','calendario','cancha','cantina'],                                        autoDueno:false },
+  cantina:        { label:'Cantina',        sub:'Cancha y barra', icon:'🍔', tabs:['panel','calendario','cancha','cantina','precios'],                              autoDueno:false },
   eventos:        { label:'Eventos',        sub:'Registrar evento', icon:'🎉', tabs:['panel','calendario','eventos'],                                               autoDueno:false },
 };
 let welcomeRolElegido = null;
