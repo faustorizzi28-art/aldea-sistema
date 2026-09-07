@@ -504,7 +504,11 @@
   <div class="vista" id="v-gastos">
     <button class="btn btn-gastos btn-fab" onclick="toggleForm('gastos')" style="margin-bottom:14px;">＋ Nuevo gasto</button>
     <div class="form-card" id="form-gastos">
-      <div class="field"><label>Fecha</label><input type="date" id="ga-fecha"/></div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" id="ga-fecha" oninput="mostrarFechaGasto()"/>
+        <div id="ga-fecha-echo" style="font-size:12px;color:var(--gris);margin-top:4px;"></div>
+      </div>
       <div class="field"><label>Área</label>
         <select id="ga-area">
           <option value="General">General</option>
@@ -1036,6 +1040,15 @@ function borrarRegistro(key, idx){
 }
 
 /* ───── GASTOS ───── */
+function mostrarFechaGasto(){
+  const val = document.getElementById('ga-fecha').value;
+  const echo = document.getElementById('ga-fecha-echo');
+  if(!val){ echo.textContent=''; return; }
+  const dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const d = new Date(val+'T12:00:00');
+  echo.textContent = `📅 Vas a registrar: ${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+}
 async function guardarGasto(){
   const fecha = document.getElementById('ga-fecha').value;
   const area = document.getElementById('ga-area').value;
