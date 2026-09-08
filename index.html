@@ -1690,23 +1690,19 @@ function mesaObj(){ return mesaActual===-1 ? ventaRapida : mesas[mesaActual]; }
 /* ───── PRECIOS — editor en vivo, sincronizado por Sheets ───── */
 function renderPrecios(){
   const host = document.getElementById('precios-cats');
-  const soloAgregar = turnoActual && turnoActual.rol === 'cantina';
+  const puedeBorrar = !(turnoActual && turnoActual.rol === 'cantina');
   const desc = document.getElementById('precios-descripcion');
-  if(desc) desc.textContent = soloAgregar
-    ? 'Podés agregar productos nuevos a la carta. Para cambiar o borrar un precio existente, pedile a un Admin o Administrativo.'
-    : 'Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.';
+  if(desc) desc.textContent = puedeBorrar
+    ? 'Tocá un precio para editarlo. Cuando termines, tocá "Guardar precios" — se actualiza para todos los dispositivos.'
+    : 'Tocá un precio para editarlo o agregá uno nuevo. Cuando termines, tocá "Guardar precios". Para borrar un producto, pedile a un Admin o Administrativo.';
 
   host.innerHTML = Object.entries(carta).map(([cat, items])=>`
     <div class="precio-cat-head">${CAT_EMOJI[cat]||'🍽️'} ${cat}</div>
-    ${items.map(([nombre,precio],idx)=> soloAgregar ? `
-      <div class="precio-item">
-        <div class="pn">${nombre}</div>
-        <div class="pinput-wrap"><span>$</span>${Math.round(precio).toLocaleString('es-AR')}</div>
-      </div>` : `
+    ${items.map(([nombre,precio],idx)=> `
       <div class="precio-item">
         <div class="pn">${nombre}</div>
         <div class="pinput-wrap"><span>$</span><input type="number" data-cat="${cat}" data-idx="${idx}" value="${precio}" oninput="this.classList.add('modificado')"/></div>
-        <button class="entry-del" onclick="borrarProducto('${cat}',${idx})" title="Eliminar producto">🗑</button>
+        ${puedeBorrar ? `<button class="entry-del" onclick="borrarProducto('${cat}',${idx})" title="Eliminar producto">🗑</button>` : ''}
       </div>`).join('')}
   `).join('') + `
     <div class="panel-section" style="margin-top:16px;">
