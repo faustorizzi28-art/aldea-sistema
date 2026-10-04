@@ -21,7 +21,10 @@ Instalación y uso: [INSTRUCCIONES.md](INSTRUCCIONES.md). Mensajes para el equip
 
 `setup()` carga este equipo inicial. Los nombres que faltan quedan como “(poner nombre)” para completar desde **Equipo**.
 
+## Instalación (hecha el 04/10/2026)
+- App: https://courageous-cactus-c7d3a7.netlify.app (subida a mano con Netlify Drop, no se actualiza sola desde GitHub).
+- Centro del predio: -31.364971, -64.278477. Radio: 100 m.
+
 ## Pendiente
 - Que cada empleado responda por WhatsApp con su valor hora, sus tareas y sus horarios. El mensaje ya está armado.
-- Instalar el sistema siguiendo INSTRUCCIONES.md y fijar el centro del predio con "Usar mi ubicación".
 - Revisar los valores después de las primeras semanas de uso.
