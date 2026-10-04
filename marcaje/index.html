@@ -444,7 +444,7 @@
    CONFIGURACIÓN — pegá acá la URL de la aplicación web de Apps Script
    (INSTRUCCIONES.md, paso 3). Si queda vacía, la app la pide al abrirse.
    ══════════════════════════════════════════════════════════════ */
-const API_URL_FIJA = '';
+const API_URL_FIJA = 'https://script.google.com/macros/s/AKfycbzxEMIc5Do0UJfDMldJkvzWm_7XPcCw06z69MDcGH-Z4eMGbtotOKWpIhccAubKOKdg/exec';
 
 const LS = {
   get(k, def){ try{ const v = localStorage.getItem('marcaje_'+k); return v===null ? def : JSON.parse(v); }catch(e){ return def; } },
