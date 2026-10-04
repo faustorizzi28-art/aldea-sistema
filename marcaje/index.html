@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0F2318"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Marcaje Aldea"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F3D2B'/%3E%3Ccircle cx='32' cy='34' r='16' fill='none' stroke='%23EFC42C' stroke-width='5'/%3E%3Cpath d='M32 24v10l7 5' stroke='%23EFC42C' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"/>
+<title>Marcaje — Aldea de Valle</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --tinta:#15140F; --gris:#6E6A5C; --gris-claro:#F1EDDF; --borde:#E6E1D0; --fondo:#F6F3E9; --blanco:#FFFEFA;
+    --panel:#0F2318; --panel2:#1F3D2B; --marca:#1F3D2B; --marca-suave:#E3EDE4; --acento:#EFC42C;
+    --rojo:#B3261E; --rojo-suave:#FBE9E7; --naranja:#E0631E; --naranja-suave:#FDEBE0; --ok:#2E7D4F;
+    --sombra:0 1px 2px rgba(15,20,15,.05), 0 8px 24px -8px rgba(15,20,15,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--fondo);color:var(--tinta);min-height:100vh;-webkit-font-smoothing:antialiased;}
+  body{padding-bottom:calc(32px + env(safe-area-inset-bottom));}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:16px;}
+  .mono{font-family:'DM Mono',monospace;}
+  .oculto{display:none !important;}
+
+  header{background:linear-gradient(160deg,var(--panel),var(--panel2));color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;position:sticky;top:0;z-index:20;}
+  .head{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:640px;margin:0 auto;}
+  .marca{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--acento);}
+  .titulo{font-family:'Instrument Serif',serif;font-style:italic;font-size:22px;line-height:1.1;}
+  .reloj{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;text-align:right;}
+  .fecha{font-size:11px;color:#B9C7B4;text-align:right;}
+
+  main{max-width:640px;margin:0 auto;padding:16px;}
+  .card{background:var(--blanco);border:1px solid var(--borde);border-radius:18px;padding:18px;box-shadow:var(--sombra);margin-bottom:14px;}
+  .card h2{font-size:15px;font-weight:800;margin-bottom:10px;}
+  .sub{font-size:12.5px;color:var(--gris);}
+  .fila{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+
+  .btn{border:none;border-radius:12px;padding:12px 16px;font-size:14.5px;font-weight:700;background:var(--marca);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .btn.full{width:100%;}
+  .btn.ghost{background:var(--gris-claro);color:var(--tinta);}
+  .btn.borde{background:transparent;border:1.5px solid var(--borde);color:var(--tinta);}
+  .btn.wa{background:#1FA855;}
+  .btn.rojo{background:var(--rojo);}
+  .btn.chico{padding:8px 12px;font-size:13px;border-radius:10px;}
+  .link{background:none;border:none;color:var(--marca);font-weight:700;font-size:13.5px;text-decoration:underline;padding:6px;}
+
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--gris);margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%;border:1.5px solid var(--borde);border-radius:11px;padding:11px 12px;background:#fff;color:var(--tinta);}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--marca);}
+  .ayuda{font-size:11.5px;color:var(--gris);margin-top:4px;}
+
+  .msg{font-size:13.5px;font-weight:600;padding:10px 12px;border-radius:11px;margin-top:10px;}
+  .msg:empty{display:none;}
+  .msg.ok{background:var(--marca-suave);color:var(--ok);}
+  .msg.err{background:var(--rojo-suave);color:var(--rojo);}
+  .msg.info{background:var(--gris-claro);color:var(--tinta);}
+
+  /* Login */
+  .buscar{width:100%;border:1.5px solid var(--borde);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:#fff;}
+  .personas{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .persona{background:#fff;border:1.5px solid var(--borde);border-radius:14px;padding:14px 10px;text-align:left;}
+  .persona b{display:block;font-size:15px;}
+  .persona span{font-size:11.5px;color:var(--gris);}
+  .pin-dots{display:flex;justify-content:center;gap:14px;margin:18px 0;}
+  .pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--marca);}
+  .pin-dots i.on{background:var(--marca);}
+  .teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto;}
+  .teclado button{height:62px;border-radius:16px;border:1.5px solid var(--borde);background:#fff;font-size:24px;font-weight:600;}
+  .teclado button:active{background:var(--gris-claro);}
+  .teclado .vacio{visibility:hidden;}
+  .shake{animation:shake .35s;}
+  @keyframes shake{25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+  /* Empleado */
+  .estado{text-align:center;padding:22px 18px;}
+  .estado .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px;background:var(--gris-claro);}
+  .estado .chip.dentro{background:var(--marca-suave);color:var(--ok);}
+  .estado .chip i{width:8px;height:8px;border-radius:50%;background:var(--gris);}
+  .estado .chip.dentro i{background:var(--ok);animation:pulso 1.6s infinite;}
+  @keyframes pulso{50%{opacity:.3;}}
+  .estado .timer{font-family:'DM Mono',monospace;font-size:40px;font-weight:500;margin:12px 0 2px;}
+  .marcar{width:100%;border:none;border-radius:22px;padding:26px 16px;font-size:22px;font-weight:800;color:#fff;background:var(--marca);margin-top:16px;box-shadow:0 10px 24px -10px rgba(31,61,43,.6);}
+  .marcar.salida{background:var(--naranja);box-shadow:0 10px 24px -10px rgba(224,99,30,.6);}
+  .marcar small{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:4px;}
+  .marcar:disabled{opacity:.6;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+  .kpi{background:var(--gris-claro);border-radius:13px;padding:11px 10px;}
+  .kpi .v{font-size:18px;font-weight:800;}
+  .kpi .l{font-size:11px;color:var(--gris);font-weight:600;}
+  .kpi.grande{grid-column:1/-1;background:var(--marca);color:#fff;}
+  .kpi.grande .v{font-size:26px;}
+  .kpi.grande .l{color:#CFE0D2;}
+  .mesnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+  .mesnav button{width:38px;height:38px;border-radius:10px;border:none;background:var(--gris-claro);font-size:16px;}
+  .mesnav b{font-size:15px;}
+  .turno{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--borde);font-size:13.5px;gap:8px;}
+  .turno:first-child{border-top:none;}
+  .turno .h{font-family:'DM Mono',monospace;font-weight:500;white-space:nowrap;}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--gris-claro);color:var(--gris);}
+  .tag.warn{background:var(--naranja-suave);color:var(--naranja);}
+  .tag.ok{background:var(--marca-suave);color:var(--ok);}
+  .tag.manual{background:#E8F0FA;color:#1A5F9E;}
+
+  /* Admin */
+  .tabs{display:flex;gap:4px;background:var(--gris-claro);border-radius:13px;padding:4px;margin-bottom:14px;position:sticky;top:calc(70px + env(safe-area-inset-top));z-index:10;}
+  .tabs button{flex:1;border:none;background:none;border-radius:10px;padding:9px 4px;font-size:13px;font-weight:700;color:var(--gris);}
+  .tabs button.on{background:#fff;color:var(--tinta);box-shadow:var(--sombra);}
+  .alerta{background:var(--naranja-suave);border:1px solid #F4C9AC;color:#7A340E;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:13px;}
+  .alerta b{display:block;margin-bottom:6px;}
+  .alerta .it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #F4C9AC;}
+  .alerta .it:first-of-type{border-top:none;}
+  .ahora{display:flex;flex-wrap:wrap;gap:6px;}
+  .ahora span{background:var(--marca-suave);color:var(--ok);font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:20px;}
+  .emp{border-top:1px solid var(--borde);padding:14px 0;}
+  .emp:first-child{border-top:none;padding-top:0;}
+  .emp .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .emp .nom{font-weight:800;font-size:15px;}
+  .emp .tot{font-size:18px;font-weight:800;text-align:right;white-space:nowrap;}
+  .emp .acc{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .emp details{margin-top:8px;font-size:13px;}
+  .emp summary{cursor:pointer;color:var(--marca);font-weight:700;font-size:12.5px;}
+  .total-mes{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);color:#fff;border-radius:16px;padding:16px 18px;margin-bottom:14px;}
+  .total-mes .v{font-size:26px;font-weight:800;}
+  .total-mes .l{font-size:12px;color:#CFE0D2;}
+  .marc{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--borde);font-size:13.5px;}
+  .dia-tit{font-size:12px;font-weight:800;color:var(--gris);margin:14px 0 2px;}
+  .x{border:none;background:var(--gris-claro);border-radius:8px;width:32px;height:32px;font-size:14px;flex-shrink:0;}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .presets button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;}
+  .inactivo{opacity:.55;}
+
+  .modal{position:fixed;inset:0;background:rgba(15,20,15,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+  .modal .caja{background:var(--fondo);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:14px;}
+  @media(min-width:700px){.modal{align-items:center;}.modal .caja{border-radius:22px;}}
+  .cargando{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tinta);color:#fff;font-size:13px;font-weight:600;padding:10px 16px;border-radius:20px;z-index:60;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head">
+    <div>
+      <div class="marca">Aldea de Valle</div>
+      <div class="titulo" id="head-titulo">Marcaje de horarios</div>
+    </div>
+    <div>
+      <div class="reloj" id="reloj">--:--</div>
+      <div class="fecha" id="fecha"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─────────── Conexión (solo la primera vez, si no está fija la URL) ─────────── -->
+  <section id="v-conexion" class="oculto">
+    <div class="card">
+      <h2>Conectar con el Google Sheet</h2>
+      <p class="sub" style="margin-bottom:12px;">Pegá la URL de la aplicación web de Apps Script (termina en <span class="mono">/exec</span>). Ver INSTRUCCIONES.md, paso 3.</p>
+      <div class="field"><input id="cx-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"/></div>
+      <button class="btn full" onclick="guardarConexion()">Conectar</button>
+      <div class="msg" id="cx-msg"></div>
+    </div>
+  </section>
+
+  <!-- ─────────── Elegir persona ─────────── -->
+  <section id="v-personas" class="oculto">
+    <div class="card">
+      <h2>¿Quién sos?</h2>
+      <input class="buscar" id="buscar" placeholder="Buscar tu nombre…" oninput="pintarPersonas()" autocomplete="off"/>
+      <div class="personas" id="lista-personas"><div class="sub">Cargando…</div></div>
+      <div class="msg" id="personas-msg"></div>
+    </div>
+    <div style="text-align:center;"><button class="link" onclick="irAdminLogin()">Soy administrador</button></div>
+  </section>
+
+  <!-- ─────────── PIN ─────────── -->
+  <section id="v-pin" class="oculto">
+    <div class="card" style="text-align:center;">
+      <div class="sub">Hola</div>
+      <div style="font-size:22px;font-weight:800;" id="pin-nombre"></div>
+      <div class="sub" style="margin-top:6px;" id="pin-ayuda">Ingresá tu PIN de 4 números</div>
+      <div class="pin-dots" id="pin-dots"><i></i><i></i><i></i><i></i></div>
+      <div class="teclado" id="teclado"></div>
+      <div class="msg" id="pin-msg"></div>
+      <button class="link" style="margin-top:10px;" onclick="volverPersonas()">← No soy yo</button>
+    </div>
+  </section>
+
+  <!-- ─────────── Pantalla del empleado ─────────── -->
+  <section id="v-empleado" class="oculto">
+    <div class="card estado">
+      <div class="fila" style="justify-content:space-between;">
+        <div style="text-align:left;">
+          <div style="font-size:19px;font-weight:800;" id="emp-nombre"></div>
+          <div class="sub" id="emp-area"></div>
+        </div>
+        <span class="chip" id="emp-chip"><i></i><span id="emp-chip-txt">—</span></span>
+      </div>
+      <div class="timer" id="emp-timer">--:--</div>
+      <div class="sub" id="emp-timer-sub"></div>
+      <button class="marcar" id="btn-marcar" onclick="marcar()">…</button>
+      <div class="msg" id="marcar-msg"></div>
+    </div>
+
+    <div class="card">
+      <div class="mesnav">
+        <button onclick="cambiarMesEmp(-1)">‹</button>
+        <b id="emp-mes"></b>
+        <button onclick="cambiarMesEmp(1)">›</button>
+      </div>
+      <div class="kpis" id="emp-kpis"></div>
+      <div class="sub" id="emp-explica" style="margin-bottom:10px;"></div>
+      <div id="emp-turnos"></div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="link" onclick="cerrarSesionEmp()">Cambiar de persona</button>
+      <button class="link" onclick="irAdminLogin()">Administrador</button>
+    </div>
+  </section>
+
+  <!-- ─────────── Login administrador ─────────── -->
+  <section id="v-adminlogin" class="oculto">
+    <div class="card">
+      <h2>Panel de administrador</h2>
+      <div class="field"><label>PIN de administrador</label><input id="adm-pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+      <button class="btn full" onclick="adminLogin()">Entrar</button>
+      <div class="msg" id="adm-msg"></div>
+    </div>
+    <div style="text-align:center;"><button class="link" onclick="irInicio()">← Volver al marcaje</button></div>
+  </section>
+
+  <!-- ─────────── Panel de administrador ─────────── -->
+  <section id="v-admin" class="oculto">
+    <div class="tabs" id="tabs">
+      <button data-t="resumen" class="on" onclick="tab('resumen')">Resumen</button>
+      <button data-t="marcajes" onclick="tab('marcajes')">Marcajes</button>
+      <button data-t="equipo" onclick="tab('equipo')">Equipo</button>
+      <button data-t="ajustes" onclick="tab('ajustes')">Ajustes</button>
+    </div>
+
+    <div class="mesnav" id="adm-mesnav">
+      <button onclick="cambiarMesAdm(-1)">‹</button>
+      <b id="adm-mes"></b>
+      <button onclick="cambiarMesAdm(1)">›</button>
+    </div>
+
+    <!-- Resumen -->
+    <div id="t-resumen">
+      <div id="adm-alerta-ubic"></div>
+      <div class="card" id="adm-ahora-card">
+        <h2>Ahora en Aldea</h2>
+        <div class="ahora" id="adm-ahora"></div>
+      </div>
+      <div id="adm-alertas"></div>
+      <div class="total-mes">
+        <div><div class="l">Total a pagar en el mes</div><div class="v" id="adm-total">$0</div></div>
+        <div style="text-align:right;"><div class="l">Horas</div><div style="font-size:18px;font-weight:800;" id="adm-horas">0 h</div></div>
+      </div>
+      <div class="card"><div id="adm-liq"></div></div>
+      <div class="grid2">
+        <button class="btn borde" onclick="exportarCSV()">⬇ Exportar CSV</button>
+        <button class="btn" onclick="guardarLiquidacion()" id="btn-guardar-liq">Guardar liquidación</button>
+      </div>
+      <div class="msg" id="liq-msg"></div>
+    </div>
+
+    <!-- Marcajes -->
+    <div id="t-marcajes" class="oculto">
+      <div class="card">
+        <div class="fila">
+          <h2 style="margin:0;">Marcajes del mes</h2>
+          <button class="btn chico" onclick="abrirManual()">+ Cargar a mano</button>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <select id="filtro-emp" onchange="pintarMarcajes()"></select>
+        </div>
+        <div id="adm-marcajes"></div>
+      </div>
+    </div>
+
+    <!-- Equipo -->
+    <div id="t-equipo" class="oculto">
+      <div class="card">
+        <div class="fila">
+          <h2 style="margin:0;">Equipo</h2>
+          <button class="btn chico" onclick="abrirEmpleado()">+ Sumar persona</button>
+        </div>
+        <div id="adm-equipo" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Ajustes -->
+    <div id="t-ajustes" class="oculto">
+      <div class="card">
+        <h2>Ubicación de Aldea</h2>
+        <p class="sub" style="margin-bottom:12px;">Parate en el centro del predio y tocá “Usar mi ubicación”. Solo se puede marcar a menos del radio de este punto.</p>
+        <div class="grid2">
+          <div class="field"><label>Latitud</label><input id="cf-lat" inputmode="decimal"/></div>
+          <div class="field"><label>Longitud</label><input id="cf-lng" inputmode="decimal"/></div>
+        </div>
+        <div class="field"><label>Radio permitido (metros)</label><input id="cf-radio" type="number" min="20" max="2000"/></div>
+        <div class="grid2">
+          <button class="btn ghost" onclick="usarMiUbicacion()">📍 Usar mi ubicación</button>
+          <button class="btn" onclick="guardarUbicacion()">Guardar</button>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a class="link" id="cf-mapa" target="_blank" rel="noopener">Ver en Google Maps</a>
+          <button class="link" onclick="probarDistancia()">¿A cuánto estoy?</button>
+        </div>
+        <div class="msg" id="cf-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Datos del recibo</h2>
+        <div class="field"><label>Nombre del lugar</label><input id="cf-lugar"/></div>
+        <button class="btn ghost full" onclick="guardarLugar()">Guardar</button>
+        <div class="msg" id="cf-lugar-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>PIN de administrador</h2>
+        <div class="field"><label>Nuevo PIN (4 a 8 números)</label><input id="cf-pin" type="password" inputmode="numeric" autocomplete="new-password"/></div>
+        <button class="btn ghost full" onclick="cambiarPinAdmin()">Cambiar PIN</button>
+        <div class="msg" id="cf-pin-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Compartir la app</h2>
+        <p class="sub" style="margin-bottom:10px;">Link para mandarle al equipo. Al abrirlo, conviene “Agregar a pantalla de inicio”.</p>
+        <div class="field"><input id="cf-link" readonly onclick="this.select()"/></div>
+        <button class="btn ghost full" onclick="copiar(document.getElementById('cf-link').value, 'cf-link-msg')">Copiar link</button>
+        <div class="msg" id="cf-link-msg"></div>
+      </div>
+
+      <div style="text-align:center;margin-top:6px;">
+        <button class="link" onclick="salirAdmin()">Salir del panel</button>
+        <button class="link" onclick="cambiarConexion()">Cambiar conexión</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ─────────── Modales ─────────── -->
+<div class="modal oculto" id="m-empleado" onclick="if(event.target===this)cerrarModal('m-empleado')">
+  <div class="caja">
+    <h3 id="me-titulo">Sumar persona</h3>
+    <div class="presets" id="me-presets">
+      <button onclick="preset('Limpieza','hora',6000)">🧹 Limpieza por hora</button>
+      <button onclick="preset('Limpieza','evento',0)">🧹 Limpieza por evento</button>
+      <button onclick="preset('Seguridad','evento',0)">🛡️ Seguridad por evento</button>
+      <button onclick="preset('Cantina','hora',5500)">🍔 Cantina</button>
+      <button onclick="preset('Mantenimiento','hora',6000)">🔧 Mantenimiento</button>
+      <button onclick="preset('Profes','evento',50000)">🎈 Profe de cumpleaños</button>
+    </div>
+    <input type="hidden" id="me-id"/>
+    <div class="field"><label>Nombre (como lo van a ver en la lista)</label><input id="me-nombre" autocomplete="off"/></div>
+    <div class="grid2">
+      <div class="field"><label>Área</label><input id="me-area" list="areas" autocomplete="off"/></div>
+      <div class="field"><label>PIN (4 números)</label>
+        <div style="display:flex;gap:6px;"><input id="me-pin" inputmode="numeric" maxlength="4" autocomplete="off"/><button class="x" style="height:auto;width:44px;" title="PIN al azar" onclick="pinAzar()">🎲</button></div>
+      </div>
+    </div>
+    <datalist id="areas"><option>Mantenimiento</option><option>Limpieza</option><option>Cantina</option><option>Profes</option><option>Seguridad</option></datalist>
+    <div class="grid2">
+      <div class="field"><label>Forma de pago</label>
+        <select id="me-forma" onchange="actualizarFormaPago()">
+          <option value="hora">Por hora</option>
+          <option value="mensual">Sueldo mensual fijo</option>
+          <option value="semanal">Por semana</option>
+          <option value="evento">Por evento</option>
+        </select>
+      </div>
+      <div class="field"><label id="me-valor-lbl">Valor por hora ($)</label><input id="me-valor" type="number" inputmode="numeric" min="0"/></div>
+    </div>
+    <div class="field" id="me-hs-box"><label>Horas por semana</label><input id="me-hs" type="number" inputmode="decimal" min="1"/>
+      <div class="ayuda">Se paga proporcional a las horas marcadas: valor semanal ÷ horas por semana = valor de la hora.</div></div>
+    <div class="ayuda" id="me-forma-ayuda" style="margin:-4px 0 12px;"></div>
+    <div class="field"><label>Celular (para WhatsApp)</label><input id="me-tel" type="tel" inputmode="tel" placeholder="351 1234567"/>
+      <div class="ayuda">Código de área + número, sin 0 ni 15.</div></div>
+    <div class="field"><label>Notas</label><textarea id="me-notas" rows="2"></textarea></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:14px;"><input type="checkbox" id="me-activo" style="width:20px;height:20px;"/> Activo (aparece en la lista para marcar)</label>
+    <div class="grid2">
+      <button class="btn ghost" onclick="cerrarModal('m-empleado')">Cancelar</button>
+      <button class="btn" onclick="guardarEmpleado()">Guardar</button>
+    </div>
+    <div class="msg" id="me-msg"></div>
+  </div>
+</div>
+
+<div class="modal oculto" id="m-manual" onclick="if(event.target===this)cerrarModal('m-manual')">
+  <div class="caja">
+    <h3>Cargar marcaje a mano</h3>
+    <p class="sub" style="margin-bottom:12px;">Para cuando alguien se olvidó de marcar o no tenía señal. Queda registrado como “manual”.</p>
+    <div class="field"><label>Persona</label><select id="mm-emp"></select></div>
+    <div class="grid2">
+      <div class="field"><label>Tipo</label><select id="mm-tipo"><option value="ENTRADA">Entrada</option><option value="SALIDA">Salida</option></select></div>
+      <div class="field"><label>Fecha y hora</label><input id="mm-fecha" type="datetime-local"/></div>
+    </div>
+    <div class="field"><label>Motivo</label><input id="mm-nota" placeholder="Se olvidó de marcar la salida"/></div>
+    <div class="grid2">
+      <button class="btn ghost" onclick="cerrarModal('m-manual')">Cancelar</button>
+      <button class="btn" onclick="guardarManual()">Guardar</button>
+    </div>
+    <div class="msg" id="mm-msg"></div>
+  </div>
+</div>
+
+<div class="modal oculto" id="m-ajuste" onclick="if(event.target===this)cerrarModal('m-ajuste')">
+  <div class="caja">
+    <h3>Extra o descuento — <span id="ma-nombre"></span></h3>
+    <p class="sub" style="margin-bottom:12px;">Ej.: un cumpleaños que no marcó, un adelanto ya pagado (en negativo), un bono.</p>
+    <input type="hidden" id="ma-emp"/>
+    <div class="grid2" style="margin-bottom:12px;">
+      <button class="btn ghost" id="ma-mas" onclick="signoAjuste(1)">+ Sumar</button>
+      <button class="btn ghost" id="ma-menos" onclick="signoAjuste(-1)">− Descontar</button>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Monto ($)</label><input id="ma-monto" type="number" inputmode="numeric" min="0"/></div>
+      <div class="field"><label>Concepto</label><input id="ma-concepto" placeholder="Adelanto, cumpleaños extra…"/></div>
+    </div>
+    <div id="ma-lista"></div>
+    <div class="grid2" style="margin-top:12px;">
+      <button class="btn ghost" onclick="cerrarModal('m-ajuste')">Cerrar</button>
+      <button class="btn" onclick="guardarAjuste()">Guardar</button>
+    </div>
+    <div class="msg" id="ma-msg"></div>
+  </div>
+</div>
+
+<div class="cargando oculto" id="cargando">Cargando…</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURACIÓN — pegá acá la URL de la aplicación web de Apps Script
+   (INSTRUCCIONES.md, paso 3). Si queda vacía, la app la pide al abrirse.
+   ══════════════════════════════════════════════════════════════ */
+const API_URL_FIJA = '';
+
+const LS = {
+  get(k, def){ try{ const v = localStorage.getItem('marcaje_'+k); return v===null ? def : JSON.parse(v); }catch(e){ return def; } },
+  set(k, v){ try{ localStorage.setItem('marcaje_'+k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem('marcaje_'+k); }catch(e){} },
+};
+const SS = {
+  get(k){ try{ return sessionStorage.getItem('marcaje_'+k); }catch(e){ return null; } },
+  set(k, v){ try{ sessionStorage.setItem('marcaje_'+k, v); }catch(e){} },
+  del(k){ try{ sessionStorage.removeItem('marcaje_'+k); }catch(e){} },
+};
+const $ = id => document.getElementById(id);
+
+function apiUrl(){ return API_URL_FIJA || LS.get('api', ''); }
+
+/* ───── Utilidades ───── */
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmt = n => '$' + Math.round(Number(n)||0).toLocaleString('es-AR');
+function fmtH(h){ const t = Math.round((Number(h)||0)*60); return `${Math.floor(t/60)} h ${String(t%60).padStart(2,'0')}`; }
+const hora = iso => new Date(iso).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
+const diaCorto = iso => new Date(iso).toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'numeric'});
+const diaLargo = iso => cap(new Date(iso).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}));
+function mesTexto(m){ const [a,mm] = m.split('-').map(Number); return cap(new Date(a,mm-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'})); }
+function mesHoy(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function mesMas(m, delta){ const [a,mm] = m.split('-').map(Number); const d = new Date(a, mm-1+delta, 1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function msg(id, texto, tipo){ const el = $(id); if(!el) return; el.textContent = texto||''; el.className = 'msg '+(tipo||''); }
+function duracion(ms){ const t = Math.max(0, Math.floor(ms/1000)); const h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function cargando(on, texto){ $('cargando').textContent = texto||'Cargando…'; $('cargando').classList.toggle('oculto', !on); }
+function vibrar(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+
+async function api(accion, datos){
+  const url = apiUrl();
+  if(!url) throw new Error('La app no está conectada al Google Sheet.');
+  let r;
+  try{
+    r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({accion}, datos||{})) });
+  }catch(e){ throw new Error('Sin conexión. Revisá internet y probá de nuevo.'); }
+  let j;
+  try{ j = await r.json(); }catch(e){ throw new Error('El servidor respondió algo raro. Revisá la URL del Apps Script.'); }
+  if(!j.ok){ const err = new Error(j.error || 'Error'); Object.assign(err, j); throw err; }
+  return j;
+}
+
+/* ───── Reloj ───── */
+function tick(){
+  const d = new Date();
+  $('reloj').textContent = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
+  $('fecha').textContent = cap(d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}));
+  if(estadoEmp && estadoEmp.adentro){
+    const ms = Date.now() - new Date(estadoEmp.desde).getTime() + desfaseServidor;
+    $('emp-timer').textContent = duracion(ms);
+  }
+}
+setInterval(tick, 1000);
+
+/* ───── Navegación ───── */
+const VISTAS = ['conexion','personas','pin','empleado','adminlogin','admin'];
+function ver(v){
+  VISTAS.forEach(x => $('v-'+x).classList.toggle('oculto', x!==v));
+  $('head-titulo').textContent = (v==='admin'||v==='adminlogin') ? 'Administración' : 'Marcaje de horarios';
+  window.scrollTo(0,0);
+}
+
+function irInicio(){
+  if(!apiUrl()){ ver('conexion'); return; }
+  const ses = LS.get('sesion', null);
+  if(ses){ abrirEmpleado_(ses); return; }
+  ver('personas'); cargarPersonas();
+}
+
+function guardarConexion(){
+  const u = $('cx-url').value.trim();
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){ msg('cx-msg','La URL tiene que empezar con https://script.google.com/ y terminar en /exec','err'); return; }
+  LS.set('api', u); irInicio();
+}
+function cambiarConexion(){
+  if(API_URL_FIJA){ alert('La URL está fija en el archivo index.html (API_URL_FIJA). Cambiala ahí y volvé a publicar.'); return; }
+  if(!confirm('¿Cambiar la conexión con el Google Sheet?')) return;
+  LS.del('api'); $('cx-url').value=''; ver('conexion');
+}
+
+/* ══════════════ EMPLEADO ══════════════ */
+let personas = [], personaSel = null, pinTipeado = '', estadoEmp = null, mesEmp = mesHoy(), desfaseServidor = 0;
+
+async function cargarPersonas(){
+  try{
+    const j = await api('empleados');
+    personas = j.empleados; LS.set('personas', personas);
+  }catch(e){
+    personas = LS.get('personas', []);
+    msg('personas-msg', e.message, 'err');
+  }
+  pintarPersonas();
+}
+function pintarPersonas(){
+  const q = $('buscar').value.trim().toLowerCase();
+  const lista = personas.filter(p => !q || p.nombre.toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q));
+  $('lista-personas').innerHTML = lista.length
+    ? lista.map(p => `<button class="persona" onclick="elegirPersona('${esc(p.id)}')"><b>${esc(p.nombre)}</b><span>${esc(p.area||'')}</span></button>`).join('')
+    : '<div class="sub">No hay nadie con ese nombre. Pedile al administrador que te sume.</div>';
+}
+function elegirPersona(id){
+  personaSel = personas.find(p => p.id===id);
+  pinTipeado = ''; pintarPin(); msg('pin-msg','');
+  $('pin-nombre').textContent = personaSel.nombre;
+  ver('pin');
+}
+function volverPersonas(){ ver('personas'); if(!personas.length) cargarPersonas(); }
+
+(function armarTeclado(){
+  const teclas = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  $('teclado').innerHTML = teclas.map(t => t==='' ? '<button class="vacio"></button>' : `<button onclick="tecla('${t}')">${t}</button>`).join('');
+})();
+function pintarPin(){ [...$('pin-dots').children].forEach((d,i)=>d.classList.toggle('on', i<pinTipeado.length)); }
+document.addEventListener('keydown', e => {
+  if($('v-pin').classList.contains('oculto')) return;
+  if(/^\d$/.test(e.key)) tecla(e.key); else if(e.key==='Backspace') tecla('⌫');
+});
+async function tecla(t){
+  if(t==='⌫'){ pinTipeado = pinTipeado.slice(0,-1); pintarPin(); return; }
+  if(pinTipeado.length>=4) return;
+  pinTipeado += t; pintarPin(); vibrar(10);
+  if(pinTipeado.length===4){
+    const ses = { empleadoId: personaSel.id, pin: pinTipeado, nombre: personaSel.nombre };
+    msg('pin-msg','Verificando…','info');
+    try{
+      const j = await api('login', ses);
+      LS.set('sesion', ses);
+      msg('pin-msg','');
+      mostrarEmpleado(j, ses);
+    }catch(e){
+      pinTipeado=''; pintarPin(); vibrar([60,40,60]);
+      $('pin-dots').classList.remove('shake'); void $('pin-dots').offsetWidth; $('pin-dots').classList.add('shake');
+      msg('pin-msg', e.message, 'err');
+    }
+  }
+}
+
+async function abrirEmpleado_(ses){
+  ver('empleado');
+  $('emp-nombre').textContent = ses.nombre||'';
+  $('btn-marcar').disabled = true; $('btn-marcar').textContent = 'Cargando…';
+  try{
+    mesEmp = mesHoy();
+    const j = await api('estado', Object.assign({}, ses, {mes: mesEmp}));
+    mostrarEmpleado(j, ses);
+  }catch(e){
+    if(/PIN|no encontrado/i.test(e.message)){ LS.del('sesion'); ver('personas'); cargarPersonas(); msg('personas-msg', e.message+' Volvé a entrar.', 'err'); return; }
+    msg('marcar-msg', e.message, 'err');
+    $('btn-marcar').disabled = false; $('btn-marcar').textContent = 'Reintentar';
+    $('btn-marcar').onclick = () => { $('btn-marcar').onclick = marcar; abrirEmpleado_(ses); };
+  }
+}
+
+function mostrarEmpleado(j, ses){
+  estadoEmp = j; sesionEmp = ses;
+  desfaseServidor = new Date(j.ahora).getTime() - Date.now();
+  ver('empleado');
+  $('emp-nombre').textContent = j.empleado.nombre;
+  $('emp-area').textContent = j.empleado.area || '';
+  const chip = $('emp-chip');
+  chip.classList.toggle('dentro', j.adentro);
+  $('emp-chip-txt').textContent = j.adentro ? 'Trabajando' : 'Fuera de turno';
+  const b = $('btn-marcar');
+  b.disabled = false; b.onclick = marcar;
+  b.classList.toggle('salida', j.adentro);
+  b.innerHTML = j.adentro ? 'Marcar SALIDA<small>Terminar mi turno</small>' : 'Marcar ENTRADA<small>Empezar mi turno</small>';
+  if(j.adentro){
+    $('emp-timer-sub').textContent = 'Entraste a las ' + hora(j.desde);
+  } else {
+    $('emp-timer').textContent = '--:--:--';
+    $('emp-timer-sub').textContent = j.ubicacionLista ? `Para marcar tenés que estar en Aldea (a menos de ${j.radio} m).` : '⚠️ El administrador todavía no fijó la ubicación de Aldea.';
+  }
+  tick();
+  pintarMesEmp(j);
+}
+
+function pintarMesEmp(j){
+  const l = j.liquidacion;
+  $('emp-mes').textContent = mesTexto(j.mes);
+  const tercero = l.formaPago==='evento' ? `<div class="kpi"><div class="v">${l.eventos}</div><div class="l">Eventos</div></div>` : `<div class="kpi"><div class="v">${l.sinSalida||0}</div><div class="l">Sin salida</div></div>`;
+  $('emp-kpis').innerHTML = `
+    <div class="kpi grande"><div class="l">${j.mes===mesHoy()?'Llevás para cobrar este mes':'Total del mes'}</div><div class="v">${fmt(l.total)}</div></div>
+    <div class="kpi"><div class="v">${fmtH(l.horas)}</div><div class="l">Horas</div></div>
+    <div class="kpi"><div class="v">${l.dias}</div><div class="l">Días</div></div>
+    ${tercero}`;
+  let ex = l.explicacion;
+  if(l.ajustes.length) ex += ' · ' + l.ajustes.map(a => `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}`).join(' · ');
+  if(l.sinSalida) ex += ' · ⚠️ Hay turnos sin salida: avisale al administrador para que los corrija.';
+  $('emp-explica').textContent = ex;
+  $('emp-turnos').innerHTML = l.turnos.length ? l.turnos.map(filaTurno).join('') : '<div class="sub">Todavía no hay turnos este mes.</div>';
+}
+function filaTurno(t){
+  const ref = t.entrada || t.salida;
+  const rango = `${t.entrada?hora(t.entrada):'??'} → ${t.salida?hora(t.salida):(t.problema==='en curso'?'ahora':'??')}`;
+  const tag = t.problema==='en curso' ? '<span class="tag ok">en curso</span>'
+    : t.problema ? `<span class="tag warn">${t.problema}</span>` : `<span class="h">${fmtH(t.horas)}</span>`;
+  return `<div class="turno"><div><b style="text-transform:capitalize;">${diaCorto(ref)}</b><div class="sub mono">${rango}</div></div>${tag}</div>`;
+}
+
+async function cambiarMesEmp(delta){
+  const nuevo = mesMas(mesEmp, delta);
+  if(nuevo > mesHoy()) return;
+  mesEmp = nuevo;
+  try{ cargando(true); const j = await api('estado', Object.assign({}, sesionEmp, {mes: mesEmp})); estadoEmp.liquidacion = j.liquidacion; estadoEmp.mes = j.mes; pintarMesEmp(j); }
+  catch(e){ msg('marcar-msg', e.message, 'err'); }
+  finally{ cargando(false); }
+}
+
+let sesionEmp = null;
+function cerrarSesionEmp(){
+  if(estadoEmp && estadoEmp.adentro && !confirm('Tenés el turno abierto. Si salís de tu usuario el turno sigue corriendo. ¿Seguir?')) return;
+  LS.del('sesion'); estadoEmp = null; sesionEmp = null; $('buscar').value=''; msg('marcar-msg','');
+  ver('personas'); cargarPersonas();
+}
+
+function obtenerUbicacion(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation) return reject(new Error('Este celular no permite usar el GPS desde el navegador.'));
+    if(location.protocol!=='https:' && location.hostname!=='localhost') return reject(new Error('La app tiene que abrirse con https para usar el GPS.'));
+    navigator.geolocation.getCurrentPosition(
+      p => resolve(p.coords),
+      err => reject(new Error(
+        err.code===1 ? 'No diste permiso de ubicación. Tocá el candado de la barra de direcciones → Permisos → Ubicación → Permitir, y probá de nuevo.'
+        : err.code===3 ? 'El GPS tardó demasiado. Salí a un lugar abierto y probá de nuevo.'
+        : 'No se pudo obtener tu ubicación. Revisá que el GPS esté prendido.')),
+      { enableHighAccuracy:true, timeout:20000, maximumAge:0 });
+  });
+}
+
+let marcando = false;
+async function marcar(){
+  if(marcando || !estadoEmp) return;
+  const esperado = estadoEmp.adentro ? 'SALIDA' : 'ENTRADA';
+  if(esperado==='SALIDA' && !confirm('¿Marcar la SALIDA y terminar tu turno?')) return;
+  marcando = true;
+  const b = $('btn-marcar'); b.disabled = true; b.innerHTML = '📍 Buscando tu ubicación…';
+  msg('marcar-msg','');
+  try{
+    const c = await obtenerUbicacion();
+    b.innerHTML = 'Marcando…';
+    const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c.latitude, lng:c.longitude, precision:c.accuracy, esperado, mes: mesHoy() }));
+    vibrar([40,60,40]);
+    mesEmp = mesHoy();
+    mostrarEmpleado(j, sesionEmp);
+    msg('marcar-msg', j.marcado==='ENTRADA'
+      ? `✅ Entrada marcada a las ${hora(j.ahora)}. ¡Buen turno!`
+      : `✅ Salida marcada a las ${hora(j.ahora)}. Trabajaste ${fmtH(j.horasTurno)}. ¡Gracias!`, 'ok');
+  }catch(e){
+    vibrar([80,50,80]);
+    let t = e.message;
+    if(e.fuera && e.distancia) t += ' Si estás en Aldea, esperá unos segundos a que el GPS se ajuste y probá otra vez.';
+    msg('marcar-msg', t, 'err');
+    if(e.refrescar){ try{ const j = await api('estado', Object.assign({}, sesionEmp, {mes: mesHoy()})); mostrarEmpleado(j, sesionEmp); msg('marcar-msg', t, 'err'); }catch(_){} }
+    else if(estadoEmp) mostrarEmpleado(estadoEmp, sesionEmp), msg('marcar-msg', t, 'err');
+  }finally{ marcando = false; }
+}
+
+/* ══════════════ ADMINISTRADOR ══════════════ */
+let adm = null, mesAdm = mesHoy(), tabActual = 'resumen';
+const pinAdm = () => SS.get('pinAdmin') || '';
+
+function irAdminLogin(){
+  if(!apiUrl()){ ver('conexion'); return; }
+  if(pinAdm()){ ver('admin'); cargarAdmin(); return; }
+  $('adm-pin').value=''; msg('adm-msg',''); ver('adminlogin');
+  setTimeout(()=>$('adm-pin').focus(), 50);
+}
+async function adminLogin(){
+  const pin = $('adm-pin').value.trim();
+  if(!pin) return;
+  msg('adm-msg','Verificando…','info');
+  try{ await api('adminLogin', {pinAdmin: pin}); SS.set('pinAdmin', pin); msg('adm-msg',''); ver('admin'); tab('resumen'); cargarAdmin(); }
+  catch(e){ msg('adm-msg', e.message, 'err'); }
+}
+function salirAdmin(){ SS.del('pinAdmin'); adm = null; irInicio(); }
+
+async function apiAdm(accion, datos){
+  try{ return await api(accion, Object.assign({pinAdmin: pinAdm()}, datos||{})); }
+  catch(e){ if(e.authError){ SS.del('pinAdmin'); ver('adminlogin'); msg('adm-msg', e.message, 'err'); } throw e; }
+}
+
+async function cargarAdmin(){
+  cargando(true);
+  try{
+    adm = await apiAdm('adminDatos', {mes: mesAdm});
+    pintarAdmin();
+  }catch(e){ if(!e.authError) alert(e.message); }
+  finally{ cargando(false); }
+}
+function cambiarMesAdm(d){ const n = mesMas(mesAdm, d); if(n > mesHoy()) return; mesAdm = n; cargarAdmin(); }
+function tab(t){
+  tabActual = t;
+  [...$('tabs').children].forEach(b => b.classList.toggle('on', b.dataset.t===t));
+  ['resumen','marcajes','equipo','ajustes'].forEach(x => $('t-'+x).classList.toggle('oculto', x!==t));
+  $('adm-mesnav').classList.toggle('oculto', t==='equipo' || t==='ajustes');
+}
+
+function pintarAdmin(){
+  $('adm-mes').textContent = mesTexto(adm.mes);
+  pintarResumen(); pintarMarcajes(); pintarEquipo(); pintarAjustes();
+}
+
+function pintarResumen(){
+  const cfg = adm.config;
+  $('adm-alerta-ubic').innerHTML = (!cfg.centroLat || !cfg.centroLng)
+    ? `<div class="alerta"><b>📍 Falta fijar la ubicación de Aldea</b>Hasta que la fijes nadie puede marcar. <button class="link" onclick="tab('ajustes')">Ir a Ajustes</button></div>` : '';
+  $('adm-ahora-card').classList.toggle('oculto', adm.mes!==mesHoy());
+  $('adm-ahora').innerHTML = adm.adentro.length
+    ? adm.adentro.map(a => `<span>● ${esc(a.nombre)} · desde ${hora(a.desde)}</span>`).join('')
+    : '<div class="sub">No hay nadie con el turno abierto.</div>';
+
+  const problemas = [];
+  adm.liquidacion.forEach(l => l.turnos.forEach(t => { if(t.problema==='sin salida' || t.problema==='sin entrada') problemas.push({l, t}); }));
+  $('adm-alertas').innerHTML = problemas.length ? `<div class="alerta"><b>⚠️ ${problemas.length} turno${problemas.length>1?'s':''} para corregir</b>
+    ${problemas.map(({l,t}) => `<div class="it"><span><b style="display:inline;">${esc(l.nombre)}</b> · ${t.problema==='sin salida' ? 'entró '+diaCorto(t.entrada)+' '+hora(t.entrada)+' y no marcó salida' : 'salió '+diaCorto(t.salida)+' '+hora(t.salida)+' sin entrada'}</span>
+      <button class="btn chico" onclick="abrirManual('${l.empleadoId}','${t.problema==='sin salida'?'SALIDA':'ENTRADA'}','${t.entrada||t.salida}')">Corregir</button></div>`).join('')}</div>` : '';
+
+  const tot = adm.liquidacion.reduce((a,l)=>a+l.total,0);
+  const hs = adm.liquidacion.reduce((a,l)=>a+l.horas,0);
+  $('adm-total').textContent = fmt(tot);
+  $('adm-horas').textContent = fmtH(hs);
+  $('adm-liq').innerHTML = adm.liquidacion.length ? adm.liquidacion.map(l => `
+    <div class="emp ${l.activo?'':'inactivo'}">
+      <div class="top">
+        <div><div class="nom">${esc(l.nombre)}</div><div class="sub">${esc(l.area||'')} · ${esc(l.formaPagoTexto)}</div></div>
+        <div class="tot">${fmt(l.total)}</div>
+      </div>
+      <div class="sub" style="margin-top:4px;">${esc(l.explicacion)}${l.formaPago!=='evento'?'':` · ${fmtH(l.horas)}`} · ${l.dias} día${l.dias===1?'':'s'}</div>
+      ${l.ajustes.length ? `<div class="sub" style="margin-top:2px;">${l.ajustes.map(a=>`${esc(a.concepto)}: <b>${a.monto>0?'+':''}${fmt(a.monto)}</b>`).join(' · ')}</div>` : ''}
+      <div class="acc">
+        <button class="btn chico ghost" onclick="recibo('${l.empleadoId}')">🧾 Recibo</button>
+        <button class="btn chico wa" onclick="whatsapp('${l.empleadoId}')">WhatsApp</button>
+        <button class="btn chico ghost" onclick="abrirAjuste('${l.empleadoId}')">± Extra / descuento</button>
+      </div>
+      ${l.turnos.length ? `<details><summary>Ver ${l.turnos.length} turno${l.turnos.length>1?'s':''}</summary>${l.turnos.map(filaTurno).join('')}</details>` : ''}
+    </div>`).join('') : '<div class="sub">No hay datos este mes.</div>';
+  $('btn-guardar-liq').textContent = adm.liquidacionGuardada ? 'Actualizar liquidación' : 'Guardar liquidación';
+  msg('liq-msg', adm.liquidacionGuardada ? `Ya hay una hoja “Liquidación ${adm.mes}” en el Sheet. Si la guardás de nuevo se reemplaza con estos números.` : '', 'info');
+}
+
+function pintarMarcajes(){
+  const sel = $('filtro-emp'), prev = sel.value;
+  sel.innerHTML = '<option value="">Todas las personas</option>' + adm.empleados.map(e => `<option value="${esc(e.id)}">${esc(e.nombre)}</option>`).join('');
+  sel.value = prev;
+  const f = sel.value;
+  const lista = adm.marcajes.filter(m => !f || m.empleadoId===f);
+  let html = '', diaPrev = '';
+  lista.forEach(m => {
+    const d = new Date(m.fechaHora).toDateString();
+    if(d!==diaPrev){ html += `<div class="dia-tit">${diaLargo(m.fechaHora)}</div>`; diaPrev = d; }
+    const extra = m.origen==='manual' ? `<span class="tag manual" title="${esc(m.nota)}">manual</span>` : (m.distancia!=='' && m.distancia!=null ? `<span class="tag">${m.distancia} m</span>` : '');
+    html += `<div class="marc">
+      <div><span class="mono" style="font-weight:600;">${hora(m.fechaHora)}</span> · <b>${esc(m.nombre)}</b>
+        <div><span class="tag ${m.tipo==='ENTRADA'?'ok':'warn'}">${m.tipo==='ENTRADA'?'Entrada':'Salida'}</span> ${extra}${m.nota && m.origen==='manual' ? ` <span class="sub">${esc(m.nota)}</span>`:''}</div></div>
+      <button class="x" title="Borrar" onclick="borrarMarcaje('${m.id}')">🗑</button></div>`;
+  });
+  $('adm-marcajes').innerHTML = html || '<div class="sub" style="margin-top:8px;">No hay marcajes en este mes.</div>';
+}
+
+function pintarEquipo(){
+  const emps = [...adm.empleados].sort((a,b) => (b.activo-a.activo) || a.nombre.localeCompare(b.nombre,'es'));
+  $('adm-equipo').innerHTML = emps.map(e => `
+    <div class="emp ${e.activo?'':'inactivo'}">
+      <div class="top">
+        <div><div class="nom">${esc(e.nombre)} ${e.activo?'':'<span class="tag">inactivo</span>'}</div>
+          <div class="sub">${esc(e.area||'Sin área')} · ${esc(adm.formasPago[e.formaPago]||e.formaPago)}: <b>${fmt(e.valor)}</b>${e.formaPago==='hora'?'/h':e.formaPago==='semanal'?`/semana (${e.horasSemana||'?'} h)`:e.formaPago==='evento'?'/evento':'/mes'}</div>
+          ${e.notas?`<div class="sub" style="margin-top:2px;">${esc(e.notas)}</div>`:''}</div>
+        <div class="mono" style="font-size:13px;color:var(--gris);" title="PIN">PIN ${esc(e.pin)}</div>
+      </div>
+      <div class="acc">
+        <button class="btn chico ghost" onclick="abrirEmpleado('${e.id}')">✏️ Editar</button>
+        <button class="btn chico wa" onclick="mandarAcceso('${e.id}')">Mandar acceso</button>
+      </div>
+    </div>`).join('') || '<div class="sub">Todavía no hay nadie cargado.</div>';
+}
+
+function pintarAjustes(){
+  const c = adm.config;
+  $('cf-lat').value = c.centroLat || ''; $('cf-lng').value = c.centroLng || '';
+  $('cf-radio').value = c.radio || 100;
+  $('cf-lugar').value = c.nombreLugar || 'Aldea de Valle';
+  actualizarLinkMapa();
+  $('cf-link').value = location.origin + location.pathname;
+}
+
+/* ───── Equipo ───── */
+function actualizarFormaPago(){
+  const f = $('me-forma').value;
+  $('me-valor-lbl').textContent = {hora:'Valor por hora ($)', mensual:'Sueldo por mes ($)', semanal:'Valor por semana ($)', evento:'Valor por evento ($)'}[f];
+  $('me-hs-box').classList.toggle('oculto', f!=='semanal');
+  $('me-forma-ayuda').textContent = {
+    hora:'Se paga cada hora marcada.',
+    mensual:'Cobra lo mismo todos los meses. Marca igual para que quede el registro.',
+    semanal:'',
+    evento:'Cada turno (entrada + salida) cuenta como un evento. Si hace dos cumpleaños seguidos, que marque salida y entrada entre uno y otro.',
+  }[f];
+}
+function preset(area, forma, valor){
+  $('me-area').value = area; $('me-forma').value = forma;
+  if(valor) $('me-valor').value = valor; else $('me-valor').value = '';
+  actualizarFormaPago();
+  $('me-nombre').focus();
+}
+function pinAzar(){
+  const usados = new Set(adm.empleados.filter(e=>e.activo && e.id!==$('me-id').value).map(e=>String(e.pin)));
+  let p; do{ p = String(1000 + Math.floor(Math.random()*9000)); }while(usados.has(p));
+  $('me-pin').value = p;
+}
+function abrirEmpleado(id){
+  const e = id ? adm.empleados.find(x=>x.id===id) : null;
+  $('me-titulo').textContent = e ? 'Editar a '+e.nombre : 'Sumar persona';
+  $('me-presets').classList.toggle('oculto', !!e);
+  $('me-id').value = e ? e.id : '';
+  $('me-nombre').value = e ? e.nombre : '';
+  $('me-area').value = e ? e.area : '';
+  $('me-pin').value = e ? e.pin : '';
+  $('me-forma').value = e ? e.formaPago : 'hora';
+  $('me-valor').value = e ? e.valor : '';
+  $('me-hs').value = e && e.horasSemana ? e.horasSemana : '';
+  $('me-tel').value = e ? e.telefono : '';
+  $('me-notas').value = e ? e.notas : '';
+  $('me-activo').checked = e ? e.activo : true;
+  if(!e) pinAzar();
+  actualizarFormaPago(); msg('me-msg','');
+  $('m-empleado').classList.remove('oculto');
+}
+async function guardarEmpleado(){
+  const empleado = {
+    id: $('me-id').value || undefined, nombre: $('me-nombre').value, area: $('me-area').value, pin: $('me-pin').value,
+    formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value,
+    telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked,
+  };
+  if(empleado.valor===''){ msg('me-msg','Falta el valor.','err'); return; }
+  if(empleado.formaPago==='semanal' && !(Number(empleado.horasSemana)>0)){ msg('me-msg','Falta cuántas horas trabaja por semana.','err'); return; }
+  msg('me-msg','Guardando…','info');
+  try{
+    const r = await apiAdm('guardarEmpleado', {empleado});
+    const nuevo = !empleado.id;
+    cerrarModal('m-empleado');
+    await cargarAdmin();
+    if(nuevo && empleado.telefono && confirm(`✅ ${empleado.nombre} quedó cargado/a. ¿Le mandás por WhatsApp el link y su PIN?`)) mandarAcceso(r.id);
+  }catch(e){ msg('me-msg', e.message, 'err'); }
+}
+function telWa(t){
+  let d = String(t||'').replace(/\D/g,'');
+  if(!d) return '';
+  if(d.startsWith('54')) return d.startsWith('549') ? d : '549'+d.slice(2);
+  return '549' + d.replace(/^0/,'');
+}
+function abrirWa(tel, texto){
+  const n = telWa(tel);
+  window.open((n ? `https://wa.me/${n}` : 'https://wa.me/') + '?text=' + encodeURIComponent(texto), '_blank');
+}
+function mandarAcceso(id){
+  const e = adm.empleados.find(x=>x.id===id);
+  const link = location.origin + location.pathname;
+  const t = `Hola ${e.nombre.split(' ')[0]}! 👋 Desde ahora marcamos entrada y salida en Aldea con el celular.\n\n1) Entrá a: ${link}\n2) Tocá tu nombre: *${e.nombre}*\n3) Tu PIN es: *${e.pin}*\n\nAl llegar tocá “Marcar ENTRADA” y al irte “Marcar SALIDA”. Tenés que estar dentro de Aldea y con el GPS prendido (la primera vez te pide permiso de ubicación: poné “Permitir”).\n\nTip: en el menú del navegador elegí “Agregar a pantalla de inicio” así queda como una app. Ahí también vas a ver tus horas y lo que llevás para cobrar en el mes.`;
+  if(!e.telefono && !confirm('No tiene celular cargado. Se abre WhatsApp para que elijas el contacto. ¿Seguir?')) return;
+  abrirWa(e.telefono, t);
+}
+
+/* ───── Marcajes ───── */
+function localInput(d){ const z = new Date(d.getTime() - d.getTimezoneOffset()*60000); return z.toISOString().slice(0,16); }
+function abrirManual(empId, tipo, refISO){
+  $('mm-emp').innerHTML = adm.empleados.filter(e=>e.activo || e.id===empId).map(e => `<option value="${esc(e.id)}">${esc(e.nombre)}</option>`).join('');
+  if(empId) $('mm-emp').value = empId;
+  $('mm-tipo').value = tipo || 'ENTRADA';
+  let f = new Date();
+  if(refISO){ f = new Date(refISO); if(tipo==='SALIDA') f = new Date(f.getTime() + 6*3600000); else f = new Date(f.getTime() - 6*3600000); }
+  if(f > new Date()) f = new Date();
+  f.setSeconds(0,0);
+  $('mm-fecha').value = localInput(f);
+  $('mm-fecha').max = localInput(new Date());
+  $('mm-nota').value = tipo==='SALIDA' ? 'Se olvidó de marcar la salida' : tipo==='ENTRADA' ? 'Se olvidó de marcar la entrada' : '';
+  msg('mm-msg', refISO ? 'Revisá la hora: es una sugerencia.' : '', refISO ? 'info' : '');
+  $('m-manual').classList.remove('oculto');
+}
+async function guardarManual(){
+  const v = $('mm-fecha').value;
+  if(!v){ msg('mm-msg','Falta la fecha y hora.','err'); return; }
+  // Se manda en hora de Argentina (UTC-3) para que no dependa de la zona del celular.
+  const d = new Date(v); const ar = new Date(d.getTime() - 3*3600000);
+  const fechaHora = ar.toISOString().slice(0,16);
+  msg('mm-msg','Guardando…','info');
+  try{
+    await apiAdm('marcajeManual', { empleadoId: $('mm-emp').value, tipo: $('mm-tipo').value, fechaHora, nota: $('mm-nota').value });
+    cerrarModal('m-manual'); await cargarAdmin();
+  }catch(e){ msg('mm-msg', e.message, 'err'); }
+}
+async function borrarMarcaje(id){
+  const m = adm.marcajes.find(x=>x.id===id);
+  if(!confirm(`¿Borrar la ${m.tipo.toLowerCase()} de ${m.nombre} del ${diaCorto(m.fechaHora)} a las ${hora(m.fechaHora)}?`)) return;
+  cargando(true,'Borrando…');
+  try{ await apiAdm('borrarMarcaje', {id}); await cargarAdmin(); }
+  catch(e){ alert(e.message); }
+  finally{ cargando(false); }
+}
+
+/* ───── Ajustes de liquidación (extras / descuentos) ───── */
+let signo = 1;
+function signoAjuste(s){ signo = s; $('ma-mas').className = 'btn '+(s>0?'':'ghost'); $('ma-menos').className = 'btn '+(s<0?'rojo':'ghost'); }
+function abrirAjuste(empId){
+  const l = adm.liquidacion.find(x=>x.empleadoId===empId);
+  $('ma-emp').value = empId; $('ma-nombre').textContent = l.nombre;
+  $('ma-monto').value = l.formaPago==='evento' ? l.valor : ''; $('ma-concepto').value = '';
+  signoAjuste(1); msg('ma-msg','');
+  $('ma-lista').innerHTML = l.ajustes.length ? '<div class="sub" style="font-weight:700;margin-bottom:4px;">Cargados este mes</div>' + l.ajustes.map(a => `<div class="marc"><span>${esc(a.concepto)} · <b>${a.monto>0?'+':''}${fmt(a.monto)}</b></span><button class="x" onclick="borrarAjuste('${a.id}')">🗑</button></div>`).join('') : '';
+  $('m-ajuste').classList.remove('oculto');
+}
+async function guardarAjuste(){
+  const monto = Math.abs(Number($('ma-monto').value)) * signo;
+  if(!monto){ msg('ma-msg','Poné el monto.','err'); return; }
+  msg('ma-msg','Guardando…','info');
+  try{
+    const empId = $('ma-emp').value;
+    await apiAdm('guardarAjuste', { mes: adm.mes, empleadoId: empId, monto, concepto: $('ma-concepto').value });
+    await cargarAdmin(); abrirAjuste(empId); msg('ma-msg','✅ Guardado','ok');
+  }catch(e){ msg('ma-msg', e.message, 'err'); }
+}
+async function borrarAjuste(id){
+  if(!confirm('¿Borrar este extra/descuento?')) return;
+  try{ const empId = $('ma-emp').value; await apiAdm('borrarAjuste', {id}); await cargarAdmin(); abrirAjuste(empId); }
+  catch(e){ msg('ma-msg', e.message, 'err'); }
+}
+
+/* ───── Recibos, WhatsApp, CSV ───── */
+function textoRecibo(l){
+  const lugar = adm.config.nombreLugar || 'Aldea de Valle';
+  let t = `*${lugar} — Liquidación ${mesTexto(adm.mes)}*\n${l.nombre}${l.area?' ('+l.area+')':''}\n\n`;
+  t += `Forma de pago: ${l.formaPagoTexto}\n`;
+  t += `Horas trabajadas: ${fmtH(l.horas)} en ${l.dias} día${l.dias===1?'':'s'}\n`;
+  if(l.formaPago==='evento') t += `Eventos: ${l.eventos}\n`;
+  t += `Cálculo: ${l.explicacion} = ${fmt(l.calculado)}\n`;
+  l.ajustes.forEach(a => t += `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}\n`);
+  t += `\n*Total a cobrar: ${fmt(l.total)}*`;
+  return t;
+}
+function whatsapp(empId){
+  const l = adm.liquidacion.find(x=>x.empleadoId===empId);
+  abrirWa(l.telefono, textoRecibo(l) + '\n\nCualquier duda avisame. ¡Gracias por el trabajo!');
+}
+function recibo(empId){
+  const l = adm.liquidacion.find(x=>x.empleadoId===empId);
+  const lugar = esc(adm.config.nombreLugar || 'Aldea de Valle');
+  const filas = [...l.turnos].reverse().map(t => `<tr><td>${t.entrada?new Date(t.entrada).toLocaleDateString('es-AR'):new Date(t.salida).toLocaleDateString('es-AR')}</td><td>${t.entrada?hora(t.entrada):'—'}</td><td>${t.salida?hora(t.salida):'—'}</td><td style="text-align:right;">${t.problema?esc(t.problema):fmtH(t.horas)}</td></tr>`).join('');
+  const w = window.open('', '_blank');
+  if(!w){ alert('El navegador bloqueó la ventana. Permití ventanas emergentes para este sitio.'); return; }
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo ${esc(l.nombre)} ${adm.mes}</title>
+  <style>body{font-family:system-ui,sans-serif;color:#15140F;max-width:620px;margin:24px auto;padding:0 16px;}h1{font-size:20px;margin:0;}h2{font-size:15px;font-weight:600;color:#6E6A5C;margin:4px 0 18px;text-transform:capitalize;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;}td,th{padding:6px 4px;border-bottom:1px solid #E6E1D0;text-align:left;}th{font-size:11px;color:#6E6A5C;text-transform:uppercase;}
+  .tot{display:flex;justify-content:space-between;font-size:20px;font-weight:800;border-top:2px solid #15140F;padding-top:10px;margin-top:10px;}.l{display:flex;justify-content:space-between;padding:4px 0;font-size:14px;}
+  .firma{display:flex;gap:40px;margin-top:60px;}.firma div{flex:1;border-top:1px solid #15140F;padding-top:6px;font-size:12px;text-align:center;}
+  button{margin-top:24px;padding:12px 18px;font-size:15px;border:none;border-radius:10px;background:#1F3D2B;color:#fff;}@media print{button{display:none;}}</style></head><body>
+  <h1>${lugar} — Recibo de pago</h1><h2>${mesTexto(adm.mes)}</h2>
+  <div class="l"><span>Nombre</span><b>${esc(l.nombre)}</b></div>
+  <div class="l"><span>Área</span><span>${esc(l.area||'—')}</span></div>
+  <div class="l"><span>Forma de pago</span><span>${esc(l.formaPagoTexto)}</span></div>
+  <div class="l"><span>Horas trabajadas</span><span>${fmtH(l.horas)} · ${l.dias} día${l.dias===1?'':'s'}</span></div>
+  ${l.formaPago==='evento'?`<div class="l"><span>Eventos</span><span>${l.eventos}</span></div>`:''}
+  <div class="l"><span>${esc(l.explicacion)}</span><b>${fmt(l.calculado)}</b></div>
+  ${l.ajustes.map(a=>`<div class="l"><span>${esc(a.concepto)}</span><b>${a.monto>0?'+':''}${fmt(a.monto)}</b></div>`).join('')}
+  <div class="tot"><span>Total</span><span>${fmt(l.total)}</span></div>
+  ${filas?`<table><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th style="text-align:right;">Horas</th></tr></thead><tbody>${filas}</tbody></table>`:''}
+  <div class="firma"><div>Firma de ${esc(l.nombre)}</div><div>Firma ${lugar}</div></div>
+  <button onclick="window.print()">Imprimir / Guardar PDF</button></body></html>`);
+  w.document.close();
+}
+function exportarCSV(){
+  const sep = ';';
+  const q = v => { const s = String(v==null?'':v); return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const num = n => String(Math.round(Number(n)*100)/100).replace('.', ',');
+  const filas = [['Empleado','Área','Forma de pago','Valor','Horas','Días','Eventos','Calculado','Ajustes','Total','Turnos sin salida','Detalle']];
+  adm.liquidacion.forEach(l => filas.push([l.nombre,l.area,l.formaPagoTexto,l.valor,num(l.horas),l.dias,l.eventos,l.calculado,l.totalAjustes,l.total,l.sinSalida,l.explicacion + (l.ajustes.length?' · '+l.ajustes.map(a=>a.concepto+': '+a.monto).join(' · '):'')]));
+  filas.push(['TOTAL','','','','','','','','',adm.liquidacion.reduce((a,l)=>a+l.total,0),'','']);
+  filas.push([]); filas.push(['Marcajes']); filas.push(['Fecha','Hora','Persona','Tipo','Origen','Distancia (m)','Nota']);
+  [...adm.marcajes].reverse().forEach(m => filas.push([new Date(m.fechaHora).toLocaleDateString('es-AR'), hora(m.fechaHora), m.nombre, m.tipo, m.origen, m.distancia, m.nota]));
+  const csv = '﻿' + filas.map(f => f.map(q).join(sep)).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `liquidacion-aldea-${adm.mes}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function guardarLiquidacion(){
+  if(adm.liquidacion.some(l=>l.sinSalida) && !confirm('Hay turnos sin salida que no suman horas. ¿Guardar igual?')) return;
+  msg('liq-msg','Guardando en el Sheet…','info');
+  try{ const r = await apiAdm('guardarLiquidacion', {mes: adm.mes}); adm.liquidacionGuardada = true; msg('liq-msg', `✅ Guardada en la hoja “${r.hoja}”. Total ${fmt(r.total)}.`, 'ok'); $('btn-guardar-liq').textContent='Actualizar liquidación'; }
+  catch(e){ msg('liq-msg', e.message, 'err'); }
+}
+
+/* ───── Ajustes ───── */
+function actualizarLinkMapa(){
+  const lat = $('cf-lat').value, lng = $('cf-lng').value;
+  const a = $('cf-mapa');
+  if(lat && lng){ a.href = `https://www.google.com/maps?q=${lat},${lng}`; a.classList.remove('oculto'); } else a.classList.add('oculto');
+}
+['cf-lat','cf-lng'].forEach(id => $(id).addEventListener('input', actualizarLinkMapa));
+async function usarMiUbicacion(){
+  msg('cf-msg','📍 Buscando tu ubicación…','info');
+  try{
+    const c = await obtenerUbicacion();
+    $('cf-lat').value = c.latitude.toFixed(6); $('cf-lng').value = c.longitude.toFixed(6);
+    actualizarLinkMapa();
+    msg('cf-msg', `Ubicación tomada (precisión ±${Math.round(c.accuracy)} m). ${c.accuracy>40?'La precisión es baja: esperá unos segundos al aire libre y probá de nuevo. ':''}Tocá “Guardar” para confirmarla.`, c.accuracy>40?'err':'ok');
+  }catch(e){ msg('cf-msg', e.message, 'err'); }
+}
+async function guardarUbicacion(){
+  msg('cf-msg','Guardando…','info');
+  try{ await apiAdm('guardarConfig', {config:{centroLat:$('cf-lat').value, centroLng:$('cf-lng').value, radio:$('cf-radio').value}}); await cargarAdmin(); msg('cf-msg','✅ Ubicación guardada. Ya se puede marcar.','ok'); }
+  catch(e){ msg('cf-msg', e.message, 'err'); }
+}
+function distM(a,b,c,d){ const R=6371000, r=Math.PI/180; const x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2; return 2*R*Math.asin(Math.sqrt(x)); }
+async function probarDistancia(){
+  const lat = Number($('cf-lat').value), lng = Number($('cf-lng').value);
+  if(!lat || !lng){ msg('cf-msg','Primero fijá la ubicación.','err'); return; }
+  msg('cf-msg','📍 Midiendo…','info');
+  try{
+    const c = await obtenerUbicacion();
+    const d = Math.round(distM(c.latitude, c.longitude, lat, lng));
+    const r = Number($('cf-radio').value)||100;
+    msg('cf-msg', `Estás a ${d} m del centro (±${Math.round(c.accuracy)} m). ${d<=r?'✅ Desde acá se puede marcar.':'❌ Desde acá NO se puede marcar.'}`, d<=r?'ok':'err');
+  }catch(e){ msg('cf-msg', e.message, 'err'); }
+}
+async function guardarLugar(){
+  try{ await apiAdm('guardarConfig', {config:{nombreLugar:$('cf-lugar').value}}); await cargarAdmin(); msg('cf-lugar-msg','✅ Guardado','ok'); }
+  catch(e){ msg('cf-lugar-msg', e.message, 'err'); }
+}
+async function cambiarPinAdmin(){
+  const p = $('cf-pin').value.trim();
+  if(!/^\d{4,8}$/.test(p)){ msg('cf-pin-msg','Tiene que ser de 4 a 8 números.','err'); return; }
+  if(!confirm('¿Cambiar el PIN de administrador? Anotalo en un lugar seguro.')) return;
+  try{ await apiAdm('guardarConfig', {config:{pinAdminNuevo:p}}); SS.set('pinAdmin', p); $('cf-pin').value=''; msg('cf-pin-msg','✅ PIN cambiado.','ok'); }
+  catch(e){ msg('cf-pin-msg', e.message, 'err'); }
+}
+async function copiar(texto, msgId){
+  try{ await navigator.clipboard.writeText(texto); msg(msgId,'✅ Copiado','ok'); }
+  catch(e){ msg(msgId,'Mantené apretado el link para copiarlo.','info'); }
+}
+function cerrarModal(id){ $(id).classList.add('oculto'); }
+
+/* ───── Inicio ───── */
+document.addEventListener('visibilitychange', () => {
+  // Al volver a la app se refresca el estado (por si marcó desde otro lado o pasó mucho tiempo).
+  if(document.visibilityState!=='visible') return;
+  if(!$('v-empleado').classList.contains('oculto') && sesionEmp && !marcando){
+    api('estado', Object.assign({}, sesionEmp, {mes: mesEmp})).then(j => mostrarEmpleado(j, sesionEmp)).catch(()=>{});
+  }
+});
+(function init(){
+  const p = new URLSearchParams(location.search);
+  if(p.get('api') && /^https:\/\/script\.google\.com\/.+\/exec$/.test(p.get('api'))){ LS.set('api', p.get('api')); history.replaceState(null,'',location.pathname); }
+  tick();
+  if(p.has('admin')) irAdminLogin(); else irInicio();
+})();
+</script>
+</body>
+</html>
