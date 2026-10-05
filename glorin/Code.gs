@@ -55,6 +55,10 @@ const CONFIG = {
   diasAnticipacionMin: 2,              // no se puede reservar con menos de X días
   diasHaciaAdelante: 120,              // cuántos días se muestran en el calendario
   horaResumenDiario: 8,                // hora del mail diario de resumen
+  // ---- Profes ----
+  urlWeb: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec',
+  convocarAlSenar: true,               // al pasar a Señado, se manda la convocatoria por mail a los profes activos
+  minutosAntesProfes: 20,              // cuánto antes tienen que llegar los profes a armar
   horarios: ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','14:00','14:30','15:00','15:30',
              '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00'],
   stock: { metegol: 2, inflable: 1 },  // cuántos tenés de cada uno
@@ -105,11 +109,17 @@ const COLUMNAS = [
   'Momentos (merienda/torta/piñata)', 'Hora merienda', 'Hora torta', 'Atención especial',
   'Cómo nos conoció', 'Comentarios', 'Detalle completo (JSON)',
   // columnas nuevas (v2) — se agregan solas al final si tu planilla ya existía
-  'Saldo', 'WhatsApp link', 'ID evento calendario', 'Último aviso'
+  'Saldo', 'WhatsApp link', 'ID evento calendario', 'Último aviso',
+  // columnas de profes (v3)
+  'Profes necesarios', 'Profes asignados', 'Suplentes', 'Convocatoria'
 ];
+const HOJA_PROFES = 'Profes';
+const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas'];
 
 // ======== SERVIR LA PÁGINA ========
-function doGet() {
+function doGet(e) {
+  const token = e && e.parameter && e.parameter.convocatoria;
+  if (token) return paginaConvocatoria_(String(token));
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('GLORIN Animaciones · Reservá tu cumple')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
@@ -123,6 +133,7 @@ function configurarInicial() {
   sh.getRange(2, columna_(sh, 'Estado'), 1000, 1).setDataValidation(regla);
   colorearEstados_(sh);
   obtenerCalendario_();
+  obtenerHojaProfes_();
 
   // Disparadores: al editar la planilla y resumen diario. Se recrean sin duplicar.
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -336,7 +347,8 @@ function enviarReserva(d) {
     'Evitar': d.evitar, 'Momentos (merienda/torta/piñata)': (d.momentos || []).join(', '),
     'Hora merienda': d.horaMerienda, 'Hora torta': d.horaTorta, 'Atención especial': d.atencionEspecial,
     'Cómo nos conoció': d.comoNosConocio, 'Comentarios': d.comentarios, 'Detalle completo (JSON)': JSON.stringify(d),
-    'WhatsApp link': waFamilia, 'ID evento calendario': ev.getId(), 'Último aviso': ''
+    'WhatsApp link': waFamilia, 'ID evento calendario': ev.getId(), 'Último aviso': '',
+    'Profes necesarios': p.paquete.profes || 1
   };
   const fechaYHora = { 'Fecha evento': 1, 'Hora inicio': 1, 'Hora fin': 1 };
   sh.appendRow(encabezados_(sh).map(function (h) {
@@ -542,6 +554,9 @@ function onOpen() {
     .addItem('✅ Marcar como Señado', 'menuSenado')
     .addItem('❌ Cancelar reserva', 'menuCancelar')
     .addSeparator()
+    .addItem('📣 Convocar profes (fila seleccionada)', 'menuConvocar')
+    .addItem('👥 Ver la pestaña de profes', 'menuVerProfes')
+    .addSeparator()
     .addItem('📋 Mandarme el resumen ahora', 'resumenDiario')
     .addItem('⚙️ Configuración inicial', 'configurarInicial')
     .addToUi();
@@ -606,6 +621,9 @@ function aplicarEstado_(sh, filaN, estado) {
       mailFamilia_('confirmada', r.email, { id: r.id, d: d, p: calcularPresupuesto_(d), fin: r.horaFin });
     } catch (err) { console.error(err); }
   }
+  if (estado === 'Señado' && CONFIG.convocarAlSenar) {
+    try { mailConvocatoriaProfes_(sh, filaN); } catch (err) { console.error(err); }
+  }
   sh.getRange(filaN, columna_(sh, 'Último aviso')).setValue(estado + ' · ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM HH:mm'));
 }
 
@@ -621,7 +639,11 @@ function leerFila_(sh, filaN) {
     horaFin: txt(g('Hora fin'), 'HH:mm'), adulto: g('Adulto responsable'), whatsapp: g('WhatsApp'), email: g('Email'),
     cumpleanero: g('Cumpleañero/a'), recibido: g('Recibido'), total: total,
     saldo: Number(g('Saldo')) || (total ? total - (Number(g('Seña')) || 0) : 0),
-    eventoId: g('ID evento calendario'), json: g('Detalle completo (JSON)')
+    eventoId: g('ID evento calendario'), json: g('Detalle completo (JSON)'),
+    direccion: g('Dirección'), zona: g('Zona'), paquete: g('Paquete'), cantChicos: g('Cant. chicos'),
+    rangoEdades: g('Rango de edades'), edad: g('Edad que cumple'), extras: g('Extras'),
+    profesNecesarios: Number(g('Profes necesarios')) || 0,
+    asignados: lista_(g('Profes asignados')), suplentes: lista_(g('Suplentes')), token: String(g('Convocatoria') || '')
   };
 }
 
@@ -631,14 +653,18 @@ function resumenDiario() {
   const tz = Session.getScriptTimeZone();
   const manana = Utilities.formatDate(new Date(Date.now() + 86400000), tz, 'yyyy-MM-dd');
   const limite = new Date(Date.now() - CONFIG.horasParaSenar * 3600000);
-  const deManana = [], sinSena = [];
+  const enUnaSemana = Utilities.formatDate(new Date(Date.now() + 7 * 86400000), tz, 'yyyy-MM-dd');
+  const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const deManana = [], sinSena = [], faltanProfes = [];
   for (let f = 2; f <= sh.getLastRow(); f++) {
     const r = leerFila_(sh, f);
     if (!r.id) continue;
+    if (r.estado === 'Señado' && r.fecha >= hoy && r.fecha <= enUnaSemana && r.asignados.length < necesarios_(r)) faltanProfes.push(r);
     if (r.fecha === manana && (r.estado === 'Señado' || r.estado === 'A confirmar')) deManana.push(r);
     if (r.estado === 'A confirmar' && r.recibido instanceof Date && r.recibido < limite) sinSena.push(r);
   }
-  if (!deManana.length && !sinSena.length) return;
+  if (!deManana.length && !sinSena.length && !faltanProfes.length) return;
+  const profes = leerProfes_();
 
   const item = function (r, tipo, nota) {
     return '<li style="margin:8px 0"><b>' + esc_(r.cumpleanero) + '</b> · ' + esc_(fechaLarga_(r.fecha)) + ' ' + esc_(r.hora) + ' hs · ' +
@@ -651,10 +677,281 @@ function resumenDiario() {
   if (sinSena.length) html += '<h3 style="color:#C8161A">⏳ Sin seña hace más de ' + CONFIG.horasParaSenar + ' hs (' + sinSena.length + ')</h3>' +
     '<p style="color:#777">Si no responden, cambiá el Estado a Cancelado para liberar el horario.</p><ul>' +
     sinSena.map(function (r) { return item(r, 'sena', ''); }).join('') + '</ul>';
+  // Recordatorio para cada profe asignado a los cumples de mañana
+  const recProfes = deManana.filter(function (r) { return r.asignados.length; }).map(function (r) {
+    return '<li style="margin:8px 0"><b>' + esc_(r.cumpleanero) + '</b> ' + esc_(r.hora) + ' hs · ' +
+      r.asignados.map(function (n) {
+        const pf = buscarProfe_(profes, n);
+        return pf && pf.whatsapp ? '<a href="' + esc_(linkWhatsApp_(pf.whatsapp, mensajeProfe_('recordatorio', r, n))) +
+          '" style="color:#128C7E;font-weight:bold">💬 ' + esc_(n) + '</a>' : esc_(n);
+      }).join(' · ') + '</li>';
+  });
+  if (recProfes.length) html += '<h3 style="color:#C8161A">👥 Avisarle a los profes de mañana</h3><ul>' + recProfes.join('') + '</ul>';
+  if (faltanProfes.length) html += '<h3 style="color:#C8161A">⚠️ Faltan profes (próximos 7 días)</h3><ul>' +
+    faltanProfes.map(function (r) {
+      return '<li style="margin:8px 0"><b>' + esc_(r.cumpleanero) + '</b> · ' + esc_(fechaLarga_(r.fecha)) + ' ' + esc_(r.hora) + ' hs · ' +
+        r.asignados.length + ' de ' + necesarios_(r) + (r.asignados.length ? ' (' + esc_(r.asignados.join(', ')) + ')' : '') +
+        (r.token ? '<br><a href="' + esc_(linkConvocatoria_(r.token)) + '" style="color:#C8161A;font-weight:bold">📣 Link de la convocatoria</a>' : '<br>Convocá desde el menú 🎈 GLORIN → Convocar profes') + '</li>';
+    }).join('') + '</ul>';
   html += '</div>';
   MailApp.sendEmail({ to: CONFIG.emailAviso || Session.getEffectiveUser().getEmail(),
-                      subject: '📋 GLORIN · ' + deManana.length + ' cumple(s) mañana · ' + sinSena.length + ' sin seña',
+                      subject: '📋 GLORIN · ' + deManana.length + ' cumple(s) mañana · ' + sinSena.length + ' sin seña' + (faltanProfes.length ? ' · ' + faltanProfes.length + ' sin equipo completo' : ''),
                       htmlBody: html, name: CONFIG.marca });
+}
+
+// ======== PROFES: equipo, convocatoria y confirmaciones ========
+function obtenerHojaProfes_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(HOJA_PROFES);
+  if (!sh) {
+    sh = ss.insertSheet(HOJA_PROFES);
+    sh.appendRow(COLUMNAS_PROFES);
+    sh.appendRow(['Ejemplo Profe (borrame)', '351 1234567', '', 'No', 'Cargá un profe por fila. Activo = Sí para que lo convoquemos.']);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, COLUMNAS_PROFES.length).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
+    sh.getRange(2, 4, 500, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).build());
+    sh.setColumnWidth(1, 180); sh.setColumnWidth(5, 320);
+  }
+  return sh;
+}
+
+function menuVerProfes() { SpreadsheetApp.getActive().setActiveSheet(obtenerHojaProfes_()); }
+
+function leerProfes_() {
+  const sh = obtenerHojaProfes_();
+  if (sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, COLUMNAS_PROFES.length).getValues()
+    .filter(function (f) { return String(f[0]).trim(); })
+    .map(function (f) {
+      return { nombre: String(f[0]).trim(), whatsapp: String(f[1] || ''), email: String(f[2] || '').trim(),
+               activo: /^s/i.test(String(f[3] || '')) };
+    });
+}
+
+function buscarProfe_(profes, nombre) {
+  return profes.filter(function (p) { return p.nombre.toLowerCase() === String(nombre).toLowerCase(); })[0];
+}
+
+function lista_(v) {
+  return String(v || '').split(',').map(function (x) { return x.trim(); }).filter(String);
+}
+
+function necesarios_(r) {
+  if (r.profesNecesarios) return r.profesNecesarios;
+  const paq = CONFIG.paquetes.filter(function (p) { return p.nombre === r.paquete; })[0];
+  return paq ? paq.profes : 1;
+}
+
+function linkConvocatoria_(token) {
+  const base = CONFIG.urlWeb || ScriptApp.getService().getUrl();
+  return base + '?convocatoria=' + encodeURIComponent(token);
+}
+
+// Crea (una sola vez) el código de convocatoria de la reserva
+function asegurarToken_(sh, filaN) {
+  const col = columna_(sh, 'Convocatoria');
+  let t = String(sh.getRange(filaN, col).getValue() || '');
+  if (!t) {
+    t = Utilities.getUuid().replace(/-/g, '').slice(0, 12);
+    sh.getRange(filaN, col).setValue(t);
+  }
+  return t;
+}
+
+function buscarPorToken_(token) {
+  const sh = obtenerHoja_();
+  const col = columna_(sh, 'Convocatoria');
+  if (!token || sh.getLastRow() < 2) return null;
+  const vals = sh.getRange(2, col, sh.getLastRow() - 1, 1).getValues();
+  for (let i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]) === token) return { sh: sh, filaN: i + 2, r: leerFila_(sh, i + 2) };
+  }
+  return null;
+}
+
+function horaLlegada_(hora) {
+  const p = String(hora).split(':');
+  const m = Number(p[0]) * 60 + Number(p[1] || 0) - CONFIG.minutosAntesProfes;
+  const pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+}
+
+function mensajeProfe_(tipo, r, nombre) {
+  const quien = nombre ? String(nombre).split(' ')[0] : '';
+  const base = '🎈 Cumple de ' + r.cumpleanero + (r.edad ? ' (' + r.edad + ' años)' : '') + '\n' +
+    '📅 ' + fechaLarga_(r.fecha) + ' · ' + r.hora + ' a ' + r.horaFin + ' hs\n' +
+    '📍 ' + (tipo === 'convocatoria' ? (r.zona || '') : (r.direccion || '') + (r.zona ? ' (' + r.zona + ')' : '')) + '\n' +
+    '👦 ' + (r.cantChicos || '?') + ' chicos' + (r.rangoEdades ? ' · ' + r.rangoEdades : '') + ' · ' + (r.paquete || '') +
+    (r.extras ? '\n🎁 ' + r.extras : '');
+  if (tipo === 'convocatoria') {
+    return '📣 CONVOCATORIA GLORIN\n' + base + '\n👥 Necesitamos ' + necesarios_(r) + ' profe' + (necesarios_(r) > 1 ? 's' : '') +
+      '\n\n¿Quién puede? Anotate acá (tocás tu nombre y "Voy") 👉 ' + linkConvocatoria_(r.token) +
+      '\nLos primeros ' + necesarios_(r) + ' quedan en el equipo y les llega el evento al calendario 📅';
+  }
+  if (tipo === 'recordatorio') {
+    return '¡Hola ' + quien + '! Mañana tenemos cumple 💪\n' + base + '\n⏰ Llegada: ' + horaLlegada_(r.hora) + ' hs para armar' +
+      '\n👥 Equipo: ' + r.asignados.join(', ') + '\n📞 Familia: ' + r.adulto + ' · ' + r.whatsapp;
+  }
+  return base;
+}
+
+// Menú: cuadrito con el link, mensaje para el grupo y un botón por profe
+function menuConvocar() {
+  const sh = SpreadsheetApp.getActiveSheet();
+  const filaN = sh.getActiveRange().getRow();
+  if (sh.getName() !== HOJA || filaN < 2) throw new Error('Seleccioná una reserva en la pestaña ' + HOJA + '.');
+  obtenerHoja_();
+  const token = asegurarToken_(sh, filaN);
+  const r = leerFila_(sh, filaN);
+  if (!r.profesNecesarios) sh.getRange(filaN, columna_(sh, 'Profes necesarios')).setValue(necesarios_(r));
+  const msg = mensajeProfe_('convocatoria', r);
+  const profes = leerProfes_().filter(function (p) { return p.activo; });
+  const estilo = 'display:block;margin:6px 0;padding:10px 12px;color:#fff;border-radius:8px;text-decoration:none;font-family:Arial;font-weight:bold';
+  const individuales = profes.filter(function (p) { return p.whatsapp && r.asignados.indexOf(p.nombre) < 0; }).map(function (p) {
+    return '<a target="_blank" style="' + estilo + ';background:#25D366" href="' + esc_(linkWhatsApp_(p.whatsapp, '¡Hola ' + p.nombre.split(' ')[0] + '!\n' + msg)) + '">💬 ' + esc_(p.nombre) + '</a>';
+  }).join('');
+  const html = HtmlService.createHtmlOutput('<div style="font-family:Arial;font-size:14px">' +
+    '<p><b>Cumple de ' + esc_(r.cumpleanero) + '</b> · ' + esc_(fechaLarga_(r.fecha)) + ' ' + esc_(r.hora) + ' hs<br>' +
+    'Equipo: <b>' + r.asignados.length + ' de ' + necesarios_(r) + '</b>' + (r.asignados.length ? ' (' + esc_(r.asignados.join(', ')) + ')' : '') +
+    (r.suplentes.length ? '<br>Suplentes: ' + esc_(r.suplentes.join(', ')) : '') + '</p>' +
+    '<b>Texto para el grupo de profes:</b>' +
+    '<textarea id="txt" readonly style="width:100%;height:150px;margin:6px 0;font:13px Arial;border:1px solid #ddd;border-radius:8px;padding:8px">' + esc_(msg) + '</textarea>' +
+    '<button onclick="var t=document.getElementById(\'txt\');t.select();document.execCommand(\'copy\');this.textContent=\'✓ Copiado: pegalo en el grupo\'" style="' + estilo + ';background:#1A1A1A;border:none;width:100%;cursor:pointer">📋 Copiar texto</button>' +
+    '<a target="_blank" style="' + estilo + ';background:#128C7E" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">📣 Abrir WhatsApp y elegir el grupo</a>' +
+    (profes.some(function (p) { return p.email; }) ? '<button onclick="this.disabled=true;this.textContent=\'Enviando…\';google.script.run.withSuccessHandler(function(n){document.getElementById(\'ok\').textContent=\'Mail enviado a \'+n+\' profes\';}).mailConvocatoriaFila(' + filaN + ')" style="' + estilo + ';background:#C8161A;border:none;width:100%;cursor:pointer">✉️ Mandar por mail a todos los activos</button><p id="ok" style="color:#1E8E5A"></p>' : '') +
+    (individuales ? '<p style="margin:12px 0 4px;color:#666">O de a uno:</p>' + individuales : '<p style="color:#666">Cargá a tus profes en la pestaña <b>Profes</b> (Activo = Sí) para tener un botón por cada uno.</p>') +
+    '<p style="color:#666;font-size:12px;word-break:break-all">Link: ' + esc_(linkConvocatoria_(token)) + '</p></div>')
+    .setWidth(400).setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Convocar profes');
+}
+
+function mailConvocatoriaFila(filaN) { return mailConvocatoriaProfes_(obtenerHoja_(), Number(filaN)); }
+
+function mailConvocatoriaProfes_(sh, filaN) {
+  asegurarToken_(sh, filaN);
+  const r = leerFila_(sh, filaN);
+  if (r.asignados.length >= necesarios_(r)) return 0;
+  const destinatarios = leerProfes_().filter(function (p) { return p.activo && p.email && r.asignados.indexOf(p.nombre) < 0; });
+  destinatarios.forEach(function (p) {
+    MailApp.sendEmail({ to: p.email, name: CONFIG.marca,
+      subject: '📣 Convocatoria GLORIN · ' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs',
+      body: '¡Hola ' + p.nombre.split(' ')[0] + '!\n' + mensajeProfe_('convocatoria', r),
+      htmlBody: '<div style="font-family:Arial;font-size:15px">¡Hola ' + esc_(p.nombre.split(' ')[0]) + '!<pre style="font-family:inherit;white-space:pre-wrap">' +
+        esc_(mensajeProfe_('base', r)) + '\n👥 Necesitamos ' + necesarios_(r) + ' profes</pre>' + boton_(linkConvocatoria_(r.token), '🙋 Me anoto / No puedo', '#C8161A') + '</div>' });
+  });
+  return destinatarios.length;
+}
+
+// Datos que ve el profe en la página de convocatoria (sin datos de la familia hasta que queda asignado)
+function datosConvocatoria(token, nombre) {
+  const x = buscarPorToken_(String(token || ''));
+  if (!x) throw new Error('Este link de convocatoria no existe o ya no está activo.');
+  const r = x.r;
+  const asignado = nombre && r.asignados.indexOf(nombre) >= 0;
+  return {
+    cancelado: r.estado === 'Cancelado', fecha: fechaLarga_(r.fecha), hora: r.hora, horaFin: r.horaFin, llegada: horaLlegada_(r.hora),
+    zona: r.zona, paquete: r.paquete, chicos: r.cantChicos, edades: r.rangoEdades, extras: r.extras,
+    cumpleanero: r.cumpleanero, necesarios: necesarios_(r), asignados: r.asignados, suplentes: r.suplentes,
+    profes: leerProfes_().filter(function (p) { return p.activo; }).map(function (p) { return p.nombre; }),
+    direccion: asignado ? r.direccion : '', familia: asignado ? r.adulto + ' · ' + r.whatsapp : ''
+  };
+}
+
+function responderConvocatoria(token, nombre, voy) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Mucha gente respondiendo a la vez. Probá de nuevo.');
+  let aviso = '', mensaje = '';
+  try {
+    const x = buscarPorToken_(String(token || ''));
+    if (!x) throw new Error('Este link de convocatoria no existe.');
+    const r = x.r, sh = x.sh;
+    if (r.estado === 'Cancelado') throw new Error('Este cumple se canceló.');
+    const profe = buscarProfe_(leerProfes_().filter(function (p) { return p.activo; }), nombre);
+    if (!profe) throw new Error('No te encuentro en la lista de profes activos. Avisale a Fausto.');
+    nombre = profe.nombre;
+    const eraAsignado = r.asignados.indexOf(nombre) >= 0;
+    let asignados = r.asignados.filter(function (n) { return n !== nombre; });
+    let suplentes = r.suplentes.filter(function (n) { return n !== nombre; });
+    const necesarios = necesarios_(r);
+
+    if (voy) {
+      if (asignados.length < necesarios) { asignados.push(nombre); mensaje = '¡Listo! Quedaste en el equipo ✅'; }
+      else { suplentes.push(nombre); mensaje = 'El equipo ya está completo. Quedaste como suplente: si alguien se baja, entrás vos y te avisamos.'; }
+    } else {
+      mensaje = 'Gracias por avisar 👍';
+      if (eraAsignado) {
+        aviso = nombre + ' se bajó del cumple de ' + r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs).';
+        if (suplentes.length) { const sube = suplentes.shift(); asignados.push(sube); aviso += ' Entró ' + sube + ' (era suplente): avisale.'; }
+      }
+    }
+    sh.getRange(x.filaN, columna_(sh, 'Profes asignados')).setValue(asignados.join(', '));
+    sh.getRange(x.filaN, columna_(sh, 'Suplentes')).setValue(suplentes.join(', '));
+    actualizarEquipoEnCalendario_(r, asignados);
+
+    const completo = asignados.length >= necesarios && !(r.asignados.length >= necesarios);
+    if (completo) aviso = (aviso ? aviso + '\n' : '') + '✅ Equipo completo para el cumple de ' + r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs): ' + asignados.join(', ') + '.';
+  } finally {
+    lock.releaseLock();
+  }
+  if (aviso) {
+    try { MailApp.sendEmail({ to: CONFIG.emailAviso || Session.getEffectiveUser().getEmail(), subject: '👥 GLORIN · Profes', body: aviso, name: CONFIG.marca }); } catch (e) { console.error(e); }
+  }
+  const datos = datosConvocatoria(token, nombre);
+  datos.mensaje = mensaje;
+  return datos;
+}
+
+// Agrega a los profes como invitados del evento (les queda en su calendario) y anota el equipo en la descripción
+function actualizarEquipoEnCalendario_(r, asignados) {
+  if (!r.eventoId) return;
+  const ev = obtenerCalendario_().getEventById(r.eventoId);
+  if (!ev) return;
+  const profes = leerProfes_();
+  const invitados = ev.getGuestList().map(function (g) { return g.getEmail().toLowerCase(); });
+  asignados.forEach(function (n) {
+    const p = buscarProfe_(profes, n);
+    if (p && p.email && invitados.indexOf(p.email.toLowerCase()) < 0) { try { ev.addGuest(p.email); } catch (e) {} }
+  });
+  r.asignados.filter(function (n) { return asignados.indexOf(n) < 0; }).forEach(function (n) {
+    const p = buscarProfe_(profes, n);
+    if (p && p.email) { try { ev.removeGuest(p.email); } catch (e) {} }
+  });
+  const desc = String(ev.getDescription() || '').replace(/\n?PROFES:.*$/m, '');
+  ev.setDescription(desc + '\nPROFES: ' + (asignados.join(', ') || '-') + ' (' + asignados.length + '/' + necesarios_(r) + ')');
+}
+
+function paginaConvocatoria_(token) {
+  const html = '<!DOCTYPE html><html><head><base target="_top"><meta charset="utf-8">' +
+  '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;700;800&display=swap" rel="stylesheet">' +
+  '<style>body{margin:0;background:#FFF3ED;font-family:Montserrat,Arial,sans-serif;color:#1A1A1A}' +
+  '.top{background:#C8161A;color:#fff;padding:22px 18px}.top h1{font-family:"Bebas Neue",Impact,sans-serif;font-weight:400;font-size:40px;margin:0;line-height:1}' +
+  '.w{max-width:520px;margin:0 auto;padding:16px}.c{background:#fff;border:1px solid #EADFD9;border-radius:16px;padding:16px;margin:12px 0}' +
+  '.r{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #EADFD9}.r:last-child{border:none}.r span{color:#6B5F5A}' +
+  '.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1.5px solid #EADFD9;background:#fff;border-radius:999px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}' +
+  '.chip.sel{background:#C8161A;border-color:#C8161A;color:#fff}.b{display:block;width:100%;border:none;border-radius:999px;padding:15px;font:inherit;font-weight:800;font-size:16px;margin-top:10px;cursor:pointer}' +
+  '.si{background:#1E8E5A;color:#fff}.no{background:#EEE;color:#333}.b:disabled{opacity:.5}.msg{background:#E9F7EF;border-radius:12px;padding:12px;margin-top:12px;display:none}' +
+  '.err{background:#FDECEC}.cupo{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;color:#C8161A}</style></head><body>' +
+  '<div class="top"><div style="font-weight:800;letter-spacing:.2em;font-size:12px">GLORIN · CONVOCATORIA</div><h1 id="t">Cargando…</h1></div>' +
+  '<div class="w"><div id="app"></div></div>' +
+  '<script>var TOKEN=' + JSON.stringify(token) + ',YO="",D=null;' +
+  'try{YO=localStorage.getItem("glorin-profe")||""}catch(e){}' +
+  'function e(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;"}[c]})}' +
+  'function fila(a,b){return b?"<div class=r><span>"+a+"</span><b>"+e(b)+"</b></div>":""}' +
+  'function pintar(d,msg,err){D=d;document.getElementById("t").textContent=d.cancelado?"Cumple cancelado":"Cumple de "+d.cumpleanero;' +
+  'var h="<div class=c>"+fila("Fecha",d.fecha)+fila("Horario",d.hora+" a "+d.horaFin+" hs")+fila("Llegada",d.llegada+" hs")+fila("Zona",d.zona)+fila("Chicos",(d.chicos||"?")+(d.edades?" · "+d.edades:""))+fila("Paquete",d.paquete)+fila("Extras",d.extras)+(d.direccion?fila("Dirección",d.direccion)+fila("Familia",d.familia):"")+"</div>";' +
+  'h+="<div class=c><div class=cupo>"+d.asignados.length+" de "+d.necesarios+" profes</div><div style=\\"color:#6B5F5A\\">"+(d.asignados.length?"Van: "+e(d.asignados.join(", ")):"Todavía no se anotó nadie")+(d.suplentes.length?"<br>Suplentes: "+e(d.suplentes.join(", ")):"")+"</div></div>";' +
+  'if(!d.cancelado){h+="<div class=c><b>¿Quién sos?</b><div class=chips style=\\"margin-top:10px\\">"+d.profes.map(function(n){return "<button type=button class=\\"chip"+(n===YO?" sel":"")+"\\" data-n=\\""+e(n)+"\\">"+e(n)+"</button>"}).join("")+"</div>"+' +
+  '"<button class=\\"b si\\" id=si>🙋 Voy</button><button class=\\"b no\\" id=no>No puedo</button><div class=\\"msg"+(err?" err":"")+"\\" id=m></div></div>";}' +
+  'document.getElementById("app").innerHTML=h;' +
+  'document.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){YO=c.dataset.n;try{localStorage.setItem("glorin-profe",YO)}catch(x){}document.querySelectorAll(".chip").forEach(function(o){o.classList.toggle("sel",o===c)});cargar()}});' +
+  'var m=document.getElementById("m");if(m&&msg){m.textContent=msg;m.style.display="block"}' +
+  'var si=document.getElementById("si"),no=document.getElementById("no");if(si){si.onclick=function(){responder(true)};no.onclick=function(){responder(false)}}}' +
+  'function responder(v){if(!YO){pintar(D,"Primero tocá tu nombre.",true);return}document.getElementById("si").disabled=document.getElementById("no").disabled=true;' +
+  'google.script.run.withSuccessHandler(function(d){pintar(d,d.mensaje)}).withFailureHandler(function(x){pintar(D,x.message,true)}).responderConvocatoria(TOKEN,YO,v)}' +
+  'function cargar(){google.script.run.withSuccessHandler(function(d){pintar(d)}).withFailureHandler(function(x){document.getElementById("t").textContent="Link no válido";document.getElementById("app").innerHTML="<div class=c>"+e(x.message)+"</div>"}).datosConvocatoria(TOKEN,YO)}' +
+  'cargar();</script></body></html>';
+  return HtmlService.createHtmlOutput(html).setTitle('GLORIN · Convocatoria')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 // ======== DISPONIBILIDAD ========

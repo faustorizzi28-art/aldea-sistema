@@ -43,3 +43,15 @@ Formulario web para que las familias reserven la animación del cumple, conectad
   `…/exec?paquete=premium` · `…/exec?zona=vcp` · `…/exec?paquete=ultra&zona=allende`
 - Bloquear un día: evento de todo el día en el calendario GLORIN con `BLOQUEADO` en el título.
 - Evento cargado a mano que usa inflable/metegol: agregá en la descripción `RECURSOS: inflable=1; metegol=1`.
+
+## Profes (convocatoria)
+
+1. Pestaña **Profes**: un profe por fila con Nombre, WhatsApp, Email (opcional) y **Activo = Sí**.
+2. En **Reservas**, pará en la fila del cumple → menú **🎈 GLORIN → 📣 Convocar profes**:
+   - **Copiar texto** y pegarlo en el grupo de WhatsApp de profes, o **Abrir WhatsApp y elegir el grupo**.
+   - **Mandar por mail a todos los activos**, o un botón de WhatsApp por cada profe.
+3. Cada profe abre el link, toca su nombre y **Voy / No puedo**. Los primeros N (los que pide el paquete) quedan en el equipo;
+   el resto, suplentes. Si alguien se baja, entra el primer suplente y te llega un mail.
+4. Los profes con mail quedan invitados al evento del calendario. La dirección y el contacto de la familia solo los ven los que quedaron en el equipo.
+5. Al pasar una reserva a **Señado**, se manda la convocatoria por mail sola (`convocarAlSenar` en CONFIG).
+6. El resumen diario de las 8 te muestra los cumples de la semana con equipo incompleto y, el día antes, un botón de WhatsApp para recordarle a cada profe (con hora de llegada, dirección y contacto de la familia).
