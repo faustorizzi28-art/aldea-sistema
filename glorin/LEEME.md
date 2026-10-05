@@ -29,7 +29,7 @@ Formulario web para que las familias reserven la animación del cumple, conectad
 
 1. Abrí la planilla de Google Sheets → **Extensiones → Apps Script**.
 2. Pegá `Code.gs` en el archivo `Code.gs` y creá un archivo HTML llamado **`Index`** con el contenido de `Index.html`.
-3. En `CONFIG` (arriba de `Code.gs`) completá **`pago.alias`**, `pago.cbu`, `pago.titular` y, si tenés, `pago.linkMercadoPago`.
+3. En `CONFIG` (arriba de `Code.gs`) ya está cargado el alias `faustorizzi` (Brubank). Revisá que el **titular** sea exactamente el nombre que aparece al transferir. `linkMercadoPago` va vacío salvo que tengas un link de pago **fijo** (los de Naranja X vencen a los 7 días, no sirven acá).
 4. Elegí la función **`configurarInicial`** y tocá **Ejecutar** (acepta los permisos). Crea la hoja, el calendario y los disparadores automáticos.
    Si ya tenías la planilla con reservas, no se borra nada: solo agrega columnas nuevas al final.
 5. **Implementar → Nueva implementación → Aplicación web** · Ejecutar como: *Yo* · Acceso: *Cualquier persona*.

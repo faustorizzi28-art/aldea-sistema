@@ -40,10 +40,11 @@ const CONFIG = {
   invitarFamilia: true,                // si la familia deja mail, la invitamos al evento del calendario
   sena: 40000,
   pago: {                              // datos que ve la familia para pagar la seña
-    alias: '',                         // ej: 'glorin.animaciones'
-    cbu: '',
-    titular: '',
-    linkMercadoPago: ''                // opcional: link de pago de Mercado Pago
+    alias: 'faustorizzi',              // se puede transferir desde cualquier banco o billetera
+    banco: 'Brubank',
+    cbu: '',                           // opcional (CVU/CBU de 22 dígitos)
+    titular: 'Fausto Rizzi',           // tiene que coincidir con el nombre que ve la familia al transferir
+    linkMercadoPago: ''                // opcional: link de pago FIJO (vacío = no se muestra el botón)
   },
   horasParaSenar: 48,                  // plazo que le damos a la familia para mandar la seña
   duracionMin: 150,                    // 2 h 30 min (duración incluida en los paquetes)
@@ -465,6 +466,7 @@ function datosPagoTexto_() {
   const pg = CONFIG.pago || {};
   const l = [];
   if (pg.alias) l.push('Alias: ' + pg.alias);
+  if (pg.banco) l.push('Banco: ' + pg.banco);
   if (pg.cbu) l.push('CBU: ' + pg.cbu);
   if (pg.titular) l.push('Titular: ' + pg.titular);
   if (pg.linkMercadoPago) l.push('Mercado Pago: ' + pg.linkMercadoPago);

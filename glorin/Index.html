@@ -737,7 +737,7 @@ function exito(r, d){
     + (d.email ? ' También te mandamos el resumen a ' + d.email + '.' : '');
   if (hayPago){
     var lin = function(et, v){ return v ? '<div class="lin"><div><span>'+et+'</span><br><b>'+esc(v)+'</b></div><button type="button" class="copiar" data-v="'+esc(v)+'">Copiar</button></div>' : ''; };
-    $('okPago').innerHTML = '<b>Datos para la seña · '+plata(r.sena)+'</b>' + lin('Alias', pg.alias) + lin('CBU', pg.cbu) + (pg.titular ? '<div class="lin"><div><span>Titular</span><br><b>'+esc(pg.titular)+'</b></div></div>' : '');
+    $('okPago').innerHTML = '<b>Datos para la seña · '+plata(r.sena)+'</b>' + lin('Alias', pg.alias) + lin('CBU', pg.cbu) + (pg.titular ? '<div class="lin"><div><span>Titular'+(pg.banco ? ' · ' + esc(pg.banco) : '')+'</span><br><b>'+esc(pg.titular)+'</b></div></div>' : '') + '<p class="sub" style="margin:8px 0 0;font-size:13px">Podés transferir desde cualquier banco o billetera (Mercado Pago, Naranja X, Ualá…).</p>';
     $('okPago').style.display = 'block';
     $('okPago').querySelectorAll('.copiar').forEach(function(bt){ bt.onclick = function(){ copiar(bt.dataset.v, bt); }; });
   }
