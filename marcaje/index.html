@@ -662,18 +662,42 @@ function cerrarSesionEmp(){
   ver('personas'); cargarPersonas();
 }
 
-function obtenerUbicacion(){
+/* Junta lecturas del GPS durante unos segundos y se queda con la más precisa:
+   la primera lectura de un GPS recién prendido suele errar por cientos de metros. */
+function obtenerUbicacion(alAfinar){
   return new Promise((resolve, reject) => {
     if(!navigator.geolocation) return reject(new Error('Este celular no permite usar el GPS desde el navegador.'));
     if(location.protocol!=='https:' && location.hostname!=='localhost') return reject(new Error('La app tiene que abrirse con https para usar el GPS.'));
-    navigator.geolocation.getCurrentPosition(
-      p => resolve(p.coords),
-      err => reject(new Error(
-        err.code===1 ? 'No diste permiso de ubicación. Tocá el candado de la barra de direcciones → Permisos → Ubicación → Permitir, y probá de nuevo.'
-        : err.code===3 ? 'El GPS tardó demasiado. Salí a un lugar abierto y probá de nuevo.'
-        : 'No se pudo obtener tu ubicación. Revisá que el GPS esté prendido.')),
-      { enableHighAccuracy:true, timeout:20000, maximumAge:0 });
+    let mejor = null, listo = false, id = null;
+    const terminar = () => {
+      if(listo) return; listo = true;
+      clearTimeout(tope); if(id!==null) navigator.geolocation.clearWatch(id);
+      if(mejor) resolve(mejor); else reject(new Error('El GPS tardó demasiado. Salí a un lugar abierto y probá de nuevo.'));
+    };
+    const tope = setTimeout(terminar, 12000);
+    id = navigator.geolocation.watchPosition(
+      p => {
+        if(!mejor || p.coords.accuracy < mejor.accuracy) mejor = p.coords;
+        if(alAfinar) alAfinar(mejor.accuracy);
+        if(mejor.accuracy <= 30) terminar();
+      },
+      err => {
+        if(mejor){ terminar(); return; }
+        if(err.code===3) return;  // sigue esperando hasta el tope
+        listo = true; clearTimeout(tope); if(id!==null) navigator.geolocation.clearWatch(id);
+        reject(new Error(err.code===1
+          ? (esIOS() ? 'No diste permiso de ubicación. En el iPhone: Ajustes → Privacidad y seguridad → Localización → Safari (o el navegador que uses) → “Mientras se usa la app” y activá “Ubicación exacta”. Después probá de nuevo.'
+                     : 'No diste permiso de ubicación. Tocá el candado de la barra de direcciones → Permisos → Ubicación → Permitir, y probá de nuevo.')
+          : 'No se pudo obtener tu ubicación. Revisá que la ubicación (GPS) del celular esté prendida.'));
+      },
+      { enableHighAccuracy:true, timeout:12000, maximumAge:0 });
   });
+}
+function esIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+function ayudaUbicacionAproximada(){
+  return esIOS()
+    ? 'Tu iPhone está dando una ubicación aproximada. Activá la exacta: Ajustes → Privacidad y seguridad → Localización → Safari (o el navegador que uses) → activá “Ubicación exacta”. Después volvé a la app y probá de nuevo.'
+    : 'Tu celular está dando una ubicación aproximada. Activá la exacta: Ajustes → Ubicación → activá “Precisión de la ubicación de Google”. Si el navegador te pregunta, elegí “Precisa” y no “Aproximada”. Después probá de nuevo.';
 }
 
 let marcando = false;
@@ -684,8 +708,9 @@ async function marcar(){
   marcando = true;
   const b = $('btn-marcar'); b.disabled = true; b.innerHTML = '📍 Buscando tu ubicación…';
   msg('marcar-msg','');
+  let c = null;
   try{
-    const c = await obtenerUbicacion();
+    c = await obtenerUbicacion(prec => { b.innerHTML = `📍 Afinando el GPS… ±${Math.round(prec)} m`; });
     b.innerHTML = 'Marcando…';
     const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c.latitude, lng:c.longitude, precision:c.accuracy, esperado, mes: mesHoy() }));
     vibrar([40,60,40]);
@@ -697,7 +722,8 @@ async function marcar(){
   }catch(e){
     vibrar([80,50,80]);
     let t = e.message;
-    if(e.fuera && e.distancia) t += ' Si estás en Aldea, esperá unos segundos a que el GPS se ajuste y probá otra vez.';
+    if(e.fuera && c && c.accuracy > 300) t += ' ' + ayudaUbicacionAproximada();
+    else if(e.fuera) t += ' Si estás en Aldea, salí a un lugar abierto, esperá unos segundos y probá otra vez.';
     msg('marcar-msg', t, 'err');
     if(e.refrescar){ try{ const j = await api('estado', Object.assign({}, sesionEmp, {mes: mesHoy()})); mostrarEmpleado(j, sesionEmp); msg('marcar-msg', t, 'err'); }catch(_){} }
     else if(estadoEmp) mostrarEmpleado(estadoEmp, sesionEmp), msg('marcar-msg', t, 'err');
@@ -1066,7 +1092,7 @@ async function probarDistancia(){
     const c = await obtenerUbicacion();
     const d = Math.round(distM(c.latitude, c.longitude, lat, lng));
     const r = Number($('cf-radio').value)||100;
-    msg('cf-msg', `Estás a ${d} m del centro (±${Math.round(c.accuracy)} m). ${d<=r?'✅ Desde acá se puede marcar.':'❌ Desde acá NO se puede marcar.'}`, d<=r?'ok':'err');
+    msg('cf-msg', `Estás a ${d} m del centro (±${Math.round(c.accuracy)} m). ${d<=r?'✅ Desde acá se puede marcar.':'❌ Desde acá NO se puede marcar.'}${d>r && c.accuracy>300 ? ' '+ayudaUbicacionAproximada() : ''}`, d<=r?'ok':'err');
   }catch(e){ msg('cf-msg', e.message, 'err'); }
 }
 async function guardarLugar(){
