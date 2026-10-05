@@ -118,12 +118,28 @@ const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas'];
 
 // ======== SERVIR LA PÁGINA ========
 function doGet(e) {
-  const token = e && e.parameter && e.parameter.convocatoria;
-  if (token) return paginaConvocatoria_(String(token));
+  const prm = (e && e.parameter) || {};
+  if (prm.convocatoria) return paginaConvocatoria_(String(prm.convocatoria));
+  if (prm.api === 'datos') return json_(getDatosIniciales);
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('GLORIN Animaciones · Reservá tu cumple')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ======== API para la página publicada afuera (GitHub Pages / Instagram) ========
+function doPost(e) {
+  return json_(function () {
+    const pedido = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (pedido.accion === 'enviarReserva') return enviarReserva(pedido.datos);
+    throw new Error('Acción desconocida.');
+  });
+}
+
+function json_(fn) {
+  let salida;
+  try { salida = { ok: true, data: fn() }; } catch (err) { salida = { ok: false, error: err.message }; }
+  return ContentService.createTextOutput(JSON.stringify(salida)).setMimeType(ContentService.MimeType.JSON);
 }
 
 // ======== CONFIGURACIÓN INICIAL (correr UNA vez a mano) ========

@@ -403,7 +403,21 @@ var CFG = {
     {id:'vcp',nombre:'Villa Carlos Paz',recargo:50000},{id:'falda',nombre:'Falda del Carmen',recargo:50000},{id:'otra',nombre:'Otra zona (a confirmar)',recargo:50000}]
 };
 var OCUPADOS = {}, HOY = null;
-var DEMO = !(window.google && google.script && google.script.run);
+/* Funciona de dos formas: dentro de Apps Script (google.script.run) o como página normal
+   (GitHub Pages, abre bien desde Instagram) hablando con Apps Script por internet. */
+var API_URL = 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec';
+var EN_APPS_SCRIPT = !!(window.google && google.script && google.script.run);
+var DEMO = !EN_APPS_SCRIPT && (!API_URL || /[?&]demo/.test(location.search) || location.protocol === 'file:');
+function llamar(fn, arg, ok, ko){
+  ko = ko || function(){};
+  if (EN_APPS_SCRIPT){ var run = google.script.run.withSuccessHandler(ok).withFailureHandler(ko); if (arg === undefined) run[fn](); else run[fn](arg); return; }
+  var pedido = fn === 'getDatosIniciales'
+    ? fetch(API_URL + '?api=datos')
+    : fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ accion: fn, datos: arg }) });
+  pedido.then(function(r){ return r.json(); })
+    .then(function(j){ if (j && j.ok) ok(j.data); else ko({ message: (j && j.error) || 'Algo salió mal. Probá de nuevo.' }); })
+    .catch(function(){ ko({ message: 'No pudimos conectarnos. Revisá tu internet y probá de nuevo.' }); });
+}
 var TOTAL_PASOS = 7, paso = 1;
 var D = { fecha:'', hora:'', paquete:'', extras:{}, extraMin:0, zona:'cba', paqueteElegidoAMano:false };
 var mesVista = null;
@@ -721,11 +735,11 @@ function enviar(){
     var m = (e && e.message) || 'No se pudo enviar. Revisá tu conexión y probá de nuevo.';
     mostrarError(m);
     if (/ocup|reserv/i.test(m)) {  // otra familia ganó el horario: refrescamos la agenda
-      google.script.run.withSuccessHandler(function(datos){ OCUPADOS = datos.ocupados || {}; dibujarCal(); dibujarPaquetes(); actualizar(); }).getDatosIniciales();
+      llamar('getDatosIniciales', undefined, function(datos){ OCUPADOS = datos.ocupados || {}; dibujarCal(); dibujarPaquetes(); actualizar(); });
     }
   };
   if (DEMO){ setTimeout(function(){ var pr=presupuesto(); listo({ok:true,id:'GL-DEMO',total:pr.total,sena:CFG.sena,saldo:pr.total-CFG.sena,paquete:pr.paquete.nombre,fin:horaFin(D.hora),avisos:[]}); }, 700); }
-  else google.script.run.withSuccessHandler(listo).withFailureHandler(falla).enviarReserva(datos);
+  else llamar('enviarReserva', datos, listo, falla);
 }
 function exito(r, d){
   borrarBorrador(); BORRADOR_LISTO = false; $('borrador').style.display = 'none';
@@ -819,16 +833,17 @@ function arrancar(datos){
   iniciar(datos);
   $('waFlot').href = 'https://wa.me/' + CFG.whatsapp + '?text=' + encodeURIComponent('¡Hola GLORIN! 🎈 Estoy reservando un cumple y tengo una consulta:');
   cargarBorrador();
-  if (!DEMO && google.script.url) google.script.url.getLocation(function(loc){ aplicarParametros(loc && loc.parameter); });
+  if (EN_APPS_SCRIPT && google.script.url) google.script.url.getLocation(function(loc){ aplicarParametros(loc && loc.parameter); });
+  else { var prm = {}; location.search.replace(/[?&]([^=&]+)=([^&]*)/g, function(_, k, v){ prm[k] = decodeURIComponent(v); }); aplicarParametros(prm); }
 }
 
 /* ===== Arranque ===== */
 irA(1);
 $('waFlot').href = 'https://wa.me/' + CFG.whatsapp;
 if (DEMO){ $('demo').style.display='block'; arrancar(demoDatos()); }
-else google.script.run.withSuccessHandler(arrancar).withFailureHandler(function(){
+else llamar('getDatosIniciales', undefined, arrancar, function(){
   $('calWrap').innerHTML = '<div class="aviso" style="display:block">No pudimos cargar la agenda. Escribinos por WhatsApp y te ayudamos.</div>';
-}).getDatosIniciales();
+});
 </script>
 </body>
 </html>
