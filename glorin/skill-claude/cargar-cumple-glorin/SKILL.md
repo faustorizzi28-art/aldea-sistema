@@ -39,7 +39,7 @@ Lo demás, si no está, dejalo afuera (no inventes). Si algo es dudoso, ponelo e
 Base (siempre igual):
 
 ```
-https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec?profes=1&nueva=1
+https://script.google.com/macros/s/AKfycbycWz4e_VbE3eLYiqZk1aT26_u5UbYacbLj23O0bAje4BVjRl7BPGPCCi8S-Tpt25wiSQ/exec?profes=1&nueva=1
 ```
 
 A eso sumale `&campo=valor` por cada dato, con el valor **codificado para URL**: espacio → `%20`, `ñ` → `%C3%B1`,

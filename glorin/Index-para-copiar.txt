@@ -405,7 +405,7 @@ var CFG = {
 var OCUPADOS = {}, HOY = null;
 /* Funciona de dos formas: dentro de Apps Script (google.script.run) o como página normal
    (GitHub Pages, abre bien desde Instagram) hablando con Apps Script por internet. */
-var API_URL = 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbycWz4e_VbE3eLYiqZk1aT26_u5UbYacbLj23O0bAje4BVjRl7BPGPCCi8S-Tpt25wiSQ/exec';
 var EN_APPS_SCRIPT = !!(window.google && google.script && google.script.run);
 var DEMO = !EN_APPS_SCRIPT && (!API_URL || /[?&]demo/.test(location.search) || location.protocol === 'file:');
 function llamar(fn, arg, ok, ko){
