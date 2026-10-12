@@ -73,7 +73,9 @@ columnas nuevas, sin borrar nada) y publicá una **nueva versión** de la implem
 - **👥 Profes**: aprobar cuentas, activar o desactivar.
 - **💵 Pagos**: lo que le debés a cada profe, con botón **Pagado** (al profe le llega un mail). Todo queda en la pestaña `Pagos`.
 - Si cancelás un cumple (Estado = Cancelado), al equipo le llega el aviso y sus pagos pendientes quedan *Anulado*.
-- Si querés un pago fijo por defecto, poné `pagoProfePorDefecto` en CONFIG o `pagoProfe: 30000` en cada paquete.
+- **Pagos por nivel** (`tarifasProfes` en CONFIG): Animador avanzado $50.000 · Animador intermedio $45.000 · Auxiliar $40.000.
+  A cada profe le ponés el nivel en el portal (pestaña Profes). Al armar el equipo marcás con 🚚 quién pone o transporta los
+  elementos: suma **$40.000 extra** (`extraElementos`). Si una fecha tiene un pago especial, ponés un *pago fijo* en esa fecha.
 
 Los links viejos de convocatoria (`…?convocatoria=…`) siguen funcionando: abren el portal en ese cumple.
 El menú **📣 Convocar profes** sigue armando el texto para el grupo de WhatsApp, con el link al portal.

@@ -69,14 +69,18 @@ const CONFIG = {
   aprobarCuentas: true,                // las cuentas nuevas quedan "Pendiente" hasta que las aprobás
   avisarPostulaciones: true,           // te llega un mail cada vez que un profe se propone para una fecha
   recordatoriosProfes: [3, 1],         // días antes del cumple en que le llega un recordatorio por mail a cada profe del equipo
-  pagoProfePorDefecto: 0,              // lo que cobra cada profe por cumple (0 = "a definir"; se cambia en cada fecha desde el portal)
+  tarifasProfes: {                     // lo que cobra cada profe por cumple, según su nivel (el nivel se lo ponés en el portal → Profes)
+    'Animador avanzado': 50000,
+    'Animador intermedio': 45000,
+    'Auxiliar': 40000
+  },
+  extraElementos: 40000,               // extra para el que pone o transporta los elementos (inflable, metegol, equipo)
   avisarPagoAlProfe: true,             // al marcar un pago como hecho, le llega un mail al profe
   diasSesion: 60,                      // cuántos días queda abierta la sesión en el celu del profe
   horarios: ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','14:00','14:30','15:00','15:30',
              '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00'],
   stock: { metegol: 2, inflable: 1 },  // cuántos tenés de cada uno
   paquetes: [
-    // Podés agregar pagoProfe: 30000 a un paquete para que ese sea el pago por profe por defecto
     { id: 'individual', nombre: 'Individual', profes: 1, precio: 125000, detalle: '1 profe animador · ideal hasta 12-15 chicos', maxChicos: 15 },
     { id: 'ultra',      nombre: 'Ultra Básico', profes: 2, precio: 195000, detalle: '2 profes · recreación y juegos · hasta 27-30 chicos', maxChicos: 30, destacado: true },
     { id: 'recreacion', nombre: 'Recreación', profes: 3, precio: 235000, detalle: '3 profes · animación y recreación · grupos grandes o muy chiquitos' },
@@ -127,12 +131,12 @@ const COLUMNAS = [
   // columnas de profes (v3)
   'Profes necesarios', 'Profes asignados', 'Suplentes', 'Convocatoria',
   // portal de profes (v4)
-  'Postulados', 'Pago por profe', 'Recordatorios profes'
+  'Postulados', 'Pago por profe', 'Recordatorios profes', 'Lleva elementos'
 ];
 const HOJA_PROFES = 'Profes';
-const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas', 'Clave', 'Alta', 'Último ingreso'];
+const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas', 'Clave', 'Alta', 'Último ingreso', 'Nivel'];
 const HOJA_PAGOS = 'Pagos';
-const COLUMNAS_PAGOS = ['ID pago', 'Reserva', 'Fecha evento', 'Cumple', 'Profe', 'Monto', 'Estado', 'Fecha de pago', 'Notas'];
+const COLUMNAS_PAGOS = ['ID pago', 'Reserva', 'Fecha evento', 'Cumple', 'Profe', 'Monto', 'Estado', 'Fecha de pago', 'Notas', 'Detalle'];
 
 // ======== SERVIR LA PÁGINA ========
 function doGet(e) {
@@ -261,8 +265,8 @@ function configPublica_() {
   delete c.emailAviso;
   delete c.nombreCalendario;
   delete c.adminEmails;
-  delete c.pagoProfePorDefecto;
-  c.paquetes.forEach(function (p) { delete p.pagoProfe; });
+  delete c.tarifasProfes;
+  delete c.extraElementos;
   return c;
 }
 
@@ -394,7 +398,7 @@ function enviarReserva(d) {
     'Hora merienda': d.horaMerienda, 'Hora torta': d.horaTorta, 'Atención especial': d.atencionEspecial,
     'Cómo nos conoció': d.comoNosConocio, 'Comentarios': d.comentarios, 'Detalle completo (JSON)': JSON.stringify(d),
     'WhatsApp link': waFamilia, 'ID evento calendario': ev.getId(), 'Último aviso': '',
-    'Profes necesarios': p.paquete.profes || 1, 'Pago por profe': pagoProfeDe_(p.paquete)
+    'Profes necesarios': p.paquete.profes || 1
   };
   const fechaYHora = { 'Fecha evento': 1, 'Hora inicio': 1, 'Hora fin': 1 };
   sh.appendRow(encabezados_(sh).map(function (h) {
@@ -713,7 +717,7 @@ function filaDesdeValores_(h, v, filaN) {
     profesNecesarios: Number(g('Profes necesarios')) || 0,
     asignados: lista_(g('Profes asignados')), suplentes: lista_(g('Suplentes')), token: String(g('Convocatoria') || ''),
     postulados: lista_(g('Postulados')), pagoProfe: pago === '' || pago === null ? '' : Number(pago) || 0,
-    recordatorios: String(g('Recordatorios profes') || ''), comentarios: g('Comentarios')
+    recordatorios: String(g('Recordatorios profes') || ''), comentarios: g('Comentarios'), llevan: lista_(g('Lleva elementos'))
   };
 }
 
@@ -795,6 +799,8 @@ function obtenerHojaProfes_() {
     sh.getRange(1, 1, 1, sh.getLastColumn()).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
     sh.getRange(2, columna_(sh, 'Activo'), 500, 1).setDataValidation(
       SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No', 'Pendiente'], true).build());
+    sh.getRange(2, columna_(sh, 'Nivel'), 500, 1).setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInList(Object.keys(CONFIG.tarifasProfes), true).build());
     sh.hideColumns(columna_(sh, 'Clave'));   // la contraseña va cifrada, igual no hace falta verla
   }
   return sh;
@@ -812,7 +818,7 @@ function leerProfes_() {
     const estado = String(g(f, 'Activo') || '').trim();
     return { fila: i + 2, nombre: String(g(f, 'Nombre')).trim(), whatsapp: String(g(f, 'WhatsApp') || ''),
              email: String(g(f, 'Email') || '').trim().toLowerCase(), estado: estado,
-             activo: /^s/i.test(estado), clave: String(g(f, 'Clave') || '') };
+             activo: /^s/i.test(estado), clave: String(g(f, 'Clave') || ''), nivel: String(g(f, 'Nivel') || '').trim() };
   }).filter(function (p) { return p.nombre || p.email; });
 }
 
@@ -848,9 +854,24 @@ function necesarios_(r) {
   return paq ? paq.profes : 1;
 }
 
-function pagoProfeDe_(paq) {
-  const v = (paq && paq.pagoProfe) || CONFIG.pagoProfePorDefecto;
-  return v ? Number(v) : '';
+// Lo que cobra un profe en un cumple: pago fijo de esa fecha (si lo pusiste) o la tarifa de su nivel,
+// más el extra si es el que lleva los elementos. Sin nivel ni pago fijo → monto '' (a definir).
+function pagoDe_(r, nombre, profes) {
+  const p = buscarProfe_(profes || leerProfes_(), nombre);
+  const nivel = p ? p.nivel : '';
+  const fijo = r.pagoProfe !== '' && r.pagoProfe !== undefined && r.pagoProfe !== null;
+  const base = fijo ? Number(r.pagoProfe) : (CONFIG.tarifasProfes[nivel] || '');
+  const extra = tieneNombre_(r.llevan || [], nombre) ? CONFIG.extraElementos : 0;
+  const partes = [];
+  if (base !== '') partes.push((fijo ? 'Pago fijo' : nivel) + ' ' + pesos_(base));
+  else partes.push('sin nivel cargado');
+  if (extra) partes.push('elementos ' + pesos_(extra));
+  return { monto: base === '' ? '' : base + extra, detalle: partes.join(' + '), extra: extra };
+}
+
+function tarifasTexto_() {
+  return Object.keys(CONFIG.tarifasProfes).map(function (n) { return n + ' ' + pesos_(CONFIG.tarifasProfes[n]); }).join(' · ') +
+    ' · +' + pesos_(CONFIG.extraElementos) + ' si llevás los elementos';
 }
 
 function urlBase_() { return CONFIG.urlWeb || ScriptApp.getService().getUrl(); }
@@ -903,7 +924,7 @@ function mensajeProfe_(tipo, r, nombre) {
     '📍 ' + (tipo === 'convocatoria' || tipo === 'base' ? (r.zona || '') : (r.direccion || '') + (r.zona ? ' (' + r.zona + ')' : '')) + '\n' +
     '👦 ' + (r.cantChicos || '?') + ' chicos' + (r.rangoEdades ? ' · ' + r.rangoEdades : '') + ' · ' + (r.paquete || '') +
     (r.extras ? '\n🎁 ' + r.extras : '') +
-    (r.pagoProfe ? '\n💵 ' + pesos_(r.pagoProfe) + ' por profe' : '');
+    '\n💵 ' + (r.pagoProfe ? pesos_(r.pagoProfe) + ' por profe' : 'según tu nivel');
   if (tipo === 'convocatoria') {
     return '📣 CONVOCATORIA GLORIN\n' + base + '\n👥 Necesitamos ' + necesarios_(r) + ' profe' + (necesarios_(r) > 1 ? 's' : '') +
       '\n\n¿Quién puede? Proponete desde el portal de profes 👉 ' + linkConvocatoria_(r.token) +
@@ -979,7 +1000,7 @@ function mailConvocatoriaProfes_(sh, filaN) {
 }
 
 // Tabla con los datos del cumple para los mails de profes (dirección y familia solo si ya está en el equipo)
-function fichaEvento_(r, completo) {
+function fichaEvento_(r, completo, nombre) {
   const fila = function (a, b) { return b ? '<tr><td style="padding:4px 12px 4px 0;color:#777;vertical-align:top">' + a + '</td><td style="padding:4px 0"><b>' + esc_(b) + '</b></td></tr>' : ''; };
   return '<table style="border-collapse:collapse;margin:12px 0">' +
     fila('Cumple', r.cumpleanero + (r.edad ? ' (' + r.edad + ' años)' : '')) +
@@ -990,7 +1011,9 @@ function fichaEvento_(r, completo) {
     fila('Chicos', (r.cantChicos || '?') + (r.rangoEdades ? ' · ' + r.rangoEdades : '')) +
     fila('Paquete', r.paquete) + fila('Extras', r.extras) +
     (completo ? fila('Equipo', r.asignados.join(', ')) + fila('Familia', r.adulto ? r.adulto + ' · ' + r.whatsapp : '') : '') +
-    fila('Pago', r.pagoProfe ? pesos_(r.pagoProfe) + ' por profe' : 'a definir') +
+    (nombre ? fila('Tu pago', (function (x) { return (x.monto === '' ? 'a definir' : pesos_(x.monto)) + ' (' + x.detalle + ')'; })(pagoDe_(r, nombre)))
+            : fila('Pago', r.pagoProfe ? pesos_(r.pagoProfe) + ' por profe' : tarifasTexto_())) +
+    (completo && r.llevan && r.llevan.length ? fila('Lleva elementos', r.llevan.join(', ')) : '') +
     '</table>';
 }
 
@@ -1032,7 +1055,7 @@ function mailProfe_(tipo, p, r, x) {
   }
   const html = '<div style="font-family:Arial,sans-serif;font-size:15px;color:#222;max-width:560px">' +
     '<h2 style="color:#C8161A;margin:0 0 12px">' + esc_(CONFIG.marca) + ' · Profes</h2><p>' + intro + '</p>' +
-    (r ? fichaEvento_(r, completo) : '') +
+    (r ? fichaEvento_(r, completo, completo ? p.nombre : '') : '') +
     boton_(boton, tipo === 'clave' ? 'Elegir contraseña nueva' : 'Abrir el portal de profes', '#C8161A') + '</div>';
   MailApp.sendEmail({ to: p.email, subject: asunto, htmlBody: html, name: CONFIG.marca, replyTo: CONFIG.emailAviso || undefined,
                       body: asunto + (r ? '\n\n' + mensajeProfe_('base', r) : '') + '\n\n' + boton });
@@ -1076,6 +1099,10 @@ function obtenerHojaPagos_() {
     sh.getRange(1, 1, 1, COLUMNAS_PAGOS.length).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
     sh.getRange(2, COLUMNAS_PAGOS.indexOf('Estado') + 1, 1000, 1).setDataValidation(
       SpreadsheetApp.newDataValidation().requireValueInList(['Pendiente', 'Pagado', 'Anulado'], true).build());
+  } else {
+    const actuales = encabezados_(sh);
+    const faltan = COLUMNAS_PAGOS.filter(function (c) { return actuales.indexOf(c) < 0; });
+    if (faltan.length) sh.getRange(1, actuales.length + 1, 1, faltan.length).setValues([faltan]);
   }
   return sh;
 }
@@ -1090,28 +1117,33 @@ function leerPagos_() {
   return sh.getRange(2, 1, sh.getLastRow() - 1, h.length).getValues().map(function (f, i) {
     return { fila: i + 2, id: String(g(f, 'ID pago')), reserva: String(g(f, 'Reserva')), fecha: txt(g(f, 'Fecha evento')),
              cumple: String(g(f, 'Cumple')), profe: String(g(f, 'Profe')), monto: Number(g(f, 'Monto')) || 0,
-             estado: String(g(f, 'Estado') || 'Pendiente'), fechaPago: txt(g(f, 'Fecha de pago')), notas: String(g(f, 'Notas') || '') };
+             estado: String(g(f, 'Estado') || 'Pendiente'), fechaPago: txt(g(f, 'Fecha de pago')), notas: String(g(f, 'Notas') || ''),
+             detalle: String(g(f, 'Detalle') || '') };
   }).filter(function (p) { return p.id; });
 }
 
 // Deja en "Pagos" una fila por cada profe del equipo. Los que salen del equipo quedan "Anulado" (no se borra nada).
-function sincronizarPagos_(r, asignados, monto) {
+function sincronizarPagos_(r, asignados) {
   const sh = obtenerHojaPagos_();
+  const profes = leerProfes_();
   const col = function (n) { return COLUMNAS_PAGOS.indexOf(n) + 1; };
   const deEste = leerPagos_().filter(function (p) { return p.reserva === String(r.id); });
   deEste.forEach(function (p) {
     const sigue = tieneNombre_(asignados, p.profe);
     if (!sigue && p.estado === 'Pendiente') sh.getRange(p.fila, col('Estado')).setValue('Anulado');
     if (sigue && p.estado !== 'Pagado') {
+      const x = pagoDe_(r, p.profe, profes);
       sh.getRange(p.fila, col('Estado')).setValue('Pendiente');
-      sh.getRange(p.fila, col('Monto')).setValue(monto || '');
+      sh.getRange(p.fila, col('Monto')).setValue(x.monto);
+      sh.getRange(p.fila, col('Detalle')).setValue(x.detalle);
       sh.getRange(p.fila, col('Fecha evento')).setValue("'" + r.fecha);
     }
   });
   asignados.forEach(function (n) {
     if (deEste.some(function (p) { return p.profe.toLowerCase() === n.toLowerCase(); })) return;
+    const x = pagoDe_(r, n, profes);
     sh.appendRow(['PG-' + Utilities.getUuid().slice(0, 8).toUpperCase(), r.id, "'" + r.fecha, limpiarCelda_(r.cumpleanero),
-                  n, monto || '', 'Pendiente', '', '']);
+                  n, x.monto, 'Pendiente', '', '', x.detalle]);
   });
 }
 
@@ -1305,18 +1337,19 @@ function portalDatos(token) {
   const tz = Session.getScriptTimeZone();
   const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const desde = Utilities.formatDate(new Date(Date.now() - 90 * 86400000), tz, 'yyyy-MM-dd');
+  const profesTodos = leerProfes_();
   const eventos = leerTodas_(obtenerHoja_()).filter(function (r) {
     if (!r.id || !/^\d{4}-\d{2}-\d{2}$/.test(r.fecha) || r.fecha < desde) return false;
     const mio = tieneNombre_(r.asignados, yo) || tieneNombre_(r.postulados, yo);
     if (u.admin) return r.fecha >= hoy || r.estado !== 'Cancelado' || mio;
     if (mio) return true;
     return r.token && r.fecha >= hoy && r.estado !== 'Cancelado' && r.estado !== 'Realizado';
-  }).map(function (r) { return eventoParaPortal_(r, yo, u.admin, hoy); })
+  }).map(function (r) { return eventoParaPortal_(r, yo, u.admin, hoy, profesTodos); })
     .sort(function (a, b) { return (a.fecha + a.hora).localeCompare(b.fecha + b.hora); });
 
   const pagos = leerPagos_().filter(function (p) {
     return p.estado !== 'Anulado' && (u.admin || p.profe.toLowerCase() === yo.toLowerCase());
-  }).map(function (p) { return { id: p.id, reserva: p.reserva, fecha: p.fecha, cumple: p.cumple, profe: p.profe, monto: p.monto, estado: p.estado, fechaPago: p.fechaPago }; });
+  }).map(function (p) { return { id: p.id, reserva: p.reserva, fecha: p.fecha, cumple: p.cumple, profe: p.profe, monto: p.monto, estado: p.estado, fechaPago: p.fechaPago, detalle: p.detalle }; });
 
   const salida = {
     yo: { nombre: yo, email: u.profe.email, whatsapp: u.profe.whatsapp, admin: u.admin },
@@ -1324,9 +1357,11 @@ function portalDatos(token) {
   };
   if (u.admin) {
     salida.profes = leerProfes_().map(function (p) {
-      return { nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, estado: p.estado || 'No', activo: p.activo, cuenta: !!p.clave };
+      return { nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, estado: p.estado || 'No', activo: p.activo, cuenta: !!p.clave, nivel: p.nivel };
     });
-    salida.paquetes = CONFIG.paquetes.map(function (p) { return { nombre: p.nombre, profes: p.profes, pagoProfe: pagoProfeDe_(p) }; });
+    salida.paquetes = CONFIG.paquetes.map(function (p) { return { nombre: p.nombre, profes: p.profes }; });
+    salida.tarifas = CONFIG.tarifasProfes;
+    salida.extraElementos = CONFIG.extraElementos;
     salida.zonas = CONFIG.zonas.map(function (z) { return z.nombre; });
     salida.estados = ESTADOS;
     salida.duracionMin = CONFIG.duracionMin;
@@ -1334,7 +1369,7 @@ function portalDatos(token) {
   return salida;
 }
 
-function eventoParaPortal_(r, yo, admin, hoy) {
+function eventoParaPortal_(r, yo, admin, hoy, profes) {
   const asignado = tieneNombre_(r.asignados, yo);
   const postulado = tieneNombre_(r.postulados, yo);
   const necesarios = necesarios_(r);
@@ -1345,13 +1380,16 @@ function eventoParaPortal_(r, yo, admin, hoy) {
     id: r.id, fecha: r.fecha, fechaTxt: fechaLarga_(r.fecha), hora: r.hora, horaFin: r.horaFin, llegada: horaLlegada_(r.hora),
     zona: r.zona, paquete: r.paquete, chicos: r.cantChicos, edades: r.rangoEdades, extras: r.extras,
     cumpleanero: r.cumpleanero, edad: r.edad, necesarios: necesarios, asignados: r.asignados,
-    pago: r.pagoProfe === '' ? null : Number(r.pagoProfe), estado: r.estado, cancelado: r.estado === 'Cancelado',
+    pago: (function (x) { return x.monto === '' ? null : x.monto; })(pagoDe_(r, yo, profes)),
+    llevoElementos: tieneNombre_(r.llevan, yo), estado: r.estado, cancelado: r.estado === 'Cancelado',
     pasado: r.fecha < hoy, publicada: !!r.token, mio: mio
   };
   if (admin || asignado) { e.direccion = r.direccion; e.familia = r.adulto ? r.adulto + ' · ' + r.whatsapp : ''; e.waFamilia = r.whatsapp ? 'https://wa.me/' + normalizarWhatsApp_(r.whatsapp) : ''; }
   if (admin) {
     e.postulados = r.postulados; e.adulto = r.adulto; e.whatsapp = r.whatsapp; e.notas = r.comentarios;
     e.necesariosGuardado = r.profesNecesarios || '';
+    e.pagoFijo = r.pagoProfe === '' ? null : Number(r.pagoProfe);
+    e.llevan = r.llevan;
   }
   return e;
 }
@@ -1383,7 +1421,7 @@ function portalPostular(token, id, quiero) {
     } else if (tieneNombre_(asignados, yo)) {
       asignados = sinNombre_(asignados, yo);
       actualizarEquipoEnCalendario_(r, asignados);
-      sincronizarPagos_(r, asignados, r.pagoProfe);
+      sincronizarPagos_(r, asignados);
       mensaje = 'Listo, te bajamos de este cumple y le avisamos a ' + CONFIG.marca + '.';
       asunto = '⚠️ ' + yo + ' se bajó';
       aviso = '⚠️ ' + yo + ' se bajó del cumple de ' + cuando + '. El equipo quedó en ' + asignados.length + ' de ' + necesarios_(r) + '.' +
@@ -1404,7 +1442,7 @@ function portalPostular(token, id, quiero) {
 // ---- Acciones de administración ----
 // Elegir el equipo: a los nuevos les llega la confirmación, a los que salen el aviso,
 // y a los que se propusieron y no quedaron, que son suplentes.
-function portalConfirmarEquipo(token, id, nombres, pago) {
+function portalConfirmarEquipo(token, id, nombres, pago, llevan) {
   soloAdmin_(token);
   const profes = leerProfes_();
   const elegidos = [];
@@ -1433,10 +1471,13 @@ function portalConfirmarEquipo(token, id, nombres, pago) {
     sh.getRange(f, columna_(sh, 'Postulados')).setValue(postulados.join(', '));
     sh.getRange(f, columna_(sh, 'Suplentes')).setValue(suplentes.join(', '));
     sh.getRange(f, columna_(sh, 'Pago por profe')).setValue(monto);
+    sh.getRange(f, columna_(sh, 'Lleva elementos')).setValue((llevan || []).map(function (n) {
+      const p = buscarProfe_(profes, n); return p ? p.nombre : '';
+    }).filter(function (n) { return n && tieneNombre_(elegidos, n); }).join(', '));
     if (!r.profesNecesarios) sh.getRange(f, columna_(sh, 'Profes necesarios')).setValue(necesarios_(r));
     actualizarEquipoEnCalendario_(r, elegidos);
-    sincronizarPagos_(r, elegidos, monto);
     r = leerFila_(sh, f);
+    sincronizarPagos_(r, elegidos);
   } finally {
     lock.releaseLock();
   }
@@ -1513,7 +1554,7 @@ function portalGuardarFecha(token, d) {
         ev.setLocation(d.direccion || '');
         ev.setTitle(titulo(x.r.estado));
       }
-      if (x.r.asignados.length) sincronizarPagos_(leerFila_(sh, filaN), x.r.asignados, pago);
+      if (x.r.asignados.length) sincronizarPagos_(leerFila_(sh, filaN), x.r.asignados);
       mensaje = 'Cambios guardados.';
     } else {
       id = 'GL-' + Utilities.formatDate(new Date(), tz, 'yyMMdd') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -1552,6 +1593,16 @@ function portalEstadoProfe(token, email, estado) {
   return conMensaje_(portalDatos(token), estado === 'Sí' ? p.nombre + ' quedó activo/a.' : p.nombre + ' quedó desactivado/a.');
 }
 
+function portalNivelProfe(token, email, nivel) {
+  soloAdmin_(token);
+  if (nivel && !CONFIG.tarifasProfes[nivel]) throw new Error('Nivel inválido.');
+  const p = buscarProfePorEmail_(leerProfes_(), email);
+  if (!p) throw new Error('No encuentro ese profe.');
+  escribirProfe_(p.fila, { 'Nivel': nivel || '' });
+  return conMensaje_(portalDatos(token), p.nombre + ': ' + (nivel ? nivel + ' (' + pesos_(CONFIG.tarifasProfes[nivel]) + ')' : 'sin nivel') +
+    '. Se aplica a los pagos que armes desde ahora.');
+}
+
 function portalMarcarPago(token, idPago, pagado) {
   soloAdmin_(token);
   const p = leerPagos_().filter(function (x) { return x.id === String(idPago); })[0];
@@ -1573,7 +1624,7 @@ const API_PORTAL = {
   portalNuevaClave: portalNuevaClave, portalCambiarDatos: portalCambiarDatos, portalResolverConvocatoria: portalResolverConvocatoria,
   portalDatos: portalDatos, portalPostular: portalPostular, portalConfirmarEquipo: portalConfirmarEquipo,
   portalPublicar: portalPublicar, portalGuardarFecha: portalGuardarFecha, portalEstadoProfe: portalEstadoProfe,
-  portalMarcarPago: portalMarcarPago
+  portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe
 };
 
 // ---- Recordatorios automáticos a los profes del equipo ----
@@ -1607,7 +1658,7 @@ function avisarCancelacionProfes_(r) {
   if (!r.asignados.length) return;
   const profes = leerProfes_();
   r.asignados.forEach(function (n) { try { mailProfe_('cancelado', buscarProfe_(profes, n), r); } catch (e) { console.error(e); } });
-  sincronizarPagos_(r, [], '');
+  sincronizarPagos_(r, []);
 }
 
 // ======== DISPONIBILIDAD ========

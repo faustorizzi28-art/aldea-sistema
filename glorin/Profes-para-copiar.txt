@@ -105,7 +105,10 @@
   .pick{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--linea);font-weight:600;font-size:14px}
   .pick:last-child{border-bottom:none}
   .pick input{width:22px;height:22px;accent-color:var(--ok);flex:none;margin:0}
-  .pick small{color:var(--gris);font-weight:600;margin-left:auto;font-size:11px;text-align:right}
+  .pick small{color:var(--gris);font-weight:600;font-size:12px}
+  .lleva{display:flex;align-items:center;gap:4px;font-size:18px;margin:0;padding:4px 6px;border-radius:10px;background:#fff;border:1px solid var(--linea);cursor:pointer}
+  .lleva input{width:18px;height:18px;accent-color:var(--rojo)}
+  .nivel{width:auto;font-size:13px;padding:6px 8px;border-radius:10px}
   .vacio{text-align:center;color:var(--gris);padding:26px 10px}
   .vacio .big{font-size:38px}
 
@@ -157,7 +160,7 @@ var CLAVE_TOKEN = 'glorin-portal-token';
 var TOKEN = leerLocal(CLAVE_TOKEN);
 var D = null;                 // datos que manda el servidor
 var PARAMS = {};
-var S = { tab: 'fechas', mes: '', dia: '', abiertos: {}, foco: '', verPasados: false, filtroPagos: 'pend', editando: null, sel: {} };
+var S = { tab: 'fechas', mes: '', dia: '', abiertos: {}, foco: '', verPasados: false, filtroPagos: 'pend', editando: null, sel: {}, lleva: {} };
 
 function leerLocal(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
 function guardarLocal(k, v){ try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} }
@@ -398,6 +401,17 @@ document.addEventListener('change', function(ev){
     if (!t.checked && i >= 0) set.splice(i, 1);
     var c = $('cnt-' + t.dataset.pick); if (c) c.textContent = set.length;
   }
+  if (t.dataset && t.dataset.lleva){
+    var l = S.lleva[t.dataset.lleva] || (S.lleva[t.dataset.lleva] = []);
+    var j = l.indexOf(t.value);
+    if (t.checked && j < 0) l.push(t.value);
+    if (!t.checked && j >= 0) l.splice(j, 1);
+    if (t.checked && (S.sel[t.dataset.lleva] || []).indexOf(t.value) < 0) S.sel[t.dataset.lleva].push(t.value);
+    var y = window.scrollY; dibujar(); window.scrollTo(0, y);
+  }
+  if (t.dataset && t.dataset.nivel !== undefined && t.dataset.email){
+    accion('portalNivelProfe', [TOKEN, t.dataset.email, t.value]);
+  }
 });
 
 /* ===== Fechas (calendario + lista) ===== */
@@ -483,7 +497,8 @@ function tarjeta(x){
     if (x.estado && x.estado !== 'Señado' && !x.cancelado) tags.push('<span class="tag">' + e(x.estado) + '</span>');
     if (x.postulados && x.postulados.length) tags.push('<span class="tag ambar">🙋 ' + x.postulados.length + ' propuesto' + (x.postulados.length > 1 ? 's' : '') + '</span>');
   }
-  if (x.pago) tags.push('<span class="tag">💵 ' + pesos(x.pago) + '</span>');
+  if (D.yo.admin) { if (x.pagoFijo != null) tags.push('<span class="tag">💵 ' + pesos(x.pagoFijo) + ' fijo</span>'); }
+  else if (x.pago) tags.push('<span class="tag">💵 ' + pesos(x.pago) + '</span>');
 
   var h = '<div class="ev' + (x.cancelado ? ' cancelado' : '') + (S.foco === x.id ? ' foco' : '') + '" id="ev-' + e(x.id) + '">' +
     '<button class="ev-cab" data-acc="abrir" data-id="' + e(x.id) + '" aria-expanded="' + abierto + '">' +
@@ -501,7 +516,9 @@ function detalle(x){
     (x.direccion ? fila('Dirección', x.direccion) : fila('Zona', x.zona)) +
     fila('Chicos', (x.chicos || '?') + (x.edades ? ' · ' + x.edades : '')) +
     fila('Paquete', x.paquete) + fila('Extras', x.extras) +
-    fila('Pago por profe', x.pago ? pesos(x.pago) : 'a definir') +
+    (D.yo.admin ? fila('Pago', x.pagoFijo != null ? pesos(x.pagoFijo) + ' fijo por profe' : 'según el nivel de cada profe')
+                : fila('Tu pago', x.pago ? pesos(x.pago) + (x.llevoElementos ? ' (incluye llevar los elementos)' : '') : 'a definir')) +
+    (x.llevan && x.llevan.length ? fila('Lleva elementos', x.llevan.join(', ')) : '') +
     fila('Equipo', x.asignados.length ? x.asignados.join(', ') : 'todavía sin armar') +
     (x.familia ? fila('Familia', x.familia) : '') +
     (D.yo.admin && x.notas ? fila('Notas', x.notas) : '');
@@ -527,25 +544,35 @@ function panelAdmin(x){
   h += '</div>';
   if (x.cancelado) return h;
   if (!S.sel[x.id]) S.sel[x.id] = x.asignados.slice();
-  var sel = S.sel[x.id];
+  if (!S.lleva[x.id]) S.lleva[x.id] = (x.llevan || []).slice();
+  var sel = S.sel[x.id], lleva = S.lleva[x.id];
   var activos = (D.profes || []).filter(function(p){ return p.activo; }).map(function(p){ return p.nombre; });
   var orden = [];
   (x.postulados || []).concat(x.asignados).forEach(function(n){ if (orden.indexOf(n) < 0) orden.push(n); });
   var otros = activos.filter(function(n){ return orden.indexOf(n) < 0; });
   var item = function(n, nota){
-    var on = sel.indexOf(n) >= 0;
-    return '<label class="pick"><input type="checkbox" data-pick="' + id + '" value="' + e(n) + '"' + (on ? ' checked' : '') + '>' + e(n) +
-      '<small>' + nota + '</small></label>';
+    var on = sel.indexOf(n) >= 0, lv = lleva.indexOf(n) >= 0;
+    var monto = montoPara(x, n, lv);
+    return '<div class="pick"><label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer"><input type="checkbox" data-pick="' + id + '" value="' + e(n) + '"' + (on ? ' checked' : '') + '>' +
+      '<span style="min-width:0">' + e(n) + '<br><small style="margin:0">' + e(nivelDe(n) || 'sin nivel') + ' · ' + (monto ? pesos(monto) : 'a definir') + (nota ? ' · ' + nota : '') + '</small></span></label>' +
+      '<label class="lleva" title="Lleva / pone los elementos"><input type="checkbox" data-lleva="' + id + '" value="' + e(n) + '"' + (lv ? ' checked' : '') + '>🚚</label></div>';
   };
   h += '<div class="equipo"><b>Elegí el equipo</b> <span class="muted small">(<span id="cnt-' + id + '">' + sel.length + '</span> de ' + x.necesarios + ')</span>';
   h += orden.length ? orden.map(function(n){ return item(n, x.asignados.indexOf(n) >= 0 ? 'en el equipo' : '🙋 se propuso'); }).join('')
                     : '<p class="small muted" style="margin:8px 0">Todavía no se propuso nadie.' + (x.publicada ? '' : ' Publicá la fecha para que les llegue.') + '</p>';
   if (otros.length) h += '<details style="margin-top:8px"><summary class="small" style="font-weight:700;cursor:pointer">Elegir otro profe (' + otros.length + ')</summary>' +
     otros.map(function(n){ return item(n, ''); }).join('') + '</details>';
-  h += '<label for="pago-' + id + '">Pago por profe</label><input id="pago-' + id + '" type="number" inputmode="numeric" min="0" step="500" placeholder="A definir" value="' + (x.pago == null ? '' : x.pago) + '">' +
+  h += '<p class="small muted" style="margin:8px 0 0">🚚 = lleva o pone los elementos (+' + pesos(D.extraElementos) + ').</p>' +
+    '<label for="pago-' + id + '">Pago fijo por profe <span class="muted">(opcional)</span></label><input id="pago-' + id + '" type="number" inputmode="numeric" min="0" step="500" placeholder="Vacío = según el nivel de cada uno" value="' + (x.pagoFijo == null ? '' : x.pagoFijo) + '">' +
     '<button class="btn ok" data-acc="equipo" data-id="' + id + '">Guardar equipo y avisar por mail</button>' +
     '<p class="small muted" style="margin:8px 0 0">A los que elegís les llega la confirmación con dirección y contacto, y quedan invitados al evento. Los que se propusieron y no quedan, como suplentes.</p></div>';
   return h;
+}
+
+function nivelDe(n){ var p = (D.profes || []).filter(function(q){ return q.nombre === n; })[0]; return p ? p.nivel : ''; }
+function montoPara(x, n, lleva){
+  var base = x.pagoFijo != null ? x.pagoFijo : (D.tarifas || {})[nivelDe(n)];
+  return base ? base + (lleva ? D.extraElementos : 0) : 0;
 }
 
 function guardarEquipo(id){
@@ -553,7 +580,8 @@ function guardarEquipo(id){
   var sel = S.sel[id] || [];
   if (sel.length > x.necesarios && !confirm('Elegiste ' + sel.length + ' profes y el cumple pide ' + x.necesarios + '. ¿Guardar igual?')) return;
   var pago = $('pago-' + id).value;
-  accion('portalConfirmarEquipo', [TOKEN, id, sel, pago === '' ? '' : Number(pago)], function(){ delete S.sel[id]; });
+  var lleva = (S.lleva[id] || []).filter(function(n){ return sel.indexOf(n) >= 0; });
+  accion('portalConfirmarEquipo', [TOKEN, id, sel, pago === '' ? '' : Number(pago), lleva], function(){ delete S.sel[id]; delete S.lleva[id]; });
 }
 
 /* ===== Nueva / editar fecha (admin) ===== */
@@ -573,7 +601,7 @@ function vistaNueva(){
     '<div><label for="n-edad">Cumple (años)</label><input id="n-edad" inputmode="numeric" value="' + v('edad') + '"></div></div>' +
     '<label for="n-paq">Paquete</label><select id="n-paq"><option value="">—</option>' + opt(paquetes, x && x.paquete) + '</select>' +
     '<div class="grid2"><div><label for="n-nec">Profes necesarios</label><input id="n-nec" type="number" min="1" max="10" required value="' + v('necesarios', '2') + '"></div>' +
-    '<div><label for="n-pago">Pago por profe</label><input id="n-pago" type="number" inputmode="numeric" min="0" step="500" placeholder="A definir" value="' + (x && x.pago != null ? x.pago : '') + '"></div></div>' +
+    '<div><label for="n-pago">Pago fijo <span class="muted">(opc.)</span></label><input id="n-pago" type="number" inputmode="numeric" min="0" step="500" placeholder="Según nivel" value="' + (x && x.pagoFijo != null ? x.pagoFijo : '') + '"></div></div>' +
     '<label for="n-zona">Zona</label><select id="n-zona"><option value="">—</option>' + opt(zonas, x && x.zona) + '</select>' +
     '<label for="n-dir">Dirección</label><input id="n-dir" value="' + v('direccion') + '" placeholder="Calle, número, barrio">' +
     '<div class="grid2"><div><label for="n-adulto">Adulto responsable</label><input id="n-adulto" value="' + v('adulto') + '"></div>' +
@@ -598,7 +626,6 @@ function prepararFormulario(){
     var p = D.paquetes.filter(function(q){ return q.nombre === $('n-paq').value; })[0];
     if (!p) return;
     $('n-nec').value = p.profes;
-    if (p.pagoProfe && !$('n-pago').value) $('n-pago').value = p.pagoProfe;
   });
   f.onsubmit = function(ev){
     ev.preventDefault();
@@ -621,10 +648,18 @@ function vistaProfes(){
   var act = ps.filter(function(p){ return p.activo; });
   var inact = ps.filter(function(p){ return !p.activo && !/pend/i.test(p.estado); });
   var wa = function(p){ var n = String(p.whatsapp || '').replace(/\D/g, ''); return n ? '<a class="mini ok" target="_blank" href="https://wa.me/' + (n.length === 10 ? '549' + n : n) + '" style="text-decoration:none">💬</a>' : ''; };
-  var filaP = function(p, botones){
-    return '<div class="fila"><div class="q"><b>' + e(p.nombre) + '</b><span>' + e(p.email || 'sin mail') + (p.whatsapp ? ' · ' + e(p.whatsapp) : '') + (p.cuenta ? '' : ' · sin cuenta') + '</span></div>' + wa(p) + botones + '</div>';
+  var niveles = Object.keys(D.tarifas || {});
+  var selNivel = function(p){
+    if (!p.email) return '';
+    return '<select class="nivel" data-nivel="" data-email="' + e(p.email) + '" aria-label="Nivel"><option value="">Nivel…</option>' +
+      niveles.map(function(n){ return '<option value="' + e(n) + '"' + (p.nivel === n ? ' selected' : '') + '>' + e(n) + ' · ' + pesos(D.tarifas[n]) + '</option>'; }).join('') + '</select>';
   };
-  var h = '<div class="card"><p class="small muted" style="margin:0 0 8px">Pasales este link para que creen su cuenta:</p>' +
+  var filaP = function(p, botones){
+    return '<div class="fila" style="flex-wrap:wrap"><div class="q"><b>' + e(p.nombre) + '</b><span>' + e(p.email || 'sin mail') + (p.whatsapp ? ' · ' + e(p.whatsapp) : '') + (p.cuenta ? '' : ' · sin cuenta') + '</span></div>' + wa(p) + botones +
+      '<div style="flex-basis:100%;display:flex;align-items:center;gap:8px">' + selNivel(p) + (p.nivel ? '' : '<span class="tag rojo">sin nivel: el pago queda a definir</span>') + '</div></div>';
+  };
+  var h = '<div class="card"><p class="small muted" style="margin:0 0 8px"><b>Tarifas:</b> ' + niveles.map(function(n){ return e(n) + ' ' + pesos(D.tarifas[n]); }).join(' · ') +
+    ' · 🚚 elementos +' + pesos(D.extraElementos) + '</p><p class="small muted" style="margin:0 0 8px">Pasales este link para que creen su cuenta:</p>' +
     '<input readonly value="' + e(API_URL + '?profes=1') + '" onclick="this.select()"></div>';
   if (pend.length) h += '<div class="card"><h2>Esperan aprobación (' + pend.length + ')</h2>' + pend.map(function(p){
     return filaP(p, (p.email ? '<button class="mini pri" data-acc="aprobar" data-email="' + e(p.email) + '">Aprobar</button>' : ''));
@@ -651,6 +686,7 @@ function vistaPagos(){
   if (!lista.length) return h + '<div class="card vacio"><div class="big">💵</div>' + (S.filtroPagos === 'pend' ? 'No hay pagos pendientes.' : 'Todavía no hay pagos registrados. Aparecen cuando quedás en el equipo de un cumple.') + '</div>';
   var item = function(p){
     var q = '<div class="q"><b>' + (D.yo.admin ? e(p.profe) : 'Cumple de ' + e(p.cumple)) + '</b><span>' + (D.yo.admin ? 'Cumple de ' + e(p.cumple) + ' · ' : '') + e(p.fecha ? diaLargo(p.fecha) : '') +
+      (p.detalle ? '<br>' + e(p.detalle) : '') +
       (p.estado === 'Pagado' ? ' · ✅ pagado' + (p.fechaPago ? ' el ' + e(p.fechaPago.slice(8, 10) + '/' + p.fechaPago.slice(5, 7)) : '') : '') + '</span></div>' +
       '<div class="monto">' + (p.monto ? pesos(p.monto) : 'a definir') + '</div>';
     if (D.yo.admin) q += p.estado === 'Pagado' ? '<button class="mini gris" data-acc="pendiente" data-id="' + e(p.id) + '">Deshacer</button>' : '<button class="mini ok" data-acc="pagado" data-id="' + e(p.id) + '">Pagado</button>';
