@@ -61,7 +61,7 @@ const CONFIG = {
   diasHaciaAdelante: 120,              // cuántos días se muestran en el calendario
   horaResumenDiario: 8,                // hora del mail diario de resumen
   // ---- Profes ----
-  urlWeb: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec',
+  urlWeb: '',                          // vacío = usa sola la dirección de esta implementación
   convocarAlSenar: true,               // al pasar a Señado, se manda la convocatoria por mail a los profes activos
   minutosAntesProfes: 20,              // cuánto antes tienen que llegar los profes a armar
   // ---- Portal de profes ----
