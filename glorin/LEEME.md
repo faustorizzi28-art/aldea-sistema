@@ -14,6 +14,7 @@ Formulario web para que las familias reserven la animación del cumple, conectad
 - Botón flotante de WhatsApp para consultas en cualquier paso.
 
 **Para vos**
+- Portal de profes con cuentas, calendario, elección de equipo, recordatorios y pagos (ver abajo).
 - Cada reserva entra a la planilla (pestaña `Reservas`) y al calendario `GLORIN` como `⏳ A CONFIRMAR`.
 - Te llega un mail con un botón para escribirle a la familia por WhatsApp con el mensaje ya armado.
 - Cambiás el **Estado** en la planilla y todo se actualiza solo:
@@ -29,11 +30,12 @@ Formulario web para que las familias reserven la animación del cumple, conectad
 
 1. Abrí la planilla de Google Sheets → **Extensiones → Apps Script**.
 2. Pegá `Code.gs` en el archivo `Code.gs` y creá un archivo HTML llamado **`Index`** con el contenido de `Index.html`.
-3. En `CONFIG` (arriba de `Code.gs`) ya está cargado el alias `faustorizzi` (Brubank). Revisá que el **titular** sea exactamente el nombre que aparece al transferir. `linkMercadoPago` va vacío salvo que tengas un link de pago **fijo** (los de Naranja X vencen a los 7 días, no sirven acá).
-4. Elegí la función **`configurarInicial`** y tocá **Ejecutar** (acepta los permisos). Crea la hoja, el calendario y los disparadores automáticos.
+3. Creá otro archivo HTML llamado **`Profes`** con el contenido de `Profes.html` (el portal de profes).
+4. En `CONFIG` (arriba de `Code.gs`) ya está cargado el alias `faustorizzi` (Brubank). Revisá que el **titular** sea exactamente el nombre que aparece al transferir. `linkMercadoPago` va vacío salvo que tengas un link de pago **fijo** (los de Naranja X vencen a los 7 días, no sirven acá).
+5. Elegí la función **`configurarInicial`** y tocá **Ejecutar** (acepta los permisos). Crea la hoja, el calendario y los disparadores automáticos.
    Si ya tenías la planilla con reservas, no se borra nada: solo agrega columnas nuevas al final.
-5. **Implementar → Nueva implementación → Aplicación web** · Ejecutar como: *Yo* · Acceso: *Cualquier persona*.
-6. Ese link es el que compartís. Si cambiás el código: **Implementar → Administrar implementaciones → Editar → Nueva versión** (así el link no cambia).
+6. **Implementar → Nueva implementación → Aplicación web** · Ejecutar como: *Yo* · Acceso: *Cualquier persona*.
+7. Ese link es el que compartís. Si cambiás el código: **Implementar → Administrar implementaciones → Editar → Nueva versión** (así el link no cambia).
 
 > Las reservas que ya tenías de antes no tienen guardado el ID del evento, así que cambiarles el Estado no mueve el calendario. Las nuevas sí.
 
@@ -44,14 +46,34 @@ Formulario web para que las familias reserven la animación del cumple, conectad
 - Bloquear un día: evento de todo el día en el calendario GLORIN con `BLOQUEADO` en el título.
 - Evento cargado a mano que usa inflable/metegol: agregá en la descripción `RECURSOS: inflable=1; metegol=1`.
 
-## Profes (convocatoria)
+## Portal de profes (cuentas, fechas, equipo, recordatorios y pagos)
 
-1. Pestaña **Profes**: un profe por fila con Nombre, WhatsApp, Email (opcional) y **Activo = Sí**.
-2. En **Reservas**, pará en la fila del cumple → menú **🎈 GLORIN → 📣 Convocar profes**:
-   - **Copiar texto** y pegarlo en el grupo de WhatsApp de profes, o **Abrir WhatsApp y elegir el grupo**.
-   - **Mandar por mail a todos los activos**, o un botón de WhatsApp por cada profe.
-3. Cada profe abre el link, toca su nombre y **Voy / No puedo**. Los primeros N (los que pide el paquete) quedan en el equipo;
-   el resto, suplentes. Si alguien se baja, entra el primer suplente y te llega un mail.
-4. Los profes con mail quedan invitados al evento del calendario. La dirección y el contacto de la familia solo los ven los que quedaron en el equipo.
-5. Al pasar una reserva a **Señado**, se manda la convocatoria por mail sola (`convocarAlSenar` en CONFIG).
-6. El resumen diario de las 8 te muestra los cumples de la semana con equipo incompleto y, el día antes, un botón de WhatsApp para recordarle a cada profe (con hora de llegada, dirección y contacto de la familia).
+Link: `…/exec?profes=1` (también lo ves en el menú **🎈 GLORIN → 🧑‍🏫 Link del portal de profes**).
+
+**Instalación extra:** en Apps Script creá un archivo HTML llamado **`Profes`** con el contenido de `Profes.html`
+(o `Profes-para-copiar.txt`), pegá el `Code.gs` nuevo, corré **`configurarInicial`** otra vez (crea la pestaña `Pagos` y las
+columnas nuevas, sin borrar nada) y publicá una **nueva versión** de la implementación.
+
+**Para los profes** (desde el celu)
+- Crean su cuenta con nombre, mail, WhatsApp y contraseña. Si ya los tenías cargados en la pestaña `Profes`, usan el mismo mail y se quedan con esa fila.
+- Las cuentas nuevas quedan **Pendiente** hasta que las aprobás (te llega un mail). Al aprobar, les llega un mail avisando.
+- **📅 Fechas**: calendario del mes con las fechas que publicaste. Tocan **🙋 Me propongo** (o *Sacar mi propuesta*).
+- **⭐ Mis cumples**: los confirmados, con dirección, contacto de la familia, hora de llegada, *Cómo llegar* y *No puedo ir* (te avisa por mail).
+- **💵 Pagos**: cuánto les deben y cuánto cobraron.
+- Recordatorio por mail **3 días y 1 día antes** de cada cumple en el que están (`recordatoriosProfes` en CONFIG).
+- Si se olvidan la contraseña, les llega un link por mail para elegir una nueva.
+
+**Para vos** (entrás al portal con el mail de la cuenta dueña del script, o uno de `adminEmails`)
+- **➕ Nueva**: cargás una fecha a mano (cumples que entran por WhatsApp). Queda en `Reservas` y en el calendario GLORIN, y si tildás *Publicar*, les llega la convocatoria por mail a todos los profes activos.
+- Las reservas que hacen los padres desde la página de reservas aparecen solas en **📅 Fechas**. Se publican para los profes cuando pasan a **Señado** (o con el botón *📣 Publicar*).
+- En cada fecha ves quiénes se propusieron, tildás el equipo, ponés el **pago por profe** y tocás **Guardar equipo y avisar por mail**:
+  - a los elegidos les llega la confirmación con todos los datos y quedan invitados al evento del calendario;
+  - a los que se propusieron y no quedaron, que quedaron como suplentes;
+  - si sacás a alguien del equipo, le llega el aviso.
+- **👥 Profes**: aprobar cuentas, activar o desactivar.
+- **💵 Pagos**: lo que le debés a cada profe, con botón **Pagado** (al profe le llega un mail). Todo queda en la pestaña `Pagos`.
+- Si cancelás un cumple (Estado = Cancelado), al equipo le llega el aviso y sus pagos pendientes quedan *Anulado*.
+- Si querés un pago fijo por defecto, poné `pagoProfePorDefecto` en CONFIG o `pagoProfe: 30000` en cada paquete.
+
+Los links viejos de convocatoria (`…?convocatoria=…`) siguen funcionando: abren el portal en ese cumple.
+El menú **📣 Convocar profes** sigue armando el texto para el grupo de WhatsApp, con el link al portal.

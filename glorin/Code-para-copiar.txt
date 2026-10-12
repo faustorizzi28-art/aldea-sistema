@@ -20,6 +20,11 @@
  *   · los cumples de mañana, con botón de WhatsApp para recordarle a cada familia
  *   · las reservas que siguen sin seña, con botón para reclamarla
  *
+ * Portal de profes (…/exec?profes=1): cada profe crea su cuenta, ve las
+ * fechas publicadas en un calendario y se propone. Vos elegís el equipo,
+ * les llega la confirmación por mail, recordatorios antes del cumple y
+ * llevás lo que se le paga a cada uno (pestaña "Pagos").
+ *
  * Bloquear un día entero: evento de todo el día en el calendario
  * GLORIN con la palabra BLOQUEADO en el título.
  *
@@ -59,10 +64,19 @@ const CONFIG = {
   urlWeb: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec',
   convocarAlSenar: true,               // al pasar a Señado, se manda la convocatoria por mail a los profes activos
   minutosAntesProfes: 20,              // cuánto antes tienen que llegar los profes a armar
+  // ---- Portal de profes ----
+  adminEmails: [],                     // mails que entran al portal como administración (además de la cuenta dueña del script)
+  aprobarCuentas: true,                // las cuentas nuevas quedan "Pendiente" hasta que las aprobás
+  avisarPostulaciones: true,           // te llega un mail cada vez que un profe se propone para una fecha
+  recordatoriosProfes: [3, 1],         // días antes del cumple en que le llega un recordatorio por mail a cada profe del equipo
+  pagoProfePorDefecto: 0,              // lo que cobra cada profe por cumple (0 = "a definir"; se cambia en cada fecha desde el portal)
+  avisarPagoAlProfe: true,             // al marcar un pago como hecho, le llega un mail al profe
+  diasSesion: 60,                      // cuántos días queda abierta la sesión en el celu del profe
   horarios: ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','14:00','14:30','15:00','15:30',
              '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00'],
   stock: { metegol: 2, inflable: 1 },  // cuántos tenés de cada uno
   paquetes: [
+    // Podés agregar pagoProfe: 30000 a un paquete para que ese sea el pago por profe por defecto
     { id: 'individual', nombre: 'Individual', profes: 1, precio: 125000, detalle: '1 profe animador · ideal hasta 12-15 chicos', maxChicos: 15 },
     { id: 'ultra',      nombre: 'Ultra Básico', profes: 2, precio: 195000, detalle: '2 profes · recreación y juegos · hasta 27-30 chicos', maxChicos: 30, destacado: true },
     { id: 'recreacion', nombre: 'Recreación', profes: 3, precio: 235000, detalle: '3 profes · animación y recreación · grupos grandes o muy chiquitos' },
@@ -111,15 +125,24 @@ const COLUMNAS = [
   // columnas nuevas (v2) — se agregan solas al final si tu planilla ya existía
   'Saldo', 'WhatsApp link', 'ID evento calendario', 'Último aviso',
   // columnas de profes (v3)
-  'Profes necesarios', 'Profes asignados', 'Suplentes', 'Convocatoria'
+  'Profes necesarios', 'Profes asignados', 'Suplentes', 'Convocatoria',
+  // portal de profes (v4)
+  'Postulados', 'Pago por profe', 'Recordatorios profes'
 ];
 const HOJA_PROFES = 'Profes';
-const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas'];
+const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas', 'Clave', 'Alta', 'Último ingreso'];
+const HOJA_PAGOS = 'Pagos';
+const COLUMNAS_PAGOS = ['ID pago', 'Reserva', 'Fecha evento', 'Cumple', 'Profe', 'Monto', 'Estado', 'Fecha de pago', 'Notas'];
 
 // ======== SERVIR LA PÁGINA ========
 function doGet(e) {
   const prm = (e && e.parameter) || {};
-  if (prm.convocatoria) return paginaConvocatoria_(String(prm.convocatoria));
+  if (prm.profes !== undefined || prm.convocatoria !== undefined || prm.reset !== undefined) {
+    return HtmlService.createHtmlOutputFromFile('Profes')
+      .setTitle('GLORIN · Portal de profes')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   if (prm.api === 'datos') return json_(getDatosIniciales);
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('GLORIN Animaciones · Reservá tu cumple')
@@ -132,6 +155,9 @@ function doPost(e) {
   return json_(function () {
     const pedido = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (pedido.accion === 'enviarReserva') return enviarReserva(pedido.datos);
+    if (pedido.accion === 'portal' && Object.prototype.hasOwnProperty.call(API_PORTAL, pedido.fn)) {
+      return API_PORTAL[pedido.fn].apply(null, Array.isArray(pedido.args) ? pedido.args : []);
+    }
     throw new Error('Acción desconocida.');
   });
 }
@@ -150,6 +176,7 @@ function configurarInicial() {
   colorearEstados_(sh);
   obtenerCalendario_();
   obtenerHojaProfes_();
+  obtenerHojaPagos_();
 
   // Disparadores: al editar la planilla y resumen diario. Se recrean sin duplicar.
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -233,6 +260,9 @@ function configPublica_() {
   const c = JSON.parse(JSON.stringify(CONFIG));
   delete c.emailAviso;
   delete c.nombreCalendario;
+  delete c.adminEmails;
+  delete c.pagoProfePorDefecto;
+  c.paquetes.forEach(function (p) { delete p.pagoProfe; });
   return c;
 }
 
@@ -364,7 +394,7 @@ function enviarReserva(d) {
     'Hora merienda': d.horaMerienda, 'Hora torta': d.horaTorta, 'Atención especial': d.atencionEspecial,
     'Cómo nos conoció': d.comoNosConocio, 'Comentarios': d.comentarios, 'Detalle completo (JSON)': JSON.stringify(d),
     'WhatsApp link': waFamilia, 'ID evento calendario': ev.getId(), 'Último aviso': '',
-    'Profes necesarios': p.paquete.profes || 1
+    'Profes necesarios': p.paquete.profes || 1, 'Pago por profe': pagoProfeDe_(p.paquete)
   };
   const fechaYHora = { 'Fecha evento': 1, 'Hora inicio': 1, 'Hora fin': 1 };
   sh.appendRow(encabezados_(sh).map(function (h) {
@@ -571,7 +601,9 @@ function onOpen() {
     .addItem('❌ Cancelar reserva', 'menuCancelar')
     .addSeparator()
     .addItem('📣 Convocar profes (fila seleccionada)', 'menuConvocar')
+    .addItem('🧑‍🏫 Link del portal de profes', 'menuPortal')
     .addItem('👥 Ver la pestaña de profes', 'menuVerProfes')
+    .addItem('💵 Ver la pestaña de pagos', 'menuVerPagos')
     .addSeparator()
     .addItem('📋 Mandarme el resumen ahora', 'resumenDiario')
     .addItem('⚙️ Configuración inicial', 'configurarInicial')
@@ -614,6 +646,12 @@ function menuWhatsApp() {
 function alEditarPlanilla(e) {
   if (!e || !e.range) return;
   const sh = e.range.getSheet();
+  if (sh.getName() === HOJA_PROFES && e.range.getNumRows() === 1 && e.range.getNumColumns() === 1 && e.range.getRow() >= 2 &&
+      e.range.getColumn() === columna_(sh, 'Activo') && /^s/i.test(String(e.value || '')) && /pend/i.test(String(e.oldValue || ''))) {
+    const p = leerProfes_().filter(function (x) { return x.fila === e.range.getRow(); })[0];
+    if (p && p.clave) { try { mailProfe_('aprobado', p, null); } catch (err) { console.error(err); } }
+    return;
+  }
   if (sh.getName() !== HOJA || e.range.getRow() < 2) return;
   const colEstado = columna_(sh, 'Estado');
   if (e.range.getColumn() > colEstado || e.range.getLastColumn() < colEstado) return;
@@ -624,8 +662,8 @@ function alEditarPlanilla(e) {
 
 function aplicarEstado_(sh, filaN, estado) {
   const r = leerFila_(sh, filaN);
-  if (!r.eventoId) return;
-  const ev = obtenerCalendario_().getEventById(r.eventoId);
+  if (!r.id) return;
+  const ev = r.eventoId ? obtenerCalendario_().getEventById(r.eventoId) : null;
   if (ev) {
     const titulo = ev.getTitle().replace(/^[^·]*·\s*/, '');
     ev.setTitle((PREFIJO_ESTADO[estado] || estado) + ' · ' + titulo);
@@ -640,18 +678,32 @@ function aplicarEstado_(sh, filaN, estado) {
   if (estado === 'Señado' && CONFIG.convocarAlSenar) {
     try { mailConvocatoriaProfes_(sh, filaN); } catch (err) { console.error(err); }
   }
+  if (estado === 'Cancelado') {
+    try { avisarCancelacionProfes_(r); } catch (err) { console.error(err); }
+  }
   sh.getRange(filaN, columna_(sh, 'Último aviso')).setValue(estado + ' · ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM HH:mm'));
 }
 
 function leerFila_(sh, filaN) {
   const h = encabezados_(sh);
-  const v = sh.getRange(filaN, 1, 1, h.length).getValues()[0];
+  return filaDesdeValores_(h, sh.getRange(filaN, 1, 1, h.length).getValues()[0], filaN);
+}
+
+// Lee todas las reservas de una sola vez (mucho más rápido que fila por fila)
+function leerTodas_(sh) {
+  if (sh.getLastRow() < 2) return [];
+  const h = encabezados_(sh);
+  return sh.getRange(2, 1, sh.getLastRow() - 1, h.length).getValues().map(function (v, i) { return filaDesdeValores_(h, v, i + 2); });
+}
+
+function filaDesdeValores_(h, v, filaN) {
   const g = function (n) { const i = h.indexOf(n); return i < 0 ? '' : v[i]; };
   const tz = Session.getScriptTimeZone();
   const txt = function (x, fmt) { return x instanceof Date ? Utilities.formatDate(x, tz, fmt) : String(x || ''); };
   const total = Number(g('Total estimado')) || 0;
+  const pago = g('Pago por profe');
   return {
-    id: g('ID'), estado: g('Estado'), fecha: txt(g('Fecha evento'), 'yyyy-MM-dd'), hora: txt(g('Hora inicio'), 'HH:mm'),
+    filaN: filaN, id: g('ID'), estado: g('Estado'), fecha: txt(g('Fecha evento'), 'yyyy-MM-dd'), hora: txt(g('Hora inicio'), 'HH:mm'),
     horaFin: txt(g('Hora fin'), 'HH:mm'), adulto: g('Adulto responsable'), whatsapp: g('WhatsApp'), email: g('Email'),
     cumpleanero: g('Cumpleañero/a'), recibido: g('Recibido'), total: total,
     saldo: Number(g('Saldo')) || (total ? total - (Number(g('Seña')) || 0) : 0),
@@ -659,12 +711,15 @@ function leerFila_(sh, filaN) {
     direccion: g('Dirección'), zona: g('Zona'), paquete: g('Paquete'), cantChicos: g('Cant. chicos'),
     rangoEdades: g('Rango de edades'), edad: g('Edad que cumple'), extras: g('Extras'),
     profesNecesarios: Number(g('Profes necesarios')) || 0,
-    asignados: lista_(g('Profes asignados')), suplentes: lista_(g('Suplentes')), token: String(g('Convocatoria') || '')
+    asignados: lista_(g('Profes asignados')), suplentes: lista_(g('Suplentes')), token: String(g('Convocatoria') || ''),
+    postulados: lista_(g('Postulados')), pagoProfe: pago === '' || pago === null ? '' : Number(pago) || 0,
+    recordatorios: String(g('Recordatorios profes') || ''), comentarios: g('Comentarios')
   };
 }
 
 // ======== RESUMEN DIARIO (disparador a las 8 hs) ========
 function resumenDiario() {
+  try { recordatoriosProfes_(); } catch (e) { console.error(e); }
   const sh = obtenerHoja_();
   const tz = Session.getScriptTimeZone();
   const manana = Utilities.formatDate(new Date(Date.now() + 86400000), tz, 'yyyy-MM-dd');
@@ -672,13 +727,12 @@ function resumenDiario() {
   const enUnaSemana = Utilities.formatDate(new Date(Date.now() + 7 * 86400000), tz, 'yyyy-MM-dd');
   const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const deManana = [], sinSena = [], faltanProfes = [];
-  for (let f = 2; f <= sh.getLastRow(); f++) {
-    const r = leerFila_(sh, f);
-    if (!r.id) continue;
+  leerTodas_(sh).forEach(function (r) {
+    if (!r.id) return;
     if (r.estado === 'Señado' && r.fecha >= hoy && r.fecha <= enUnaSemana && r.asignados.length < necesarios_(r)) faltanProfes.push(r);
     if (r.fecha === manana && (r.estado === 'Señado' || r.estado === 'A confirmar')) deManana.push(r);
     if (r.estado === 'A confirmar' && r.recibido instanceof Date && r.recibido < limite) sinSena.push(r);
-  }
+  });
   if (!deManana.length && !sinSena.length && !faltanProfes.length) return;
   const profes = leerProfes_();
 
@@ -707,7 +761,8 @@ function resumenDiario() {
     faltanProfes.map(function (r) {
       return '<li style="margin:8px 0"><b>' + esc_(r.cumpleanero) + '</b> · ' + esc_(fechaLarga_(r.fecha)) + ' ' + esc_(r.hora) + ' hs · ' +
         r.asignados.length + ' de ' + necesarios_(r) + (r.asignados.length ? ' (' + esc_(r.asignados.join(', ')) + ')' : '') +
-        (r.token ? '<br><a href="' + esc_(linkConvocatoria_(r.token)) + '" style="color:#C8161A;font-weight:bold">📣 Link de la convocatoria</a>' : '<br>Convocá desde el menú 🎈 GLORIN → Convocar profes') + '</li>';
+        (r.postulados.length > r.asignados.length ? '<br>Se propusieron: ' + esc_(r.postulados.join(', ')) : '') +
+        '<br><a href="' + esc_(linkPortal_(r.id)) + '" style="color:#C8161A;font-weight:bold">' + (r.token ? '👥 Elegir el equipo en el portal' : '📣 Publicar la fecha en el portal') + '</a></li>';
     }).join('') + '</ul>';
   html += '</div>';
   MailApp.sendEmail({ to: CONFIG.emailAviso || Session.getEffectiveUser().getEmail(),
@@ -715,41 +770,76 @@ function resumenDiario() {
                       htmlBody: html, name: CONFIG.marca });
 }
 
-// ======== PROFES: equipo, convocatoria y confirmaciones ========
+// ======== PROFES: cuentas, portal, postulaciones, equipo y pagos ========
+// Los profes crean su cuenta en el portal (…/exec?profes=1), ven las fechas publicadas
+// en un calendario y se proponen. Vos elegís el equipo desde el mismo portal: a los
+// elegidos les llega un mail con todos los datos y quedan invitados al evento.
+// Antes del cumple les llegan recordatorios y en "Pagos" llevás lo que se les debe.
+
 function obtenerHojaProfes_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(HOJA_PROFES);
+  let formatear = false;
   if (!sh) {
     sh = ss.insertSheet(HOJA_PROFES);
     sh.appendRow(COLUMNAS_PROFES);
-    sh.appendRow(['Ejemplo Profe (borrame)', '351 1234567', '', 'No', 'Cargá un profe por fila. Activo = Sí para que lo convoquemos.']);
     sh.setFrozenRows(1);
-    sh.getRange(1, 1, 1, COLUMNAS_PROFES.length).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
-    sh.getRange(2, 4, 500, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No'], true).build());
     sh.setColumnWidth(1, 180); sh.setColumnWidth(5, 320);
+    formatear = true;
+  } else {
+    const actuales = encabezados_(sh);
+    const faltan = COLUMNAS_PROFES.filter(function (c) { return actuales.indexOf(c) < 0; });
+    if (faltan.length) { sh.getRange(1, actuales.length + 1, 1, faltan.length).setValues([faltan]); formatear = true; }
+  }
+  if (formatear) {
+    sh.getRange(1, 1, 1, sh.getLastColumn()).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
+    sh.getRange(2, columna_(sh, 'Activo'), 500, 1).setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInList(['Sí', 'No', 'Pendiente'], true).build());
+    sh.hideColumns(columna_(sh, 'Clave'));   // la contraseña va cifrada, igual no hace falta verla
   }
   return sh;
 }
 
 function menuVerProfes() { SpreadsheetApp.getActive().setActiveSheet(obtenerHojaProfes_()); }
+function menuVerPagos() { SpreadsheetApp.getActive().setActiveSheet(obtenerHojaPagos_()); }
 
 function leerProfes_() {
   const sh = obtenerHojaProfes_();
   if (sh.getLastRow() < 2) return [];
-  return sh.getRange(2, 1, sh.getLastRow() - 1, COLUMNAS_PROFES.length).getValues()
-    .filter(function (f) { return String(f[0]).trim(); })
-    .map(function (f) {
-      return { nombre: String(f[0]).trim(), whatsapp: String(f[1] || ''), email: String(f[2] || '').trim(),
-               activo: /^s/i.test(String(f[3] || '')) };
-    });
+  const h = encabezados_(sh);
+  const g = function (f, n) { const i = h.indexOf(n); return i < 0 ? '' : f[i]; };
+  return sh.getRange(2, 1, sh.getLastRow() - 1, h.length).getValues().map(function (f, i) {
+    const estado = String(g(f, 'Activo') || '').trim();
+    return { fila: i + 2, nombre: String(g(f, 'Nombre')).trim(), whatsapp: String(g(f, 'WhatsApp') || ''),
+             email: String(g(f, 'Email') || '').trim().toLowerCase(), estado: estado,
+             activo: /^s/i.test(estado), clave: String(g(f, 'Clave') || '') };
+  }).filter(function (p) { return p.nombre || p.email; });
 }
 
 function buscarProfe_(profes, nombre) {
   return profes.filter(function (p) { return p.nombre.toLowerCase() === String(nombre).toLowerCase(); })[0];
 }
 
+function buscarProfePorEmail_(profes, email) {
+  email = String(email || '').trim().toLowerCase();
+  return email ? profes.filter(function (p) { return p.email === email; })[0] : null;
+}
+
+function escribirProfe_(fila, campos) {
+  const sh = obtenerHojaProfes_();
+  Object.keys(campos).forEach(function (k) { sh.getRange(fila, columna_(sh, k)).setValue(limpiarCelda_(campos[k])); });
+}
+
 function lista_(v) {
   return String(v || '').split(',').map(function (x) { return x.trim(); }).filter(String);
+}
+
+function sinNombre_(lista, nombre) {
+  return lista.filter(function (n) { return n.toLowerCase() !== String(nombre).toLowerCase(); });
+}
+
+function tieneNombre_(lista, nombre) {
+  return lista.some(function (n) { return n.toLowerCase() === String(nombre).toLowerCase(); });
 }
 
 function necesarios_(r) {
@@ -758,12 +848,23 @@ function necesarios_(r) {
   return paq ? paq.profes : 1;
 }
 
-function linkConvocatoria_(token) {
-  const base = CONFIG.urlWeb || ScriptApp.getService().getUrl();
-  return base + '?convocatoria=' + encodeURIComponent(token);
+function pagoProfeDe_(paq) {
+  const v = (paq && paq.pagoProfe) || CONFIG.pagoProfePorDefecto;
+  return v ? Number(v) : '';
 }
 
-// Crea (una sola vez) el código de convocatoria de la reserva
+function urlBase_() { return CONFIG.urlWeb || ScriptApp.getService().getUrl(); }
+
+function linkPortal_(id) {
+  return urlBase_() + '?profes=1' + (id ? '&fecha=' + encodeURIComponent(id) : '');
+}
+
+// Los links viejos de convocatoria (…?convocatoria=xxxx) siguen andando: abren el portal en ese cumple
+function linkConvocatoria_(token) {
+  return urlBase_() + '?convocatoria=' + encodeURIComponent(token);
+}
+
+// Crea (una sola vez) el código de convocatoria de la reserva. Tenerlo = fecha publicada para los profes.
 function asegurarToken_(sh, filaN) {
   const col = columna_(sh, 'Convocatoria');
   let t = String(sh.getRange(filaN, col).getValue() || '');
@@ -775,14 +876,17 @@ function asegurarToken_(sh, filaN) {
 }
 
 function buscarPorToken_(token) {
+  if (!token) return null;
   const sh = obtenerHoja_();
-  const col = columna_(sh, 'Convocatoria');
-  if (!token || sh.getLastRow() < 2) return null;
-  const vals = sh.getRange(2, col, sh.getLastRow() - 1, 1).getValues();
-  for (let i = 0; i < vals.length; i++) {
-    if (String(vals[i][0]) === token) return { sh: sh, filaN: i + 2, r: leerFila_(sh, i + 2) };
-  }
-  return null;
+  const x = leerTodas_(sh).filter(function (r) { return r.token === token; })[0];
+  return x ? { sh: sh, filaN: x.filaN, r: x } : null;
+}
+
+function buscarPorId_(id) {
+  if (!id) return null;
+  const sh = obtenerHoja_();
+  const x = leerTodas_(sh).filter(function (r) { return String(r.id) === String(id); })[0];
+  return x ? { sh: sh, filaN: x.filaN, r: x } : null;
 }
 
 function horaLlegada_(hora) {
@@ -796,13 +900,14 @@ function mensajeProfe_(tipo, r, nombre) {
   const quien = nombre ? String(nombre).split(' ')[0] : '';
   const base = '🎈 Cumple de ' + r.cumpleanero + (r.edad ? ' (' + r.edad + ' años)' : '') + '\n' +
     '📅 ' + fechaLarga_(r.fecha) + ' · ' + r.hora + ' a ' + r.horaFin + ' hs\n' +
-    '📍 ' + (tipo === 'convocatoria' ? (r.zona || '') : (r.direccion || '') + (r.zona ? ' (' + r.zona + ')' : '')) + '\n' +
+    '📍 ' + (tipo === 'convocatoria' || tipo === 'base' ? (r.zona || '') : (r.direccion || '') + (r.zona ? ' (' + r.zona + ')' : '')) + '\n' +
     '👦 ' + (r.cantChicos || '?') + ' chicos' + (r.rangoEdades ? ' · ' + r.rangoEdades : '') + ' · ' + (r.paquete || '') +
-    (r.extras ? '\n🎁 ' + r.extras : '');
+    (r.extras ? '\n🎁 ' + r.extras : '') +
+    (r.pagoProfe ? '\n💵 ' + pesos_(r.pagoProfe) + ' por profe' : '');
   if (tipo === 'convocatoria') {
     return '📣 CONVOCATORIA GLORIN\n' + base + '\n👥 Necesitamos ' + necesarios_(r) + ' profe' + (necesarios_(r) > 1 ? 's' : '') +
-      '\n\n¿Quién puede? Anotate acá (tocás tu nombre y "Voy") 👉 ' + linkConvocatoria_(r.token) +
-      '\nLos primeros ' + necesarios_(r) + ' quedan en el equipo y les llega el evento al calendario 📅';
+      '\n\n¿Quién puede? Proponete desde el portal de profes 👉 ' + linkConvocatoria_(r.token) +
+      '\nArmamos el equipo y a los que quedan les llega la confirmación por mail 📅';
   }
   if (tipo === 'recordatorio') {
     return '¡Hola ' + quien + '! Mañana tenemos cumple 💪\n' + base + '\n⏰ Llegada: ' + horaLlegada_(r.hora) + ' hs para armar' +
@@ -823,22 +928,33 @@ function menuConvocar() {
   const msg = mensajeProfe_('convocatoria', r);
   const profes = leerProfes_().filter(function (p) { return p.activo; });
   const estilo = 'display:block;margin:6px 0;padding:10px 12px;color:#fff;border-radius:8px;text-decoration:none;font-family:Arial;font-weight:bold';
-  const individuales = profes.filter(function (p) { return p.whatsapp && r.asignados.indexOf(p.nombre) < 0; }).map(function (p) {
+  const individuales = profes.filter(function (p) { return p.whatsapp && !tieneNombre_(r.asignados, p.nombre); }).map(function (p) {
     return '<a target="_blank" style="' + estilo + ';background:#25D366" href="' + esc_(linkWhatsApp_(p.whatsapp, '¡Hola ' + p.nombre.split(' ')[0] + '!\n' + msg)) + '">💬 ' + esc_(p.nombre) + '</a>';
   }).join('');
   const html = HtmlService.createHtmlOutput('<div style="font-family:Arial;font-size:14px">' +
     '<p><b>Cumple de ' + esc_(r.cumpleanero) + '</b> · ' + esc_(fechaLarga_(r.fecha)) + ' ' + esc_(r.hora) + ' hs<br>' +
     'Equipo: <b>' + r.asignados.length + ' de ' + necesarios_(r) + '</b>' + (r.asignados.length ? ' (' + esc_(r.asignados.join(', ')) + ')' : '') +
-    (r.suplentes.length ? '<br>Suplentes: ' + esc_(r.suplentes.join(', ')) : '') + '</p>' +
+    (r.postulados.length ? '<br>Se propusieron: ' + esc_(r.postulados.join(', ')) : '') + '</p>' +
+    '<p style="color:#666">El equipo lo elegís desde el <a target="_blank" href="' + esc_(linkPortal_(r.id)) + '">portal de profes</a>.</p>' +
     '<b>Texto para el grupo de profes:</b>' +
     '<textarea id="txt" readonly style="width:100%;height:150px;margin:6px 0;font:13px Arial;border:1px solid #ddd;border-radius:8px;padding:8px">' + esc_(msg) + '</textarea>' +
     '<button onclick="var t=document.getElementById(\'txt\');t.select();document.execCommand(\'copy\');this.textContent=\'✓ Copiado: pegalo en el grupo\'" style="' + estilo + ';background:#1A1A1A;border:none;width:100%;cursor:pointer">📋 Copiar texto</button>' +
     '<a target="_blank" style="' + estilo + ';background:#128C7E" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">📣 Abrir WhatsApp y elegir el grupo</a>' +
     (profes.some(function (p) { return p.email; }) ? '<button onclick="this.disabled=true;this.textContent=\'Enviando…\';google.script.run.withSuccessHandler(function(n){document.getElementById(\'ok\').textContent=\'Mail enviado a \'+n+\' profes\';}).mailConvocatoriaFila(' + filaN + ')" style="' + estilo + ';background:#C8161A;border:none;width:100%;cursor:pointer">✉️ Mandar por mail a todos los activos</button><p id="ok" style="color:#1E8E5A"></p>' : '') +
-    (individuales ? '<p style="margin:12px 0 4px;color:#666">O de a uno:</p>' + individuales : '<p style="color:#666">Cargá a tus profes en la pestaña <b>Profes</b> (Activo = Sí) para tener un botón por cada uno.</p>') +
+    (individuales ? '<p style="margin:12px 0 4px;color:#666">O de a uno:</p>' + individuales : '<p style="color:#666">Cuando los profes creen su cuenta en el portal (o los cargues en la pestaña <b>Profes</b>) vas a tener un botón por cada uno.</p>') +
     '<p style="color:#666;font-size:12px;word-break:break-all">Link: ' + esc_(linkConvocatoria_(token)) + '</p></div>')
-    .setWidth(400).setHeight(600);
+    .setWidth(400).setHeight(620);
   SpreadsheetApp.getUi().showModalDialog(html, 'Convocar profes');
+}
+
+function menuPortal() {
+  const html = HtmlService.createHtmlOutput('<div style="font-family:Arial;font-size:14px">' +
+    '<p>Este es el link del portal. Pasáselo a los profes para que creen su cuenta, y entrá vos con el mail <b>' +
+    esc_(emailsAdmin_()[0] || '') + '</b> para manejar fechas, equipos y pagos.</p>' +
+    '<p style="word-break:break-all;background:#f6f6f6;padding:10px;border-radius:8px">' + esc_(linkPortal_()) + '</p>' +
+    '<a target="_blank" href="' + esc_(linkPortal_()) + '" style="display:block;text-align:center;padding:12px;background:#C8161A;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Abrir el portal</a></div>')
+    .setWidth(380).setHeight(260);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Portal de profes');
 }
 
 function mailConvocatoriaFila(filaN) { return mailConvocatoriaProfes_(obtenerHoja_(), Number(filaN)); }
@@ -847,74 +963,87 @@ function mailConvocatoriaProfes_(sh, filaN) {
   asegurarToken_(sh, filaN);
   const r = leerFila_(sh, filaN);
   if (r.asignados.length >= necesarios_(r)) return 0;
-  const destinatarios = leerProfes_().filter(function (p) { return p.activo && p.email && r.asignados.indexOf(p.nombre) < 0; });
+  const destinatarios = leerProfes_().filter(function (p) {
+    return p.activo && p.email && !tieneNombre_(r.asignados, p.nombre) && !tieneNombre_(r.postulados, p.nombre);
+  });
   destinatarios.forEach(function (p) {
     MailApp.sendEmail({ to: p.email, name: CONFIG.marca,
-      subject: '📣 Convocatoria GLORIN · ' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs',
+      subject: '📣 Nueva fecha GLORIN · ' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs',
       body: '¡Hola ' + p.nombre.split(' ')[0] + '!\n' + mensajeProfe_('convocatoria', r),
-      htmlBody: '<div style="font-family:Arial;font-size:15px">¡Hola ' + esc_(p.nombre.split(' ')[0]) + '!<pre style="font-family:inherit;white-space:pre-wrap">' +
-        esc_(mensajeProfe_('base', r)) + '\n👥 Necesitamos ' + necesarios_(r) + ' profes</pre>' + boton_(linkConvocatoria_(r.token), '🙋 Me anoto / No puedo', '#C8161A') + '</div>' });
+      htmlBody: '<div style="font-family:Arial;font-size:15px">¡Hola ' + esc_(p.nombre.split(' ')[0]) + '! Hay una fecha nueva y necesitamos ' +
+        necesarios_(r) + ' profe' + (necesarios_(r) > 1 ? 's' : '') + '.' + fichaEvento_(r, false) +
+        boton_(linkPortal_(r.id), '🙋 Me propongo', '#C8161A') +
+        '<p style="color:#777;font-size:13px">Armamos el equipo entre los que se proponen y te avisamos por mail.</p></div>' });
   });
   return destinatarios.length;
 }
 
-// Datos que ve el profe en la página de convocatoria (sin datos de la familia hasta que queda asignado)
-function datosConvocatoria(token, nombre) {
-  const x = buscarPorToken_(String(token || ''));
-  if (!x) throw new Error('Este link de convocatoria no existe o ya no está activo.');
-  const r = x.r;
-  const asignado = nombre && r.asignados.indexOf(nombre) >= 0;
-  return {
-    cancelado: r.estado === 'Cancelado', fecha: fechaLarga_(r.fecha), hora: r.hora, horaFin: r.horaFin, llegada: horaLlegada_(r.hora),
-    zona: r.zona, paquete: r.paquete, chicos: r.cantChicos, edades: r.rangoEdades, extras: r.extras,
-    cumpleanero: r.cumpleanero, necesarios: necesarios_(r), asignados: r.asignados, suplentes: r.suplentes,
-    profes: leerProfes_().filter(function (p) { return p.activo; }).map(function (p) { return p.nombre; }),
-    direccion: asignado ? r.direccion : '', familia: asignado ? r.adulto + ' · ' + r.whatsapp : ''
-  };
+// Tabla con los datos del cumple para los mails de profes (dirección y familia solo si ya está en el equipo)
+function fichaEvento_(r, completo) {
+  const fila = function (a, b) { return b ? '<tr><td style="padding:4px 12px 4px 0;color:#777;vertical-align:top">' + a + '</td><td style="padding:4px 0"><b>' + esc_(b) + '</b></td></tr>' : ''; };
+  return '<table style="border-collapse:collapse;margin:12px 0">' +
+    fila('Cumple', r.cumpleanero + (r.edad ? ' (' + r.edad + ' años)' : '')) +
+    fila('Fecha', fechaLarga_(r.fecha)) +
+    fila('Horario', r.hora + ' a ' + r.horaFin + ' hs') +
+    fila('Llegada', horaLlegada_(r.hora) + ' hs para armar') +
+    fila(completo ? 'Dirección' : 'Zona', completo ? (r.direccion || '') + (r.zona ? ' (' + r.zona + ')' : '') : r.zona) +
+    fila('Chicos', (r.cantChicos || '?') + (r.rangoEdades ? ' · ' + r.rangoEdades : '')) +
+    fila('Paquete', r.paquete) + fila('Extras', r.extras) +
+    (completo ? fila('Equipo', r.asignados.join(', ')) + fila('Familia', r.adulto ? r.adulto + ' · ' + r.whatsapp : '') : '') +
+    fila('Pago', r.pagoProfe ? pesos_(r.pagoProfe) + ' por profe' : 'a definir') +
+    '</table>';
 }
 
-function responderConvocatoria(token, nombre, voy) {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(20000)) throw new Error('Mucha gente respondiendo a la vez. Probá de nuevo.');
-  let aviso = '', mensaje = '';
+function mailProfe_(tipo, p, r, x) {
+  if (!p || !p.email) return;
+  x = x || {};
+  const nombre = esc_(String(p.nombre || '').split(' ')[0]);
+  let asunto = '', intro = '', completo = false, boton = r ? linkPortal_(r.id) : linkPortal_();
+  if (tipo === 'confirmado') {
+    asunto = '✅ Quedaste en el equipo · Cumple de ' + r.cumpleanero + ' · ' + fechaLarga_(r.fecha);
+    intro = '¡Hola ' + nombre + '! Quedaste <b>confirmado/a</b> para este cumple. Ya te llega el evento al calendario. 🎉';
+    completo = true;
+  } else if (tipo === 'quitado') {
+    asunto = 'Cambio de equipo · Cumple de ' + r.cumpleanero + ' · ' + fechaLarga_(r.fecha);
+    intro = '¡Hola ' + nombre + '! Hubo un cambio y para este cumple <b>ya no estás en el equipo</b>. Cualquier duda, escribinos.';
+  } else if (tipo === 'suplente') {
+    asunto = 'Quedaste como suplente · Cumple de ' + r.cumpleanero;
+    intro = '¡Hola ' + nombre + '! Gracias por proponerte. Esta vez el equipo ya quedó armado: quedaste como <b>suplente</b>. Si alguien se baja, te avisamos.';
+  } else if (tipo === 'recordatorio') {
+    asunto = (x.dias === 1 ? '⏰ Mañana' : '⏰ En ' + x.dias + ' días') + ' · Cumple de ' + r.cumpleanero + ' ' + r.hora + ' hs';
+    intro = '¡Hola ' + nombre + '! Te recordamos que ' + (x.dias === 1 ? '<b>mañana</b>' : 'en <b>' + x.dias + ' días</b>') +
+      ' tenemos cumple. Llegada ' + horaLlegada_(r.hora) + ' hs para armar. 💪';
+    completo = true;
+  } else if (tipo === 'cancelado') {
+    asunto = '❌ Se canceló el cumple de ' + r.cumpleanero + ' · ' + fechaLarga_(r.fecha);
+    intro = '¡Hola ' + nombre + '! Te avisamos que este cumple <b>se canceló</b>. Ese horario te queda libre.';
+  } else if (tipo === 'pago') {
+    asunto = '💵 Te pagamos ' + pesos_(x.monto) + ' · Cumple de ' + r.cumpleanero;
+    intro = '¡Hola ' + nombre + '! Te registramos el pago de <b>' + pesos_(x.monto) + '</b> por el cumple de ' + esc_(r.cumpleanero) +
+      ' (' + esc_(fechaLarga_(r.fecha)) + '). ¡Gracias por tu laburo!';
+    r = null;
+  } else if (tipo === 'aprobado') {
+    asunto = '🎈 Ya podés entrar al portal de profes de ' + CONFIG.marca;
+    intro = '¡Hola ' + nombre + '! Tu cuenta quedó aprobada. Ya podés ver las fechas y proponerte.';
+  } else if (tipo === 'clave') {
+    asunto = 'Cambiar tu contraseña · ' + CONFIG.marca;
+    intro = '¡Hola ' + nombre + '! Pediste cambiar la contraseña del portal de profes. El link vale por 1 hora. Si no fuiste vos, ignorá este mail.';
+    boton = x.link;
+  }
+  const html = '<div style="font-family:Arial,sans-serif;font-size:15px;color:#222;max-width:560px">' +
+    '<h2 style="color:#C8161A;margin:0 0 12px">' + esc_(CONFIG.marca) + ' · Profes</h2><p>' + intro + '</p>' +
+    (r ? fichaEvento_(r, completo) : '') +
+    boton_(boton, tipo === 'clave' ? 'Elegir contraseña nueva' : 'Abrir el portal de profes', '#C8161A') + '</div>';
+  MailApp.sendEmail({ to: p.email, subject: asunto, htmlBody: html, name: CONFIG.marca, replyTo: CONFIG.emailAviso || undefined,
+                      body: asunto + (r ? '\n\n' + mensajeProfe_('base', r) : '') + '\n\n' + boton });
+}
+
+function avisarAdmin_(asunto, texto, id) {
   try {
-    const x = buscarPorToken_(String(token || ''));
-    if (!x) throw new Error('Este link de convocatoria no existe.');
-    const r = x.r, sh = x.sh;
-    if (r.estado === 'Cancelado') throw new Error('Este cumple se canceló.');
-    const profe = buscarProfe_(leerProfes_().filter(function (p) { return p.activo; }), nombre);
-    if (!profe) throw new Error('No te encuentro en la lista de profes activos. Avisale a Fausto.');
-    nombre = profe.nombre;
-    const eraAsignado = r.asignados.indexOf(nombre) >= 0;
-    let asignados = r.asignados.filter(function (n) { return n !== nombre; });
-    let suplentes = r.suplentes.filter(function (n) { return n !== nombre; });
-    const necesarios = necesarios_(r);
-
-    if (voy) {
-      if (asignados.length < necesarios) { asignados.push(nombre); mensaje = '¡Listo! Quedaste en el equipo ✅'; }
-      else { suplentes.push(nombre); mensaje = 'El equipo ya está completo. Quedaste como suplente: si alguien se baja, entrás vos y te avisamos.'; }
-    } else {
-      mensaje = 'Gracias por avisar 👍';
-      if (eraAsignado) {
-        aviso = nombre + ' se bajó del cumple de ' + r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs).';
-        if (suplentes.length) { const sube = suplentes.shift(); asignados.push(sube); aviso += ' Entró ' + sube + ' (era suplente): avisale.'; }
-      }
-    }
-    sh.getRange(x.filaN, columna_(sh, 'Profes asignados')).setValue(asignados.join(', '));
-    sh.getRange(x.filaN, columna_(sh, 'Suplentes')).setValue(suplentes.join(', '));
-    actualizarEquipoEnCalendario_(r, asignados);
-
-    const completo = asignados.length >= necesarios && !(r.asignados.length >= necesarios);
-    if (completo) aviso = (aviso ? aviso + '\n' : '') + '✅ Equipo completo para el cumple de ' + r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs): ' + asignados.join(', ') + '.';
-  } finally {
-    lock.releaseLock();
-  }
-  if (aviso) {
-    try { MailApp.sendEmail({ to: CONFIG.emailAviso || Session.getEffectiveUser().getEmail(), subject: '👥 GLORIN · Profes', body: aviso, name: CONFIG.marca }); } catch (e) { console.error(e); }
-  }
-  const datos = datosConvocatoria(token, nombre);
-  datos.mensaje = mensaje;
-  return datos;
+    MailApp.sendEmail({ to: CONFIG.emailAviso || Session.getEffectiveUser().getEmail(), subject: '👥 GLORIN · ' + asunto, name: CONFIG.marca,
+      body: texto + '\n\n' + linkPortal_(id),
+      htmlBody: '<div style="font-family:Arial;font-size:15px"><p>' + esc_(texto).replace(/\n/g, '<br>') + '</p>' + boton_(linkPortal_(id), 'Abrir el portal', '#C8161A') + '</div>' });
+  } catch (e) { console.error(e); }
 }
 
 // Agrega a los profes como invitados del evento (les queda en su calendario) y anota el equipo en la descripción
@@ -926,9 +1055,9 @@ function actualizarEquipoEnCalendario_(r, asignados) {
   const invitados = ev.getGuestList().map(function (g) { return g.getEmail().toLowerCase(); });
   asignados.forEach(function (n) {
     const p = buscarProfe_(profes, n);
-    if (p && p.email && invitados.indexOf(p.email.toLowerCase()) < 0) { try { ev.addGuest(p.email); } catch (e) {} }
+    if (p && p.email && invitados.indexOf(p.email) < 0) { try { ev.addGuest(p.email); } catch (e) {} }
   });
-  r.asignados.filter(function (n) { return asignados.indexOf(n) < 0; }).forEach(function (n) {
+  r.asignados.filter(function (n) { return !tieneNombre_(asignados, n); }).forEach(function (n) {
     const p = buscarProfe_(profes, n);
     if (p && p.email) { try { ev.removeGuest(p.email); } catch (e) {} }
   });
@@ -936,38 +1065,549 @@ function actualizarEquipoEnCalendario_(r, asignados) {
   ev.setDescription(desc + '\nPROFES: ' + (asignados.join(', ') || '-') + ' (' + asignados.length + '/' + necesarios_(r) + ')');
 }
 
-function paginaConvocatoria_(token) {
-  const html = '<!DOCTYPE html><html><head><base target="_top"><meta charset="utf-8">' +
-  '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;700;800&display=swap" rel="stylesheet">' +
-  '<style>body{margin:0;background:#FFF3ED;font-family:Montserrat,Arial,sans-serif;color:#1A1A1A}' +
-  '.top{background:#C8161A;color:#fff;padding:22px 18px}.top h1{font-family:"Bebas Neue",Impact,sans-serif;font-weight:400;font-size:40px;margin:0;line-height:1}' +
-  '.w{max-width:520px;margin:0 auto;padding:16px}.c{background:#fff;border:1px solid #EADFD9;border-radius:16px;padding:16px;margin:12px 0}' +
-  '.r{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #EADFD9}.r:last-child{border:none}.r span{color:#6B5F5A}' +
-  '.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1.5px solid #EADFD9;background:#fff;border-radius:999px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}' +
-  '.chip.sel{background:#C8161A;border-color:#C8161A;color:#fff}.b{display:block;width:100%;border:none;border-radius:999px;padding:15px;font:inherit;font-weight:800;font-size:16px;margin-top:10px;cursor:pointer}' +
-  '.si{background:#1E8E5A;color:#fff}.no{background:#EEE;color:#333}.b:disabled{opacity:.5}.msg{background:#E9F7EF;border-radius:12px;padding:12px;margin-top:12px;display:none}' +
-  '.err{background:#FDECEC}.cupo{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;color:#C8161A}</style></head><body>' +
-  '<div class="top"><div style="font-weight:800;letter-spacing:.2em;font-size:12px">GLORIN · CONVOCATORIA</div><h1 id="t">Cargando…</h1></div>' +
-  '<div class="w"><div id="app"></div></div>' +
-  '<script>var TOKEN=' + JSON.stringify(token) + ',YO="",D=null;' +
-  'try{YO=localStorage.getItem("glorin-profe")||""}catch(e){}' +
-  'function e(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;"}[c]})}' +
-  'function fila(a,b){return b?"<div class=r><span>"+a+"</span><b>"+e(b)+"</b></div>":""}' +
-  'function pintar(d,msg,err){D=d;document.getElementById("t").textContent=d.cancelado?"Cumple cancelado":"Cumple de "+d.cumpleanero;' +
-  'var h="<div class=c>"+fila("Fecha",d.fecha)+fila("Horario",d.hora+" a "+d.horaFin+" hs")+fila("Llegada",d.llegada+" hs")+fila("Zona",d.zona)+fila("Chicos",(d.chicos||"?")+(d.edades?" · "+d.edades:""))+fila("Paquete",d.paquete)+fila("Extras",d.extras)+(d.direccion?fila("Dirección",d.direccion)+fila("Familia",d.familia):"")+"</div>";' +
-  'h+="<div class=c><div class=cupo>"+d.asignados.length+" de "+d.necesarios+" profes</div><div style=\\"color:#6B5F5A\\">"+(d.asignados.length?"Van: "+e(d.asignados.join(", ")):"Todavía no se anotó nadie")+(d.suplentes.length?"<br>Suplentes: "+e(d.suplentes.join(", ")):"")+"</div></div>";' +
-  'if(!d.cancelado){h+="<div class=c><b>¿Quién sos?</b><div class=chips style=\\"margin-top:10px\\">"+d.profes.map(function(n){return "<button type=button class=\\"chip"+(n===YO?" sel":"")+"\\" data-n=\\""+e(n)+"\\">"+e(n)+"</button>"}).join("")+"</div>"+' +
-  '"<button class=\\"b si\\" id=si>🙋 Voy</button><button class=\\"b no\\" id=no>No puedo</button><div class=\\"msg"+(err?" err":"")+"\\" id=m></div></div>";}' +
-  'document.getElementById("app").innerHTML=h;' +
-  'document.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){YO=c.dataset.n;try{localStorage.setItem("glorin-profe",YO)}catch(x){}document.querySelectorAll(".chip").forEach(function(o){o.classList.toggle("sel",o===c)});cargar()}});' +
-  'var m=document.getElementById("m");if(m&&msg){m.textContent=msg;m.style.display="block"}' +
-  'var si=document.getElementById("si"),no=document.getElementById("no");if(si){si.onclick=function(){responder(true)};no.onclick=function(){responder(false)}}}' +
-  'function responder(v){if(!YO){pintar(D,"Primero tocá tu nombre.",true);return}document.getElementById("si").disabled=document.getElementById("no").disabled=true;' +
-  'google.script.run.withSuccessHandler(function(d){pintar(d,d.mensaje)}).withFailureHandler(function(x){pintar(D,x.message,true)}).responderConvocatoria(TOKEN,YO,v)}' +
-  'function cargar(){google.script.run.withSuccessHandler(function(d){pintar(d)}).withFailureHandler(function(x){document.getElementById("t").textContent="Link no válido";document.getElementById("app").innerHTML="<div class=c>"+e(x.message)+"</div>"}).datosConvocatoria(TOKEN,YO)}' +
-  'cargar();</script></body></html>';
-  return HtmlService.createHtmlOutput(html).setTitle('GLORIN · Convocatoria')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+// ---- Pagos a profes (pestaña "Pagos") ----
+function obtenerHojaPagos_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(HOJA_PAGOS);
+  if (!sh) {
+    sh = ss.insertSheet(HOJA_PAGOS);
+    sh.appendRow(COLUMNAS_PAGOS);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, COLUMNAS_PAGOS.length).setFontWeight('bold').setBackground('#C8161A').setFontColor('#FFFFFF');
+    sh.getRange(2, COLUMNAS_PAGOS.indexOf('Estado') + 1, 1000, 1).setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInList(['Pendiente', 'Pagado', 'Anulado'], true).build());
+  }
+  return sh;
+}
+
+function leerPagos_() {
+  const sh = obtenerHojaPagos_();
+  if (sh.getLastRow() < 2) return [];
+  const h = encabezados_(sh);
+  const tz = Session.getScriptTimeZone();
+  const g = function (f, n) { const i = h.indexOf(n); return i < 0 ? '' : f[i]; };
+  const txt = function (x) { return x instanceof Date ? Utilities.formatDate(x, tz, 'yyyy-MM-dd') : String(x || ''); };
+  return sh.getRange(2, 1, sh.getLastRow() - 1, h.length).getValues().map(function (f, i) {
+    return { fila: i + 2, id: String(g(f, 'ID pago')), reserva: String(g(f, 'Reserva')), fecha: txt(g(f, 'Fecha evento')),
+             cumple: String(g(f, 'Cumple')), profe: String(g(f, 'Profe')), monto: Number(g(f, 'Monto')) || 0,
+             estado: String(g(f, 'Estado') || 'Pendiente'), fechaPago: txt(g(f, 'Fecha de pago')), notas: String(g(f, 'Notas') || '') };
+  }).filter(function (p) { return p.id; });
+}
+
+// Deja en "Pagos" una fila por cada profe del equipo. Los que salen del equipo quedan "Anulado" (no se borra nada).
+function sincronizarPagos_(r, asignados, monto) {
+  const sh = obtenerHojaPagos_();
+  const col = function (n) { return COLUMNAS_PAGOS.indexOf(n) + 1; };
+  const deEste = leerPagos_().filter(function (p) { return p.reserva === String(r.id); });
+  deEste.forEach(function (p) {
+    const sigue = tieneNombre_(asignados, p.profe);
+    if (!sigue && p.estado === 'Pendiente') sh.getRange(p.fila, col('Estado')).setValue('Anulado');
+    if (sigue && p.estado !== 'Pagado') {
+      sh.getRange(p.fila, col('Estado')).setValue('Pendiente');
+      sh.getRange(p.fila, col('Monto')).setValue(monto || '');
+      sh.getRange(p.fila, col('Fecha evento')).setValue("'" + r.fecha);
+    }
+  });
+  asignados.forEach(function (n) {
+    if (deEste.some(function (p) { return p.profe.toLowerCase() === n.toLowerCase(); })) return;
+    sh.appendRow(['PG-' + Utilities.getUuid().slice(0, 8).toUpperCase(), r.id, "'" + r.fecha, limpiarCelda_(r.cumpleanero),
+                  n, monto || '', 'Pendiente', '', '']);
+  });
+}
+
+// ---- Cuentas y sesiones ----
+function emailsAdmin_() {
+  const l = (CONFIG.adminEmails || []).map(function (m) { return String(m).trim().toLowerCase(); });
+  const yo = Session.getEffectiveUser().getEmail();
+  if (yo) l.unshift(yo.toLowerCase());
+  if (CONFIG.emailAviso) l.push(CONFIG.emailAviso.toLowerCase());
+  return l.filter(String);
+}
+
+function esAdmin_(email) { return emailsAdmin_().indexOf(String(email || '').toLowerCase()) >= 0; }
+
+function hashClave_(clave, sal) {
+  sal = sal || Utilities.getUuid().replace(/-/g, '').slice(0, 12);
+  let h = sal + '|' + clave;
+  for (let i = 0; i < 200; i++) {
+    h = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, h + '|' + sal, Utilities.Charset.UTF_8));
+  }
+  return sal + ':' + h;
+}
+
+function claveOk_(clave, guardada) {
+  if (!guardada || guardada.indexOf(':') < 0) return false;
+  return hashClave_(String(clave || ''), guardada.split(':')[0]) === guardada;
+}
+
+function crearSesion_(email) {
+  const props = PropertiesService.getScriptProperties();
+  const ahora = Date.now();
+  // Limpieza de sesiones vencidas
+  const todas = props.getProperties();
+  Object.keys(todas).forEach(function (k) {
+    if (k.indexOf('ses_') !== 0) return;
+    try { if (JSON.parse(todas[k]).x < ahora) props.deleteProperty(k); } catch (e) { props.deleteProperty(k); }
+  });
+  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '').slice(0, 40);
+  props.setProperty('ses_' + token, JSON.stringify({ e: email, x: ahora + (CONFIG.diasSesion || 60) * 86400000 }));
+  return token;
+}
+
+// Devuelve el profe logueado. Si la sesión no sirve tira 'SESION' (la página vuelve a pedir el ingreso).
+function usuario_(token) {
+  token = String(token || '');
+  if (!/^[a-f0-9]{40}$/.test(token)) throw new Error('SESION');
+  const props = PropertiesService.getScriptProperties();
+  const raw = props.getProperty('ses_' + token);
+  if (!raw) throw new Error('SESION');
+  const s = JSON.parse(raw);
+  if (s.x < Date.now()) { props.deleteProperty('ses_' + token); throw new Error('SESION'); }
+  const p = buscarProfePorEmail_(leerProfes_(), s.e);
+  if (!p) throw new Error('SESION');
+  const admin = esAdmin_(p.email);
+  if (!p.activo && !admin) { props.deleteProperty('ses_' + token); throw new Error('SESION'); }
+  return { profe: p, admin: admin };
+}
+
+function soloAdmin_(token) {
+  const u = usuario_(token);
+  if (!u.admin) throw new Error('Esto es solo para administración.');
+  return u;
+}
+
+function portalRegistrar(d) {
+  d = d || {};
+  const nombre = String(d.nombre || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+  const email = String(d.email || '').trim().toLowerCase();
+  const whatsapp = String(d.whatsapp || '').trim().slice(0, 30);
+  const clave = String(d.clave || '');
+  if (nombre.length < 3 || nombre.indexOf(',') >= 0) throw new Error('Poné tu nombre y apellido (sin comas).');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Revisá el mail.');
+  if (whatsapp.replace(/\D/g, '').length < 10) throw new Error('Revisá el WhatsApp: código de área y número (ej: 351 6197928).');
+  if (clave.length < 6) throw new Error('La contraseña tiene que tener al menos 6 caracteres.');
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Probá de nuevo en unos segundos.');
+  let estado, nombreFinal;
+  try {
+    const profes = leerProfes_();
+    const porEmail = buscarProfePorEmail_(profes, email);
+    if (porEmail && porEmail.clave) throw new Error('Ya hay una cuenta con ese mail. Ingresá, o tocá "Me olvidé la contraseña".');
+    const porNombre = buscarProfe_(profes, nombre);
+    // Si vos ya lo habías cargado a mano (mismo mail, o mismo nombre sin mail), se queda con esa fila
+    const existente = porEmail || (porNombre && !porNombre.email && !porNombre.clave ? porNombre : null);
+    if (!existente && porNombre) throw new Error('Ya hay un profe con ese nombre. Agregá tu apellido o un apodo.');
+    estado = (existente && existente.activo) || esAdmin_(email) || !CONFIG.aprobarCuentas ? 'Sí' : 'Pendiente';
+    const ahora = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm');
+    nombreFinal = existente && existente.nombre ? existente.nombre : nombre;
+    const campos = { 'Nombre': nombreFinal, 'WhatsApp': whatsapp, 'Email': email, 'Activo': estado,
+                     'Clave': hashClave_(clave), 'Alta': ahora, 'Último ingreso': ahora };
+    if (existente) escribirProfe_(existente.fila, campos);
+    else {
+      const sh = obtenerHojaProfes_();
+      sh.appendRow(encabezados_(sh).map(function (h) { return campos[h] === undefined ? '' : limpiarCelda_(campos[h]); }));
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  if (estado === 'Pendiente') {
+    avisarAdmin_('Nuevo profe pide cuenta', nombreFinal + ' (' + email + ' · ' + whatsapp + ') creó su cuenta en el portal. ' +
+      'Aprobala desde el portal (pestaña Profes) o poniendo Activo = Sí en la planilla.');
+    return { pendiente: true };
+  }
+  return { token: crearSesion_(email) };
+}
+
+function portalIngresar(email, clave) {
+  email = String(email || '').trim().toLowerCase();
+  const cache = CacheService.getScriptCache();
+  const clave_intentos = 'int_' + email;
+  const intentos = Number(cache.get(clave_intentos) || 0);
+  if (intentos >= 6) throw new Error('Demasiados intentos. Esperá 10 minutos o tocá "Me olvidé la contraseña".');
+  const p = buscarProfePorEmail_(leerProfes_(), email);
+  if (!p || !claveOk_(clave, p.clave)) {
+    cache.put(clave_intentos, String(intentos + 1), 600);
+    if (p && !p.clave) throw new Error('Todavía no creaste tu contraseña con ese mail: tocá "Crear cuenta".');
+    throw new Error('Mail o contraseña incorrectos.');
+  }
+  if (!p.activo && !esAdmin_(p.email)) {
+    if (/pend/i.test(p.estado)) throw new Error('Tu cuenta todavía no fue aprobada. Te llega un mail cuando esté lista.');
+    throw new Error('Tu cuenta está desactivada. Escribile a ' + CONFIG.marca + '.');
+  }
+  cache.remove(clave_intentos);
+  escribirProfe_(p.fila, { 'Último ingreso': Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') });
+  return { token: crearSesion_(p.email) };
+}
+
+function portalSalir(token) {
+  if (/^[a-f0-9]{40}$/.test(String(token || ''))) PropertiesService.getScriptProperties().deleteProperty('ses_' + token);
+  return true;
+}
+
+// Manda un link para elegir contraseña nueva. Siempre responde igual (no revela qué mails existen).
+function portalOlvide(email) {
+  const p = buscarProfePorEmail_(leerProfes_(), email);
+  if (p) {
+    const cache = CacheService.getScriptCache();
+    if (!cache.get('rstm_' + p.email)) {          // un mail cada 2 minutos como mucho
+      const codigo = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '').slice(0, 32);
+      cache.put('rst_' + codigo, p.email, 3600);
+      cache.put('rstm_' + p.email, '1', 120);
+      mailProfe_('clave', p, null, { link: urlBase_() + '?profes=1&reset=' + codigo });
+    }
+  }
+  return true;
+}
+
+function portalNuevaClave(codigo, clave) {
+  codigo = String(codigo || '');
+  if (String(clave || '').length < 6) throw new Error('La contraseña tiene que tener al menos 6 caracteres.');
+  const cache = CacheService.getScriptCache();
+  const email = /^[a-f0-9]{32}$/.test(codigo) ? cache.get('rst_' + codigo) : null;
+  if (!email) throw new Error('El link venció o ya se usó. Pedí uno nuevo con "Me olvidé la contraseña".');
+  const p = buscarProfePorEmail_(leerProfes_(), email);
+  if (!p) throw new Error('No encuentro tu cuenta.');
+  escribirProfe_(p.fila, { 'Clave': hashClave_(clave) });
+  cache.remove('rst_' + codigo);
+  if (!p.activo && !esAdmin_(p.email)) return { pendiente: true };
+  return { token: crearSesion_(p.email) };
+}
+
+function portalCambiarDatos(token, d) {
+  const u = usuario_(token);
+  d = d || {};
+  const campos = {};
+  if (d.whatsapp !== undefined) {
+    if (String(d.whatsapp).replace(/\D/g, '').length < 10) throw new Error('Revisá el WhatsApp.');
+    campos['WhatsApp'] = String(d.whatsapp).trim().slice(0, 30);
+  }
+  if (d.claveNueva) {
+    if (!claveOk_(d.claveActual, u.profe.clave)) throw new Error('La contraseña actual no es correcta.');
+    if (String(d.claveNueva).length < 6) throw new Error('La contraseña nueva tiene que tener al menos 6 caracteres.');
+    campos['Clave'] = hashClave_(d.claveNueva);
+  }
+  escribirProfe_(u.profe.fila, campos);
+  return conMensaje_(portalDatos(token), 'Listo, guardamos los cambios.');
+}
+
+function portalResolverConvocatoria(codigo) {
+  const x = buscarPorToken_(String(codigo || '').slice(0, 40));
+  return x ? x.r.id : '';
+}
+
+function conMensaje_(datos, mensaje) { datos.mensaje = mensaje; return datos; }
+
+// ---- Datos del portal ----
+function portalDatos(token) {
+  const u = usuario_(token);
+  const yo = u.profe.nombre;
+  const tz = Session.getScriptTimeZone();
+  const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const desde = Utilities.formatDate(new Date(Date.now() - 90 * 86400000), tz, 'yyyy-MM-dd');
+  const eventos = leerTodas_(obtenerHoja_()).filter(function (r) {
+    if (!r.id || !/^\d{4}-\d{2}-\d{2}$/.test(r.fecha) || r.fecha < desde) return false;
+    const mio = tieneNombre_(r.asignados, yo) || tieneNombre_(r.postulados, yo);
+    if (u.admin) return r.fecha >= hoy || r.estado !== 'Cancelado' || mio;
+    if (mio) return true;
+    return r.token && r.fecha >= hoy && r.estado !== 'Cancelado' && r.estado !== 'Realizado';
+  }).map(function (r) { return eventoParaPortal_(r, yo, u.admin, hoy); })
+    .sort(function (a, b) { return (a.fecha + a.hora).localeCompare(b.fecha + b.hora); });
+
+  const pagos = leerPagos_().filter(function (p) {
+    return p.estado !== 'Anulado' && (u.admin || p.profe.toLowerCase() === yo.toLowerCase());
+  }).map(function (p) { return { id: p.id, reserva: p.reserva, fecha: p.fecha, cumple: p.cumple, profe: p.profe, monto: p.monto, estado: p.estado, fechaPago: p.fechaPago }; });
+
+  const salida = {
+    yo: { nombre: yo, email: u.profe.email, whatsapp: u.profe.whatsapp, admin: u.admin },
+    hoy: hoy, eventos: eventos, pagos: pagos, marca: CONFIG.marca
+  };
+  if (u.admin) {
+    salida.profes = leerProfes_().map(function (p) {
+      return { nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, estado: p.estado || 'No', activo: p.activo, cuenta: !!p.clave };
+    });
+    salida.paquetes = CONFIG.paquetes.map(function (p) { return { nombre: p.nombre, profes: p.profes, pagoProfe: pagoProfeDe_(p) }; });
+    salida.zonas = CONFIG.zonas.map(function (z) { return z.nombre; });
+    salida.estados = ESTADOS;
+    salida.duracionMin = CONFIG.duracionMin;
+  }
+  return salida;
+}
+
+function eventoParaPortal_(r, yo, admin, hoy) {
+  const asignado = tieneNombre_(r.asignados, yo);
+  const postulado = tieneNombre_(r.postulados, yo);
+  const necesarios = necesarios_(r);
+  let mio = '';
+  if (asignado) mio = 'asignado';
+  else if (postulado) mio = r.asignados.length >= necesarios ? 'suplente' : 'postulado';
+  const e = {
+    id: r.id, fecha: r.fecha, fechaTxt: fechaLarga_(r.fecha), hora: r.hora, horaFin: r.horaFin, llegada: horaLlegada_(r.hora),
+    zona: r.zona, paquete: r.paquete, chicos: r.cantChicos, edades: r.rangoEdades, extras: r.extras,
+    cumpleanero: r.cumpleanero, edad: r.edad, necesarios: necesarios, asignados: r.asignados,
+    pago: r.pagoProfe === '' ? null : Number(r.pagoProfe), estado: r.estado, cancelado: r.estado === 'Cancelado',
+    pasado: r.fecha < hoy, publicada: !!r.token, mio: mio
+  };
+  if (admin || asignado) { e.direccion = r.direccion; e.familia = r.adulto ? r.adulto + ' · ' + r.whatsapp : ''; e.waFamilia = r.whatsapp ? 'https://wa.me/' + normalizarWhatsApp_(r.whatsapp) : ''; }
+  if (admin) {
+    e.postulados = r.postulados; e.adulto = r.adulto; e.whatsapp = r.whatsapp; e.notas = r.comentarios;
+    e.necesariosGuardado = r.profesNecesarios || '';
+  }
+  return e;
+}
+
+// ---- Acciones del profe ----
+function portalPostular(token, id, quiero) {
+  const u = usuario_(token);
+  const yo = u.profe.nombre;
+  const hoy = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Mucha gente respondiendo a la vez. Probá de nuevo.');
+  let aviso = '', asunto = '', mensaje = '', r;
+  try {
+    const x = buscarPorId_(id);
+    if (!x) throw new Error('No encuentro esa fecha.');
+    r = x.r;
+    if (r.estado === 'Cancelado') throw new Error('Este cumple se canceló.');
+    if (!r.token && !u.admin) throw new Error('Esta fecha todavía no está publicada.');
+    if (r.fecha < hoy) throw new Error('Esa fecha ya pasó.');
+    let postulados = sinNombre_(r.postulados, yo), asignados = r.asignados, suplentes = sinNombre_(r.suplentes, yo);
+    const cuando = r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs)';
+    if (quiero) {
+      postulados.push(yo);
+      mensaje = '¡Listo! Te propusiste ✋ Cuando armemos el equipo te llega un mail.';
+      if (CONFIG.avisarPostulaciones) {
+        asunto = yo + ' se propuso';
+        aviso = yo + ' se propuso para el cumple de ' + cuando + '. Van ' + postulados.length + ' propuestos para ' + necesarios_(r) + ' lugares.';
+      }
+    } else if (tieneNombre_(asignados, yo)) {
+      asignados = sinNombre_(asignados, yo);
+      actualizarEquipoEnCalendario_(r, asignados);
+      sincronizarPagos_(r, asignados, r.pagoProfe);
+      mensaje = 'Listo, te bajamos de este cumple y le avisamos a ' + CONFIG.marca + '.';
+      asunto = '⚠️ ' + yo + ' se bajó';
+      aviso = '⚠️ ' + yo + ' se bajó del cumple de ' + cuando + '. El equipo quedó en ' + asignados.length + ' de ' + necesarios_(r) + '.' +
+        (suplentes.length ? '\nSuplentes que se habían propuesto: ' + suplentes.join(', ') + '.' : '') + '\nElegí el reemplazo desde el portal.';
+    } else {
+      mensaje = 'Listo, sacamos tu propuesta.';
+    }
+    x.sh.getRange(x.filaN, columna_(x.sh, 'Postulados')).setValue(postulados.join(', '));
+    x.sh.getRange(x.filaN, columna_(x.sh, 'Profes asignados')).setValue(asignados.join(', '));
+    x.sh.getRange(x.filaN, columna_(x.sh, 'Suplentes')).setValue(suplentes.join(', '));
+  } finally {
+    lock.releaseLock();
+  }
+  if (aviso) avisarAdmin_(asunto, aviso, r.id);
+  return conMensaje_(portalDatos(token), mensaje);
+}
+
+// ---- Acciones de administración ----
+// Elegir el equipo: a los nuevos les llega la confirmación, a los que salen el aviso,
+// y a los que se propusieron y no quedaron, que son suplentes.
+function portalConfirmarEquipo(token, id, nombres, pago) {
+  soloAdmin_(token);
+  const profes = leerProfes_();
+  const elegidos = [];
+  (nombres || []).forEach(function (n) {
+    const p = buscarProfe_(profes, n);
+    if (!p) throw new Error('No encuentro a ' + n + ' en la lista de profes.');
+    if (!tieneNombre_(elegidos, p.nombre)) elegidos.push(p.nombre);
+  });
+  const monto = pago === '' || pago === null || pago === undefined ? '' : Math.max(0, Math.round(Number(pago) || 0));
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Probá de nuevo en unos segundos.');
+  let r, nuevos, quitados, suplentesNuevos;
+  try {
+    const x = buscarPorId_(id);
+    if (!x) throw new Error('No encuentro esa fecha.');
+    r = x.r;
+    if (r.estado === 'Cancelado') throw new Error('Este cumple está cancelado.');
+    const postulados = r.postulados.slice();
+    elegidos.forEach(function (n) { if (!tieneNombre_(postulados, n)) postulados.push(n); });
+    const suplentes = postulados.filter(function (n) { return !tieneNombre_(elegidos, n); });
+    nuevos = elegidos.filter(function (n) { return !tieneNombre_(r.asignados, n); });
+    quitados = r.asignados.filter(function (n) { return !tieneNombre_(elegidos, n); });
+    suplentesNuevos = suplentes.filter(function (n) { return !tieneNombre_(r.suplentes, n) && !tieneNombre_(quitados, n); });
+    const sh = x.sh, f = x.filaN;
+    sh.getRange(f, columna_(sh, 'Profes asignados')).setValue(elegidos.join(', '));
+    sh.getRange(f, columna_(sh, 'Postulados')).setValue(postulados.join(', '));
+    sh.getRange(f, columna_(sh, 'Suplentes')).setValue(suplentes.join(', '));
+    sh.getRange(f, columna_(sh, 'Pago por profe')).setValue(monto);
+    if (!r.profesNecesarios) sh.getRange(f, columna_(sh, 'Profes necesarios')).setValue(necesarios_(r));
+    actualizarEquipoEnCalendario_(r, elegidos);
+    sincronizarPagos_(r, elegidos, monto);
+    r = leerFila_(sh, f);
+  } finally {
+    lock.releaseLock();
+  }
+  let mails = 0;
+  const enviar = function (lista, tipo) {
+    lista.forEach(function (n) {
+      const p = buscarProfe_(profes, n);
+      if (p && p.email) { try { mailProfe_(tipo, p, r); mails++; } catch (e) { console.error(e); } }
+    });
+  };
+  enviar(nuevos, 'confirmado');
+  enviar(quitados, 'quitado');
+  enviar(suplentesNuevos, 'suplente');
+  return conMensaje_(portalDatos(token), 'Equipo guardado (' + elegidos.length + ' de ' + necesarios_(r) + ').' +
+    (mails ? ' Les avisamos por mail a ' + mails + ' profe' + (mails > 1 ? 's' : '') + '.' : ''));
+}
+
+function portalPublicar(token, id) {
+  soloAdmin_(token);
+  const x = buscarPorId_(id);
+  if (!x) throw new Error('No encuentro esa fecha.');
+  if (x.r.estado === 'Cancelado') throw new Error('Este cumple está cancelado.');
+  if (!x.r.profesNecesarios) x.sh.getRange(x.filaN, columna_(x.sh, 'Profes necesarios')).setValue(necesarios_(x.r));
+  const n = mailConvocatoriaProfes_(x.sh, x.filaN);
+  return conMensaje_(portalDatos(token), 'Fecha publicada en el portal.' + (n ? ' Les mandamos la convocatoria por mail a ' + n + ' profes.' : ''));
+}
+
+// Crear una fecha a mano (cumples que entran por WhatsApp) o editar una que ya existe
+function portalGuardarFecha(token, d) {
+  soloAdmin_(token);
+  d = d || {};
+  Object.keys(d).forEach(function (k) { if (typeof d[k] === 'string') d[k] = d[k].trim().slice(0, 500); });
+  const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha || '')) throw new Error('Elegí la fecha.');
+  if (!hhmm.test(d.hora || '') || !hhmm.test(d.horaFin || '') || d.horaFin <= d.hora) throw new Error('Revisá el horario (la hora de fin tiene que ser después del inicio).');
+  if (!d.cumpleanero) throw new Error('Poné el nombre del cumpleañero/a (o un título).');
+  const necesarios = Math.max(1, Math.min(10, Math.round(Number(d.necesarios) || 1)));
+  const pago = d.pago === '' || d.pago === null || d.pago === undefined ? '' : Math.max(0, Math.round(Number(d.pago) || 0));
+  const tz = Session.getScriptTimeZone();
+  const aFecha = function (iso, h) {
+    const p = h.split(':');
+    return new Date(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)), Number(p[0]), Number(p[1]));
+  };
+  const ini = aFecha(d.fecha, d.hora), fin = aFecha(d.fecha, d.horaFin);
+  const durMin = Math.round((fin - ini) / 60000);
+  const sh = obtenerHoja_();
+  const campos = {
+    'Fecha evento': "'" + d.fecha, 'Hora inicio': "'" + d.hora, 'Hora fin': "'" + d.horaFin, 'Duración': duracionTexto_(durMin),
+    'Cumpleañero/a': d.cumpleanero, 'Edad que cumple': d.edad || '', 'Cant. chicos': d.chicos || '', 'Rango de edades': d.edades || '',
+    'Zona': d.zona || '', 'Dirección': d.direccion || '', 'Adulto responsable': d.adulto || '', 'WhatsApp': d.whatsapp || '',
+    'Paquete': d.paquete || '', 'Extras': d.extras || '', 'Comentarios': d.notas || '',
+    'Profes necesarios': necesarios, 'Pago por profe': pago
+  };
+  const desc = function (id) {
+    return ['ID: ' + id, 'Adulto: ' + (d.adulto || '-') + ' · WhatsApp: ' + (d.whatsapp || '-'),
+            'Chicos: ' + (d.chicos || '?') + ' (' + (d.edades || '-') + ')', 'Lugar: ' + (d.zona || '-') + ' · ' + (d.direccion || '-'),
+            'Paquete: ' + (d.paquete || '-') + ' · Extras: ' + (d.extras || '-'), 'Notas: ' + (d.notas || '-')].join('\n');
+  };
+  const titulo = function (estado) {
+    return (PREFIJO_ESTADO[estado] || estado) + ' · Cumple ' + d.cumpleanero + (d.edad ? ' (' + d.edad + ')' : '') + (d.paquete ? ' · ' + d.paquete : '');
+  };
+  let id, filaN, mensaje;
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Probá de nuevo en unos segundos.');
+  try {
+    if (d.id) {
+      const x = buscarPorId_(d.id);
+      if (!x) throw new Error('No encuentro esa fecha.');
+      id = x.r.id; filaN = x.filaN;
+      Object.keys(campos).forEach(function (k) { sh.getRange(filaN, columna_(sh, k)).setValue(String(campos[k]).charAt(0) === "'" ? campos[k] : limpiarCelda_(campos[k])); });
+      const ev = x.r.eventoId ? obtenerCalendario_().getEventById(x.r.eventoId) : null;
+      if (ev) {
+        ev.setTime(ini, fin);
+        ev.setLocation(d.direccion || '');
+        ev.setTitle(titulo(x.r.estado));
+      }
+      if (x.r.asignados.length) sincronizarPagos_(leerFila_(sh, filaN), x.r.asignados, pago);
+      mensaje = 'Cambios guardados.';
+    } else {
+      id = 'GL-' + Utilities.formatDate(new Date(), tz, 'yyMMdd') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+      const estado = ESTADOS.indexOf(d.estado) >= 0 ? d.estado : 'Señado';
+      const ev = obtenerCalendario_().createEvent(titulo(estado), ini, fin, { description: desc(id), location: d.direccion || '' });
+      try { if (COLOR_ESTADO[estado]) ev.setColor(COLOR_ESTADO[estado]); } catch (e) {}
+      campos['ID'] = id; campos['Recibido'] = new Date(); campos['Estado'] = estado; campos['ID evento calendario'] = ev.getId();
+      campos['Cómo nos conoció'] = 'Cargado a mano en el portal';
+      sh.appendRow(encabezados_(sh).map(function (h) {
+        const v = campos[h];
+        if (v === undefined || v === null) return '';
+        return String(v).charAt(0) === "'" ? v : limpiarCelda_(v);
+      }));
+      filaN = sh.getLastRow();
+      mensaje = 'Fecha creada.';
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  if (d.publicar) {
+    const n = mailConvocatoriaProfes_(sh, filaN);
+    mensaje += ' Publicada para los profes' + (n ? ' y convocatoria enviada por mail a ' + n + '.' : '.');
+  }
+  const datos = conMensaje_(portalDatos(token), mensaje);
+  datos.foco = id;
+  return datos;
+}
+
+function portalEstadoProfe(token, email, estado) {
+  soloAdmin_(token);
+  if (['Sí', 'No'].indexOf(estado) < 0) throw new Error('Estado inválido.');
+  const p = buscarProfePorEmail_(leerProfes_(), email);
+  if (!p) throw new Error('No encuentro ese profe.');
+  escribirProfe_(p.fila, { 'Activo': estado });
+  if (estado === 'Sí' && !p.activo && p.clave) { try { mailProfe_('aprobado', p, null); } catch (e) { console.error(e); } }
+  return conMensaje_(portalDatos(token), estado === 'Sí' ? p.nombre + ' quedó activo/a.' : p.nombre + ' quedó desactivado/a.');
+}
+
+function portalMarcarPago(token, idPago, pagado) {
+  soloAdmin_(token);
+  const p = leerPagos_().filter(function (x) { return x.id === String(idPago); })[0];
+  if (!p) throw new Error('No encuentro ese pago.');
+  const sh = obtenerHojaPagos_();
+  const col = function (n) { return COLUMNAS_PAGOS.indexOf(n) + 1; };
+  sh.getRange(p.fila, col('Estado')).setValue(pagado ? 'Pagado' : 'Pendiente');
+  sh.getRange(p.fila, col('Fecha de pago')).setValue(pagado ? "'" + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '');
+  if (pagado && CONFIG.avisarPagoAlProfe) {
+    const profe = buscarProfe_(leerProfes_(), p.profe);
+    try { mailProfe_('pago', profe, { cumpleanero: p.cumple, fecha: p.fecha }, { monto: p.monto }); } catch (e) { console.error(e); }
+  }
+  return conMensaje_(portalDatos(token), pagado ? 'Pago a ' + p.profe + ' marcado como pagado.' : 'Pago vuelto a pendiente.');
+}
+
+// Funciones que se pueden llamar desde la página publicada afuera (doPost)
+const API_PORTAL = {
+  portalRegistrar: portalRegistrar, portalIngresar: portalIngresar, portalSalir: portalSalir, portalOlvide: portalOlvide,
+  portalNuevaClave: portalNuevaClave, portalCambiarDatos: portalCambiarDatos, portalResolverConvocatoria: portalResolverConvocatoria,
+  portalDatos: portalDatos, portalPostular: portalPostular, portalConfirmarEquipo: portalConfirmarEquipo,
+  portalPublicar: portalPublicar, portalGuardarFecha: portalGuardarFecha, portalEstadoProfe: portalEstadoProfe,
+  portalMarcarPago: portalMarcarPago
+};
+
+// ---- Recordatorios automáticos a los profes del equipo ----
+function recordatoriosProfes_() {
+  const dias = CONFIG.recordatoriosProfes || [];
+  if (!dias.length) return 0;
+  const sh = obtenerHoja_();
+  const tz = Session.getScriptTimeZone();
+  const hoy = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const utc = function (iso) { return Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10))); };
+  const profes = leerProfes_();
+  let enviados = 0;
+  leerTodas_(sh).forEach(function (r) {
+    if (r.estado !== 'Señado' || !r.asignados.length || !/^\d{4}-\d{2}-\d{2}$/.test(r.fecha)) return;
+    const faltan = Math.round((utc(r.fecha) - utc(hoy)) / 86400000);
+    if (dias.indexOf(faltan) < 0) return;
+    const ya = lista_(r.recordatorios);
+    if (ya.indexOf(String(faltan)) >= 0) return;
+    r.asignados.forEach(function (n) {
+      const p = buscarProfe_(profes, n);
+      if (p && p.email) { try { mailProfe_('recordatorio', p, r, { dias: faltan }); enviados++; } catch (e) { console.error(e); } }
+    });
+    ya.push(String(faltan));
+    sh.getRange(r.filaN, columna_(sh, 'Recordatorios profes')).setValue(ya.join(', '));
+  });
+  return enviados;
+}
+
+// Si se cancela un cumple, les avisamos a los profes del equipo y se anulan sus pagos pendientes
+function avisarCancelacionProfes_(r) {
+  if (!r.asignados.length) return;
+  const profes = leerProfes_();
+  r.asignados.forEach(function (n) { try { mailProfe_('cancelado', buscarProfe_(profes, n), r); } catch (e) { console.error(e); } });
+  sincronizarPagos_(r, [], '');
 }
 
 // ======== DISPONIBILIDAD ========
