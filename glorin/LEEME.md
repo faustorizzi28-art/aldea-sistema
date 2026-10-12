@@ -79,3 +79,13 @@ columnas nuevas, sin borrar nada) y publicá una **nueva versión** de la implem
 
 Los links viejos de convocatoria (`…?convocatoria=…`) siguen funcionando: abren el portal en ese cumple.
 El menú **📣 Convocar profes** sigue armando el texto para el grupo de WhatsApp, con el link al portal.
+
+## Cargar un cumple desde un chat con Claude
+
+1. En claude.ai → **Configuración → Capacidades → Skills → Subir skill**, subí `skill-claude/cargar-cumple-glorin.zip` (una sola vez).
+2. Cuando te entra un cumple, mandale a Claude el mensaje, la captura del WhatsApp o un audio y decile *"cargá este cumple"*.
+3. Claude te devuelve un resumen y un **link**. Lo tocás: se abre el portal en **➕ Nueva** con todo completo. Revisás y tocás **Crear fecha**
+   (si tildás *Publicar*, les llega la convocatoria a los profes).
+4. Si el link no abre, Claude también te da un texto: en el portal, **➕ Nueva → Pegá lo que te dio Claude → Completar el formulario**.
+
+Claude no guarda nada por su cuenta: siempre revisás vos antes de crear la fecha.

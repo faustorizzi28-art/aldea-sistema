@@ -223,6 +223,7 @@ function accion(fn, args, despues){
 leerParams(function(p){
   PARAMS = p;
   if (p.reset) { pantallaReset(p.reset); return; }
+  if (p.nueva) { S.prefill = importarCumple(p); p.fecha = ''; }   // link armado por Claude: abre "Nueva" ya completo
   var foco = p.fecha ? Promise.resolve(p.fecha) : (p.convocatoria ? api('portalResolverConvocatoria', [p.convocatoria]).catch(function(){ return ''; }) : Promise.resolve(''));
   foco.then(function(id){
     if (id) { S.foco = id; S.abiertos[id] = true; }
@@ -238,6 +239,7 @@ function cargar(){
       if (ev) { S.mes = ev.fecha.slice(0, 7); S.tab = (!D.yo.admin && ev.mio === 'asignado') ? 'mios' : 'fechas'; }
     }
     if (!S.mes) S.mes = D.hoy.slice(0, 7);
+    if (S.prefill && D.yo.admin) S.tab = 'nueva';
     dibujar();
     if (S.foco) setTimeout(function(){ var el = $('ev-' + S.foco); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
   }).catch(function(err){
@@ -381,6 +383,12 @@ document.addEventListener('click', function(ev){
     publicar: function(){ accion('portalPublicar', [TOKEN, id]); },
     equipo: function(){ guardarEquipo(id); },
     editar: function(){ S.editando = id; S.tab = 'nueva'; dibujar(); window.scrollTo(0, 0); },
+    importar: function(){
+      var r = importarCumple($('n-pegar').value);
+      if (!r) { toast('No encontré datos. Pegá el link o el texto tal cual te lo dio Claude.', true); return; }
+      S.prefill = r; dibujar(); window.scrollTo(0, 0); toast('Listo, revisá los datos y tocá Crear fecha.');
+    },
+    limpiarPrefill: function(){ S.prefill = null; dibujar(); },
     cancelarEdicion: function(){ S.editando = null; S.tab = 'fechas'; dibujar(); },
     aprobar: function(){ accion('portalEstadoProfe', [TOKEN, t.dataset.email, 'Sí']); },
     desactivar: function(){ if (confirm('¿Desactivar a este profe? No va a poder entrar ni le llegan convocatorias.')) accion('portalEstadoProfe', [TOKEN, t.dataset.email, 'No']); },
@@ -584,14 +592,81 @@ function guardarEquipo(id){
   accion('portalConfirmarEquipo', [TOKEN, id, sel, pago === '' ? '' : Number(pago), lleva], function(){ delete S.sel[id]; delete S.lleva[id]; });
 }
 
+/* ===== Cargar desde Claude: link (…?profes=1&nueva=1&fecha=…) o texto "Campo: valor" ===== */
+function normal(t){ return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); }
+var CAMPOS = {
+  fecha: 'fecha', dia: 'fecha', hora: 'hora', inicio: 'hora', empieza: 'hora', horainicio: 'hora', fin: 'horaFin', horafin: 'horaFin', termina: 'horaFin',
+  cumple: 'cumpleanero', cumpleanero: 'cumpleanero', cumpleanera: 'cumpleanero', cumpleaneroa: 'cumpleanero', nombre: 'cumpleanero',
+  edad: 'edad', anos: 'edad', cumpleanos: 'edad', paquete: 'paquete', profesnecesarios: 'necesarios', necesarios: 'necesarios', cantprofes: 'necesarios',
+  pago: 'pagoFijo', pagofijo: 'pagoFijo', zona: 'zona', direccion: 'direccion', lugar: 'direccion', domicilio: 'direccion',
+  adulto: 'adulto', responsable: 'adulto', adultoresponsable: 'adulto', contacto: 'adulto', familia: 'adulto',
+  whatsapp: 'whatsapp', wa: 'whatsapp', telefono: 'whatsapp', celular: 'whatsapp', tel: 'whatsapp',
+  chicos: 'chicos', cantchicos: 'chicos', cantidad: 'chicos', cantidaddechicos: 'chicos', edades: 'edades', rangodeedades: 'edades',
+  extras: 'extras', notas: 'notas', comentarios: 'notas', observaciones: 'notas', estado: 'estado'
+};
+function horaNormal(t){
+  t = String(t || '');
+  var m = t.match(/(\d{1,2})[:.h](\d{2})/) || t.match(/(\d{1,2})/); if (!m) return '';
+  var h = +m[1], mi = m[2] ? +m[2] : 0; if (h > 23 || mi > 59) return '';
+  if (h < 9) h += 12;   // los cumples son de 9 a 21: "a las 4" es a la tarde
+  return String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
+}
+function fechaNormal(t){
+  t = String(t || '').trim(); var m;
+  if ((m = t.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))) return iso(+m[1], +m[2] - 1, +m[3]);
+  if ((m = t.match(/(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?/))) {
+    var hoy = new Date(), y = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : hoy.getFullYear();
+    var f = iso(y, +m[2] - 1, +m[1]);
+    if (!m[3] && D && f < D.hoy) f = iso(y + 1, +m[2] - 1, +m[1]);   // sin año y ya pasó: es el año que viene
+    return f;
+  }
+  return '';
+}
+function parecido(valor, lista){
+  var n = normal(valor); if (!n) return '';
+  return lista.filter(function(o){ var k = normal(o); return k === n || k.indexOf(n) >= 0 || n.indexOf(k) >= 0; })[0] || valor;
+}
+function importarCumple(fuente){
+  var crudo = {};
+  if (typeof fuente === 'string'){
+    var link = fuente.match(/https?:\/\/\S*nueva=\S*/);
+    if (link) { new URL(link[0]).searchParams.forEach(function(v, k){ crudo[k] = v; }); }
+    else fuente.split(/\n/).forEach(function(l){
+      var m = l.replace(/^[\s*•\-–]+/, '').match(/^([^:]{2,30}):\s*(.+)$/); if (m) crudo[m[1].replace(/\*/g, '')] = m[2].replace(/\*/g, '').trim();
+    });
+  } else crudo = fuente || {};
+  var r = {};
+  Object.keys(crudo).forEach(function(k){ var c = CAMPOS[normal(k)]; if (c && crudo[k] !== '' && r[c] === undefined) r[c] = String(crudo[k]).trim().slice(0, 500); });
+  if (r.fecha) r.fecha = fechaNormal(r.fecha);
+  if (r.hora) r.hora = horaNormal(r.hora);
+  if (r.horaFin) r.horaFin = horaNormal(r.horaFin);
+  ['edad', 'chicos', 'necesarios'].forEach(function(k){ if (r[k]) r[k] = (String(r[k]).match(/\d+/) || [''])[0]; });
+  if (r.pagoFijo) r.pagoFijo = Number(String(r.pagoFijo).replace(/\D/g, '')) || null;
+  return Object.keys(r).length ? r : null;
+}
+function ajustarPrefill(){
+  var x = S.prefill; if (!x || !D || !D.paquetes) return;
+  if (x.paquete) x.paquete = parecido(x.paquete, D.paquetes.map(function(p){ return p.nombre; }));
+  if (x.zona) x.zona = parecido(x.zona, D.zonas);
+  if (x.estado) x.estado = parecido(x.estado, D.estados);
+  if (!x.necesarios && x.paquete) { var p = D.paquetes.filter(function(q){ return q.nombre === x.paquete; })[0]; if (p) x.necesarios = p.profes; }
+}
+
 /* ===== Nueva / editar fecha (admin) ===== */
 function vistaNueva(){
   var x = S.editando ? D.eventos.filter(function(v){ return v.id === S.editando; })[0] : null;
-  var v = function(k, def){ return e(x && x[k] != null ? x[k] : (def || '')); };
+  if (!x) ajustarPrefill();
+  var src = x || S.prefill;
+  var v = function(k, def){ return e(src && src[k] != null ? src[k] : (def || '')); };
   var opt = function(lista, actual){ return lista.map(function(o){ return '<option' + (o === actual ? ' selected' : '') + '>' + e(o) + '</option>'; }).join(''); };
-  var zonas = D.zonas.slice(); if (x && x.zona && zonas.indexOf(x.zona) < 0) zonas.unshift(x.zona);
-  var paquetes = D.paquetes.map(function(p){ return p.nombre; }); if (x && x.paquete && paquetes.indexOf(x.paquete) < 0) paquetes.unshift(x.paquete);
-  return '<div class="card"><h2>' + (x ? 'Editar: cumple de ' + e(x.cumpleanero) : 'Cargar una fecha') + '</h2>' +
+  var zonas = D.zonas.slice(); if (src && src.zona && zonas.indexOf(src.zona) < 0) zonas.unshift(src.zona);
+  var paquetes = D.paquetes.map(function(p){ return p.nombre; }); if (src && src.paquete && paquetes.indexOf(src.paquete) < 0) paquetes.unshift(src.paquete);
+  var desdeClaude = !x ? '<div class="card"><h2>🤖 Desde Claude</h2>' +
+    (S.prefill ? '<div class="aviso ok" style="margin-top:0">Completamos el formulario con lo que te pasó Claude. Revisalo y tocá <b>Crear fecha</b>.</div><button class="link" data-acc="limpiarPrefill">Empezar de cero</button>'
+               : '<p class="muted small" style="margin:0">Mandale a Claude el mensaje o la captura del WhatsApp del cumple. Te devuelve un link que abre esto ya completo, o un texto para pegar acá.</p>' +
+                 '<label for="n-pegar">Pegá lo que te dio Claude</label><textarea id="n-pegar" placeholder="Fecha: 15/11&#10;Hora: 16:00&#10;Cumple: Martina&#10;…"></textarea>' +
+                 '<button class="btn sec" type="button" data-acc="importar">Completar el formulario</button>') + '</div>' : '';
+  return desdeClaude + '<div class="card"><h2>' + (x ? 'Editar: cumple de ' + e(x.cumpleanero) : 'Cargar una fecha') + '</h2>' +
     (x ? '' : '<p class="muted small" style="margin:0">Para los cumples que te entran por WhatsApp o fuera de la página de reservas. Queda en la planilla y en el calendario GLORIN.</p>') +
     '<form id="fn">' +
     '<label for="n-fecha">Fecha</label><input id="n-fecha" type="date" required value="' + v('fecha', S.dia) + '">' +
@@ -599,10 +674,10 @@ function vistaNueva(){
     '<div><label for="n-fin">Termina</label><input id="n-fin" type="time" required value="' + v('horaFin', '') + '"></div></div>' +
     '<div class="grid2"><div><label for="n-cumple">Cumpleañero/a</label><input id="n-cumple" required value="' + v('cumpleanero') + '"></div>' +
     '<div><label for="n-edad">Cumple (años)</label><input id="n-edad" inputmode="numeric" value="' + v('edad') + '"></div></div>' +
-    '<label for="n-paq">Paquete</label><select id="n-paq"><option value="">—</option>' + opt(paquetes, x && x.paquete) + '</select>' +
+    '<label for="n-paq">Paquete</label><select id="n-paq"><option value="">—</option>' + opt(paquetes, src && src.paquete) + '</select>' +
     '<div class="grid2"><div><label for="n-nec">Profes necesarios</label><input id="n-nec" type="number" min="1" max="10" required value="' + v('necesarios', '2') + '"></div>' +
-    '<div><label for="n-pago">Pago fijo <span class="muted">(opc.)</span></label><input id="n-pago" type="number" inputmode="numeric" min="0" step="500" placeholder="Según nivel" value="' + (x && x.pagoFijo != null ? x.pagoFijo : '') + '"></div></div>' +
-    '<label for="n-zona">Zona</label><select id="n-zona"><option value="">—</option>' + opt(zonas, x && x.zona) + '</select>' +
+    '<div><label for="n-pago">Pago fijo <span class="muted">(opc.)</span></label><input id="n-pago" type="number" inputmode="numeric" min="0" step="500" placeholder="Según nivel" value="' + (src && src.pagoFijo != null ? src.pagoFijo : '') + '"></div></div>' +
+    '<label for="n-zona">Zona</label><select id="n-zona"><option value="">—</option>' + opt(zonas, src && src.zona) + '</select>' +
     '<label for="n-dir">Dirección</label><input id="n-dir" value="' + v('direccion') + '" placeholder="Calle, número, barrio">' +
     '<div class="grid2"><div><label for="n-adulto">Adulto responsable</label><input id="n-adulto" value="' + v('adulto') + '"></div>' +
     '<div><label for="n-wa">WhatsApp familia</label><input id="n-wa" type="tel" value="' + v('whatsapp') + '"></div></div>' +
@@ -610,7 +685,7 @@ function vistaNueva(){
     '<div><label for="n-edades">Edades</label><input id="n-edades" value="' + v('edades') + '" placeholder="ej: 5 a 8"></div></div>' +
     '<label for="n-extras">Extras</label><input id="n-extras" value="' + v('extras') + '" placeholder="Inflable, maquillaje…">' +
     '<label for="n-notas">Notas para el equipo</label><textarea id="n-notas">' + v('notas') + '</textarea>' +
-    (x ? '' : '<label for="n-estado">Estado</label><select id="n-estado">' + opt(D.estados, 'Señado') + '</select>') +
+    (x ? '' : '<label for="n-estado">Estado</label><select id="n-estado">' + opt(D.estados, (src && D.estados.indexOf(src.estado) >= 0) ? src.estado : 'Señado') + '</select>') +
     (x && x.publicada ? '' : '<label class="check"><input id="n-pub" type="checkbox" checked> Publicar ya y mandar la convocatoria a los profes por mail</label>') +
     '<button class="btn pri" type="submit">' + (x ? 'Guardar cambios' : 'Crear fecha') + '</button>' +
     (x ? '<button class="btn gris" type="button" data-acc="cancelarEdicion">Cancelar</button>' : '') +
@@ -635,7 +710,7 @@ function prepararFormulario(){
               whatsapp: g('n-wa'), chicos: g('n-chicos'), edades: g('n-edades'), extras: g('n-extras'), notas: g('n-notas'), estado: g('n-estado'),
               publicar: !!($('n-pub') && $('n-pub').checked) };
     accion('portalGuardarFecha', [TOKEN, d], function(datos){
-      S.editando = null; S.tab = 'fechas';
+      S.editando = null; S.tab = 'fechas'; S.prefill = null;
       if (datos && datos.foco){ var x = datos.eventos.filter(function(v){ return v.id === datos.foco; })[0]; if (x) { S.mes = x.fecha.slice(0, 7); S.dia = x.fecha; } }
     }).then(function(){ setTimeout(function(){ var el = S.foco && $('ev-' + S.foco); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 100); });
   };
