@@ -65,7 +65,7 @@ const CONFIG = {
   convocarAlSenar: true,               // al pasar a Señado, se manda la convocatoria por mail a los profes activos
   minutosAntesProfes: 20,              // cuánto antes tienen que llegar los profes a armar
   // ---- Portal de profes ----
-  adminEmails: [],                     // mails que entran al portal como administración (además de la cuenta dueña del script)
+  adminEmails: ['faustorizzi28@gmail.com'],                   // mails que entran al portal como administración (además de la cuenta dueña del script)
   aprobarCuentas: true,                // las cuentas nuevas quedan "Pendiente" hasta que las aprobás
   avisarPostulaciones: true,           // te llega un mail cada vez que un profe se propone para una fecha
   recordatoriosProfes: [3, 1],         // días antes del cumple en que le llega un recordatorio por mail a cada profe del equipo
