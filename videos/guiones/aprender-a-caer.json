@@ -1,0 +1,9 @@
+{
+  "titulo": "Aprender a caer",
+  "escenas": [
+    { "tipo": "gancho", "texto": "Lo primero que enseño no es a pegar.", "destacar": "primero", "foto": "clase-chicos.jpg", "segundos": 3 },
+    { "texto": "Es a caer. Y a levantarse sin miedo.", "destacar": "levantarse", "foto": "clase-karate.jpg", "segundos": 3.5 },
+    { "texto": "En el tatami y afuera, es la misma lección.", "destacar": "afuera", "foto": "gimnasia-artistica.jpg", "segundos": 3.5 },
+    { "tipo": "cierre", "texto": "Caerse es parte. Quedarse en el piso, no.", "destacar": "parte", "segundos": 3.5 }
+  ]
+}
