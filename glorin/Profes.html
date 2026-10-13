@@ -392,6 +392,13 @@ document.addEventListener('click', function(ev){
     retirar: function(){ accion('portalPostular', [TOKEN, id, false]); },
     bajarme: function(){ if (confirm('¿Seguro que no podés ir? Le avisamos a GLORIN para buscar reemplazo.')) accion('portalPostular', [TOKEN, id, false]); },
     publicar: function(){ accion('portalPublicar', [TOKEN, id]); },
+    estado: function(){
+      var est = t.dataset.estado;
+      var preg = { 'Cancelado': '¿Cancelar este cumple? Se libera el horario y, si había equipo, les avisamos.',
+                   'Señado': '¿Confirmás que llegó la seña? Le llega la confirmación a la familia y se publica para los profes.' }[est];
+      if (preg && !confirm(preg)) return;
+      accion('portalCambiarEstado', [TOKEN, id, est]);
+    },
     equipo: function(){ guardarEquipo(id); },
     editar: function(){ S.editando = id; S.tab = 'nueva'; dibujar(); window.scrollTo(0, 0); },
     importar: function(){
@@ -560,6 +567,10 @@ function panelAdmin(x){
   var id = e(x.id);
   var h = '<div style="margin-top:4px"><button class="btn chico gris" data-acc="editar" data-id="' + id + '">✏️ Editar</button>';
   if (!x.publicada && !x.cancelado && !x.pasado) h += '<button class="btn chico pri" data-acc="publicar" data-id="' + id + '">📣 Publicar y avisar a los profes</button>';
+  if (!x.cancelado && x.estado !== 'Señado' && x.estado !== 'Realizado' && !x.pasado) h += '<button class="btn chico ok" data-acc="estado" data-estado="Señado" data-id="' + id + '">✅ Llegó la seña</button>';
+  if (!x.cancelado && x.pasado && x.estado === 'Señado') h += '<button class="btn chico gris" data-acc="estado" data-estado="Realizado" data-id="' + id + '">🎉 Marcar realizado</button>';
+  if (!x.cancelado && x.estado !== 'Realizado') h += '<button class="btn chico gris" data-acc="estado" data-estado="Cancelado" data-id="' + id + '">❌ Cancelar fecha</button>';
+  if (x.cancelado && !x.pasado) h += '<button class="btn chico gris" data-acc="estado" data-estado="A confirmar" data-id="' + id + '">↩️ Reactivar</button>';
   h += '</div>';
   if (x.cancelado) return h;
   if (!S.sel[x.id]) S.sel[x.id] = x.asignados.slice();

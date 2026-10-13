@@ -1682,6 +1682,20 @@ function portalEstadoProfe(token, email, estado) {
   return conMensaje_(portalDatos(token), estado === 'Sí' ? p.nombre + ' quedó activo/a.' : p.nombre + ' quedó desactivado/a.');
 }
 
+// Cambiar el estado desde el portal: hace lo mismo que cambiar la columna Estado en la planilla
+function portalCambiarEstado(token, id, estado) {
+  soloAdmin_(token);
+  if (['Señado', 'Cancelado', 'A confirmar', 'Realizado'].indexOf(estado) < 0) throw new Error('Estado inválido.');
+  const x = buscarPorId_(id);
+  if (!x) throw new Error('No encuentro esa fecha.');
+  x.sh.getRange(x.filaN, columna_(x.sh, 'Estado')).setValue(estado);
+  aplicarEstado_(x.sh, x.filaN, estado);
+  const textos = { 'Señado': 'Marcado como señado ✅ Se le confirmó a la familia y se publicó para los profes.',
+                   'Cancelado': 'Fecha cancelada ❌ El horario quedó libre' + (x.r.asignados.length ? ' y le avisamos al equipo.' : '.'),
+                   'A confirmar': 'Volvió a "A confirmar".', 'Realizado': 'Marcado como realizado 🎉' };
+  return conMensaje_(portalDatos(token), textos[estado]);
+}
+
 function portalNivelProfe(token, email, nivel) {
   soloAdmin_(token);
   if (nivel && !CONFIG.tarifasProfes[nivel]) throw new Error('Nivel inválido.');
@@ -1713,7 +1727,8 @@ const API_PORTAL = {
   portalNuevaClave: portalNuevaClave, portalCambiarDatos: portalCambiarDatos, portalResolverConvocatoria: portalResolverConvocatoria,
   portalDatos: portalDatos, portalPostular: portalPostular, portalConfirmarEquipo: portalConfirmarEquipo,
   portalPublicar: portalPublicar, portalGuardarFecha: portalGuardarFecha, portalEstadoProfe: portalEstadoProfe,
-  portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe, portalAceptarReglamento: portalAceptarReglamento
+  portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe, portalAceptarReglamento: portalAceptarReglamento,
+  portalCambiarEstado: portalCambiarEstado
 };
 
 // ---- Recordatorios automáticos a los profes del equipo ----
