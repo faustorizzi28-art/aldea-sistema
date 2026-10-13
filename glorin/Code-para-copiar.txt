@@ -134,7 +134,76 @@ const COLUMNAS = [
   'Postulados', 'Pago por profe', 'Recordatorios profes', 'Lleva elementos'
 ];
 const HOJA_PROFES = 'Profes';
-const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas', 'Clave', 'Alta', 'Último ingreso', 'Nivel'];
+const COLUMNAS_PROFES = ['Nombre', 'WhatsApp', 'Email', 'Activo', 'Notas', 'Clave', 'Alta', 'Último ingreso', 'Nivel', 'Reglamento'];
+
+// ======== REGLAMENTO DE PROFES ========
+// Lo leen y lo firman en el portal antes de poder proponerse. Si lo cambiás,
+// subí la versión (v2, v3…) y todos lo vuelven a firmar la próxima vez que entran.
+const REGLAMENTO_VERSION = 'v1';
+const REGLAMENTO = [
+  { titulo: 'Presentación', items: [
+    'Vamos siempre identificados con la remera de GLORIN. Si todavía no tenés, remera lisa blanca o roja, sin dibujos ni marcas grandes.',
+    'Pantalón, short o calza deportiva y zapatillas cómodas. Nada de ojotas, sandalias ni ropa de salir.',
+    'Pelo atado si es largo, uñas cortas y sin accesorios que puedan lastimar a un chico (anillos grandes, pulseras rígidas, aros colgantes).',
+    'Llegamos limpios, prolijos y descansados: somos la cara de GLORIN frente a la familia.'
+  ]},
+  { titulo: 'Puntualidad y compromiso', items: [
+    'Llegamos al lugar ' + CONFIG.minutosAntesProfes + ' minutos antes del horario de inicio para armar y conocer el espacio.',
+    'Si se te complica llegar a horario, avisás enseguida al coordinador, no a la familia.',
+    'Nos quedamos hasta el final del horario contratado y ayudamos a desarmar y guardar todo.',
+    'Si te bajás de un cumple, avisás por el portal con al menos 72 horas. Las faltas sin aviso pueden dejarte sin convocatorias.',
+    'No mandás a otra persona en tu lugar: los reemplazos los coordina GLORIN.'
+  ]},
+  { titulo: 'Celular', items: [
+    'Durante el cumple el celular va guardado: en el bolsillo o en la mochila, nunca en la mano.',
+    'Solo se usa para la música del juego, una emergencia o una foto que te pida el coordinador.',
+    'Nada de redes, mensajes ni llamadas personales mientras estás con los chicos.'
+  ]},
+  { titulo: 'Actitud en el cumple', items: [
+    'Estamos activos de principio a fin: jugamos con los chicos, no solo los miramos.',
+    'Ponemos energía y buena onda aunque el grupo sea difícil o estemos cansados.',
+    'Nadie queda afuera: buscamos a los chicos tímidos, a los más chiquitos y a los que se aíslan.',
+    'El cumpleañero/a es el protagonista: lo hacemos sentir especial en cada momento.',
+    'Entre profes nos ayudamos y nos repartimos el grupo. Las diferencias se hablan después, nunca delante de la familia.'
+  ]},
+  { titulo: 'Trato con las familias', items: [
+    'Al llegar te presentás con el adulto responsable y confirmás los horarios de merienda y torta.',
+    'Somos amables y serviciales con todos los adultos: saludamos, respondemos con buena predisposición y preguntamos si necesitan algo.',
+    'Precios, pagos, extras y quejas no se discuten en el cumple: los derivás a GLORIN con amabilidad.',
+    'No pasás tu contacto personal ni ofrecés servicios por tu cuenta a las familias de GLORIN.',
+    'No comemos ni tomamos de la mesa del cumple salvo que la familia nos ofrezca.'
+  ]},
+  { titulo: 'Conducta frente a los chicos', items: [
+    'Lenguaje cuidado siempre: sin malas palabras, sin chistes de doble sentido y sin comentarios sobre el cuerpo o la apariencia de nadie.',
+    'Prohibido fumar, vapear o tomar alcohol antes o durante el cumple, aunque los adultos lo hagan.',
+    'Nunca levantamos la voz con enojo, no ponemos apodos que burlen y no usamos castigos ni ridiculizamos a un chico.',
+    'Contacto físico solo el necesario para el juego o para cuidar, siempre respetuoso y a la vista de otros adultos.',
+    'Nunca te quedás a solas con un chico en un baño, una habitación o un lugar cerrado. Si un chico necesita ir al baño, avisás a su familia.',
+    'Si un chico se porta mal, lo redirigís con calma y, si hace falta, hablás con su adulto.'
+  ]},
+  { titulo: 'Seguridad', items: [
+    'Antes de empezar recorrés el espacio: piletas, escaleras, vidrios, calles o lugares peligrosos.',
+    'El inflable siempre con un profe mirando, sin calzado y respetando la cantidad máxima de chicos.',
+    'Ningún chico sale del espacio del cumple sin su adulto.',
+    'Si un chico se golpea, se siente mal o tiene una alergia, avisás enseguida al adulto responsable y al coordinador.',
+    'Preguntás al inicio si hay chicos con alergias, condiciones médicas o alguna atención especial.'
+  ]},
+  { titulo: 'Fotos y redes', items: [
+    'No publicás fotos ni videos de los chicos en tus redes personales.',
+    'Las fotos para GLORIN las saca el coordinador y solo con permiso de la familia.',
+    'Lo que pasa en el cumple (datos de la familia, la casa, conflictos) queda entre nosotros.'
+  ]},
+  { titulo: 'Materiales y elementos', items: [
+    'Cuidamos los juegos y materiales como propios y los devolvemos limpios y completos.',
+    'Si sos el encargado de los elementos, sos responsable del traslado, el armado, el desarmado y de que vuelva todo.',
+    'Si algo se rompe o falta, avisás ese mismo día.'
+  ]},
+  { titulo: 'Pagos', items: [
+    'El pago es según tu nivel (avanzado, intermedio o auxiliar) más el extra si llevás los elementos, y lo ves en el portal.',
+    'Se paga después del cumple, una vez cumplido el horario completo.',
+    'No recibís pagos ni propinas de la familia en nombre de GLORIN.'
+  ]}
+];
 const HOJA_PAGOS = 'Pagos';
 const COLUMNAS_PAGOS = ['ID pago', 'Reserva', 'Fecha evento', 'Cumple', 'Profe', 'Monto', 'Estado', 'Fecha de pago', 'Notas', 'Detalle'];
 
@@ -818,7 +887,8 @@ function leerProfes_() {
     const estado = String(g(f, 'Activo') || '').trim();
     return { fila: i + 2, nombre: String(g(f, 'Nombre')).trim(), whatsapp: String(g(f, 'WhatsApp') || ''),
              email: String(g(f, 'Email') || '').trim().toLowerCase(), estado: estado,
-             activo: /^s/i.test(estado), clave: String(g(f, 'Clave') || ''), nivel: String(g(f, 'Nivel') || '').trim() };
+             activo: /^s/i.test(estado), clave: String(g(f, 'Clave') || ''), nivel: String(g(f, 'Nivel') || '').trim(),
+             reglamento: String(g(f, 'Reglamento') || '') };
   }).filter(function (p) { return p.nombre || p.email; });
 }
 
@@ -856,6 +926,21 @@ function necesarios_(r) {
 
 // Lo que cobra un profe en un cumple: pago fijo de esa fecha (si lo pusiste) o la tarifa de su nivel,
 // más el extra si es el que lleva los elementos. Sin nivel ni pago fijo → monto '' (a definir).
+function reglamentoFirmado_(p) {
+  return !!p && String(p.reglamento || '').indexOf(REGLAMENTO_VERSION + ' · ') === 0;
+}
+
+function portalAceptarReglamento(token, firma) {
+  const u = usuario_(token);
+  firma = String(firma || '').trim().replace(/\s+/g, ' ');
+  if (firma.toLowerCase() !== u.profe.nombre.toLowerCase()) {
+    throw new Error('Para firmar, escribí tu nombre tal cual figura en tu cuenta: ' + u.profe.nombre);
+  }
+  escribirProfe_(u.profe.fila, { 'Reglamento': REGLAMENTO_VERSION + ' · ' +
+    Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') + ' · firmado por ' + firma });
+  return conMensaje_(portalDatos(token), '¡Gracias! Reglamento firmado ✅');
+}
+
 function pagoDe_(r, nombre, profes) {
   const p = buscarProfe_(profes || leerProfes_(), nombre);
   const nivel = p ? p.nivel : '';
@@ -1353,11 +1438,14 @@ function portalDatos(token) {
 
   const salida = {
     yo: { nombre: yo, email: u.profe.email, whatsapp: u.profe.whatsapp, admin: u.admin },
+    reglamento: { version: REGLAMENTO_VERSION, secciones: REGLAMENTO, firmado: reglamentoFirmado_(u.profe),
+                  detalle: u.profe.reglamento },
     hoy: hoy, eventos: eventos, pagos: pagos, marca: CONFIG.marca
   };
   if (u.admin) {
     salida.profes = leerProfes_().map(function (p) {
-      return { nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, estado: p.estado || 'No', activo: p.activo, cuenta: !!p.clave, nivel: p.nivel };
+      return { nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, estado: p.estado || 'No', activo: p.activo, cuenta: !!p.clave, nivel: p.nivel,
+               reglamento: reglamentoFirmado_(p) ? p.reglamento.split(' · ')[1] : '' };
     });
     salida.paquetes = CONFIG.paquetes.map(function (p) { return { nombre: p.nombre, profes: p.profes }; });
     salida.tarifas = CONFIG.tarifasProfes;
@@ -1409,6 +1497,7 @@ function portalPostular(token, id, quiero) {
     if (r.estado === 'Cancelado') throw new Error('Este cumple se canceló.');
     if (!r.token && !u.admin) throw new Error('Esta fecha todavía no está publicada.');
     if (r.fecha < hoy) throw new Error('Esa fecha ya pasó.');
+    if (quiero && !u.admin && !reglamentoFirmado_(u.profe)) throw new Error('Antes de proponerte tenés que firmar el reglamento (pestaña Cuenta).');
     let postulados = sinNombre_(r.postulados, yo), asignados = r.asignados, suplentes = sinNombre_(r.suplentes, yo);
     const cuando = r.cumpleanero + ' (' + fechaLarga_(r.fecha) + ' ' + r.hora + ' hs)';
     if (quiero) {
@@ -1624,7 +1713,7 @@ const API_PORTAL = {
   portalNuevaClave: portalNuevaClave, portalCambiarDatos: portalCambiarDatos, portalResolverConvocatoria: portalResolverConvocatoria,
   portalDatos: portalDatos, portalPostular: portalPostular, portalConfirmarEquipo: portalConfirmarEquipo,
   portalPublicar: portalPublicar, portalGuardarFecha: portalGuardarFecha, portalEstadoProfe: portalEstadoProfe,
-  portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe
+  portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe, portalAceptarReglamento: portalAceptarReglamento
 };
 
 // ---- Recordatorios automáticos a los profes del equipo ----

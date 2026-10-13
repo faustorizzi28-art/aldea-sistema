@@ -9,6 +9,7 @@
 <style>
   :root{--rojo:#C8161A;--rojo-osc:#9E1114;--rojo-suave:#FBECEC;--tinta:#1A1A1A;--gris:#6B5F5A;--linea:#EADFD9;--fondo:#FFF3ED;--blanco:#fff;--ok:#1E8E5A;--ok-suave:#E6F5EC;--ambar:#C98A0B;--ambar-suave:#FFF4DA;--radio:18px}
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html,body{margin:0}
   body{background:var(--fondo);font-family:Montserrat,Arial,sans-serif;color:var(--tinta);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:84px}
   a{color:var(--rojo)}
@@ -108,6 +109,8 @@
   .pick small{color:var(--gris);font-weight:600;font-size:12px}
   .lleva{display:flex;align-items:center;gap:4px;font-size:18px;margin:0;padding:4px 6px;border-radius:10px;background:#fff;border:1px solid var(--linea);cursor:pointer}
   .lleva input{width:18px;height:18px;accent-color:var(--rojo)}
+  .regla{margin:0;padding-left:20px}
+  .regla li{margin:6px 0}
   .nivel{width:auto;font-size:13px;padding:6px 8px;border-radius:10px}
   .vacio{text-align:center;color:var(--gris);padding:26px 10px}
   .vacio .big{font-size:38px}
@@ -350,6 +353,14 @@ function tabsDisponibles(){
 
 function dibujar(){
   if (!D) return;
+  // Profe que todavía no firmó el reglamento (o hay versión nueva): primero lo firma
+  if (!D.yo.admin && D.reglamento && !D.reglamento.firmado){
+    $('yo').hidden = false; $('yo').textContent = D.yo.nombre; $('tabs').hidden = true;
+    $('titulo').textContent = 'Reglamento';
+    $('app').innerHTML = vistaReglamento(true);
+    var f = $('freg'); if (f) f.onsubmit = function(ev){ ev.preventDefault(); accion('portalAceptarReglamento', [TOKEN, $('reg-firma').value], function(){ window.scrollTo(0, 0); }); };
+    return;
+  }
   $('yo').hidden = false; $('yo').textContent = (D.yo.admin ? '⚙️ ' : '') + D.yo.nombre;
   $('tabs').hidden = false;
   var pendientesProfes = D.yo.admin ? (D.profes || []).filter(function(p){ return /pend/i.test(p.estado); }).length : 0;
@@ -359,9 +370,9 @@ function dibujar(){
     return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-tab="' + t[0] + '"><span class="ico">' + t[1] + '</span>' + t[2] +
       (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
-  var titulos = { fechas: D.yo.admin ? 'Fechas y equipos' : 'Fechas', mios: 'Mis cumples', nueva: S.editando ? 'Editar fecha' : 'Nueva fecha', profes: 'Profes', pagos: 'Pagos', cuenta: 'Mi cuenta' };
+  var titulos = { reglamento: 'Reglamento', fechas: D.yo.admin ? 'Fechas y equipos' : 'Fechas', mios: 'Mis cumples', nueva: S.editando ? 'Editar fecha' : 'Nueva fecha', profes: 'Profes', pagos: 'Pagos', cuenta: 'Mi cuenta' };
   $('titulo').textContent = titulos[S.tab] || 'Portal de profes';
-  var vistas = { fechas: vistaFechas, mios: vistaMios, nueva: vistaNueva, profes: vistaProfes, pagos: vistaPagos, cuenta: vistaCuenta };
+  var vistas = { reglamento: function(){ return vistaReglamento(false); }, fechas: vistaFechas, mios: vistaMios, nueva: vistaNueva, profes: vistaProfes, pagos: vistaPagos, cuenta: vistaCuenta };
   $('app').innerHTML = (vistas[S.tab] || vistaFechas)();
   if (S.tab === 'nueva') prepararFormulario();
 }
@@ -731,7 +742,8 @@ function vistaProfes(){
   };
   var filaP = function(p, botones){
     return '<div class="fila" style="flex-wrap:wrap"><div class="q"><b>' + e(p.nombre) + '</b><span>' + e(p.email || 'sin mail') + (p.whatsapp ? ' · ' + e(p.whatsapp) : '') + (p.cuenta ? '' : ' · sin cuenta') + '</span></div>' + wa(p) + botones +
-      '<div style="flex-basis:100%;display:flex;align-items:center;gap:8px">' + selNivel(p) + (p.nivel ? '' : '<span class="tag rojo">sin nivel: el pago queda a definir</span>') + '</div></div>';
+      '<div style="flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' + selNivel(p) + (p.nivel ? '' : '<span class="tag rojo">sin nivel: el pago queda a definir</span>') +
+      (p.email === D.yo.email ? '' : (p.reglamento ? '<span class="tag ok">📜 Firmó ' + e(p.reglamento.slice(0, 5)) + '</span>' : '<span class="tag ambar">📜 Reglamento sin firmar</span>')) + '</div></div>';
   };
   var h = '<div class="card"><p class="small muted" style="margin:0 0 8px"><b>Tarifas:</b> ' + niveles.map(function(n){ return e(n) + ' ' + pesos(D.tarifas[n]); }).join(' · ') +
     ' · 🚚 elementos +' + pesos(D.extraElementos) + '</p><p class="small muted" style="margin:0 0 8px">Pasales este link para que creen su cuenta:</p>' +
@@ -778,6 +790,28 @@ function vistaPagos(){
   }).join('');
 }
 
+/* ===== Reglamento ===== */
+function vistaReglamento(firmar){
+  var R = D.reglamento;
+  var h = (firmar ? '<div class="aviso info">Antes de empezar, leé el reglamento de GLORIN y firmalo con tu nombre. Es lo que esperamos de cada profe en los cumples.</div>' : '') +
+    '<div class="card"><h2>Reglamento de profes</h2><p class="muted small" style="margin:0">GLORIN Animaciones · versión ' + e(R.version) + '</p></div>';
+  h += R.secciones.map(function(sec, i){
+    return '<div class="card"><h2 style="font-size:24px">' + (i + 1) + '. ' + e(sec.titulo) + '</h2><ul class="regla">' +
+      sec.items.map(function(t){ return '<li>' + e(t) + '</li>'; }).join('') + '</ul></div>';
+  }).join('');
+  if (firmar){
+    h += '<div class="card"><h2>Firma</h2><form id="freg">' +
+      '<label class="check" style="margin-top:0"><input type="checkbox" id="reg-ok" required> Leí el reglamento completo y me comprometo a cumplirlo en cada cumple de GLORIN.</label>' +
+      '<label for="reg-firma">Escribí tu nombre completo para firmar</label><input id="reg-firma" required autocomplete="off" placeholder="' + e(D.yo.nombre) + '">' +
+      '<button class="btn pri" type="submit">Firmar y entrar al portal</button></form>' +
+      '<button class="link" data-acc="salir">Cerrar sesión</button></div>';
+  } else {
+    h += '<div class="card">' + (R.firmado ? '<p style="margin:0">✅ ' + e(R.detalle) + '</p>' : '<p class="muted" style="margin:0">' + (D.yo.admin ? 'Así lo ven los profes: lo firman la primera vez que entran.' : '') + '</p>') +
+      '<button class="btn gris" data-tab="cuenta">Volver</button></div>';
+  }
+  return h;
+}
+
 /* ===== Cuenta ===== */
 function vistaCuenta(){
   setTimeout(function(){
@@ -795,6 +829,7 @@ function vistaCuenta(){
     '<label for="c-actual">Contraseña actual</label><input id="c-actual" type="password" autocomplete="current-password" placeholder="Solo si la querés cambiar">' +
     '<label for="c-nueva">Contraseña nueva</label><input id="c-nueva" type="password" autocomplete="new-password" minlength="6">' +
     '<button class="btn pri" type="submit">Guardar</button></form></div>' +
+    '<div class="card"><button class="btn sec" style="margin-top:0" data-tab="reglamento">📜 Ver el reglamento de profes</button></div>' +
     '<div class="card"><p class="small muted" style="margin:0">💡 Tip: en el celu, abrí el menú del navegador y elegí <b>“Agregar a pantalla de inicio”</b> para tener el portal como una app.</p>' +
     '<button class="btn gris" data-acc="salir">Cerrar sesión</button></div>';
 }
