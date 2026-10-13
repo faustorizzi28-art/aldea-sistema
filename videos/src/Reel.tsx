@@ -39,7 +39,16 @@ export type Guion = {
   volumenMusica?: number; // 0 a 1 (por defecto 0.35, para que no tape la voz)
   sonidos?: boolean; // efectos de sonido (whoosh, impacto, pop). Por defecto sí
   voz?: string; // voz en off opcional: archivo en public/voz (grabado con el celu)
+  // Para videos de OTRA cuenta (ej. Aldea de Valle): cambia colores y usuario.
+  estilo?: { fondoCierre?: string; acento?: string; usuario?: string };
 };
+
+type Estilo = { fondoCierre: string; acento: string; usuario: string };
+const EstiloCtx = React.createContext<Estilo>({
+  fondoCierre: MARCA.rojo,
+  acento: MARCA.amarillo,
+  usuario: MARCA.usuario,
+});
 
 export const segundosDeEscena = (e: Escena) => e.segundos ?? 3;
 
@@ -67,6 +76,7 @@ const presentacion = (tipo: Escena["transicion"]): TransitionPresentation<any> =
 
 // Foto de fondo con zoom lento ("efecto Ken Burns") y oscurecido para leer el texto.
 const FondoFoto: React.FC<{ foto?: string; tipo: Escena["tipo"] }> = ({ foto, tipo }) => {
+  const estilo = React.useContext(EstiloCtx);
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const zoom = interpolate(frame, [0, durationInFrames], [1, 1.12]);
@@ -74,7 +84,7 @@ const FondoFoto: React.FC<{ foto?: string; tipo: Escena["tipo"] }> = ({ foto, ti
   if (!foto) {
     return (
       <AbsoluteFill
-        style={{ backgroundColor: tipo === "cierre" ? MARCA.rojo : MARCA.negro }}
+        style={{ backgroundColor: tipo === "cierre" ? estilo.fondoCierre : MARCA.negro }}
       />
     );
   }
@@ -96,6 +106,7 @@ const FondoFoto: React.FC<{ foto?: string; tipo: Escena["tipo"] }> = ({ foto, ti
 
 // Texto que aparece palabra por palabra, con un pequeño rebote.
 const TextoAnimado: React.FC<{ escena: Escena }> = ({ escena }) => {
+  const estilo = React.useContext(EstiloCtx);
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const palabras = escena.texto.split(" ");
@@ -141,7 +152,7 @@ const TextoAnimado: React.FC<{ escena: Escena }> = ({ escena }) => {
                 marginRight: "0.28em",
                 opacity: entrada,
                 transform: `translateY(${(1 - entrada) * 60}px)`,
-                color: resaltada ? MARCA.amarillo : undefined,
+                color: resaltada ? estilo.acento : undefined,
               }}
             >
               {palabra}
@@ -217,6 +228,7 @@ const Musica: React.FC<{ archivo: string; volumen: number }> = ({ archivo, volum
 
 // Barra de progreso arriba (retiene a la gente hasta el final).
 const BarraProgreso: React.FC = () => {
+  const estilo = React.useContext(EstiloCtx);
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   return (
@@ -227,13 +239,15 @@ const BarraProgreso: React.FC = () => {
         left: 0,
         height: 14,
         width: `${(frame / durationInFrames) * 100}%`,
-        backgroundColor: MARCA.amarillo,
+        backgroundColor: estilo.acento,
       }}
     />
   );
 };
 
-const Firma: React.FC = () => (
+const Firma: React.FC = () => {
+  const estilo = React.useContext(EstiloCtx);
+  return (
   <div
     style={{
       position: "absolute",
@@ -247,15 +261,22 @@ const Firma: React.FC = () => (
       opacity: 0.85,
     }}
   >
-    {MARCA.usuario}
+    {estilo.usuario}
   </div>
-);
+  );
+};
 
 // El video completo: pone una escena detrás de la otra, con transiciones, música y efectos.
 export const Reel: React.FC<Guion> = (guion) => {
   const musica = guion.musica === undefined ? "ritmo-entreno.mp3" : guion.musica;
   const conSonidos = guion.sonidos ?? true;
+  const estilo: Estilo = {
+    fondoCierre: guion.estilo?.fondoCierre ?? MARCA.rojo,
+    acento: guion.estilo?.acento ?? MARCA.amarillo,
+    usuario: guion.estilo?.usuario ?? MARCA.usuario,
+  };
   return (
+    <EstiloCtx.Provider value={estilo}>
     <AbsoluteFill style={{ backgroundColor: MARCA.negro }}>
       <TransitionSeries>
         {guion.escenas.flatMap((escena, i) => {
@@ -287,5 +308,6 @@ export const Reel: React.FC<Guion> = (guion) => {
       <BarraProgreso />
       <Firma />
     </AbsoluteFill>
+    </EstiloCtx.Provider>
   );
 };

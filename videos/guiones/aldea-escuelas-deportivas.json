@@ -1,0 +1,55 @@
+{
+  "titulo": "Aldea – Lo que aprenden sin darse cuenta",
+  "musica": "ritmo-entreno.mp3",
+  "volumenMusica": 0.4,
+  "estilo": {
+    "fondoCierre": "#1F4D2B",
+    "acento": "#F2B632",
+    "usuario": "@aldeadelvalle"
+  },
+  "escenas": [
+    {
+      "tipo": "gancho",
+      "texto": "Tu hijo no viene solo a hacer deporte.",
+      "destacar": "solo",
+      "foto": "clase-chicos.jpg",
+      "segundos": 3
+    },
+    {
+      "texto": "En karate aprende a caer… y a levantarse.",
+      "destacar": "levantarse",
+      "foto": "clase-karate.jpg",
+      "segundos": 3.2,
+      "efecto": "zoom"
+    },
+    {
+      "texto": "En patín, a confiar en su equilibrio.",
+      "destacar": "equilibrio",
+      "foto": "patin-artistico.jpg",
+      "segundos": 3,
+      "transicion": "barrido"
+    },
+    {
+      "texto": "En gimnasia, a animarse otra vez.",
+      "destacar": "animarse",
+      "foto": "gimnasia-artistica.jpg",
+      "segundos": 3,
+      "transicion": "deslizar"
+    },
+    {
+      "texto": "En la cancha, a jugar con otros.",
+      "destacar": "otros",
+      "foto": "futbol-partido.jpg",
+      "segundos": 3,
+      "transicion": "barrido",
+      "efecto": "flash"
+    },
+    {
+      "tipo": "cierre",
+      "texto": "Escuelas deportivas en Aldea de Valle. WhatsApp 351 698 4124",
+      "destacar": "Aldea",
+      "segundos": 4,
+      "transicion": "fundido"
+    }
+  ]
+}
