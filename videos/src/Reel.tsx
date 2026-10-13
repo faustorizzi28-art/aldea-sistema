@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Audio,
   Img,
+  OffthreadVideo,
   Sequence,
   interpolate,
   spring,
@@ -23,6 +24,8 @@ import { FPS, MARCA } from "./marca";
 export type Escena = {
   texto: string; // lo que se lee en pantalla (corto: 3 a 12 palabras)
   foto?: string; // nombre de archivo dentro de public/fotos (opcional)
+  video?: string; // o un clip dentro de public/clips (vertical 1080x1920)
+  desde?: number; // segundo del clip donde arranca la escena (por defecto 0)
   segundos?: number; // cuánto dura la escena (por defecto 3)
   tipo?: "gancho" | "normal" | "cierre"; // cambia el estilo visual
   destacar?: string; // palabra que se pinta en amarillo
@@ -75,12 +78,37 @@ const presentacion = (tipo: Escena["transicion"]): TransitionPresentation<any> =
 };
 
 // Foto de fondo con zoom lento ("efecto Ken Burns") y oscurecido para leer el texto.
-const FondoFoto: React.FC<{ foto?: string; tipo: Escena["tipo"] }> = ({ foto, tipo }) => {
+const FondoFoto: React.FC<{ foto?: string; video?: string; desde?: number; tipo: Escena["tipo"] }> = ({
+  foto,
+  video,
+  desde,
+  tipo,
+}) => {
   const estilo = React.useContext(EstiloCtx);
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const zoom = interpolate(frame, [0, durationInFrames], [1, 1.12]);
 
+  if (video) {
+    return (
+      <AbsoluteFill style={{ backgroundColor: MARCA.negro }}>
+        <OffthreadVideo
+          src={staticFile(`clips/${video}`)}
+          startFrom={Math.round((desde ?? 0) * FPS)}
+          muted
+          style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${1 + (zoom - 1) * 0.5})` }}
+        />
+        <AbsoluteFill
+          style={{
+            background:
+              tipo === "cierre"
+                ? "rgba(0,0,0,0.55)"
+                : "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%)",
+          }}
+        />
+      </AbsoluteFill>
+    );
+  }
   if (!foto) {
     return (
       <AbsoluteFill
@@ -294,7 +322,7 @@ export const Reel: React.FC<Guion> = (guion) => {
           piezas.push(
             <TransitionSeries.Sequence key={`e${i}`} durationInFrames={Math.round(segundosDeEscena(escena) * FPS)}>
               <EfectoEntrada efecto={efecto}>
-                <FondoFoto foto={escena.foto} tipo={escena.tipo} />
+                <FondoFoto foto={escena.foto} video={escena.video} desde={escena.desde} tipo={escena.tipo} />
                 <TextoAnimado escena={escena} />
               </EfectoEntrada>
               {conSonidos && <SonidosEscena escena={escena} indice={i} />}

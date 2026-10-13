@@ -1,0 +1,55 @@
+{
+  "titulo": "Aldea – Karate en Aldea",
+  "musica": "ritmo-entreno.mp3",
+  "volumenMusica": 0.45,
+  "escenas": [
+    {
+      "tipo": "gancho",
+      "texto": "Esto no sale de un día para el otro.",
+      "destacar": "día",
+      "video": "karate-4108.mp4",
+      "desde": 0,
+      "segundos": 3.8
+    },
+    {
+      "texto": "Repetir. Corregir. Volver a repetir.",
+      "destacar": "corregir",
+      "video": "karate-4109.mp4",
+      "desde": 0,
+      "segundos": 3.8,
+      "transicion": "corte",
+      "efecto": "zoom"
+    },
+    {
+      "texto": "Hasta que un día sale. Y la sonrisa lo dice todo.",
+      "destacar": "sonrisa",
+      "video": "karate-4109.mp4",
+      "desde": 3.8,
+      "segundos": 4,
+      "transicion": "corte"
+    },
+    {
+      "texto": "Disciplina, respeto y equipo. Karate en Aldea de Valle.",
+      "destacar": "Aldea",
+      "video": "karate-4110.mp4",
+      "desde": 0.5,
+      "segundos": 4.5,
+      "transicion": "deslizar",
+      "efecto": "flash"
+    },
+    {
+      "tipo": "cierre",
+      "texto": "Bunkai Dojo en Aldea de Valle. WhatsApp 351 698 4124",
+      "destacar": "Bunkai",
+      "video": "karate-4110.mp4",
+      "desde": 9,
+      "segundos": 4,
+      "transicion": "fundido"
+    }
+  ],
+  "estilo": {
+    "fondoCierre": "#1F4D2B",
+    "acento": "#F2B632",
+    "usuario": "@aldeadelvalle"
+  }
+}
