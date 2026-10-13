@@ -54,7 +54,29 @@ Formato:
 6. Entregar: el .mp4, y además un caption para Instagram (gancho + 2-4 líneas + 3-5 hashtags de la marca, p. ej. #ProfeFaustoRizzi #BunkaiDojo #UnDíaSinMovimientoEsUnDíaPerdido).
 7. Commitear el guion (no el .mp4: `out/` está en .gitignore).
 
-## 4. Cambiar el diseño
+## 4. Sonido y efectos (Reel de fotos)
+
+En el guion se puede sumar:
+- `"musica"`: archivo de `videos/public/musica/` (por defecto `ritmo-entreno.mp3`, música original sin derechos). `null` = sin música.
+- `"volumenMusica"`: 0 a 1 (por defecto 0.35).
+- `"sonidos": false` para apagar los efectos (whoosh en transiciones, impacto en gancho/cierre, pop en la palabra destacada).
+- `"voz"`: voz en off grabada con el celu, en `videos/public/voz/`.
+- Por escena: `"transicion"`: `deslizar` (por defecto) | `barrido` | `fundido` | `corte`; `"efecto"`: `temblor` | `flash` | `zoom` | `ninguno`.
+- Variar transiciones y efectos: no repetir el mismo en todas las escenas. `flash` o `zoom` en el momento de mayor peso.
+- Para regenerar los sonidos: `python3 videos/herramientas/generar-sonidos.py`. Si Fausto trae música propia, copiarla a `videos/public/musica/` (solo música con permiso: propia, YouTube Audio Library, Pixabay, etc.).
+
+## 5. Editar un video que grabó Fausto (hablando a cámara)
+
+Composición `VideoHablado` (`videos/src/VideoHablado.tsx`): zooms de ritmo, gancho, subtítulos, música bajita y placa final de marca.
+1. Pasar el clip a vertical, corregir color y limpiar la voz:
+   `ffmpeg -i <original> -vf "scale=1080:1920:flags=lanczos,eq=brightness=0.03:contrast=1.07:saturation=1.1,unsharp=5:5:0.4" -r 30 -c:v libx264 -crf 18 -af "highpass=f=90,afftdn=nf=-25,loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 videos/public/clips/<nombre>.mp4`
+   (si el original es horizontal de verdad, usar recorte/crop en vez de escalar).
+2. Transcribir para subtítulos: `pip install faster-whisper` y modelo `small` en español con `word_timestamps=True` (necesita acceso a huggingface.co). Si no hay acceso, pedirle a Fausto el texto.
+3. Escribir `videos/guiones/hablado-<fecha>.json` con `video`, `segundos` (ffprobe), `gancho` (frase de los primeros 3 s, sacada de lo que dice), `subtitulos` (frases de 3-7 palabras con `inicio`/`fin` en segundos y una palabra `destacar`), `volumenMusica` ~0.07.
+4. `npx remotion render src/index.ts VideoHablado out/<nombre>.mp4 --props=guiones/<nombre>.json`
+5. Los clips de Fausto NO se suben al repositorio (`public/clips/` está en .gitignore).
+
+## 6. Cambiar el diseño
 
 - Colores, usuario y tipografía: `videos/src/marca.ts`.
 - Animaciones y estilos de escena: `videos/src/Reel.tsx`.
