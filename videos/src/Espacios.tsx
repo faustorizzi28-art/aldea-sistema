@@ -68,7 +68,7 @@ export type GuionEspacios = {
 const T = 14; // cuadros de cada transición
 const SEG_INTRO = 3.6;
 const SEG_CIERRE = 5.2;
-const segEspacio = (e: Espacio) => e.segundos ?? 3.3;
+const segEspacio = (e: Espacio) => e.segundos ?? 4.3;
 
 export const duracionEspacios = (g: GuionEspacios) =>
   Math.round(SEG_INTRO * FPS) +
@@ -81,13 +81,9 @@ const useVertical = () => {
   return height > width;
 };
 
-// Logo de Aldea (la carpa), el mismo dibujo que usa la web.
-const Logo: React.FC<{ size: number; color?: string }> = ({ size, color = ALDEA.amarillo }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
-    <path d="M50 33 L77 79 L70.5 79 L69 74.5 L54.5 74.5 L53.5 65 L47 65 L46 74.5 L31 74.5 L29.5 79 L23 79 Z" fill={color} />
-    <path d="M39.4 18.6 L42.9 17 L52.5 38 L49 39.6 Z" fill={color} />
-    <path d="M60.6 18.6 L57.1 17 L47.5 38 L51 39.6 Z" fill={color} />
-  </svg>
+// Logo oficial de Aldea (la carpa), recortado con fondo transparente.
+const Logo: React.FC<{ size: number }> = ({ size }) => (
+  <Img src={staticFile("fotos/logo-aldea.png")} style={{ height: size, width: "auto", display: "block" }} />
 );
 
 const Medio: React.FC<{ foto?: string; video?: string; desde?: number; paneo?: Espacio["paneo"] }> = ({
@@ -143,7 +139,7 @@ const Intro: React.FC<{ g: GuionEspacios }> = ({ g }) => {
       <AbsoluteFill style={{ backgroundColor: "rgba(30,50,38,0.55)" }} />
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: vertical ? 30 : 18, textAlign: "center" }}>
         <div style={{ transform: `scale(${logo})` }}>
-          <Logo size={vertical ? 190 : 150} />
+          <Logo size={vertical ? 230 : 190} />
         </div>
         <div
           style={{
@@ -265,7 +261,7 @@ const Cierre: React.FC<{ g: GuionEspacios }> = ({ g }) => {
       }}
     >
       <div style={item(0)}>
-        <Logo size={vertical ? 150 : 120} />
+        <Logo size={vertical ? 190 : 150} />
       </div>
       <div style={{ ...item(4), fontFamily: SERIF, fontSize: vertical ? 120 : 110, lineHeight: 1, color: ALDEA.crema }}>
         {g.cierre.llamado}
