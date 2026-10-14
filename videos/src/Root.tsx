@@ -5,6 +5,8 @@ import { ALTO, ANCHO, FPS } from "./marca";
 import ejemplo from "../guiones/ejemplo-karate.json";
 import { GuionHablado, VideoHablado, duracionHablado } from "./VideoHablado";
 import hablado from "../guiones/hablado-2026-10-12.json";
+import { Espacios, GuionEspacios, duracionEspacios } from "./Espacios";
+import espacios from "../guiones/aldea-espacios.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -31,6 +33,27 @@ export const RemotionRoot: React.FC = () => {
       durationInFrames={duracionHablado(hablado as GuionHablado)}
       defaultProps={hablado as GuionHablado}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHablado(props) })}
+    />
+    {/* Presentación de espacios de un lugar: vertical y horizontal */}
+    <Composition
+      id="Espacios"
+      component={Espacios}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionEspacios(espacios as GuionEspacios)}
+      defaultProps={espacios as GuionEspacios}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionEspacios(props) })}
+    />
+    <Composition
+      id="EspaciosHorizontal"
+      component={Espacios}
+      width={ALTO}
+      height={ANCHO}
+      fps={FPS}
+      durationInFrames={duracionEspacios(espacios as GuionEspacios)}
+      defaultProps={espacios as GuionEspacios}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionEspacios(props) })}
     />
     </>
   );
