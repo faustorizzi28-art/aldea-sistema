@@ -5,7 +5,7 @@
   "estilo": {
     "fondoCierre": "#1F4D2B",
     "acento": "#F2B632",
-    "usuario": "@aldeadelvalle"
+    "usuario": "@aldeadevalle"
   },
   "escenas": [
     {
@@ -46,7 +46,7 @@
     },
     {
       "tipo": "cierre",
-      "texto": "Escuelas deportivas en Aldea de Valle. WhatsApp 351 698 4124",
+      "texto": "Escuelas deportivas en Aldea de Valle. WhatsApp 351 530 8489",
       "destacar": "Aldea",
       "segundos": 4,
       "transicion": "fundido"

@@ -39,7 +39,7 @@
     },
     {
       "tipo": "cierre",
-      "texto": "Bunkai Dojo en Aldea de Valle. WhatsApp 351 698 4124",
+      "texto": "Bunkai Dojo en Aldea de Valle. WhatsApp 351 530 8489",
       "destacar": "Bunkai",
       "video": "karate-4110.mp4",
       "desde": 9,
@@ -50,6 +50,6 @@
   "estilo": {
     "fondoCierre": "#1F4D2B",
     "acento": "#F2B632",
-    "usuario": "@aldeadelvalle"
+    "usuario": "@aldeadevalle"
   }
 }
