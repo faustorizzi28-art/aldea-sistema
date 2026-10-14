@@ -26,6 +26,7 @@ export type Escena = {
   foto?: string; // nombre de archivo dentro de public/fotos (opcional)
   video?: string; // o un clip dentro de public/clips (vertical 1080x1920)
   desde?: number; // segundo del clip donde arranca la escena (por defecto 0)
+  paneo?: "izq" | "der"; // fotos horizontales: la "cámara" recorre la foto hacia ese lado
   segundos?: number; // cuánto dura la escena (por defecto 3)
   tipo?: "gancho" | "normal" | "cierre"; // cambia el estilo visual
   destacar?: string; // palabra que se pinta en amarillo
@@ -78,12 +79,13 @@ const presentacion = (tipo: Escena["transicion"]): TransitionPresentation<any> =
 };
 
 // Foto de fondo con zoom lento ("efecto Ken Burns") y oscurecido para leer el texto.
-const FondoFoto: React.FC<{ foto?: string; video?: string; desde?: number; tipo: Escena["tipo"] }> = ({
-  foto,
-  video,
-  desde,
-  tipo,
-}) => {
+const FondoFoto: React.FC<{
+  foto?: string;
+  video?: string;
+  desde?: number;
+  paneo?: Escena["paneo"];
+  tipo: Escena["tipo"];
+}> = ({ foto, video, desde, paneo, tipo }) => {
   const estilo = React.useContext(EstiloCtx);
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -120,7 +122,15 @@ const FondoFoto: React.FC<{ foto?: string; video?: string; desde?: number; tipo:
     <AbsoluteFill style={{ backgroundColor: MARCA.negro }}>
       <Img
         src={staticFile(`fotos/${foto}`)}
-        style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: paneo
+            ? `${interpolate(frame, [0, durationInFrames], paneo === "der" ? [15, 85] : [85, 15])}% 50%`
+            : "50% 50%",
+          transform: `scale(${paneo ? 1 + (zoom - 1) * 0.4 : zoom})`,
+        }}
       />
       <AbsoluteFill
         style={{
@@ -322,7 +332,7 @@ export const Reel: React.FC<Guion> = (guion) => {
           piezas.push(
             <TransitionSeries.Sequence key={`e${i}`} durationInFrames={Math.round(segundosDeEscena(escena) * FPS)}>
               <EfectoEntrada efecto={efecto}>
-                <FondoFoto foto={escena.foto} video={escena.video} desde={escena.desde} tipo={escena.tipo} />
+                <FondoFoto foto={escena.foto} video={escena.video} desde={escena.desde} paneo={escena.paneo} tipo={escena.tipo} />
                 <TextoAnimado escena={escena} />
               </EfectoEntrada>
               {conSonidos && <SonidosEscena escena={escena} indice={i} />}

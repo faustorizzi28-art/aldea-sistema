@@ -1,0 +1,81 @@
+{
+  "titulo": "Aldea – Conocé el lugar",
+  "musica": "ritmo-entreno.mp3",
+  "volumenMusica": 0.4,
+  "estilo": {
+    "fondoCierre": "#1F4D2B",
+    "acento": "#F2B632",
+    "usuario": "@aldeadelvalle"
+  },
+  "escenas": [
+    {
+      "tipo": "gancho",
+      "texto": "Te mostramos Aldea de Valle.",
+      "destacar": "Aldea",
+      "video": "aldea-recorrido.mp4",
+      "desde": 0,
+      "segundos": 3.2
+    },
+    {
+      "texto": "Un salón cerrado enorme, listo para lo que imagines.",
+      "destacar": "salón",
+      "foto": "aldea-salon.jpg",
+      "paneo": "der",
+      "segundos": 3.4,
+      "efecto": "zoom"
+    },
+    {
+      "texto": "El deck vidriado, con vista al verde.",
+      "destacar": "deck",
+      "foto": "aldea-deck.jpg",
+      "paneo": "izq",
+      "segundos": 3.2,
+      "transicion": "barrido"
+    },
+    {
+      "texto": "Patio de piedra para compartir al aire libre.",
+      "destacar": "piedra",
+      "foto": "aldea-patio-piedra.jpg",
+      "paneo": "der",
+      "segundos": 3.2
+    },
+    {
+      "texto": "Quincho con parrilla para el asado.",
+      "destacar": "quincho",
+      "foto": "parrilla-asado.jpg",
+      "segundos": 3,
+      "transicion": "barrido"
+    },
+    {
+      "texto": "Mucho, mucho espacio verde.",
+      "destacar": "verde",
+      "video": "aldea-recorrido.mp4",
+      "desde": 5,
+      "segundos": 3,
+      "transicion": "fundido"
+    },
+    {
+      "texto": "Pileta con tobogán para el verano.",
+      "destacar": "Pileta",
+      "foto": "aldea-pileta-tobogan.jpg",
+      "paneo": "izq",
+      "segundos": 3.6,
+      "transicion": "deslizar",
+      "efecto": "flash"
+    },
+    {
+      "texto": "Y estacionamiento propio.",
+      "destacar": "estacionamiento",
+      "foto": "aldea-estacionamiento.jpg",
+      "paneo": "izq",
+      "segundos": 2.8
+    },
+    {
+      "tipo": "cierre",
+      "texto": "Tu próximo evento, en Aldea de Valle. WhatsApp 351 698 4124",
+      "destacar": "evento",
+      "segundos": 4.8,
+      "transicion": "fundido"
+    }
+  ]
+}
