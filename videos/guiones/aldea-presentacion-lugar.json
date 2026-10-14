@@ -40,10 +40,11 @@
       "segundos": 3.2
     },
     {
-      "texto": "Quincho con parrilla para el asado.",
+      "texto": "Quincho techado con parrillas y vista a la cancha.",
       "destacar": "quincho",
-      "foto": "parrilla-asado.jpg",
-      "segundos": 3,
+      "foto": "aldea-quincho.jpg",
+      "paneo": "izq",
+      "segundos": 3.4,
       "transicion": "barrido"
     },
     {
