@@ -392,6 +392,13 @@ document.addEventListener('click', function(ev){
     retirar: function(){ accion('portalPostular', [TOKEN, id, false]); },
     bajarme: function(){ if (confirm('¿Seguro que no podés ir? Le avisamos a GLORIN para buscar reemplazo.')) accion('portalPostular', [TOKEN, id, false]); },
     publicar: function(){ accion('portalPublicar', [TOKEN, id]); },
+    eliminar: function(){
+      var x = D.eventos.filter(function(v){ return v.id === id; })[0];
+      if (!confirm('¿Eliminar del todo el cumple de ' + (x ? x.cumpleanero : '') + '? Se borra de la planilla y del calendario' + (x && x.asignados.length && !x.cancelado ? ', y le avisamos al equipo que se canceló' : '') + '. No se puede deshacer.')) return;
+      accion('portalEliminarFecha', [TOKEN, id], function(){ delete S.abiertos[id]; if (S.foco === id) S.foco = ''; });
+    },
+    yoVoy: function(){ cambiarYo(id, true); },
+    yoNoVoy: function(){ cambiarYo(id, false); },
     estado: function(){
       var est = t.dataset.estado;
       var preg = { 'Cancelado': '¿Cancelar este cumple? Se libera el horario y, si había equipo, les avisamos.',
@@ -571,18 +578,30 @@ function panelAdmin(x){
   if (!x.cancelado && x.pasado && x.estado === 'Señado') h += '<button class="btn chico gris" data-acc="estado" data-estado="Realizado" data-id="' + id + '">🎉 Marcar realizado</button>';
   if (!x.cancelado && x.estado !== 'Realizado') h += '<button class="btn chico gris" data-acc="estado" data-estado="Cancelado" data-id="' + id + '">❌ Cancelar fecha</button>';
   if (x.cancelado && !x.pasado) h += '<button class="btn chico gris" data-acc="estado" data-estado="A confirmar" data-id="' + id + '">↩️ Reactivar</button>';
+  h += '<button class="btn chico gris" data-acc="eliminar" data-id="' + id + '">🗑️ Eliminar</button>';
   h += '</div>';
   if (x.cancelado) return h;
+  // Vos (admin) quedás propuesto en todos los cumples: decidís acá si vas o no
+  var yoActivo = (D.profes || []).some(function(p){ return p.activo && p.nombre === D.yo.nombre; });
+  if (yoActivo && !x.pasado){
+    var voy = x.asignados.indexOf(D.yo.nombre) >= 0;
+    h += '<div class="equipo" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:150px"><b>Vos</b> <span class="muted small">' +
+      (voy ? '· ✅ estás en el equipo' : '· propuesto automáticamente') + '</span></div>' +
+      (voy ? '<button class="mini gris" data-acc="yoNoVoy" data-id="' + id + '">No voy</button>'
+           : '<button class="mini ok" data-acc="yoVoy" data-id="' + id + '">🙋 Voy yo</button>') + '</div>';
+  }
   if (!S.sel[x.id]) S.sel[x.id] = x.asignados.slice();
   if (!S.lleva[x.id]) S.lleva[x.id] = (x.llevan || []).slice();
   var sel = S.sel[x.id], lleva = S.lleva[x.id];
   var activos = (D.profes || []).filter(function(p){ return p.activo; }).map(function(p){ return p.nombre; });
   var orden = [];
   (x.postulados || []).concat(x.asignados).forEach(function(n){ if (orden.indexOf(n) < 0) orden.push(n); });
+  if (activos.indexOf(D.yo.nombre) >= 0 && orden.indexOf(D.yo.nombre) < 0) orden.unshift(D.yo.nombre);
   var otros = activos.filter(function(n){ return orden.indexOf(n) < 0; });
   var item = function(n, nota){
     var on = sel.indexOf(n) >= 0, lv = lleva.indexOf(n) >= 0;
     var monto = montoPara(x, n, lv);
+    if (n === D.yo.nombre && !nota) nota = 'vos';
     return '<div class="pick"><label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer"><input type="checkbox" data-pick="' + id + '" value="' + e(n) + '"' + (on ? ' checked' : '') + '>' +
       '<span style="min-width:0">' + e(n) + '<br><small style="margin:0">' + e(nivelDe(n) || 'sin nivel') + ' · ' + (monto ? pesos(monto) : 'a definir') + (nota ? ' · ' + nota : '') + '</small></span></label>' +
       '<label class="lleva" title="Lleva / pone los elementos"><input type="checkbox" data-lleva="' + id + '" value="' + e(n) + '"' + (lv ? ' checked' : '') + '>🚚</label></div>';
@@ -603,6 +622,15 @@ function nivelDe(n){ var p = (D.profes || []).filter(function(q){ return q.nombr
 function montoPara(x, n, lleva){
   var base = x.pagoFijo != null ? x.pagoFijo : (D.tarifas || {})[nivelDe(n)];
   return base ? base + (lleva ? D.extraElementos : 0) : 0;
+}
+
+// Sumarte o sacarte del equipo sin tocar al resto
+function cambiarYo(id, voy){
+  var x = D.eventos.filter(function(v){ return v.id === id; })[0];
+  var sel = x.asignados.filter(function(n){ return n !== D.yo.nombre; });
+  if (voy) sel.push(D.yo.nombre);
+  var lleva = (x.llevan || []).filter(function(n){ return sel.indexOf(n) >= 0; });
+  accion('portalConfirmarEquipo', [TOKEN, id, sel, x.pagoFijo == null ? '' : x.pagoFijo, lleva], function(){ delete S.sel[id]; delete S.lleva[id]; });
 }
 
 function guardarEquipo(id){

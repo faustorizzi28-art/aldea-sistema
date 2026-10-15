@@ -1579,7 +1579,7 @@ function portalConfirmarEquipo(token, id, nombres, pago, llevan) {
   };
   enviar(nuevos, 'confirmado');
   enviar(quitados, 'quitado');
-  enviar(suplentesNuevos, 'suplente');
+  if (elegidos.length >= necesarios_(r)) enviar(suplentesNuevos, 'suplente');
   return conMensaje_(portalDatos(token), 'Equipo guardado (' + elegidos.length + ' de ' + necesarios_(r) + ').' +
     (mails ? ' Les avisamos por mail a ' + mails + ' profe' + (mails > 1 ? 's' : '') + '.' : ''));
 }
@@ -1696,6 +1696,32 @@ function portalCambiarEstado(token, id, estado) {
   return conMensaje_(portalDatos(token), textos[estado]);
 }
 
+// Borrar una fecha del todo: la fila de la planilla y el evento del calendario.
+// Si tenía equipo y no estaba cancelada, antes les avisa a los profes que se canceló.
+function portalEliminarFecha(token, id) {
+  soloAdmin_(token);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Probá de nuevo en unos segundos.');
+  let r;
+  try {
+    const x = buscarPorId_(id);
+    if (!x) throw new Error('No encuentro esa fecha (capaz ya se borró).');
+    r = x.r;
+    if (r.estado !== 'Cancelado' && r.fecha >= Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')) {
+      try { avisarCancelacionProfes_(r); } catch (e) { console.error(e); }
+    } else {
+      try { sincronizarPagos_(r, []); } catch (e) { console.error(e); }
+    }
+    if (r.eventoId) {
+      try { const ev = obtenerCalendario_().getEventById(r.eventoId); if (ev) ev.deleteEvent(); } catch (e) { console.error(e); }
+    }
+    x.sh.deleteRow(x.filaN);
+  } finally {
+    lock.releaseLock();
+  }
+  return conMensaje_(portalDatos(token), 'Cumple de ' + r.cumpleanero + ' eliminado 🗑️ El horario quedó libre.');
+}
+
 function portalNivelProfe(token, email, nivel) {
   soloAdmin_(token);
   if (nivel && !CONFIG.tarifasProfes[nivel]) throw new Error('Nivel inválido.');
@@ -1728,7 +1754,7 @@ const API_PORTAL = {
   portalDatos: portalDatos, portalPostular: portalPostular, portalConfirmarEquipo: portalConfirmarEquipo,
   portalPublicar: portalPublicar, portalGuardarFecha: portalGuardarFecha, portalEstadoProfe: portalEstadoProfe,
   portalMarcarPago: portalMarcarPago, portalNivelProfe: portalNivelProfe, portalAceptarReglamento: portalAceptarReglamento,
-  portalCambiarEstado: portalCambiarEstado
+  portalCambiarEstado: portalCambiarEstado, portalEliminarFecha: portalEliminarFecha
 };
 
 // ---- Recordatorios automáticos a los profes del equipo ----
