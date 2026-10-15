@@ -52,7 +52,7 @@ const CONFIG = {
     alias: 'aldea.de.valle',
     banco: '',                          // opcional, ej: 'Mercado Pago'
     cbu: '',                            // opcional
-    titular: '',                        // poné el nombre EXACTO que ve la persona al transferir
+    titular: 'Fausto Agustino Rizzi Szkolka', // tiene que coincidir con el nombre que ve la persona al transferir
     linkMercadoPago: ''                 // opcional: link de pago FIJO
   },
   porcentajeSena: 30,
@@ -61,9 +61,12 @@ const CONFIG = {
   diasHaciaAdelante: 365,
   horaResumenDiario: 8,
   bufferMin: 60,                        // limpieza/armado entre dos eventos del mismo sector
+  // Planilla donde Milagros anota los eventos cerrados a mano: la página la lee y bloquea esas fechas solas.
+  // Sirve la pestaña con columnas FECHA · HORA · MOTIVO · OBSERVACIONES y filas de mes (JULIO, AGOSTO…).
+  planillaConfirmados: { id: '1Ktc4mNAiNJhatjpQ7Ojp9oEQHKhWk0hcsLqcsTFhOJs', hoja: 'CONFIRMADOS' },
   finMaximo: '02:00',                   // ningún evento termina después de esta hora
   validezPresupuestoDias: 7,
-  horarios: ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
+  horarios: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
              '15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30',
              '21:00','21:30','22:00'],
   sectores: [
@@ -118,7 +121,7 @@ const CONFIG = {
       modalidades: ['barra', 'barralibre', 'alquiler'], decorar: 'Podés entrar a decorar 1 hora antes.' },
     { id: 'asado', nombre: 'Asado entre semana', emoji: '🔥', modo: 'reserva', tarifa: 'asado',
       duracion: 240, duraciones: [180, 240, 300], sectores: ['quincho', 'patio', 'deck'], pileta: false,
-      soloLunJue: true, decorar: '' },
+      dias: [1, 2, 3, 4], decorar: '' },
     { id: 'quince', nombre: '15 años', emoji: '👑', modo: 'india', tarifa: 'formal',
       duracion: 300, duraciones: [300, 360, 420], sectores: ['salon', 'patio', 'predio'], pileta: false,
       modalidades: ['alquiler', 'barralibre'], decorar: 'Podés dejar las cosas el día anterior y decorar con tiempo.' },
@@ -129,7 +132,8 @@ const CONFIG = {
       duracion: 240, duraciones: [180, 240, 300, 360, 480], sectores: ['quincho', 'patio', 'salon', 'deck', 'predio'], pileta: true,
       modalidades: ['barralibre', 'alquiler'], decorar: '' },
     { id: 'escuela', nombre: 'Jornada escolar / convivencia', emoji: '🏫', modo: 'cita', tarifa: 'escuela',
-      duracion: 480, duraciones: [480], sectores: ['predio'], pileta: true, unidad: 'alumnos',
+      duracion: 540, duraciones: [540], sectores: ['predio'], pileta: true, unidad: 'alumnos',
+      dias: [1, 3, 5], horaFija: '08:00',  // lunes, miércoles y viernes de 8 a 17
       modalidades: ['almuerzo', 'completa'], decorar: '' }
   ],
   modalidades: {
@@ -427,6 +431,7 @@ function configPublica_() {
   delete c.emailIndia;
   delete c.nombreCalendario;
   delete c.nombreCalendarioCitas;
+  delete c.planillaConfirmados;
   return c;
 }
 
@@ -444,7 +449,7 @@ function sectoresDe_(texto) {
   return encontrados.length ? encontrados : idsSectores_();
 }
 
-function leerOcupados_() {
+function leerOcupados_(fresco) {
   const cal = calendario_(CONFIG.nombreCalendario);
   const tz = Session.getScriptTimeZone();
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -473,7 +478,104 @@ function leerOcupados_() {
     const finMin = iniMin + Math.round((ev.getEndTime() - ini) / 60000);
     dia(k).ev.push([iniMin, finMin, sectoresDe_(titulo + '\n' + ev.getDescription())]);
   });
+  const desde = Utilities.formatDate(hoy, tz, 'yyyy-MM-dd');
+  leerConfirmados_(fresco).forEach(function (c) {
+    if (c.fecha >= desde) dia(c.fecha).ev.push([c.ini, c.fin, c.sectores]);
+  });
   return ocupados;
+}
+
+// ======== PLANILLA DE EVENTOS CONFIRMADOS (la que se lleva a mano) ========
+function leerConfirmados_(fresco) {
+  const pc = CONFIG.planillaConfirmados;
+  if (!pc || !pc.id) return [];
+  const cache = CacheService.getScriptCache();
+  if (!fresco) { const c = cache.get('confirmados'); if (c) return JSON.parse(c); }
+  let filas;
+  try {
+    const sh = SpreadsheetApp.openById(pc.id).getSheetByName(pc.hoja);
+    if (!sh) return [];
+    filas = sh.getDataRange().getDisplayValues();
+  } catch (e) { console.error('No pude leer la planilla de confirmados: ' + e.message); return []; }
+  const r = parsearConfirmados_(filas, new Date());
+  try { cache.put('confirmados', JSON.stringify(r), 300); } catch (e) {}
+  return r;
+}
+
+const MESES_ = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+function sinTildes_(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+// Convierte las filas de la planilla en [{ fecha, ini, fin, sectores, texto }].
+// El mes sale de la fila de título (JULIO, AGOSTO… o "ENERO 2027") y el día del primer número de FECHA.
+function parsearConfirmados_(filas, hoy) {
+  const out = [];
+  let mes = -1, anio = hoy.getFullYear(), col = null;
+  const anioPara = function (m) {
+    // Un mes que quedó más de 6 meses atrás es del año que viene (ej: ENERO cargado en octubre)
+    const y = hoy.getFullYear();
+    return new Date(y, m + 1, 0).getTime() < hoy.getTime() - 183 * 86400000 ? y + 1 : y;
+  };
+  filas.forEach(function (f) {
+    const a = sinTildes_(f[0]).trim().toUpperCase();
+    const mm = /^([A-Z]+)(?:\s+(\d{4}))?$/.exec(a);
+    if (mm && MESES_.indexOf(mm[1]) >= 0) { mes = MESES_.indexOf(mm[1]); anio = mm[2] ? Number(mm[2]) : anioPara(mes); return; }
+    if (a === 'FECHA') {
+      col = {};
+      f.forEach(function (h, i) { col[sinTildes_(h).trim().toUpperCase()] = i; });
+      return;
+    }
+    if (mes < 0 || !col || !a) return;
+    const g = function (n) { return col[n] === undefined ? '' : String(f[col[n]] || ''); };
+    const extra = g('CERRADO') + ' ' + g('OBSERVACIONES');
+    if (/REPROGRAM|CANCELAD|SUSPENDID/i.test(extra)) return;
+    const d = /(\d{1,2})(?:\s*[\/.\-]\s*\d{1,2}(?:\s*[\/.\-]\s*(\d{2,4}))?)?/.exec(a);
+    if (!d || Number(d[1]) < 1 || Number(d[1]) > 31) return;
+    let y = anio;
+    if (d[2]) y = d[2].length === 2 ? 2000 + Number(d[2]) : Number(d[2]);
+    const fecha = new Date(y, mes, Number(d[1]));
+    if (fecha.getMonth() !== mes) return;
+    const r = rangoHora_(g('HORA'));
+    const texto = [g('NOMBRE'), g('MOTIVO'), g('OBSERVACIONES')].join(' · ');
+    out.push({
+      fecha: y + '-' + ('0' + (mes + 1)).slice(-2) + '-' + ('0' + Number(d[1])).slice(-2),
+      ini: r[0], fin: r[1], sectores: sectoresConfirmado_(g('OBSERVACIONES') + ' ' + g('MOTIVO') + ' ' + g('NOMBRE')), texto: texto
+    });
+  });
+  return out;
+}
+
+// "16 a 18:30hs" · "19 a 2am" · "16:45 - 19:30" · "sunset" · "MEDIODIA". Si no hay hora, ocupa todo el día.
+function rangoHora_(txt) {
+  const t = sinTildes_(txt).toLowerCase().replace(/\s+/g, ' ');
+  const m = /(\d{1,2})(?:[:.](\d{2}))?\s*(?:hs?)?\s*(?:a|-|al|hasta)\s*(\d{1,2})(?:[:.](\d{2}))?/.exec(t);
+  if (m) {
+    const ini = Number(m[1]) * 60 + Number(m[2] || 0);
+    let fin = Number(m[3]) * 60 + Number(m[4] || 0);
+    if (fin <= ini) fin += 1440;
+    return [ini, fin];
+  }
+  const uno = /(\d{1,2})(?:[:.](\d{2}))?\s*hs?/.exec(t);
+  if (uno) { const i = Number(uno[1]) * 60 + Number(uno[2] || 0); return [i, i + 240]; }
+  if (/sunset|atardecer/.test(t)) return [17 * 60, 24 * 60];
+  if (/mediodia/.test(t)) return [12 * 60, 17 * 60];
+  if (/manana/.test(t)) return [9 * 60, 13 * 60];
+  if (/noche/.test(t)) return [20 * 60, 26 * 60];
+  return [8 * 60, 26 * 60];
+}
+
+// Sector según lo que dice la fila. Si no dice nada: cumple infantil = quincho; el resto ocupa todo.
+function sectoresConfirmado_(txt) {
+  const t = sinTildes_(txt).toLowerCase().replace(/cancha (de 11|grande)/g, ' patio ');
+  if (/todo el predio|predio|exclusiv|espacio completo/.test(t)) return idsSectores_();
+  const s = [];
+  if (/salon/.test(t)) s.push('salon');
+  if (/patio|parque|piedra/.test(t)) s.push('patio');
+  if (/quincho|sintetic|asador|parrilla|cancha|futbol/.test(t)) s.push('quincho');
+  if (/deck/.test(t)) s.push('deck');
+  if (s.length) return s;
+  if (/infantil|cumple (\d|un) anos?\b/.test(t)) return ['quincho'];
+  return idsSectores_();
 }
 
 function aMin_(h) { const p = String(h).split(':'); return Number(p[0]) * 60 + Number(p[1]); }
@@ -666,7 +768,7 @@ function enviarReserva(d) {
   if (d.fecha < minimo) throw new Error('Para esa fecha escribinos por WhatsApp así vemos si llegamos.');
   if (d.fecha > maximo) throw new Error('Esa fecha todavía no está abierta. Escribinos por WhatsApp.');
   const dow = new Date(Number(d.fecha.slice(0, 4)), Number(d.fecha.slice(5, 7)) - 1, Number(d.fecha.slice(8, 10))).getDay();
-  if (T.soloLunJue && (dow < 1 || dow > 4)) throw new Error('El asado sin cargo es de lunes a jueves.');
+  if (T.dias && T.dias.indexOf(dow) < 0) throw new Error(T.id === 'asado' ? 'El asado sin cargo es de lunes a jueves.' : 'Ese día no está disponible para este tipo de evento.');
 
   const cod = d.codigo ? buscarCodigo_(d.codigo) : null;
   const p = cotizar(d, precios_(), CONFIG, cod);
@@ -678,7 +780,7 @@ function enviarReserva(d) {
   if (!lock.tryLock(25000)) throw new Error('Hay mucha gente reservando en este momento. Probá de nuevo en unos segundos.');
   let id, ev, iniReal, finReal;
   try {
-    if (!sectorLibre_(d.fecha, leerOcupados_()[d.fecha], d.sector, d.hora, p.duracion)) {
+    if (!sectorLibre_(d.fecha, leerOcupados_(true)[d.fecha], d.sector, d.hora, p.duracion)) {
       throw new Error('Ese horario se acaba de ocupar. Elegí otro, por favor.');
     }
     id = 'AV-' + Utilities.formatDate(new Date(), tz, 'yyMMdd') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();

@@ -34,7 +34,7 @@ function reemplazar(texto, desde, hasta, contenido) {
   return texto.slice(0, texto.indexOf('\n', a) + 1) + contenido + '\n' + texto.slice(b);
 }
 const configPublica = JSON.parse(JSON.stringify(ctx.__C));
-['emailAviso', 'emailIndia', 'nombreCalendario', 'nombreCalendarioCitas'].forEach(function (k) { delete configPublica[k]; });
+['emailAviso', 'emailIndia', 'nombreCalendario', 'nombreCalendarioCitas', 'planillaConfirmados'].forEach(function (k) { delete configPublica[k]; });
 index = reemplazar(index, '/* ==== DEMO', '/* ==== FIN DEMO',
   'var CFG_DEMO = ' + JSON.stringify(configPublica) + ';\nvar P_DEMO = ' + JSON.stringify(P) + ';');
 index = reemplazar(index, '/* ==== COTIZAR', '/* ==== FIN COTIZAR', bloque);

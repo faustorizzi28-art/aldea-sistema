@@ -57,7 +57,7 @@ Si cierra la página, al volver sigue donde estaba.
 | Limpieza durante el evento | $50.000 |
 | Chulengo / estufa | $60.000 |
 | Panchos · empanadas · pizza | $3.000 · $3.000 · $17.000 |
-| Jornada escolar | $16.000 por alumno con almuerzo · $20.000 con merienda (mínimo 40) |
+| Jornada escolar (lunes, miércoles y viernes de 8 a 17 h) | $16.000 por alumno con almuerzo · $20.000 con merienda (mínimo 40) |
 | 15 y casamientos (parte de Aldea) | espacio por cantidad + 1 seguridad cada 60 personas + limpieza durante el evento. Catering, DJ y ambientación los cotiza Aldea India |
 
 - **Inflación**: en `Precios`, cambiá `ajusteInflacion` (por ejemplo `8`) y todos los montos suben 8%, redondeados a miles.
@@ -87,7 +87,7 @@ Si cierra la página, al volver sigue donde estaba.
    **`Index`** con el contenido de `Index-para-copiar.txt`.
 3. En **Configuración del proyecto** (el engranaje), poné la zona horaria **(GMT-03:00) Córdoba / Buenos Aires**.
 4. En `CONFIG`, revisá:
-   - `pago.titular`: el nombre EXACTO que ve la gente al transferir a `aldea.de.valle` (y `banco` si querés mostrarlo).
+   - `pago.titular`: ya está cargado *Fausto Agustino Rizzi Szkolka*. Revisá que coincida con lo que ve la gente al transferir a `aldea.de.valle`.
    - `emailAviso` (vacío = te llega a la cuenta dueña) y `emailIndia` (mail de Luli/Nati para sus citas).
    - `whatsapp`: el de Milagros (`5493515308489`), que recibe consultas y comprobantes.
 5. Elegí la función **`configurarInicial`** y tocá **Ejecutar** (aceptá los permisos). Crea las pestañas,
@@ -97,12 +97,23 @@ Si cierra la página, al volver sigue donde estaba.
    **Implementar → Administrar implementaciones → Editar → Nueva versión**, así el link no cambia.
 8. Compartí los calendarios **Aldea · Eventos** y **Aldea · Citas** con Milagros, Luli y Nati, para que los vean en el celular.
 
-### Cargar los eventos que ya están confirmados
+### Eventos que ya están confirmados (planilla de Milagros)
 
-Para que la página no venda una fecha que ya está tomada, cargá en el calendario **Aldea · Eventos** los eventos
-de la planilla vigente, con la descripción `SECTOR: quincho` (o `patio`, `salon`, `deck`, `predio`).
-Si no le ponés sector, se toma como que ocupa todo el predio.
-Para bloquear un día entero: evento de todo el día con `BLOQUEADO` en el título (o `BLOQUEADO salon` para un solo sector).
+No hace falta cargarlos de nuevo: la página lee sola la pestaña **CONFIRMADOS** de la planilla
+"EVENTOS CONFIRMADOS" (`CONFIG.planillaConfirmados`) y bloquea esas fechas, horarios y sectores.
+Milagros sigue anotando como siempre:
+- Una fila de mes (JULIO, AGOSTO… o `ENERO 2027`) y debajo la fila de títulos FECHA · NOMBRE · … · HORA · MOTIVO · OBSERVACIONES · CERRADO.
+- **FECHA**: alcanza con el día ("SABADO 15", "viernes 2/10", "04/12/26").
+- **HORA**: "16 a 18:30", "19 a 2am", "sunset", "mediodía". Sin hora, bloquea el día entero.
+- **Sector**: se lee de OBSERVACIONES/MOTIVO. "salon", "patio", "cancha de 11", "quincho", "cancha", "parrilla", "deck" o
+  "todo el predio" / "uso exclusivo". Si no dice nada, un cumple infantil ocupa el quincho y cualquier otro evento ocupa todo el predio.
+- Si en CERRADO u OBSERVACIONES dice **REPROGRAMA** o **CANCELADO**, esa fila no bloquea nada.
+- Los cambios se ven en la página en hasta 5 minutos. Al reservar se vuelve a chequear al instante.
+
+La cuenta que instala el Apps Script tiene que poder abrir esa planilla (hoy es de Milagros y está compartida con Fausto).
+
+Para bloquear un día o un sector a mano: evento de todo el día en el calendario **Aldea · Eventos** con `BLOQUEADO`
+en el título (o `BLOQUEADO salon` para un solo sector).
 
 ### Publicarla con un link lindo (opcional)
 
