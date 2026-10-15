@@ -462,6 +462,21 @@
   .toast.show{opacity:1;transform:translate(-50%,0);}
   .toast.ok{background:var(--ok);} .toast.err{background:var(--gastos);}
 
+  /* Stock de cantina */
+  .stock-alerta{background:var(--cantina-suave);border:1px solid #F4C9AC;color:var(--cantina-deep);border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:13.5px;font-weight:600;}
+  .stock-item{display:flex;align-items:center;gap:10px;background:var(--blanco);border:1px solid var(--borde);border-radius:14px;padding:12px;margin-bottom:8px;}
+  .stock-item .si-body{flex:1;min-width:0;}
+  .stock-item .si-nom{font-size:14.5px;font-weight:700;}
+  .stock-item .si-sub{font-size:11.5px;color:var(--gris);margin-top:2px;}
+  .stock-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;min-width:46px;text-align:right;}
+  .stock-num.bajo{color:var(--warn);} .stock-num.cero{color:var(--gastos);}
+  .stock-item .si-acc{display:flex;gap:6px;}
+  .stock-btn{border:none;border-radius:10px;padding:9px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--gris-claro);color:var(--tinta);}
+  .stock-btn.mas{background:var(--cancha-suave);color:var(--cancha-deep);}
+  .prod-stock{font-size:10.5px;font-weight:700;margin-top:3px;color:var(--gris);}
+  .prod-stock.bajo{color:var(--warn);} .prod-stock.cero{color:var(--gastos);}
+  .prod-btn.sin-stock{opacity:.55;}
+
   /* Encabezado compacto en el celular */
   .brand h1{white-space:nowrap;}
   @media(max-width:480px){
@@ -572,6 +587,7 @@
 
     <div class="acciones-titulo">¿Qué querés hacer?</div>
     <div class="acciones" id="acciones"></div>
+    <div id="panel-stock-alerta"></div>
 
     <div class="panel-section" id="caja-hoy-card">
       <h3>💰 Caja de hoy</h3>
@@ -974,13 +990,14 @@ function montarSector(key){
     <div class="subtabs">
       <div class="subtab active c-cantina" data-sub="caja" onclick="cambiarSubtab('cantina','caja',this)">💵 Caja del turno</div>
       <div class="subtab c-cantina" data-sub="comanda" onclick="cambiarSubtab('cantina','comanda',this)">🧾 Comanda</div>
+      <div class="subtab c-cantina" data-sub="stock" onclick="cambiarSubtab('cantina','stock',this)">📦 Stock</div>
     </div>` : ''}
     <div class="subview active" id="${key}-sub-reservas">
       ${key==='eventos' ? `<div id="eventos-proximos"></div>` : ''}
       <div id="${key}-agenda" style="margin-top:${key==='eventos'?'18px':'0'};"></div>
     </div>
     ${key==='cancha' ? `<div class="subview" id="cancha-sub-fijos"></div>` : ''}
-    ${key==='cantina' ? `<div class="subview" id="cantina-sub-comanda"></div>` : ''}
+    ${key==='cantina' ? `<div class="subview" id="cantina-sub-comanda"></div><div class="subview" id="cantina-sub-stock"></div>` : ''}
   `;
   document.getElementById(key+'-fecha').value = hoyISO();
 }
@@ -1048,16 +1065,17 @@ function selMetodo(key, el){
 function cambiarSubtab(key, sub, el){
   el.parentElement.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  const mapaVistas = key==='cancha' ? {reservas:'cancha-sub-reservas', fijos:'cancha-sub-fijos'} : {caja:'cantina-sub-reservas', comanda:'cantina-sub-comanda'};
+  const mapaVistas = key==='cancha' ? {reservas:'cancha-sub-reservas', fijos:'cancha-sub-fijos'} : {caja:'cantina-sub-reservas', comanda:'cantina-sub-comanda', stock:'cantina-sub-stock'};
   Object.values(mapaVistas).forEach(id=> document.getElementById(id).classList.remove('active'));
   document.getElementById(mapaVistas[sub]).classList.add('active');
   if(key==='cancha' && sub==='fijos') renderTurnosFijos();
   if(key==='cantina' && sub==='comanda') renderComandaMesas();
+  if(key==='cantina' && sub==='stock') renderStock();
   if(key==='cantina'){
     const b = document.getElementById('btn-nuevo-cantina');
     const f = document.getElementById('form-cantina');
-    if(b) b.style.display = (sub==='comanda' || f.classList.contains('open')) ? 'none' : '';
-    if(sub==='comanda' && f.classList.contains('open')) toggleForm('cantina');
+    if(b) b.style.display = (sub!=='caja' || f.classList.contains('open')) ? 'none' : '';
+    if(sub!=='caja' && f.classList.contains('open')) toggleForm('cantina');
   }
 }
 
@@ -1377,6 +1395,16 @@ function renderPanel(){
   document.getElementById('caja-hoy-nota').textContent = modoDueno() ? ''
     : (turnoActual ? `Turno abierto: ${turnoActual.responsable}` : 'Abrí tu turno (arriba) para ver la caja de hoy.');
 
+  // Aviso de reposición de cantina (solo para quien usa la cantina)
+  const alertaStock = document.getElementById('panel-stock-alerta');
+  if(alertaStock){
+    const rolActual = turnoActual && turnoActual.rol;
+    const veCantina = !rolActual || (ROLES[rolActual] && ROLES[rolActual].tabs.includes('cantina'));
+    const reponer = veCantina ? productosConStock().filter(p=> p.quedan <= (p.info.min||0)) : [];
+    alertaStock.innerHTML = reponer.length
+      ? `<div class="stock-alerta" style="cursor:pointer;" onclick="irA('cantina');cambiarSubtab('cantina','stock',document.querySelector('#v-cantina .subtab[data-sub=stock]'))">📦 Hay que reponer: ${reponer.map(p=>`<b>${p.nombre}</b> (${p.quedan<=0?'sin stock':'quedan '+p.quedan})`).join(', ')} →</div>` : '';
+  }
+
   // Próximos en agenda (eventos + cancha con fecha >= hoy)
   const proximos = [].concat(
     (datos.eventos||[]).map(x=>({...x, sector:'eventos'})),
@@ -1434,6 +1462,7 @@ async function cargarTodo(){
       renderPanel();
       ['eventos','cancha','cantina'].forEach(renderSector);
       renderGastos();
+      if(document.getElementById('cantina-sub-stock')?.classList.contains('active')) renderStock();
     } else {
       document.getElementById('sync-texto').textContent='Error: '+(json.error||'desconocido');
     }
@@ -1969,6 +1998,8 @@ async function guardarTodosLosPrecios(){
     const cat = inp.dataset.cat, idx = parseInt(inp.dataset.idx);
     if(carta[cat] && carta[cat][idx]) carta[cat][idx][1] = parseFloat(inp.value)||0;
   });
+  const remota = await traerCartaRemota();
+  if(remota) traerStockDe(remota);
   localStorage.setItem('aldea_carta', JSON.stringify(carta));
   localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
   document.querySelectorAll('#precios-cats input.modificado').forEach(i=>i.classList.remove('modificado'));
@@ -2007,6 +2038,157 @@ async function cargarPreciosDesdeSheets(){
       badge.textContent='usando valores locales';
     }
   }catch(e){ if(badge) badge.textContent='sin conexión'; }
+}
+
+/* ═══════════════════════════════════════════════
+   STOCK DE CANTINA
+   Cada producto con control de stock guarda en la carta (tercer elemento)
+   { s: unidades contadas, d: cuándo se contaron (ISO), min: aviso de reposición }.
+   Lo que queda = s − lo vendido en la Comanda desde d. Las ventas salen de los
+   cobros de cantina ("2x Coca Cola, 1x Agua"), así funciona en todos los
+   dispositivos sin cambiar el Google Sheet. Solo se escribe la carta al cargar
+   mercadería o hacer un recuento, nunca en cada venta.
+   ═══════════════════════════════════════════════ */
+let _ventasCache = { n:-1, lista:[] };
+function ventasCantina(){
+  const regs = datos.cantina || [];
+  if(_ventasCache.n === regs.length) return _ventasCache.lista;
+  const lista = [];
+  regs.forEach(r=>{
+    if(!r.obs || !r.creado) return;
+    const t = new Date(r.creado).getTime();
+    const re = /(\d+)x (.+?)(?=, \d+x |$)/g; let m;
+    while((m = re.exec(String(r.obs)))) lista.push({ t, nombre: m[2].trim().toLowerCase(), qty: parseInt(m[1]) });
+  });
+  _ventasCache = { n: regs.length, lista };
+  return lista;
+}
+function stockActual(nombre, info, ventas){
+  const desde = new Date(info.d).getTime(), n = nombre.toLowerCase();
+  const vendidas = ventas.reduce((a,v)=> a + (v.nombre===n && v.t > desde ? v.qty : 0), 0);
+  return (Number(info.s)||0) - vendidas;
+}
+function productosConStock(){
+  const ventas = ventasCantina(), out = [];
+  Object.entries(carta).forEach(([cat,items])=> items.forEach((it,idx)=>{
+    if(it[2]) out.push({ cat, idx, nombre: it[0], info: it[2], quedan: stockActual(it[0], it[2], ventas) });
+  }));
+  return out;
+}
+async function traerCartaRemota(){
+  const url = getUrl(); if(!url) return null;
+  try{
+    const data = await (await fetch(url + '?tipo=precios&t=' + Date.now())).json();
+    if(data.ok && data.items && data.items.length) return JSON.parse(data.items[data.items.length-1].cartaJSON);
+  }catch(e){}
+  return null;
+}
+/* Copia a la carta local los datos de stock más nuevos de otra carta. */
+function traerStockDe(otra){
+  Object.entries(otra).forEach(([cat,items])=> (items||[]).forEach(it=>{
+    if(!it[2] || !carta[cat]) return;
+    const local = carta[cat].find(x=> x[0]===it[0]);
+    if(local && (!local[2] || new Date(it[2].d) > new Date(local[2].d))) local[2] = it[2];
+  }));
+}
+/* Trae la carta más nueva, aplica el cambio y la guarda para todos. */
+async function cambiarStock(cat, nombre, cambio, textoOk){
+  const remota = await traerCartaRemota();
+  if(remota) traerStockDe(remota);
+  const item = (carta[cat]||[]).find(x=> x[0]===nombre);
+  if(!item){ toast('No encontré ese producto en la carta.', 'err'); return; }
+  cambio(item);
+  localStorage.setItem('aldea_carta', JSON.stringify(carta));
+  localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+  renderStock();
+  const url = getUrl();
+  if(!url){ toast(textoOk + ' (solo en este dispositivo)'); return; }
+  try{
+    const j = await (await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) })).json();
+    toast(j.ok ? textoOk : '❌ '+j.error, j.ok ? 'ok' : 'err');
+  }catch(e){ toast('⚠️ Sin conexión: quedó guardado solo en este dispositivo', 'err'); }
+}
+function ingresoStock(cat, idx){
+  const it = carta[cat][idx];
+  const n = parseInt(prompt(`📦 ${it[0]}\n¿Cuántas unidades entraron?`, ''));
+  if(!(n>0)) return;
+  cambiarStock(cat, it[0], item=>{
+    const actual = stockActual(item[0], item[2], ventasCantina());
+    item[2] = { ...item[2], s: actual + n, d: new Date().toISOString() };
+  }, `✅ Sumadas ${n} unidades de ${it[0]}`);
+}
+function recuentoStock(cat, idx){
+  const it = carta[cat][idx];
+  const actual = stockActual(it[0], it[2], ventasCantina());
+  const v = prompt(`🔢 ${it[0]}\nEl sistema dice que quedan ${actual}.\n¿Cuántas hay de verdad? (contalas)`, '');
+  if(v===null || v.trim()==='' || isNaN(parseInt(v)) || parseInt(v)<0) return;
+  const n = parseInt(v);
+  cambiarStock(cat, it[0], item=>{ item[2] = { ...item[2], s: n, d: new Date().toISOString() }; },
+    `✅ ${it[0]}: ahora hay ${n}${n!==actual ? ` (el sistema decía ${actual})` : ''}`);
+}
+function quitarDelStock(cat, idx){
+  const it = carta[cat][idx];
+  if(!confirm(`¿Dejar de controlar el stock de "${it[0]}"? El producto sigue en la carta.`)) return;
+  cambiarStock(cat, it[0], item=>{ item.length = 2; }, `Listo: ${it[0]} ya no lleva control de stock`);
+}
+function sumarAlStock(){
+  const [cat, idx] = document.getElementById('st-prod').value.split('|');
+  const cant = parseInt(document.getElementById('st-cant').value);
+  const min = parseInt(document.getElementById('st-min').value) || 0;
+  if(cat===undefined || idx===undefined){ toast('Elegí un producto.', 'err'); return; }
+  if(isNaN(cant) || cant<0){ toast('Poné cuántas unidades hay ahora.', 'err'); return; }
+  const nombre = carta[cat][idx][0];
+  cambiarStock(cat, nombre, item=>{ item[2] = { s: cant, d: new Date().toISOString(), min }; }, `✅ ${nombre} ahora lleva control de stock`);
+}
+function cambiarMinimo(cat, idx){
+  const it = carta[cat][idx];
+  const v = prompt(`Avisar para reponer "${it[0]}" cuando queden… (unidades)`, it[2].min||0);
+  if(v===null || isNaN(parseInt(v))) return;
+  cambiarStock(cat, it[0], item=>{ item[2] = { ...item[2], min: Math.max(0, parseInt(v)) }; }, '✅ Aviso de reposición actualizado');
+}
+function renderStock(){
+  const host = document.getElementById('cantina-sub-stock');
+  if(!host) return;
+  const prods = productosConStock();
+  const puedeQuitar = !(turnoActual && turnoActual.rol === 'cantina');
+  const reponer = prods.filter(p=> p.quedan <= (p.info.min||0));
+  const sinControl = [];
+  Object.entries(carta).forEach(([cat,items])=> items.forEach((it,idx)=>{ if(!it[2]) sinControl.push({cat, idx, nombre: it[0]}); }));
+
+  let html = '';
+  if(reponer.length) html += `<div class="stock-alerta">⚠️ Hay que reponer: ${reponer.map(p=>`<b>${p.nombre}</b> (${p.quedan<=0?'sin stock':'quedan '+p.quedan})`).join(', ')}</div>`;
+  if(!prods.length){
+    html += `<div class="vacio"><div class="vi">📦</div>Todavía no hay productos con control de stock.<br>Sumalos abajo: elegí el producto y poné cuántos hay ahora.</div>`;
+  } else {
+    let catPrev = '';
+    prods.sort((a,b)=> Object.keys(carta).indexOf(a.cat)-Object.keys(carta).indexOf(b.cat)).forEach(p=>{
+      if(p.cat!==catPrev){ html += `<div class="precio-cat-head">${CAT_EMOJI[p.cat]||'🍽️'} ${p.cat}</div>`; catPrev = p.cat; }
+      const est = p.quedan<=0 ? 'cero' : p.quedan<=(p.info.min||0) ? 'bajo' : '';
+      const desde = new Date(p.info.d);
+      html += `<div class="stock-item">
+        <div class="stock-num ${est}">${p.quedan}</div>
+        <div class="si-body">
+          <div class="si-nom">${p.nombre}</div>
+          <div class="si-sub">Contado ${fechaCorta(p.info.d.slice(0,10)).toLowerCase()} ${desde.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})} · <span style="text-decoration:underline;cursor:pointer;" onclick="cambiarMinimo('${p.cat}',${p.idx})">avisar con ${p.info.min||0}</span>${puedeQuitar?` · <span style="text-decoration:underline;cursor:pointer;" onclick="quitarDelStock('${p.cat}',${p.idx})">quitar</span>`:''}</div>
+        </div>
+        <div class="si-acc">
+          <button class="stock-btn mas" onclick="ingresoStock('${p.cat}',${p.idx})" title="Entró mercadería">＋ Entró</button>
+          <button class="stock-btn" onclick="recuentoStock('${p.cat}',${p.idx})" title="Contar lo que hay">Contar</button>
+        </div>
+      </div>`;
+    });
+  }
+  html += `<div class="panel-section" style="margin-top:16px;">
+    <h3>＋ Controlar el stock de un producto</h3>
+    <div class="field"><label>Producto</label><select id="st-prod">${sinControl.map(p=>`<option value="${p.cat}|${p.idx}">${CAT_EMOJI[p.cat]||''} ${p.nombre}</option>`).join('')}</select></div>
+    <div class="row2">
+      <div class="field"><label>¿Cuántos hay ahora?</label><input type="number" id="st-cant" min="0" inputmode="numeric" placeholder="ej: 24"/></div>
+      <div class="field"><label>Avisar cuando queden</label><input type="number" id="st-min" min="0" inputmode="numeric" placeholder="ej: 6"/></div>
+    </div>
+    <button class="btn btn-cantina" onclick="sumarAlStock()">Empezar a controlar</button>
+  </div>
+  <div class="ayuda" style="margin-top:10px;">Cada venta cobrada en la <b>Comanda</b> descuenta sola. Cuando llega mercadería tocá <b>＋ Entró</b>; si querés corregir, tocá <b>Contar</b> y poné lo que hay de verdad.</div>`;
+  host.innerHTML = html;
 }
 
 function guardarMesas(){ localStorage.setItem('aldea_mesas', JSON.stringify(mesas)); }
@@ -2114,14 +2296,19 @@ function renderProdGrid(cat){
     host.innerHTML = `<div class="vacio" style="grid-column:1/-1;padding:26px 10px;"><div class="vi">🔍</div>Sin resultados${busquedaProd?' para "'+busquedaProd+'"':''}.</div>`;
     return;
   }
+  const vendidos = ventasCantina();
   host.innerHTML = entradas.map(([c,idx,nombre,precio])=>{
     const key = c+'_'+idx;
     const qty = m.items[key]?.qty || 0;
-    return `<div class="prod-btn ${qty>0?'activo':''}" onclick="agregarProducto('${c}',${idx},'${nombre.replace(/'/g,"\\'")}',${precio})">
+    const info = carta[c][idx][2];
+    const quedan = info ? stockActual(nombre, info, vendidos) - qty : null;
+    const est = quedan===null ? '' : quedan<=0 ? 'cero' : quedan<=(info.min||0) ? 'bajo' : '';
+    return `<div class="prod-btn ${qty>0?'activo':''} ${quedan!==null&&quedan<=0&&qty===0?'sin-stock':''}" onclick="agregarProducto('${c}',${idx},'${nombre.replace(/'/g,"\\'")}',${precio})">
       ${qty>0?`<div class="qty-badge">${qty}</div>`:''}
       <div class="prod-emoji">${CAT_EMOJI[c]||'🍽️'}</div>
       <div class="prod-nombre">${nombre}</div>
       <div class="prod-precio">${fmt(precio)}${busquedaProd?` · ${c}`:''}</div>
+      ${quedan!==null ? `<div class="prod-stock ${est}">${quedan<=0?'Sin stock':'Quedan '+quedan}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -2130,6 +2317,10 @@ function agregarProducto(cat, idx, nombre, precio){
   const m = mesaObj();
   const key = cat+'_'+idx;
   if(!m.items[key]) m.items[key] = {nombre, precio, qty:0};
+  const info = carta[cat] && carta[cat][idx] && carta[cat][idx][2];
+  if(info && stockActual(nombre, info, ventasCantina()) - m.items[key].qty <= 0){
+    toast(`⚠️ Según el sistema no queda ${nombre}. Si hay, avisá para corregir el stock.`, 'err');
+  }
   m.items[key].qty++;
   if(mesaActual!==-1) guardarMesas();
   renderProdGrid(catActual); renderTicket();
