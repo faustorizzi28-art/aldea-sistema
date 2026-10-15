@@ -96,7 +96,7 @@ const CONFIG = {
     { foto: 'ev-arco.jpg', texto: 'Rincón para fotos' },
     { foto: 'ev-mesa-limones.jpg', texto: 'Mesas al sol en el patio' },
     { foto: 'ev-mesa-dulce.jpg', texto: 'Mesa dulce' },
-    { foto: 'ev-livings.jpg', texto: 'Livings al aire libre' },
+    { foto: 'ev-livings.jpg', texto: 'Espacios al aire libre' },
     { foto: 'ev-fogon.jpg', texto: 'Fogón de noche' },
     { foto: 'ev-deco-noche.jpg', texto: 'Ambientación boho' },
     { foto: 'ev-mesa-patio.jpg', texto: 'Patio de piedra' },
@@ -138,7 +138,7 @@ const CONFIG = {
   ],
   modalidades: {
     barra: { nombre: 'Espacio + crédito de barra', destacado: true,
-             detalle: 'Pagás un espacio reducido y el resto queda como crédito para tragos y bebidas en la barra de Aldea. Se usa durante el evento y lo que sobra no se devuelve. Barman incluido.' },
+             detalle: 'Pagás un espacio reducido y el resto queda como crédito para tragos y bebidas en la barra de Aldea. Es solo para bebidas (no comida ni kiosco), se usa durante el evento y lo que sobra no se devuelve. Barman incluido.' },
     barralibre: { nombre: 'Espacio + barra libre', detalle: 'Barra libre de tragos y bebidas por persona durante el evento. Barman incluido.' },
     alquiler: { nombre: 'Solo el espacio', detalle: 'Alquilás el espacio y las bebidas se compran en la cantina durante el evento.' },
     almuerzo: { nombre: 'Jornada con almuerzo', detalle: 'Uso del predio + almuerzo (2 hamburguesas y gaseosa) por alumno.' },
@@ -151,8 +151,8 @@ const CONFIG = {
       tipos: ['infantil', 'adultos', 'bautismo', 'babyshower', 'recibida', 'empresa'] },
     { id: 'barman', nombre: 'Barman', precio: 'barman', max: 2, detalle: 'Por barman, hasta 4 horas', incluidoEn: ['barra', 'barralibre'],
       tipos: ['adultos', 'bautismo', 'babyshower', 'recibida', 'quince', 'boda', 'empresa'] },
-    { id: 'parrillero', nombre: 'Parrillero', precio: 'parrillero', max: 2, detalle: 'Vos traés la carne, él se encarga',
-      tipos: ['infantil', 'adultos', 'bautismo', 'recibida', 'asado', 'empresa'] },
+    { id: 'parrillero', nombre: 'Parrillero (opcional)', precio: 'parrillero', max: 2, detalle: 'Las parrillas las podés usar vos libremente. Si preferís, te asamos nosotros',
+      tipos: ['infantil', 'adultos', 'bautismo', 'babyshower', 'recibida', 'asado', 'empresa'] },
     { id: 'fogonero', nombre: 'Fogonero', precio: 'fogonero', max: 1, detalle: 'Fogón prendido y cuidado toda la noche',
       tipos: ['adultos', 'bautismo', 'recibida', 'asado', 'quince', 'boda', 'empresa'] },
     { id: 'cuidacoches', nombre: 'Cuidacoches', precio: 'cuidacoches', max: 2, detalle: 'Por persona',
@@ -201,16 +201,18 @@ const CONFIG = {
     ] },
     { titulo: 'Bebidas y crédito de barra (vouchers)', items: [
       'Las bebidas son exclusivamente de la barra y la cantina de Aldea. No se permite ingresar bebidas.',
-      'El crédito de barra (vouchers) se consume solo dentro del horario del evento.',
+      'El crédito de barra (vouchers) es solo para bebidas: no incluye comida ni productos del kiosco.',
+      'El crédito de barra se consume solo dentro del horario del evento.',
       'El crédito que no se consume NO se devuelve, no se canjea por dinero ni se pasa a otra fecha.',
       'Si el crédito se termina, se puede seguir consumiendo abonando en el momento.',
       'La barra libre rige durante el horario contratado.',
       'No se vende ni se sirve alcohol a menores de 18 años. Promovemos el consumo responsable.'
     ] },
     { titulo: 'Qué incluye el espacio', items: [
-      'Aldea cuenta con vajilla, manteles y mobiliario (mesas, sillas, bancos y livings) para la cantidad de personas contratada. Si necesitás algo especial, consultanos.',
+      'Aldea cuenta con vajilla, manteles y mobiliario (mesas, sillas y bancos) para la cantidad de personas contratada. Si necesitás algo especial, consultanos.',
       'Incluye encargado durante el evento, limpieza antes y después, baños y estacionamiento.',
-      'Podés traer tu comida, la torta o contratar catering. El asador se usa con el parrillero o el encargado de Aldea.',
+      'Podés traer tu comida, la torta o contratar catering.',
+      'Si alquilás el quincho o un sector con parrilla, podés usar las parrillas libremente. El parrillero es opcional y se contrata aparte.',
       'La comida de la cantina (panchos, pizzas, empanadas) se encarga con al menos 48 hs de anticipación.'
     ] },
     { titulo: 'Cuidado del predio', items: [
@@ -704,14 +706,16 @@ function cotizar(d, P, C, cod) {
     espacio = P.infantilBase;
     txtEsp = 'Cumple infantil · hasta ' + P.infantilChicosIncluidos + ' chicos · ' + hs(T.duracion);
     incluye.push('6 gaseosas', 'Encargado durante el cumple', 'Limpieza antes y después', 'Uso de la cancha');
+    if (d.sector === 'quincho' || d.sector === 'patio' || d.sector === 'predio') incluye.push('Uso libre de las parrillas');
   } else if (T.tarifa === 'social' || T.tarifa === 'formal') {
     if (mod === 'alquiler' || T.tarifa === 'formal') { espacio = tramo(n); txtEsp = 'Alquiler del espacio · ' + n + ' personas · ' + hs(T.duracion); }
     else { espacio = P.barraAlquiler; txtEsp = 'Espacio · ' + hs(T.duracion); }
     incluye.push('Encargado durante el evento', 'Limpieza antes y después', 'Vajilla');
+    if (d.sector === 'quincho' || d.sector === 'patio' || d.sector === 'predio') incluye.push('Uso libre de las parrillas');
     if (mod === 'barra' || mod === 'barralibre') incluye.push('Barman');
   } else if (T.tarifa === 'asado') {
     txtEsp = 'Espacio sin cargo de lunes a jueves · consumo en la cantina';
-    incluye.push('Uso del asador', 'Consumo en la cantina de Aldea');
+    incluye.push('Uso libre de las parrillas', 'Consumo en la cantina de Aldea');
     if (fecha && !lunJue) avisos.push('El asado sin cargo es de lunes a jueves. Para viernes a domingo elegí "Cumple de adultos".');
   }
   if (T.tarifa !== 'escuela') add(txtEsp, espacio);
@@ -736,7 +740,7 @@ function cotizar(d, P, C, cod) {
   }
   if (mod === 'barra') {
     var cred = Math.max(P.barraCreditoMinimo, n * P.barraCreditoPorPersona);
-    add('Crédito de barra (tragos y bebidas)', cred, 'Se consume durante el evento · lo que sobra no se devuelve');
+    add('Crédito de barra (solo bebidas)', cred, 'Se consume durante el evento · lo que sobra no se devuelve');
   }
   if (mod === 'barralibre') add('Barra libre · ' + n + ' personas', n * P.barraLibrePorPersona, plata(P.barraLibrePorPersona) + ' por persona');
   if (T.tarifa === 'escuela') {
