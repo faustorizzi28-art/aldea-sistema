@@ -1,0 +1,10 @@
+{
+  "titulo": "Lo que el karate me enseñó",
+  "escenas": [
+    { "tipo": "gancho", "texto": "La gente ve el cinturón. Nadie ve las caídas.", "destacar": "caídas", "foto": "clase-karate.jpg", "segundos": 3.5 },
+    { "texto": "Años de repetir el mismo movimiento hasta que sale solo.", "destacar": "repetir", "foto": "kickboxing.jpg", "segundos": 3.5 },
+    { "texto": "Días de no tener ganas. Y entrenar igual.", "destacar": "igual", "foto": "jiujitsu.jpg", "segundos": 3 },
+    { "texto": "Eso es lo que hoy les enseño a los chicos en Bunkai Dojo.", "destacar": "chicos", "foto": "clase-chicos.jpg", "segundos": 3.5 },
+    { "tipo": "cierre", "texto": "Un día sin movimiento es un día perdido.", "destacar": "movimiento", "segundos": 3.5 }
+  ]
+}
