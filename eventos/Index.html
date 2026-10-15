@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aldea de Valle · Eventos</title>
+<meta name="description" content="Cotizá y reservá tu evento en Aldea de Valle: cumples, celebraciones, 15, casamientos y empresas. Valle Escondido, Córdoba.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232F4A38'/%3E%3Cpath d='M50 33 L77 79 L70.5 79 L69 74.5 L54.5 74.5 L53.5 65 L47 65 L46 74.5 L31 74.5 L29.5 79 L23 79 Z' fill='%23F2CA11'/%3E%3Cpath d='M39.4 18.6 L42.9 17 L52.5 38 L49 39.6 Z' fill='%23F2CA11'/%3E%3Cpath d='M60.6 18.6 L57.1 17 L47.5 38 L51 39.6 Z' fill='%23F2CA11'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#2F4A38;--verde-osc:#22382A;--crema:#F4EFE3;--crema-2:#EAE3D2;--mostaza:#F2CA11;--terracota:#B4552F;--gris:#5C6E5C;--linea:#DCD5C3;--blanco:#FFFDF8;--ok:#2E7D4F;--radio:18px}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--crema);color:var(--verde);font-family:Archivo,system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Instrument Serif',Georgia,serif;font-weight:400;line-height:1.02;margin:0;letter-spacing:-.01em}
+  a{color:var(--verde)}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px}
+  .demo{background:var(--terracota);color:#fff;font-size:13px;text-align:center;padding:7px 12px;display:none}
+
+  /* ===== portada ===== */
+  .hero{position:relative;min-height:440px;color:var(--crema);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;background:var(--verde)}
+  .hero .foto{position:absolute;inset:0;background:center/cover no-repeat}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(34,56,42,.75) 0%,rgba(34,56,42,.35) 40%,rgba(28,44,33,.95) 100%)}
+  .hero .in{position:relative;z-index:1;padding:20px 16px 30px;max-width:680px;margin:0 auto;width:100%}
+  .marca{position:absolute;top:18px;left:0;right:0;z-index:1;max-width:680px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+  .marca span{font-family:'Instrument Serif',serif;font-size:26px}
+  .eyebrow{display:inline-block;color:var(--mostaza);font-weight:700;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+  .hero h1{font-size:clamp(44px,12vw,68px);margin:10px 0 10px}
+  .hero h1 em{color:var(--mostaza)}
+  .hero p{margin:0 0 18px;font-size:17px;max-width:480px;opacity:.95}
+  .cta-row{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:999px;padding:14px 22px;font-weight:800;font-size:15px;cursor:pointer;min-height:50px;text-decoration:none;transition:transform .12s,background .15s}
+  .btn:active{transform:scale(.98)}
+  .btn.amarillo{background:var(--mostaza);color:var(--verde)}
+  .btn.borde{background:transparent;color:var(--crema);box-shadow:inset 0 0 0 1.5px rgba(244,239,227,.7)}
+  .btn.verde{background:var(--verde);color:var(--crema)}
+  .btn.terracota{background:var(--terracota);color:#fff}
+  .btn.claro{background:var(--crema-2);color:var(--verde)}
+  .btn.wa{background:#25D366;color:#0A2B14}
+  .btn.ancho{display:flex;width:100%;margin-top:12px}
+  .btn:disabled{opacity:.55;cursor:wait}
+
+  .franja{background:var(--mostaza);color:var(--verde);font-weight:700;font-size:14px}
+  .franja .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;padding-top:10px;padding-bottom:10px}
+
+  /* ===== espacios ===== */
+  .sec-t{margin:34px 0 4px;font-size:36px}
+  .sec-s{color:var(--gris);margin:0 0 14px}
+  .espacios{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 16px 12px;margin:0 -16px}
+  .esp{flex:0 0 230px;scroll-snap-align:start;background:var(--blanco);border-radius:16px;overflow:hidden;border:1px solid var(--linea)}
+  .esp .img{height:140px;background:center/cover no-repeat var(--crema-2)}
+  .esp div.t{padding:12px 14px 14px}
+  .esp b{display:block;font-size:15px;line-height:1.25}
+  .esp small{display:block;color:var(--gris);font-size:13px;margin-top:4px;line-height:1.35}
+  .cap{display:inline-block;margin-top:8px;background:var(--crema);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800}
+
+  /* ===== asistente ===== */
+  #armador{scroll-margin-top:10px}
+  .progreso{display:flex;gap:6px;margin:22px 0 6px}
+  .progreso span{flex:1;height:6px;border-radius:6px;background:var(--linea);transition:.3s}
+  .progreso span.on{background:var(--verde)}
+  .card{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:22px 18px;margin:12px 0;box-shadow:0 16px 34px -26px rgba(47,74,56,.55)}
+  .paso-num{color:var(--terracota);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.2em}
+  .card h2{font-size:36px;margin:4px 0 6px}
+  .sub{color:var(--gris);margin:0 0 12px;font-size:15px}
+  .paso{display:none}
+  .paso.on{display:block;animation:ap .3s cubic-bezier(.16,1,.3,1)}
+  @keyframes ap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .tipos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tipo{position:relative;text-align:left;border:2px solid var(--linea);background:#fff;border-radius:16px;padding:14px 12px;cursor:pointer;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+  .tipo .em{font-size:26px;line-height:1}
+  .tipo b{font-size:15px;line-height:1.2}
+  .tipo small{font-size:12px;color:var(--gris);font-weight:600}
+  .tipo.sel{border-color:var(--verde);background:var(--verde);color:var(--crema)}
+  .tipo.sel small{color:var(--mostaza)}
+
+  label.q{display:block;font-weight:700;margin:18px 0 8px;font-size:15px}
+  label.q small{font-weight:500;color:var(--gris)}
+  .req::after{content:" *";color:var(--terracota)}
+  input[type=text],input[type=tel],input[type=email],input[type=number],textarea,select{width:100%;padding:13px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;background:#fff;color:var(--verde)}
+  textarea{min-height:84px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(47,74,56,.15)}
+  .err{border-color:var(--terracota)!important;background:#FFF5F0}
+  .fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--linea);background:#fff;border-radius:999px;padding:10px 15px;font-size:14px;font-weight:700;cursor:pointer}
+  .chip.sel{background:var(--verde);border-color:var(--verde);color:var(--crema)}
+  .contador{display:flex;align-items:center;gap:12px}
+  .contador button{width:52px;height:52px;border-radius:50%;border:none;background:var(--verde);color:var(--crema);font-size:26px;font-weight:800;cursor:pointer;flex:none}
+  .contador input{text-align:center;font-size:28px;font-weight:800;padding:8px}
+
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
+  .cal-head b{font-family:'Instrument Serif',serif;font-weight:400;font-size:28px;text-transform:capitalize}
+  .navbtn{border:none;background:var(--crema);color:var(--verde);width:44px;height:44px;border-radius:50%;font-size:22px;cursor:pointer;font-weight:800}
+  .navbtn:disabled{opacity:.3;cursor:default}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+  .cal .dow{font-size:12px;color:var(--gris);font-weight:800;padding:4px 0}
+  .dia{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--linea);background:#fff;font-weight:700;cursor:pointer;position:relative;padding:0}
+  .dia.libre::after,.dia.pocos::after{content:"";position:absolute;bottom:5px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--ok)}
+  .dia.pocos::after{background:#E0A100}
+  .dia.lleno,.dia.off{background:var(--crema);color:#B9B29F;cursor:not-allowed;border-color:var(--crema)}
+  .dia.lleno{text-decoration:line-through}
+  .dia.sel{background:var(--verde);color:var(--crema);border-color:var(--verde)}
+  .dia.sel::after{background:var(--mostaza)}
+  .leyenda{display:flex;gap:14px;font-size:13px;color:var(--gris);margin-top:12px;flex-wrap:wrap}
+  .leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+
+  .sectores{display:grid;gap:10px}
+  .sector{display:flex;gap:12px;align-items:stretch;text-align:left;border:2px solid var(--linea);background:#fff;border-radius:16px;padding:10px;cursor:pointer}
+  .sector .img{flex:0 0 84px;border-radius:12px;background:center/cover no-repeat var(--crema-2);min-height:72px}
+  .sector b{display:block;font-size:15px;line-height:1.25}
+  .sector small{display:block;color:var(--gris);font-size:13px;line-height:1.35;margin-top:3px}
+  .sector .cap{margin-top:6px}
+  .sector.sel{border-color:var(--verde);box-shadow:0 0 0 3px rgba(47,74,56,.15)}
+  .sector:disabled{opacity:.5;cursor:not-allowed}
+  .sector .no{color:var(--terracota);font-weight:800;font-size:12px}
+
+  .horas{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+  .hora{padding:12px 0;border-radius:12px;border:1.5px solid var(--linea);background:#fff;font-weight:700;cursor:pointer}
+  .hora.sel{background:var(--verde);color:var(--crema);border-color:var(--verde)}
+  .hora:disabled{background:var(--crema);color:#B9B29F;border-color:var(--crema);cursor:not-allowed;text-decoration:line-through}
+
+  .mod{display:block;width:100%;text-align:left;border:2px solid var(--linea);border-radius:16px;padding:14px 16px;margin:10px 0;cursor:pointer;background:#fff;position:relative}
+  .mod.sel{border-color:var(--verde);background:var(--verde);color:var(--crema)}
+  .mod .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .mod b{font-size:16px}
+  .mod .pr{font-family:'Instrument Serif',serif;font-size:26px;white-space:nowrap;line-height:1}
+  .mod p{margin:6px 0 0;font-size:14px;color:var(--gris)}
+  .mod.sel p{color:var(--crema);opacity:.9}
+  .badge{display:inline-block;background:var(--mostaza);color:var(--verde);font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.12em;margin-left:6px;vertical-align:middle}
+
+  .extra{display:flex;align-items:center;gap:12px;border:1.5px solid var(--linea);border-radius:14px;padding:11px 12px;margin:8px 0;background:#fff}
+  .extra.sel{border-color:var(--verde);background:#F1F5EF}
+  .ex-t{flex:1;min-width:0}
+  .ex-t b{font-size:15px}
+  .ex-t small{display:block;color:var(--gris);font-size:13px;line-height:1.3}
+  .ex-p{font-weight:800;font-size:13px;color:var(--terracota)}
+  .step{display:flex;align-items:center;gap:8px}
+  .step button{width:34px;height:34px;border-radius:50%;border:none;background:var(--verde);color:var(--crema);font-size:20px;font-weight:800;cursor:pointer;line-height:1}
+  .step b{min-width:22px;text-align:center}
+  .tag-inc{font-size:12px;font-weight:800;color:var(--ok)}
+  .toggle{display:flex;align-items:center;gap:12px;border:1.5px solid var(--linea);border-radius:14px;padding:12px;background:#fff;cursor:pointer;width:100%;text-align:left}
+  .toggle.sel{border-color:var(--verde);background:#F1F5EF}
+  .toggle i{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--verde);display:grid;place-items:center;font-style:normal;font-weight:800}
+  .toggle.sel i{background:var(--verde);color:var(--crema)}
+
+  .resumen{width:100%;border-collapse:collapse;margin-top:6px;font-size:15px}
+  .resumen td{padding:9px 0;border-bottom:1px dashed var(--linea);vertical-align:top}
+  .resumen td small{display:block;color:var(--gris);font-size:12px}
+  .resumen td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:10px}
+  .resumen td.neg{color:var(--ok)}
+  .resumen tr.total td{border:none;font-family:'Instrument Serif',serif;font-weight:400;font-size:34px;padding-top:14px}
+  .incluye{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .incluye span{background:var(--crema);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600}
+  .nota{font-size:14px;background:var(--crema);border-left:4px solid var(--mostaza);border-radius:10px;padding:12px 14px;margin-top:12px}
+  .nota.t{border-left-color:var(--terracota)}
+  .aviso{background:#FFF1E8;border:1px solid #F0C4A8;color:#7A3418;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px}
+  .check input{width:22px;height:22px;accent-color:var(--verde);flex:none;margin-top:1px}
+  .sena-box{background:var(--verde);color:var(--crema);border-radius:16px;padding:16px;margin-top:14px}
+  .sena-box .n{font-family:'Instrument Serif',serif;font-size:40px;line-height:1;color:var(--mostaza)}
+  .alias{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(244,239,227,.12);border-radius:12px;padding:10px 12px;margin-top:10px}
+  .alias b{font-size:18px;letter-spacing:.02em;word-break:break-all}
+  .alias button{border:none;background:var(--mostaza);color:var(--verde);border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer}
+  .india{background:#2B2320;color:#F6EBDD;border-radius:16px;padding:16px;margin-top:14px}
+  .india b{color:#F2CA11}
+  .ok-ico{width:76px;height:76px;border-radius:50%;background:var(--verde);color:var(--mostaza);font-size:38px;display:grid;place-items:center;margin:6px auto 14px}
+  .centro{text-align:center}
+  .solo-reserva,.solo-cita,.solo-infantil{display:none}
+  .modo-reserva .solo-reserva,.modo-cita .solo-cita,.es-infantil .solo-infantil{display:block}
+
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--verde-osc);color:var(--crema);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.18);z-index:10;transform:translateY(110%);transition:transform .25s}
+  .barra.on{transform:none}
+  .barra .in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .est{flex:1;min-width:0}
+  .est small{display:block;color:#C9D3C4;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em}
+  .est b{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;line-height:1}
+  .barra .atras{background:rgba(244,239,227,.12);color:var(--crema);width:50px;padding:0}
+  body.con-barra .wa-flot{display:none}
+  .wa-flot{position:fixed;right:16px;bottom:92px;width:54px;height:54px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(0,0,0,.4);z-index:9}
+  .testis{display:grid;gap:10px}
+  .testi{background:var(--blanco);border:1px solid var(--linea);border-radius:16px;padding:16px}
+  .testi p{margin:0 0 8px;font-family:'Instrument Serif',serif;font-size:21px;line-height:1.25}
+  .testi small{color:var(--gris);font-weight:700}
+  footer{padding:30px 0 130px;color:var(--gris);font-size:14px;text-align:center}
+  @media (max-width:380px){.horas{grid-template-columns:repeat(3,1fr)}.fila{grid-template-columns:1fr}}
+  @media print{.barra,.wa-flot,.hero,.franja,#espaciosSec,.progreso,.btn,footer,.demo{display:none!important}.paso{display:none!important}#p-resumen,#p-cita{display:block!important}.card{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+<div class="demo" id="demo">Modo demostración: podés probar todo, pero las reservas no se guardan.</div>
+
+<section class="hero">
+  <div class="foto" id="heroFoto"></div>
+  <div class="marca">
+    <svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 33 L77 79 L70.5 79 L69 74.5 L54.5 74.5 L53.5 65 L47 65 L46 74.5 L31 74.5 L29.5 79 L23 79 Z" fill="#F2CA11"/><path d="M39.4 18.6 L42.9 17 L52.5 38 L49 39.6 Z" fill="#F2CA11"/><path d="M60.6 18.6 L57.1 17 L47.5 38 L51 39.6 Z" fill="#F2CA11"/></svg>
+    <span>Aldea de Valle</span>
+  </div>
+  <div class="in">
+    <span class="eyebrow">Eventos · Valle Escondido, Córdoba</span>
+    <h1>Tu evento en la <em>Aldea</em></h1>
+    <p>Cotizá en un minuto, mirá las fechas libres y reservá con la seña. Sin esperar respuesta, sin vueltas.</p>
+    <div class="cta-row">
+      <a class="btn amarillo" href="#armador" id="ctaCotizar">Cotizar mi evento</a>
+      <button class="btn borde" type="button" id="ctaCita">Quiero conocer el lugar</button>
+    </div>
+  </div>
+</section>
+<div class="franja"><div class="wrap"><span>🌿 Varios espacios, varios eventos por día</span><span>🕑 Hasta las 2 a.m.</span><span>💸 Reservás con el 30%</span><span>📆 Reprogramás sin cargo</span></div></div>
+
+<main class="wrap">
+  <section id="espaciosSec">
+    <h2 class="sec-t">Elegí tu rincón</h2>
+    <p class="sec-s">Cada sector se reserva por separado. Si querés todo el predio para vos, también se puede.</p>
+    <div class="espacios" id="espacios"></div>
+  </section>
+
+  <section id="armador">
+    <div class="progreso" id="progreso"></div>
+
+    <!-- 1. Tipo -->
+    <div class="paso" id="p-tipo"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2>¿Qué festejás?</h2>
+      <p class="sub">Elegí el tipo de evento y te mostramos el precio al instante.</p>
+      <div class="tipos" id="tipos"></div>
+    </div></div>
+
+    <!-- 2. Personas -->
+    <div class="paso" id="p-personas"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2 id="tPersonas">¿Cuántos son?</h2>
+      <p class="sub" id="sPersonas">Un número aproximado está bien. Lo podés ajustar después.</p>
+      <div class="contador">
+        <button type="button" id="menos" aria-label="Menos">−</button>
+        <input type="number" id="personas" min="1" max="600" inputmode="numeric" aria-label="Cantidad">
+        <button type="button" id="mas" aria-label="Más">+</button>
+      </div>
+      <div class="chips" id="atajos" style="margin-top:12px"></div>
+      <div class="solo-infantil">
+        <label class="q" for="adultos">¿Y adultos acompañantes, más o menos? <small>(opcional)</small></label>
+        <input type="number" id="adultos" min="0" max="200" inputmode="numeric">
+      </div>
+      <div class="aviso" id="avisoPersonas" style="display:none"></div>
+    </div></div>
+
+    <!-- 3. Fecha, sector y horario -->
+    <div class="paso" id="p-fecha"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2 id="tFecha">¿Cuándo?</h2>
+      <p class="sub" id="sFecha">Los días con punto verde tienen lugar.</p>
+      <div class="solo-cita" style="margin-bottom:6px"><div class="chips"><button type="button" class="chip" id="sinFecha">Todavía no tengo fecha</button></div></div>
+      <div id="calWrap"></div>
+      <div id="sectorWrap" style="display:none">
+        <label class="q">¿Dónde?</label>
+        <div class="sectores" id="sectores"></div>
+      </div>
+      <div id="durWrap" style="display:none">
+        <label class="q">¿Cuánto dura?</label>
+        <div class="chips" id="duraciones"></div>
+      </div>
+      <div id="horasWrap" class="solo-reserva" style="display:none">
+        <label class="q">¿A qué hora empieza?</label>
+        <div class="horas" id="horas"></div>
+        <p class="sub" style="margin-top:10px;font-size:13px">Los eventos terminan como máximo a las 2 a.m.</p>
+      </div>
+    </div></div>
+
+    <!-- 4. Armado -->
+    <div class="paso" id="p-arma"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2>Armá tu evento</h2>
+      <p class="sub">Sumá lo que necesites. El precio se actualiza abajo.</p>
+      <div id="modsWrap"><label class="q">¿Cómo querés la bebida?</label><div id="mods"></div></div>
+      <div id="piletaWrap" style="display:none">
+        <label class="q">Verano</label>
+        <button type="button" class="toggle" id="pileta"><i>✓</i><span><b>Pileta + guardavidas</b><br><small id="piletaPrecio" style="color:var(--gris)"></small></span></button>
+      </div>
+      <div id="extrasWrap"><label class="q">Extras</label><div id="extras"></div></div>
+      <div id="indiaArma" class="india" style="display:none"></div>
+      <label class="q" for="codigo">¿Tenés un código? <small>(opcional)</small></label>
+      <div style="display:flex;gap:8px"><input type="text" id="codigo" autocomplete="off" style="text-transform:uppercase"><button type="button" class="btn claro" id="aplicarCodigo" style="min-height:48px;padding:0 16px">Aplicar</button></div>
+      <div id="codigoMsg" class="sub" style="margin-top:6px"></div>
+    </div></div>
+
+    <!-- 5. Datos -->
+    <div class="paso" id="p-datos"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2 id="tDatos">Tus datos</h2>
+      <p class="sub" id="sDatos">Para mandarte la confirmación y coordinar.</p>
+      <div id="tipoCitaWrap" style="display:none">
+        <label class="q">¿Qué evento estás pensando?</label>
+        <div class="chips" id="tipoCita"></div>
+      </div>
+      <label class="q req" for="nombre">Tu nombre y apellido</label>
+      <input type="text" id="nombre" autocomplete="name">
+      <div class="fila">
+        <div><label class="q req" for="whatsapp">WhatsApp</label><input type="tel" id="whatsapp" autocomplete="tel" placeholder="351 5308489"></div>
+        <div><label class="q" for="email">Email <small>(opcional)</small></label><input type="email" id="email" autocomplete="email"></div>
+      </div>
+      <div class="solo-reserva">
+        <div class="fila">
+          <div><label class="q" for="agasajado" id="lAgasajado">¿Quién festeja?</label><input type="text" id="agasajado"></div>
+          <div><label class="q" for="motivo" id="lMotivo">¿Cuántos cumple?</label><input type="text" id="motivo"></div>
+        </div>
+        <label class="q">Decoración</label>
+        <div class="chips" data-campo="decoracion">
+          <button type="button" class="chip">Entramos 1 hora antes</button>
+          <button type="button" class="chip">No hace falta</button>
+          <button type="button" class="chip">Necesitamos más tiempo</button>
+        </div>
+        <label class="q">Comida</label>
+        <div class="chips" data-campo="comida">
+          <button type="button" class="chip">La traemos nosotros</button>
+          <button type="button" class="chip">Usamos el asador</button>
+          <button type="button" class="chip">Queremos que nos coticen</button>
+        </div>
+        <div class="solo-infantil">
+          <label class="q">Animación</label>
+          <button type="button" class="toggle" id="glorin"><i>✓</i><span><b>Quiero profes animadores de GLORIN</b><br><small style="color:var(--gris)">Después de reservar te llevamos a elegir el paquete, con la fecha ya cargada.</small></span></button>
+        </div>
+        <label class="q">¿Cómo nos conociste?</label>
+        <div class="chips" data-campo="comoNosConocio">
+          <button type="button" class="chip">Instagram</button>
+          <button type="button" class="chip">Me recomendaron</button>
+          <button type="button" class="chip">Ya vine a la Aldea</button>
+          <button type="button" class="chip">Google</button>
+          <button type="button" class="chip">Otro</button>
+        </div>
+      </div>
+      <label class="q" for="comentarios" id="lComentarios">¿Algo más que tengamos que saber?</label>
+      <textarea id="comentarios"></textarea>
+    </div></div>
+
+    <!-- 6a. Resumen y reserva -->
+    <div class="paso" id="p-resumen"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2>Tu cotización</h2>
+      <p class="sub" id="resCuando"></p>
+      <table class="resumen" id="resTabla"></table>
+      <div class="incluye" id="resIncluye"></div>
+      <div id="resAvisos"></div>
+      <div class="sena-box">
+        <div style="font-weight:700">Para reservar la fecha</div>
+        <div class="n" id="resSena"></div>
+        <div style="font-size:14px;opacity:.9" id="resSaldo"></div>
+      </div>
+      <div class="nota" id="resCond"></div>
+      <label class="check"><input type="checkbox" id="acepto"> <span>Leí las condiciones y quiero reservar.</span></label>
+      <div class="aviso" id="resErr" style="display:none"></div>
+      <button type="button" class="btn claro ancho" id="btnPdf">📄 Descargar presupuesto en PDF</button>
+      <div id="pdfMsg" class="sub centro" style="margin-top:8px"></div>
+    </div></div>
+
+    <!-- 6b. Cita -->
+    <div class="paso" id="p-cita"><div class="card">
+      <div class="paso-num" data-num></div>
+      <h2>Vení a conocer la Aldea</h2>
+      <p class="sub" id="citaSub"></p>
+      <div id="citaEstim"></div>
+      <label class="q">Elegí el día <small>(lunes a viernes, desde las 18 h)</small></label>
+      <div class="chips" id="citaDias"></div>
+      <div id="citaHorasWrap" style="display:none"><label class="q">Horario</label><div class="horas" id="citaHoras"></div></div>
+      <div class="aviso" id="citaErr" style="display:none"></div>
+      <a class="btn wa ancho" id="citaWa" target="_blank" rel="noopener">💬 Prefiero escribir por WhatsApp</a>
+    </div></div>
+
+    <!-- 7. Listo -->
+    <div class="paso" id="p-listo"><div class="card centro" id="listo"></div></div>
+  </section>
+
+  <section id="testiSec" style="display:none">
+    <h2 class="sec-t">Lo que dicen</h2>
+    <div class="testis" id="testis"></div>
+  </section>
+</main>
+
+<footer>
+  Aldea de Valle · Valle Escondido, Córdoba<br>
+  <a id="footWa" target="_blank" rel="noopener">WhatsApp eventos</a> · <a id="footIndia" target="_blank" rel="noopener">@aldeaindia.eventos</a>
+</footer>
+
+<a class="wa-flot" id="waFlot" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
+</a>
+
+<div class="barra" id="barra"><div class="in">
+  <button type="button" class="btn atras" id="atras" aria-label="Volver">‹</button>
+  <div class="est"><small id="estLbl">Tu evento</small><b id="estTotal">—</b></div>
+  <button type="button" class="btn amarillo" id="siguiente">Siguiente</button>
+</div></div>
+
+<script>
+/* ==== DEMO (lo genera eventos/sincronizar.js desde Code.gs; no editar a mano) ==== */
+var CFG_DEMO = {"marca":"Aldea de Valle","whatsapp":"5493515308489","direccion":"Aldea de Valle · Valle Escondido, Córdoba","urlWeb":"","urlGlorin":"https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec","india":{"nombre":"Aldea India","whatsapp":"5493515119452","instagram":"aldeaindia.eventos","detalle":"Catering, DJ, ambientación y organización integral"},"pago":{"alias":"aldea.de.valle","banco":"","cbu":"","titular":"","linkMercadoPago":""},"porcentajeSena":30,"horasParaSenar":48,"diasAnticipacionMin":3,"diasHaciaAdelante":365,"horaResumenDiario":8,"bufferMin":60,"finMaximo":"02:00","validezPresupuestoDias":7,"horarios":["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30","21:00","21:30","22:00"],"sectores":[{"id":"quincho","nombre":"Quincho + cancha sintética","cap":40,"detalle":"Semicubierto con asador, pegado a la cancha de fútbol sintética. El clásico de los cumples.","foto":"cantina-tarde.jpg"},{"id":"patio","nombre":"Patio de piedra + parque + cancha de 11","cap":80,"detalle":"Al aire libre, con parque y la cancha grande. Ideal de día y para el sunset.","foto":"cancha-futbol.jpg"},{"id":"salon","nombre":"Salón cerrado","cap":100,"detalle":"Cerrado y techado, para fiestas de noche o días de lluvia.","foto":"eventos-salon.jpg"},{"id":"deck","nombre":"Deck","cap":40,"detalle":"Íntimo y al aire libre, para reuniones chicas.","foto":"hero-fogon.jpg"}],"predio":{"id":"predio","nombre":"Predio completo (uso exclusivo)","cap":400,"detalle":"Todo el predio solo para tu evento.","foto":"escuela-verano.jpg"},"bloqueosFijos":[{"sector":"salon","dias":[1,2,3,4,5],"desde":"17:00","hasta":"23:00","motivo":"Clases en el salón"}],"urlFotos":"https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/main/img/","tipos":[{"id":"infantil","nombre":"Cumple infantil","emoji":"🎈","modo":"reserva","tarifa":"infantil","duracion":150,"duraciones":[150,180,210],"sectores":["quincho","patio","salon"],"pileta":true,"unidad":"chicos","decorar":"Podés entrar a decorar 1 hora antes."},{"id":"adultos","nombre":"Cumple de adultos","emoji":"🥂","modo":"reserva","tarifa":"social","duracion":240,"duraciones":[180,240,300,360],"sectores":["quincho","patio","salon","deck"],"pileta":true,"modalidades":["barra","barralibre","alquiler"],"decorar":"Podés entrar a decorar 1 hora antes."},{"id":"bautismo","nombre":"Bautismo / comunión","emoji":"🕊️","modo":"reserva","tarifa":"social","duracion":240,"duraciones":[180,240,300],"sectores":["quincho","patio","salon","deck"],"pileta":true,"modalidades":["barra","barralibre","alquiler"],"decorar":"Podés entrar a decorar 1 hora antes."},{"id":"babyshower","nombre":"Baby shower","emoji":"🍼","modo":"reserva","tarifa":"social","duracion":180,"duraciones":[180,240,300],"sectores":["quincho","patio","salon","deck"],"pileta":false,"modalidades":["barra","barralibre","alquiler"],"decorar":"Podés entrar a decorar 1 hora antes."},{"id":"recibida","nombre":"Recibida / egresados","emoji":"🎓","modo":"reserva","tarifa":"social","duracion":240,"duraciones":[180,240,300,360],"sectores":["quincho","patio","salon","deck"],"pileta":true,"modalidades":["barra","barralibre","alquiler"],"decorar":"Podés entrar a decorar 1 hora antes."},{"id":"asado","nombre":"Asado entre semana","emoji":"🔥","modo":"reserva","tarifa":"asado","duracion":240,"duraciones":[180,240,300],"sectores":["quincho","patio","deck"],"pileta":false,"soloLunJue":true,"decorar":""},{"id":"quince","nombre":"15 años","emoji":"👑","modo":"india","tarifa":"formal","duracion":300,"duraciones":[300,360,420],"sectores":["salon","patio","predio"],"pileta":false,"modalidades":["alquiler","barralibre"],"decorar":"Podés dejar las cosas el día anterior y decorar con tiempo."},{"id":"boda","nombre":"Casamiento","emoji":"💍","modo":"india","tarifa":"formal","duracion":300,"duraciones":[300,360,420],"sectores":["salon","patio","predio"],"pileta":false,"modalidades":["alquiler","barralibre"],"decorar":"Podés dejar las cosas el día anterior y decorar con tiempo."},{"id":"empresa","nombre":"Evento empresarial","emoji":"💼","modo":"cita","tarifa":"social","duracion":240,"duraciones":[180,240,300,360,480],"sectores":["quincho","patio","salon","deck","predio"],"pileta":true,"modalidades":["barralibre","alquiler"],"decorar":""},{"id":"escuela","nombre":"Jornada escolar / convivencia","emoji":"🏫","modo":"cita","tarifa":"escuela","duracion":480,"duraciones":[480],"sectores":["predio"],"pileta":true,"unidad":"alumnos","modalidades":["almuerzo","completa"],"decorar":""}],"modalidades":{"barra":{"nombre":"Espacio + crédito de barra","destacado":true,"detalle":"Pagás un espacio reducido y el resto queda como crédito para tragos y bebidas en la barra de Aldea. Barman incluido."},"barralibre":{"nombre":"Espacio + barra libre","detalle":"Barra libre de tragos y bebidas por persona durante el evento. Barman incluido."},"alquiler":{"nombre":"Solo el espacio","detalle":"Alquilás el espacio y las bebidas se compran en la cantina durante el evento."},"almuerzo":{"nombre":"Jornada con almuerzo","detalle":"Uso del predio + almuerzo (2 hamburguesas y gaseosa) por alumno."},"completa":{"nombre":"Jornada completa","detalle":"Uso del predio + almuerzo + merienda por alumno."}},"extras":[{"id":"seguridad","nombre":"Seguridad","precio":"seguridad","max":4,"detalle":"Por persona de seguridad, todo el evento","tipos":["adultos","bautismo","recibida","quince","boda","empresa"]},{"id":"limpieza","nombre":"Limpieza durante el evento","precio":"limpiezaDurante","max":1,"detalle":"Además de la limpieza de antes y después","tipos":["infantil","adultos","bautismo","babyshower","recibida","empresa"]},{"id":"barman","nombre":"Barman","precio":"barman","max":2,"detalle":"Por barman, hasta 4 horas","incluidoEn":["barra","barralibre"],"tipos":["adultos","bautismo","babyshower","recibida","quince","boda","empresa"]},{"id":"parrillero","nombre":"Parrillero","precio":"parrillero","max":2,"detalle":"Vos traés la carne, él se encarga","tipos":["infantil","adultos","bautismo","recibida","asado","empresa"]},{"id":"fogonero","nombre":"Fogonero","precio":"fogonero","max":1,"detalle":"Fogón prendido y cuidado toda la noche","tipos":["adultos","bautismo","recibida","asado","quince","boda","empresa"]},{"id":"cuidacoches","nombre":"Cuidacoches","precio":"cuidacoches","max":2,"detalle":"Por persona","tipos":["adultos","bautismo","recibida","quince","boda","empresa"]},{"id":"chulengo","nombre":"Chulengo / estufa","precio":"chulengo","max":3,"detalle":"Para las noches frescas","meses":[4,5,6,7,8,9],"tipos":["infantil","adultos","bautismo","babyshower","recibida","asado","quince","boda","empresa"]},{"id":"pancho","nombre":"Panchos","precio":"pancho","max":150,"paso":10,"detalle":"Por unidad","tipos":["infantil"]},{"id":"empanada","nombre":"Empanadas","precio":"empanada","max":150,"paso":12,"detalle":"Por unidad","tipos":["infantil"]},{"id":"pizza","nombre":"Pizzas","precio":"pizza","max":30,"paso":1,"detalle":"Por pizza entera","tipos":["infantil"]}],"citas":{"dias":[1,2,3,4,5],"horarios":["18:00","18:30","19:00","19:30","20:00"],"duracionMin":30,"diasHaciaAdelante":30,"equipos":{"aldea":{"nombre":"Aldea de Valle","quien":"Milagros","whatsapp":"5493515308489"},"india":{"nombre":"Aldea India","quien":"Luli o Nati","whatsapp":"5493515119452"}}},"testimonios":[]};
+var P_DEMO = {"ajusteInflacion":0,"infantilBase":380000,"infantilChicosIncluidos":30,"infantilChicoExtra":9000,"horaExtra":45000,"tramo30":380000,"tramo50":480000,"tramo80":650000,"tramo100":800000,"tramo150":1000000,"personaExtra":8000,"barraAlquiler":200000,"barraCreditoPorPersona":10000,"barraCreditoMinimo":300000,"barraLibrePorPersona":12000,"recargoExclusivo":500000,"descuentoLunJue":15,"pileta":120000,"formalPersonasPorGuardia":60,"seguridad":90000,"limpiezaDurante":50000,"barman":90000,"parrillero":90000,"fogonero":70000,"cuidacoches":70000,"chulengo":60000,"pancho":3000,"empanada":3000,"pizza":17000,"escuelaAlmuerzo":16000,"escuelaCompleta":20000,"escuelaMinimo":40,"mesesPileta":[12,1,2,3]};
+/* ==== FIN DEMO ==== */
+
+/* ==== COTIZAR (lo copia eventos/sincronizar.js desde Code.gs; no editar a mano) ==== */
+function cotizar(d, P, C, cod) {
+  var buscar = function (lista, id) { for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; };
+  var redondo = function (x) { return Math.round(x / 1000) * 1000; };
+  var plata = function (x) { return '$' + Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+  var hs = function (min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + ' h' : '') + (h && m ? ' ' : '') + (m ? m + ' min' : ''); };
+  var T = buscar(C.tipos, d.tipo);
+  if (!T) return { error: 'Elegí qué querés festejar.' };
+  var n = Math.max(0, Math.floor(Number(d.personas) || 0));
+  var fecha = /^\d{4}-\d{2}-\d{2}$/.test(d.fecha || '') ? new Date(+d.fecha.slice(0, 4), +d.fecha.slice(5, 7) - 1, +d.fecha.slice(8, 10)) : null;
+  var dow = fecha ? fecha.getDay() : -1, mes = fecha ? fecha.getMonth() + 1 : 0;
+  var lunJue = dow >= 1 && dow <= 4;
+  var dur = T.duraciones.indexOf(Number(d.duracion)) >= 0 ? Number(d.duracion) : T.duracion;
+  var extraMin = Math.max(0, dur - T.duracion);
+  var mod = T.modalidades ? (T.modalidades.indexOf(d.modalidad) >= 0 ? d.modalidad : T.modalidades[0]) : '';
+  var sector = d.sector === 'predio' ? C.predio : buscar(C.sectores, d.sector);
+  var lineas = [], avisos = [], incluye = [];
+  var add = function (t, m, det) { lineas.push({ t: t, m: Math.round(m), d: det || '' }); };
+  var tramo = function (x) {
+    if (x <= 30) return P.tramo30; if (x <= 50) return P.tramo50; if (x <= 80) return P.tramo80;
+    if (x <= 100) return P.tramo100; if (x <= 150) return P.tramo150; return P.tramo150 + (x - 150) * P.personaExtra;
+  };
+
+  // 1) Espacio
+  var espacio = 0, txtEsp = '';
+  if (T.tarifa === 'infantil') {
+    espacio = P.infantilBase;
+    txtEsp = 'Cumple infantil · hasta ' + P.infantilChicosIncluidos + ' chicos · ' + hs(T.duracion);
+    incluye.push('6 gaseosas', 'Encargado durante el cumple', 'Limpieza antes y después', 'Uso de la cancha');
+  } else if (T.tarifa === 'social' || T.tarifa === 'formal') {
+    if (mod === 'alquiler' || T.tarifa === 'formal') { espacio = tramo(n); txtEsp = 'Alquiler del espacio · ' + n + ' personas · ' + hs(T.duracion); }
+    else { espacio = P.barraAlquiler; txtEsp = 'Espacio · ' + hs(T.duracion); }
+    incluye.push('Encargado durante el evento', 'Limpieza antes y después', 'Vajilla');
+    if (mod === 'barra' || mod === 'barralibre') incluye.push('Barman');
+  } else if (T.tarifa === 'asado') {
+    txtEsp = 'Espacio sin cargo de lunes a jueves · consumo en la cantina';
+    incluye.push('Uso del asador', 'Consumo en la cantina de Aldea');
+    if (fecha && !lunJue) avisos.push('El asado sin cargo es de lunes a jueves. Para viernes a domingo elegí "Cumple de adultos".');
+  }
+  if (T.tarifa !== 'escuela') add(txtEsp, espacio);
+
+  // 2) Descuentos sobre el espacio
+  var esp = espacio;
+  if (esp > 0 && lunJue && (T.tarifa === 'infantil' || (T.tarifa === 'social' && T.modo === 'reserva')) && P.descuentoLunJue > 0) {
+    var dto = redondo(esp * P.descuentoLunJue / 100);
+    add('Descuento de lunes a jueves (' + P.descuentoLunJue + '%)', -dto);
+    esp -= dto;
+  }
+  if (cod && esp > 0 && cod.descuento > 0 && esp > (cod.piso || 0)) {
+    var nuevo = Math.max(cod.piso || 0, redondo(esp * (1 - cod.descuento / 100)));
+    add('Código ' + cod.codigo, nuevo - esp);
+    esp = nuevo;
+  }
+
+  // 3) Lo que depende de la cantidad de personas
+  if (T.tarifa === 'infantil' && n > P.infantilChicosIncluidos) {
+    var ext = n - P.infantilChicosIncluidos;
+    add(ext + ' chico' + (ext > 1 ? 's' : '') + ' extra', ext * P.infantilChicoExtra, plata(P.infantilChicoExtra) + ' c/u');
+  }
+  if (mod === 'barra') {
+    var cred = Math.max(P.barraCreditoMinimo, n * P.barraCreditoPorPersona);
+    add('Crédito de barra (tragos y bebidas)', cred, 'Se consume durante el evento');
+  }
+  if (mod === 'barralibre') add('Barra libre · ' + n + ' personas', n * P.barraLibrePorPersona, plata(P.barraLibrePorPersona) + ' por persona');
+  if (T.tarifa === 'escuela') {
+    var alumnos = Math.max(n, P.escuelaMinimo);
+    var pp = mod === 'completa' ? P.escuelaCompleta : P.escuelaAlmuerzo;
+    add(C.modalidades[mod].nombre + ' · ' + alumnos + ' alumnos', alumnos * pp, plata(pp) + ' por alumno');
+    if (n < P.escuelaMinimo) avisos.push('Se cobra un mínimo de ' + P.escuelaMinimo + ' alumnos.');
+  }
+  if (T.tarifa === 'formal') {
+    var guardias = Math.max(1, Math.ceil(n / P.formalPersonasPorGuardia));
+    add('Seguridad · ' + guardias + ' persona' + (guardias > 1 ? 's' : ''), guardias * P.seguridad);
+    add('Limpieza durante el evento', P.limpiezaDurante);
+  }
+
+  // 4) Sector, horario y temporada
+  if (d.sector === 'predio' && T.tarifa !== 'escuela') add('Predio completo en exclusiva', P.recargoExclusivo);
+  if (extraMin > 0) add('Tiempo extra · ' + hs(extraMin), redondo(P.horaExtra * extraMin / 60));
+  if (d.pileta && T.pileta) {
+    if (mes && P.mesesPileta.indexOf(mes) < 0) avisos.push('La pileta se habilita en temporada de verano (diciembre a marzo).');
+    else add('Pileta + guardavidas', P.pileta);
+  }
+
+  // 5) Extras
+  var elegidos = d.extras || {};
+  C.extras.forEach(function (e) {
+    var cant = Math.floor(Number(elegidos[e.id]) || 0);
+    if (cant <= 0 || e.tipos.indexOf(T.id) < 0) return;
+    if (e.incluidoEn && e.incluidoEn.indexOf(mod) >= 0) return;
+    if (e.meses && mes && e.meses.indexOf(mes) < 0) return;
+    if (T.tarifa === 'formal' && (e.id === 'seguridad' || e.id === 'limpieza')) return;
+    cant = Math.min(cant, e.max);
+    add(e.nombre + (cant > 1 ? ' x' + cant : ''), cant * P[e.precio]);
+  });
+
+  // 6) Capacidad y totales
+  if (sector && n > sector.cap) avisos.push(sector.nombre + ' tiene lugar para ' + sector.cap + ' personas. Elegí otro sector o el predio completo.');
+  var total = 0;
+  lineas.forEach(function (l) { total += l.m; });
+  var sena = T.modo === 'reserva' ? redondo(total * C.porcentajeSena / 100) : 0;
+  return {
+    tipo: T.id, modo: T.modo, lineas: lineas, total: total, sena: sena, saldo: total - sena,
+    avisos: avisos, incluye: incluye, duracion: dur, modalidad: mod,
+    excede: !!(sector && n > sector.cap), desde: T.modo !== 'reserva'
+  };
+}
+/* ==== FIN COTIZAR ==== */
+
+/* Funciona de dos formas: dentro de Apps Script (google.script.run) o como página normal
+   (GitHub Pages / Instagram) hablando con Apps Script por internet. */
+var API_URL = '';
+var EN_APPS_SCRIPT = !!(window.google && google.script && google.script.run);
+var DEMO = !EN_APPS_SCRIPT && (!API_URL || /[?&]demo/.test(location.search) || location.protocol === 'file:');
+function llamar(fn, arg, ok, ko){
+  ko = ko || function(){};
+  if (EN_APPS_SCRIPT){ var run = google.script.run.withSuccessHandler(ok).withFailureHandler(ko); if (arg === undefined) run[fn](); else run[fn](arg); return; }
+  if (DEMO) return demoLlamar(fn, arg, ok, ko);
+  var pedido = fn === 'getDatosIniciales'
+    ? fetch(API_URL + '?api=datos')
+    : fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ accion: fn, datos: arg }) });
+  pedido.then(function(r){ return r.json(); })
+    .then(function(j){ if (j && j.ok) ok(j.data); else ko({ message: (j && j.error) || 'Algo salió mal. Probá de nuevo.' }); })
+    .catch(function(){ ko({ message: 'No pudimos conectarnos. Revisá tu internet y probá de nuevo.' }); });
+}
+
+var CFG = CFG_DEMO, P = P_DEMO, OCUP = {}, CITAS = {}, HOY = null;
+var D = { tipo:'', personas:0, adultos:'', fecha:'', sinFecha:false, sector:'', hora:'', duracion:0, modalidad:'', extras:{}, pileta:false,
+          codigo:'', cod:null, decoracion:'', comida:'', comoNosConocio:'', glorin:false, soloCita:false, citaFecha:'', citaHora:'',
+          nombre:'', whatsapp:'', email:'', agasajado:'', motivo:'', comentarios:'' };
+var flujo = ['tipo'], idx = 0, mesVista = null, enviando = false, RES = null;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function plata(n){ n = Math.round(n); return (n < 0 ? '-$' : '$') + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function pad(n){ return (n < 10 ? '0' : '') + n; }
+function key(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+function parseKey(k){ var p = k.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function aMin(h){ var p = h.split(':'); return (+p[0])*60 + (+p[1]); }
+function buscar(lista, id){ for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; }
+function txtDur(min){ var h = Math.floor(min/60), m = min%60; return (h ? h + ' h' : '') + (h && m ? ' ' : '') + (m ? m + ' min' : ''); }
+function fechaLarga(k){
+  var f = parseKey(k), dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],
+      meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return dias[f.getDay()] + ' ' + f.getDate() + ' de ' + meses[f.getMonth()];
+}
+function T(){ return buscar(CFG.tipos, D.tipo); }
+function sectorObj(id){ return id === 'predio' ? CFG.predio : buscar(CFG.sectores, id); }
+function foto(f){ return CFG.urlFotos + f; }
+function wa(n, txt){ return 'https://wa.me/' + n + (txt ? '?text=' + encodeURIComponent(txt) : ''); }
+function modoActual(){ var t = T(); if (D.soloCita) return t && t.modo === 'india' ? 'india' : 'cita'; return t ? t.modo : 'reserva'; }
+function esReserva(){ return modoActual() === 'reserva'; }
+function equipoCita(){ return modoActual() === 'india' ? 'india' : 'aldea'; }
+
+/* ===== Disponibilidad (misma regla que el servidor) ===== */
+function ids(){ return CFG.sectores.map(function(s){ return s.id; }); }
+function finOk(h, dur){ return aMin(h) + dur <= 1440 + aMin(CFG.finMaximo); }
+function libre(k, sector, h, dur){
+  var secs = sector === 'predio' ? ids() : [sector], ini = aMin(h), fin = ini + dur, dow = parseKey(k).getDay();
+  for (var i = 0; i < CFG.bloqueosFijos.length; i++){
+    var b = CFG.bloqueosFijos[i];
+    if (secs.indexOf(b.sector) >= 0 && b.dias.indexOf(dow) >= 0 && ini < aMin(b.hasta) && aMin(b.desde) < fin) return false;
+  }
+  var dia = OCUP[k]; if (!dia) return true;
+  if (secs.some(function(s){ return dia.bloq.indexOf(s) >= 0; })) return false;
+  return !dia.ev.some(function(e){
+    return ini < e[1] + CFG.bufferMin && e[0] < fin + CFG.bufferMin && e[2].some(function(s){ return secs.indexOf(s) >= 0; });
+  });
+}
+function horasLibres(k, sector, dur){ return CFG.horarios.filter(function(h){ return finOk(h, dur) && libre(k, sector, h, dur); }); }
+function sectoresDelTipo(){
+  var t = T(); if (!t) return [];
+  return t.sectores.map(sectorObj).filter(Boolean);
+}
+function entra(s){ return (+D.personas || 0) <= s.cap; }
+function diaMin(){ return new Date(HOY.getTime() + CFG.diasAnticipacionMin*86400000); }
+function diaMax(){ return new Date(HOY.getTime() + CFG.diasHaciaAdelante*86400000); }
+function estadoDia(f){
+  var t = T(); if (!t) return 'off';
+  if (f < diaMin() || f > diaMax()) return 'off';
+  if (t.soloLunJue && (f.getDay() < 1 || f.getDay() > 4)) return 'off';
+  var k = key(f), secs = sectoresDelTipo().filter(entra);
+  if (!secs.length) secs = sectoresDelTipo();
+  var con = secs.filter(function(s){ return horasLibres(k, s.id, t.duracion).length > 0; }).length;
+  if (!con) return 'lleno';
+  return con < Math.ceil(secs.length / 2) ? 'pocos' : 'libre';
+}
+
+/* ===== Cotización en vivo ===== */
+function cot(){ return T() ? cotizar(D, P, CFG, D.cod) : null; }
+function actualizar(){
+  var c = cot();
+  if (!c || c.error){ $('estTotal').textContent = '—'; $('estLbl').textContent = 'Tu evento'; }
+  else {
+    $('estLbl').textContent = c.desde ? 'Parte de Aldea, desde' : (D.personas ? 'Total' : 'Desde');
+    $('estTotal').textContent = plata(c.total);
+  }
+  guardarBorrador();
+}
+
+/* ===== Pasos ===== */
+function armarFlujo(){
+  if (D.soloCita) flujo = ['datos', 'cita'];
+  else if (!T()) flujo = ['tipo', 'personas', 'fecha', 'arma', 'datos', 'resumen'];
+  else if (esReserva()) flujo = ['tipo', 'personas', 'fecha', 'arma', 'datos', 'resumen'];
+  else flujo = ['tipo', 'personas', 'fecha', 'arma', 'datos', 'cita'];
+}
+function irA(i){
+  armarFlujo();
+  idx = Math.max(0, Math.min(i, flujo.length - 1));
+  var id = flujo[idx];
+  document.querySelectorAll('.paso').forEach(function(p){ p.classList.toggle('on', p.id === 'p-' + id); });
+  var cuerpo = document.body.classList;
+  cuerpo.toggle('modo-reserva', esReserva());
+  cuerpo.toggle('modo-cita', !esReserva());
+  cuerpo.toggle('es-infantil', !!T() && T().tarifa === 'infantil');
+  $('progreso').innerHTML = flujo.map(function(_, j){ return '<span class="' + (j <= idx ? 'on' : '') + '"></span>'; }).join('');
+  var n = document.querySelector('#p-' + id + ' [data-num]'); if (n) n.textContent = 'Paso ' + (idx + 1) + ' de ' + flujo.length;
+  var pinta = { tipo: dibujarTipos, personas: dibujarPersonas, fecha: dibujarFecha, arma: dibujarArma, datos: dibujarDatos, resumen: dibujarResumen, cita: dibujarCita }[id];
+  if (pinta) pinta();
+  var ultimo = idx === flujo.length - 1;
+  $('siguiente').textContent = ultimo ? (id === 'cita' ? 'Agendar cita' : 'Reservar') : 'Siguiente';
+  $('atras').style.visibility = idx === 0 ? 'hidden' : 'visible';
+  $('barra').classList.add('on'); document.body.classList.add('con-barra');
+  actualizar();
+}
+function siguiente(){
+  var id = flujo[idx], e = validar(id);
+  if (e){ mostrarError(id, e); return; }
+  if (idx === flujo.length - 1){ if (id === 'cita') enviarCita(); else enviarReserva(); return; }
+  irA(idx + 1);
+  $('armador').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function mostrarError(id, msg){
+  var box = { resumen: 'resErr', cita: 'citaErr' }[id];
+  if (box){ $(box).textContent = msg; $(box).style.display = 'block'; return; }
+  var a = $('aviso-' + id);
+  if (!a){ a = document.createElement('div'); a.className = 'aviso'; a.id = 'aviso-' + id; document.querySelector('#p-' + id + ' .card').appendChild(a); }
+  a.textContent = msg; a.style.display = 'block';
+  a.scrollIntoView({ behavior:'smooth', block:'center' });
+  clearTimeout(a._t); a._t = setTimeout(function(){ a.style.display = 'none'; }, 5000);
+}
+function validar(id){
+  var t = T();
+  if (id === 'tipo') return t ? '' : 'Elegí qué querés festejar.';
+  if (id === 'personas'){
+    if (!(D.personas > 0)) return 'Decinos cuántos van a ser, aunque sea aproximado.';
+    var max = Math.max.apply(null, sectoresDelTipo().map(function(s){ return s.cap; }));
+    if (D.personas > max) return 'Para más de ' + max + ' personas armamos algo a medida: agendá una cita o escribinos.';
+    return '';
+  }
+  if (id === 'fecha'){
+    if (!D.fecha && !(D.sinFecha && !esReserva())) return 'Elegí una fecha.';
+    if (!D.sector) return 'Elegí dónde lo querés hacer.';
+    if (D.personas > sectorObj(D.sector).cap) return 'En ese sector entran ' + sectorObj(D.sector).cap + ' personas. Elegí otro.';
+    if (esReserva() && !D.hora) return 'Elegí a qué hora empieza.';
+    return '';
+  }
+  if (id === 'arma'){ var c = cot(); return c && c.error ? c.error : ''; }
+  if (id === 'datos'){
+    leerDatos();
+    if (!D.nombre) return 'Falta tu nombre.';
+    if (String(D.whatsapp || '').replace(/\D/g, '').length < 10) return 'Revisá el WhatsApp: código de área y número (ej: 351 5308489).';
+    if (D.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(D.email)) return 'Revisá el email.';
+    return '';
+  }
+  if (id === 'resumen') return $('acepto').checked ? '' : 'Marcá que leíste las condiciones para reservar.';
+  if (id === 'cita') return D.citaFecha && D.citaHora ? '' : 'Elegí el día y la hora de la cita.';
+  return '';
+}
+
+/* ===== 1. Tipo ===== */
+function dibujarTipos(){
+  $('tipos').innerHTML = CFG.tipos.map(function(t){
+    var et = t.modo === 'reserva' ? (t.tarifa === 'asado' ? 'Lunes a jueves · sin cargo' : 'Reserva online') : (t.modo === 'india' ? 'Con Aldea India · cita' : 'Con cita');
+    return '<button type="button" class="tipo' + (D.tipo === t.id ? ' sel' : '') + '" data-t="' + t.id + '"><span class="em">' + t.emoji + '</span><b>' + esc(t.nombre) + '</b><small>' + et + '</small></button>';
+  }).join('');
+  $('tipos').querySelectorAll('.tipo').forEach(function(b){
+    b.onclick = function(){ elegirTipo(b.dataset.t); irA(1); $('armador').scrollIntoView({ behavior:'smooth', block:'start' }); };
+  });
+}
+function elegirTipo(id){
+  if (D.tipo !== id){
+    D.tipo = id; var t = T();
+    D.duracion = t.duracion; D.modalidad = t.modalidades ? t.modalidades[0] : ''; D.hora = ''; D.sector = '';
+    D.extras = {}; D.pileta = false;
+    if (D.fecha && estadoDia(parseKey(D.fecha)) === 'off') D.fecha = '';
+  }
+  D.soloCita = false;
+}
+
+/* ===== 2. Personas ===== */
+function dibujarPersonas(){
+  var t = T(), u = t.unidad === 'chicos' ? 'chicos' : (t.unidad === 'alumnos' ? 'alumnos' : 'personas');
+  $('tPersonas').textContent = '¿Cuántos ' + u + '?';
+  $('sPersonas').textContent = t.tarifa === 'infantil'
+    ? 'El precio incluye ' + P.infantilChicosIncluidos + ' chicos. Cada chico extra suma ' + plata(P.infantilChicoExtra) + '.'
+    : 'Un número aproximado está bien. Lo podés ajustar después.';
+  $('personas').value = D.personas || '';
+  $('adultos').value = D.adultos || '';
+  var at = t.tarifa === 'infantil' ? [20, 25, 30, 35, 40] : (t.tarifa === 'escuela' ? [40, 80, 120, 200, 300] : [20, 30, 40, 60, 80, 100, 120]);
+  $('atajos').innerHTML = at.map(function(n){ return '<button type="button" class="chip' + (+D.personas === n ? ' sel' : '') + '" data-n="' + n + '">' + n + '</button>'; }).join('');
+  $('atajos').querySelectorAll('.chip').forEach(function(c){ c.onclick = function(){ setPersonas(+c.dataset.n); dibujarPersonas(); }; });
+  avisoPersonas();
+}
+function setPersonas(n){ D.personas = Math.max(0, Math.min(600, Math.round(n) || 0)); if (D.sector && sectorObj(D.sector) && D.personas > sectorObj(D.sector).cap) D.sector = ''; actualizar(); avisoPersonas(); }
+function avisoPersonas(){
+  var t = T(), a = $('avisoPersonas'), n = +D.personas || 0, txt = '';
+  if (t && n){
+    var caben = sectoresDelTipo().filter(function(s){ return n <= s.cap; }).map(function(s){ return s.nombre; });
+    txt = caben.length ? 'Para ' + n + ' entran: ' + caben.join(' · ') + '.' : '';
+  }
+  a.textContent = txt; a.style.display = txt ? 'block' : 'none';
+  a.style.background = '#F1F5EF'; a.style.borderColor = '#C7D6C0'; a.style.color = 'var(--verde)';
+}
+$('personas').oninput = function(){ setPersonas(+this.value); };
+$('menos').onclick = function(){ setPersonas((+D.personas || 0) - (T() && T().tarifa === 'escuela' ? 10 : 1)); $('personas').value = D.personas || ''; };
+$('mas').onclick = function(){ setPersonas((+D.personas || 0) + (T() && T().tarifa === 'escuela' ? 10 : 1)); $('personas').value = D.personas; };
+$('adultos').oninput = function(){ D.adultos = this.value; guardarBorrador(); };
+
+/* ===== 3. Fecha, sector, duración, horario ===== */
+function dibujarFecha(){
+  var t = T();
+  $('tFecha').textContent = esReserva() ? '¿Cuándo y dónde?' : '¿Tenés fecha?';
+  $('sFecha').textContent = esReserva()
+    ? (t.soloLunJue ? 'El asado sin cargo es de lunes a jueves. Los días con punto verde tienen lugar.' : 'Los días con punto verde tienen lugar.')
+    : 'Si ya tenés una fecha en mente, mirá si está libre. La confirmamos en la cita.';
+  $('sinFecha').classList.toggle('sel', D.sinFecha);
+  if (!mesVista) mesVista = D.fecha ? new Date(parseKey(D.fecha).getFullYear(), parseKey(D.fecha).getMonth(), 1) : new Date(diaMin().getFullYear(), diaMin().getMonth(), 1);
+  dibujarCal(); dibujarSectores(); dibujarDuraciones(); dibujarHoras();
+}
+function dibujarCal(){
+  var w = $('calWrap'), meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var y = mesVista.getFullYear(), m = mesVista.getMonth();
+  var primerMes = new Date(HOY.getFullYear(), HOY.getMonth(), 1);
+  if (D.sinFecha && !esReserva()){ w.innerHTML = ''; return; }
+  var h = '<div class="cal-head"><button class="navbtn" id="prevM" ' + (mesVista <= primerMes ? 'disabled' : '') + ' aria-label="Mes anterior">‹</button>'
+        + '<b>' + meses[m] + ' ' + y + '</b><button class="navbtn" id="nextM" ' + (new Date(y, m+1, 1) > diaMax() ? 'disabled' : '') + ' aria-label="Mes siguiente">›</button></div><div class="cal">';
+  ['L','M','M','J','V','S','D'].forEach(function(x){ h += '<div class="dow">' + x + '</div>'; });
+  var off = (new Date(y, m, 1).getDay() + 6) % 7;
+  for (var i = 0; i < off; i++) h += '<div></div>';
+  for (var dd = 1; dd <= new Date(y, m+1, 0).getDate(); dd++){
+    var f = new Date(y, m, dd), k = key(f), st = estadoDia(f);
+    h += '<button type="button" class="dia ' + st + (D.fecha === k ? ' sel' : '') + '" data-k="' + k + '" ' + ((st === 'off' || st === 'lleno') ? 'disabled' : '') + '>' + dd + '</button>';
+  }
+  h += '</div><div class="leyenda"><span><i style="background:var(--ok)"></i>Hay lugar</span><span><i style="background:#E0A100"></i>Queda poco</span><span><i style="background:#ccc"></i>Completo</span></div>';
+  w.innerHTML = h;
+  $('prevM').onclick = function(){ mesVista = new Date(y, m-1, 1); dibujarCal(); };
+  $('nextM').onclick = function(){ mesVista = new Date(y, m+1, 1); dibujarCal(); };
+  w.querySelectorAll('.dia[data-k]').forEach(function(b){ b.onclick = function(){
+    D.fecha = b.dataset.k; D.sinFecha = false; D.hora = '';
+    if (D.sector && !sectorConLugar(D.sector)) D.sector = '';
+    dibujarFecha(); actualizar();
+    $('sectorWrap').scrollIntoView({ behavior:'smooth', block:'start' });
+  }; });
+}
+function sectorConLugar(id){ return !D.fecha || horasLibres(D.fecha, id, D.duracion || T().duracion).length > 0; }
+function dibujarSectores(){
+  var visible = !!D.fecha || (D.sinFecha && !esReserva());
+  $('sectorWrap').style.display = visible ? 'block' : 'none';
+  if (!visible) return;
+  var lista = sectoresDelTipo();
+  $('sectores').innerHTML = lista.map(function(s){
+    var cabe = (+D.personas || 0) <= s.cap, hay = sectorConLugar(s.id);
+    var no = !cabe ? 'Entran hasta ' + s.cap : (!hay ? 'Ocupado ese día' : '');
+    var precioEx = s.id === 'predio' && T().tarifa !== 'escuela' ? ' · +' + plata(P.recargoExclusivo) : '';
+    return '<button type="button" class="sector' + (D.sector === s.id ? ' sel' : '') + '" data-s="' + s.id + '" ' + (no ? 'disabled' : '') + '>' +
+      '<span class="img" style="background-image:url(\'' + foto(s.foto) + '\')"></span><span><b>' + esc(s.nombre) + '</b><small>' + esc(s.detalle) + '</small>' +
+      '<span class="cap">Hasta ' + s.cap + ' personas' + precioEx + '</span>' + (no ? ' <span class="no">' + no + '</span>' : '') + '</span></button>';
+  }).join('');
+  $('sectores').querySelectorAll('.sector').forEach(function(b){ b.onclick = function(){
+    D.sector = b.dataset.s; D.hora = ''; dibujarSectores(); dibujarDuraciones(); dibujarHoras(); actualizar();
+    ($('horasWrap').offsetParent ? $('horasWrap') : $('durWrap')).scrollIntoView({ behavior:'smooth', block:'center' });
+  }; });
+}
+function dibujarDuraciones(){
+  var t = T();
+  $('durWrap').style.display = D.sector && t.duraciones.length > 1 ? 'block' : 'none';
+  $('duraciones').innerHTML = t.duraciones.map(function(m){
+    var extra = m > t.duracion ? ' (+' + plata(Math.round(P.horaExtra * (m - t.duracion) / 60 / 1000) * 1000) + ')' : ' (incluido)';
+    return '<button type="button" class="chip' + (D.duracion === m ? ' sel' : '') + '" data-m="' + m + '">' + txtDur(m) + '<small style="font-weight:600;opacity:.75">' + extra + '</small></button>';
+  }).join('');
+  $('duraciones').querySelectorAll('.chip').forEach(function(c){ c.onclick = function(){
+    D.duracion = +c.dataset.m;
+    if (D.hora && D.fecha && !(finOk(D.hora, D.duracion) && libre(D.fecha, D.sector, D.hora, D.duracion))) D.hora = '';
+    dibujarDuraciones(); dibujarHoras(); actualizar();
+  }; });
+}
+function dibujarHoras(){
+  $('horasWrap').style.display = D.sector && D.fecha && esReserva() ? 'block' : 'none';
+  if (!(D.sector && D.fecha && esReserva())) return;
+  var c = $('horas'); c.innerHTML = '';
+  CFG.horarios.forEach(function(h){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'hora' + (D.hora === h ? ' sel' : ''); b.textContent = h;
+    b.disabled = !(finOk(h, D.duracion) && libre(D.fecha, D.sector, h, D.duracion));
+    b.onclick = function(){ D.hora = h; dibujarHoras(); actualizar(); };
+    c.appendChild(b);
+  });
+}
+$('sinFecha').onclick = function(){ D.sinFecha = !D.sinFecha; if (D.sinFecha){ D.fecha = ''; D.hora = ''; } dibujarFecha(); actualizar(); };
+
+/* ===== 4. Armado ===== */
+function dibujarArma(){
+  var t = T(), n = +D.personas || 0;
+  $('modsWrap').style.display = t.modalidades ? 'block' : 'none';
+  $('modsWrap').querySelector('label').textContent = t.tarifa === 'escuela' ? '¿Qué incluye la jornada?' : '¿Cómo querés la bebida?';
+  if (t.modalidades){
+    $('mods').innerHTML = t.modalidades.map(function(id){
+      var m = CFG.modalidades[id], prueba = JSON.parse(JSON.stringify(D)); prueba.modalidad = id; prueba.extras = {}; prueba.pileta = false;
+      var c = cotizar(prueba, P, CFG, D.cod);
+      return '<button type="button" class="mod' + (D.modalidad === id ? ' sel' : '') + '" data-m="' + id + '"><div class="top"><b>' + esc(m.nombre) +
+        (m.destacado ? '<span class="badge">Recomendado</span>' : '') + '</b><span class="pr">' + plata(c.total) + '</span></div><p>' + esc(m.detalle) +
+        (id === 'barra' ? ' Crédito: ' + plata(Math.max(P.barraCreditoMinimo, n * P.barraCreditoPorPersona)) + '.' : '') + '</p></button>';
+    }).join('');
+    $('mods').querySelectorAll('.mod').forEach(function(b){ b.onclick = function(){ D.modalidad = b.dataset.m; dibujarArma(); actualizar(); }; });
+  }
+  var mes = D.fecha ? parseKey(D.fecha).getMonth() + 1 : 0;
+  var hayPileta = t.pileta && (!mes || P.mesesPileta.indexOf(mes) >= 0);
+  $('piletaWrap').style.display = hayPileta ? 'block' : 'none';
+  if (!hayPileta) D.pileta = false;
+  $('pileta').classList.toggle('sel', !!D.pileta);
+  $('piletaPrecio').textContent = plata(P.pileta) + ' · de diciembre a marzo';
+
+  var lista = CFG.extras.filter(function(e){
+    if (e.tipos.indexOf(t.id) < 0) return false;
+    if (e.meses && mes && e.meses.indexOf(mes) < 0) return false;
+    if (t.tarifa === 'formal' && (e.id === 'seguridad' || e.id === 'limpieza')) return false;
+    return true;
+  });
+  $('extrasWrap').style.display = lista.length ? 'block' : 'none';
+  $('extras').innerHTML = lista.map(function(e){
+    var inc = e.incluidoEn && e.incluidoEn.indexOf(D.modalidad) >= 0, cant = D.extras[e.id] || 0;
+    return '<div class="extra' + (cant && !inc ? ' sel' : '') + '"><div class="ex-t"><b>' + esc(e.nombre) + '</b> <span class="ex-p">' + plata(P[e.precio]) + '</span><small>' + esc(e.detalle) + '</small></div>' +
+      (inc ? '<span class="tag-inc">Incluido ✓</span>' : '<div class="step"><button type="button" data-e="' + e.id + '" data-d="-1" aria-label="Quitar">−</button><b>' + cant + '</b><button type="button" data-e="' + e.id + '" data-d="1" aria-label="Agregar">+</button></div>') + '</div>';
+  }).join('');
+  $('extras').querySelectorAll('button[data-e]').forEach(function(b){ b.onclick = function(){
+    var e = buscar(CFG.extras, b.dataset.e), paso = e.paso || 1, v = (D.extras[e.id] || 0) + (+b.dataset.d) * paso;
+    D.extras[e.id] = Math.max(0, Math.min(e.max, v)); dibujarArma(); actualizar();
+  }; });
+
+  var ind = $('indiaArma');
+  if (t.modo === 'india'){
+    ind.style.display = 'block';
+    ind.innerHTML = '<b>' + esc(CFG.india.nombre) + '</b> se encarga del resto: ' + esc(CFG.india.detalle).toLowerCase() + '. ' +
+      'Acá ves la parte de Aldea (espacio, seguridad, limpieza y bebida). En la cita te armamos todo junto.' +
+      '<a class="btn wa ancho" target="_blank" rel="noopener" href="' + wa(CFG.india.whatsapp, '¡Hola Aldea India! Estoy armando ' + t.nombre.toLowerCase() + ' en Aldea de Valle y quiero cotizar catering, DJ y ambientación.') + '">💬 Escribirle a Aldea India</a>';
+  } else ind.style.display = 'none';
+  $('codigo').value = D.codigo || '';
+  $('codigoMsg').textContent = D.cod ? 'Código ' + D.cod.codigo + ' aplicado ✓' : '';
+}
+$('pileta').onclick = function(){ D.pileta = !D.pileta; this.classList.toggle('sel', D.pileta); actualizar(); };
+$('aplicarCodigo').onclick = function(){
+  var c = $('codigo').value.trim().toUpperCase(); if (!c) return;
+  var b = this; b.disabled = true; $('codigoMsg').textContent = 'Revisando…';
+  llamar('validarCodigo', c, function(r){ b.disabled = false; D.codigo = c; D.cod = r; dibujarArma(); actualizar(); },
+    function(e){ b.disabled = false; D.codigo = ''; D.cod = null; $('codigoMsg').textContent = e.message; actualizar(); });
+};
+
+/* ===== 5. Datos ===== */
+function dibujarDatos(){
+  var t = T();
+  $('tipoCitaWrap').style.display = D.soloCita ? 'block' : 'none';
+  if (D.soloCita){
+    $('tDatos').textContent = 'Agendá una cita'; $('sDatos').textContent = 'Te mostramos la Aldea y armamos tu evento a medida.';
+    $('tipoCita').innerHTML = CFG.tipos.map(function(x){ return '<button type="button" class="chip' + (D.tipo === x.id ? ' sel' : '') + '" data-t="' + x.id + '">' + x.emoji + ' ' + esc(x.nombre) + '</button>'; }).join('');
+    $('tipoCita').querySelectorAll('.chip').forEach(function(c){ c.onclick = function(){ D.tipo = D.tipo === c.dataset.t ? '' : c.dataset.t; dibujarDatos(); }; });
+    $('lComentarios').textContent = 'Contanos qué imaginás: fecha aproximada, cantidad de personas, estilo…';
+    return;
+  }
+  $('tDatos').textContent = 'Tus datos';
+  $('sDatos').textContent = esReserva() ? 'Para mandarte la confirmación y los datos de la seña.' : 'Para coordinar la cita y mandarte la estimación.';
+  var cumple = t && (t.id === 'infantil' || t.id === 'adultos');
+  $('lAgasajado').textContent = cumple ? '¿Quién cumple?' : '¿Quién festeja? (nombre)';
+  $('lMotivo').textContent = cumple ? '¿Cuántos cumple?' : 'Motivo';
+  $('lComentarios').textContent = esReserva() ? '¿Algo más que tengamos que saber?' : 'Contanos qué imaginás: estilo, catering, música…';
+  $('glorin').classList.toggle('sel', !!D.glorin);
+}
+function leerDatos(){
+  ['nombre', 'whatsapp', 'email', 'agasajado', 'motivo', 'comentarios'].forEach(function(k){ D[k] = $(k).value.trim(); });
+}
+document.querySelectorAll('.chips[data-campo]').forEach(function(g){
+  var campo = g.dataset.campo;
+  g.querySelectorAll('.chip').forEach(function(c){ c.onclick = function(){
+    var ya = c.classList.contains('sel');
+    g.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('sel'); });
+    if (!ya) c.classList.add('sel');
+    D[campo] = ya ? '' : c.textContent; guardarBorrador();
+  }; });
+});
+$('glorin').onclick = function(){ D.glorin = !D.glorin; this.classList.toggle('sel', D.glorin); guardarBorrador(); };
+['nombre', 'whatsapp', 'email', 'agasajado', 'motivo', 'comentarios'].forEach(function(k){ $(k).addEventListener('input', function(){ D[k] = this.value; guardarBorrador(); }); });
+
+/* ===== 6a. Resumen ===== */
+function dibujarResumen(){
+  var c = cot(), t = T(), s = sectorObj(D.sector);
+  $('resCuando').textContent = t.nombre + ' · ' + fechaLarga(D.fecha) + ' · ' + D.hora + ' hs · ' + txtDur(c.duracion) + ' · ' + s.nombre + ' · ' + D.personas + ' ' + (t.unidad || 'personas');
+  $('resTabla').innerHTML = c.lineas.map(function(l){
+    return '<tr><td>' + esc(l.t) + (l.d ? '<small>' + esc(l.d) + '</small>' : '') + '</td><td class="' + (l.m < 0 ? 'neg' : '') + '">' + plata(l.m) + '</td></tr>';
+  }).join('') + '<tr class="total"><td>Total</td><td>' + plata(c.total) + '</td></tr>';
+  $('resIncluye').innerHTML = c.incluye.map(function(x){ return '<span>✓ ' + esc(x) + '</span>'; }).join('');
+  $('resAvisos').innerHTML = c.avisos.map(function(a){ return '<div class="aviso">' + esc(a) + '</div>'; }).join('');
+  $('resSena').textContent = c.sena ? plata(c.sena) : 'Sin seña';
+  $('resSaldo').textContent = c.sena ? 'Seña del ' + CFG.porcentajeSena + '% · el saldo de ' + plata(c.saldo) + ' se paga el día del evento' : 'Te confirmamos por WhatsApp.';
+  $('resCond').innerHTML = condiciones().map(esc).join('<br>');
+  $('resErr').style.display = 'none';
+}
+function condiciones(){
+  var t = T(), c = [
+    '· La fecha queda reservada al recibir la seña. Sin seña, se libera a las ' + CFG.horasParaSenar + ' hs.',
+    '· Podés reprogramar sin cargo si la nueva fecha está libre.',
+    '· Los eventos terminan como máximo a las ' + CFG.finMaximo + ' hs. Si se extiende, se cobra el tiempo extra proporcional.',
+    '· Las bebidas son de la barra y la cantina de Aldea.'
+  ];
+  if (t && t.decorar) c.push('· ' + t.decorar);
+  return c;
+}
+$('acepto').onchange = function(){ $('resErr').style.display = 'none'; };
+$('btnPdf').onclick = function(){
+  var b = this; leerDatos();
+  if (DEMO){ window.print(); return; }
+  b.disabled = true; $('pdfMsg').textContent = 'Armando el PDF…';
+  llamar('generarPresupuesto', datosEnvio(), function(r){
+    b.disabled = false; $('pdfMsg').innerHTML = '<a href="' + esc(r.pdf) + '" target="_blank" rel="noopener"><b>Abrir el presupuesto en PDF</b></a>';
+  }, function(e){ b.disabled = false; $('pdfMsg').textContent = e.message; });
+};
+
+/* ===== 6b. Cita ===== */
+function dibujarCita(){
+  var eq = CFG.citas.equipos[equipoCita()], t = T();
+  $('citaSub').textContent = 'Te recibe ' + eq.quien + ' de ' + eq.nombre + ' en el predio. Dura unos ' + CFG.citas.duracionMin + ' minutos.';
+  var c = t && !D.soloCita ? cot() : null;
+  $('citaEstim').innerHTML = c && !c.error ? '<div class="nota t"><b>Estimación de la parte de Aldea: desde ' + plata(c.total) + '</b><br>' +
+    c.lineas.map(function(l){ return esc(l.t) + ': ' + plata(l.m); }).join('<br>') +
+    (t.modo === 'india' ? '<br>Catering, DJ y ambientación los cotiza ' + esc(CFG.india.nombre) + ' en la cita.' : '') + '</div>' +
+    '<button type="button" class="btn claro ancho" id="btnPdfCita">📄 Descargar estimación en PDF</button><div id="pdfMsgCita" class="sub centro" style="margin-top:8px"></div>' : '';
+  if ($('btnPdfCita')) $('btnPdfCita').onclick = function(){
+    var b = this; if (DEMO){ window.print(); return; }
+    b.disabled = true; $('pdfMsgCita').textContent = 'Armando el PDF…';
+    llamar('generarPresupuesto', datosEnvio(), function(r){ b.disabled = false; $('pdfMsgCita').innerHTML = '<a href="' + esc(r.pdf) + '" target="_blank" rel="noopener"><b>Abrir el PDF</b></a>'; },
+      function(e){ b.disabled = false; $('pdfMsgCita').textContent = e.message; });
+  };
+  var dias = [], f = new Date(HOY.getTime() + 86400000), limite = new Date(HOY.getTime() + CFG.citas.diasHaciaAdelante * 86400000);
+  while (f <= limite){ if (CFG.citas.dias.indexOf(f.getDay()) >= 0) dias.push(key(f)); f = new Date(f.getTime() + 86400000); }
+  var corto = ['dom','lun','mar','mié','jue','vie','sáb'];
+  $('citaDias').innerHTML = dias.map(function(k){
+    var libres = CFG.citas.horarios.filter(function(h){ return citaLibre(k, h); }).length, d = parseKey(k);
+    return '<button type="button" class="chip' + (D.citaFecha === k ? ' sel' : '') + '" data-k="' + k + '" ' + (libres ? '' : 'disabled style="opacity:.4"') + '>' + corto[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1) + '</button>';
+  }).join('');
+  $('citaDias').querySelectorAll('.chip').forEach(function(c){ c.onclick = function(){ D.citaFecha = c.dataset.k; D.citaHora = ''; dibujarCita(); guardarBorrador(); }; });
+  $('citaHorasWrap').style.display = D.citaFecha ? 'block' : 'none';
+  $('citaHoras').innerHTML = D.citaFecha ? CFG.citas.horarios.map(function(h){
+    return '<button type="button" class="hora' + (D.citaHora === h ? ' sel' : '') + '" data-h="' + h + '" ' + (citaLibre(D.citaFecha, h) ? '' : 'disabled') + '>' + h + '</button>';
+  }).join('') : '';
+  $('citaHoras').querySelectorAll('.hora').forEach(function(b){ b.onclick = function(){ D.citaHora = b.dataset.h; dibujarCita(); guardarBorrador(); }; });
+  $('citaWa').href = wa(eq.whatsapp, '¡Hola ' + eq.nombre + '! 🌿 Quiero coordinar una visita para conocer Aldea de Valle' + (t ? ' por ' + t.nombre.toLowerCase() : '') + '.');
+  $('citaErr').style.display = 'none';
+}
+function citaLibre(k, h){ var o = CITAS[k]; return !o || o[equipoCita()].indexOf(h) < 0; }
+
+/* ===== Envíos ===== */
+function datosEnvio(){
+  leerDatos();
+  var o = {}; Object.keys(D).forEach(function(k){ if (k !== 'cod') o[k] = D[k]; });
+  o.codigo = D.cod ? D.cod.codigo : '';
+  o.equipo = equipoCita();
+  return o;
+}
+function bloquear(si){ enviando = si; $('siguiente').disabled = si; $('atras').disabled = si; }
+function enviarReserva(){
+  if (enviando) return; bloquear(true); $('siguiente').textContent = 'Reservando…';
+  llamar('enviarReserva', datosEnvio(), function(r){ bloquear(false); RES = r; borrarBorrador(); mostrarListoReserva(r); },
+    function(e){ bloquear(false); $('siguiente').textContent = 'Reservar'; mostrarError('resumen', e.message);
+      if (/ocup/i.test(e.message)) refrescarDisponibilidad(); });
+}
+function enviarCita(){
+  if (enviando) return; bloquear(true); $('siguiente').textContent = 'Agendando…';
+  llamar('agendarCita', datosEnvio(), function(r){ bloquear(false); borrarBorrador(); mostrarListoCita(r); },
+    function(e){ bloquear(false); $('siguiente').textContent = 'Agendar cita'; mostrarError('cita', e.message);
+      if (/ocup/i.test(e.message)) refrescarDisponibilidad(); });
+}
+function refrescarDisponibilidad(){ llamar('getDatosIniciales', undefined, function(d){ OCUP = d.ocupados || {}; CITAS = d.citas || {}; }); }
+function mostrarListo(html){
+  document.querySelectorAll('.paso').forEach(function(p){ p.classList.toggle('on', p.id === 'p-listo'); });
+  $('listo').innerHTML = html; $('barra').classList.remove('on'); document.body.classList.remove('con-barra'); $('progreso').innerHTML = '';
+  $('armador').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function mostrarListoReserva(r){
+  var pg = CFG.pago, t = T();
+  var h = '<div class="ok-ico">✓</div><h2>¡Fecha reservada!</h2><p class="sub">Reserva <b>' + esc(r.id) + '</b> · ' + esc(fechaLarga(D.fecha)) + ' · ' + esc(D.hora) + ' a ' + esc(r.fin) + ' hs</p>';
+  if (r.sena){
+    h += '<div class="sena-box" style="text-align:left"><div style="font-weight:700">Seña para confirmar (' + CFG.porcentajeSena + '%)</div><div class="n">' + plata(r.sena) + '</div>' +
+      '<div class="alias"><span>Alias<br><b id="aliasTxt">' + esc(pg.alias) + '</b></span><button type="button" id="copiarAlias">Copiar</button></div>' +
+      (pg.titular ? '<div style="font-size:14px;margin-top:8px">Titular: <b>' + esc(pg.titular) + '</b>' + (pg.banco ? ' · ' + esc(pg.banco) : '') + '</div>' : '') +
+      '<div style="font-size:14px;margin-top:8px;opacity:.9">Te guardamos la fecha ' + CFG.horasParaSenar + ' hs. Saldo el día del evento: ' + plata(r.saldo) + '.</div></div>' +
+      (pg.linkMercadoPago ? '<a class="btn verde ancho" target="_blank" rel="noopener" href="' + esc(pg.linkMercadoPago) + '">Pagar con Mercado Pago</a>' : '') +
+      '<a class="btn wa ancho" target="_blank" rel="noopener" href="' + esc(r.whatsappComprobante) + '">💬 Mandar el comprobante por WhatsApp</a>';
+  } else {
+    h += '<p>Te escribimos por WhatsApp para confirmarte. ¡Gracias!</p><a class="btn wa ancho" target="_blank" rel="noopener" href="' + esc(r.whatsappComprobante) + '">💬 Avisar por WhatsApp</a>';
+  }
+  if (r.glorin) h += '<a class="btn terracota ancho" target="_blank" rel="noopener" href="' + esc(r.glorin) + '">🎈 Elegir la animación con GLORIN</a>';
+  if (r.pdf) h += '<a class="btn claro ancho" target="_blank" rel="noopener" href="' + esc(r.pdf) + '">📄 Ver el presupuesto en PDF</a>';
+  if (r.linkCalendario) h += '<a class="btn claro ancho" target="_blank" rel="noopener" href="' + esc(r.linkCalendario) + '">📅 Agendarlo en mi calendario</a>';
+  if (D.email) h += '<p class="sub" style="margin-top:14px">Te mandamos todo también a ' + esc(D.email) + '.</p>';
+  mostrarListo(h);
+  if ($('copiarAlias')) $('copiarAlias').onclick = function(){ copiar(pg.alias, this); };
+}
+function mostrarListoCita(r){
+  var h = '<div class="ok-ico">📅</div><h2>¡Te esperamos!</h2><p class="sub">Cita <b>' + esc(r.id) + '</b> · ' + esc(fechaLarga(D.citaFecha)) + ' · ' + esc(D.citaHora) + ' hs<br>Te recibe ' + esc(r.quien) + ' (' + esc(r.equipo) + ').</p>' +
+    '<p>Mandanos un WhatsApp para dejarla confirmada:</p>' +
+    '<a class="btn wa ancho" target="_blank" rel="noopener" href="' + esc(r.whatsapp) + '">💬 Confirmar por WhatsApp</a>' +
+    (r.linkCalendario ? '<a class="btn claro ancho" target="_blank" rel="noopener" href="' + esc(r.linkCalendario) + '">📅 Agendarla en mi calendario</a>' : '') +
+    (r.pdf ? '<a class="btn claro ancho" target="_blank" rel="noopener" href="' + esc(r.pdf) + '">📄 Ver la estimación en PDF</a>' : '') +
+    (D.email ? '<p class="sub" style="margin-top:14px">También te llega por mail a ' + esc(D.email) + '.</p>' : '');
+  mostrarListo(h);
+}
+function copiar(txt, btn){
+  var ok = function(){ btn.textContent = '¡Copiado!'; setTimeout(function(){ btn.textContent = 'Copiar'; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ copiaVieja(txt); ok(); });
+  else { copiaVieja(txt); ok(); }
+}
+function copiaVieja(txt){ var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch(e){} document.body.removeChild(t); }
+
+/* ===== Borrador (si cierra la página, sigue donde estaba) ===== */
+var CLAVE = 'aldea-eventos-v1', BORRADOR_LISTO = false;
+function guardarBorrador(){
+  if (!BORRADOR_LISTO) return;
+  try { localStorage.setItem(CLAVE, JSON.stringify({ D: D, paso: flujo[idx], t: Date.now() })); } catch(e){}
+}
+function borrarBorrador(){ try { localStorage.removeItem(CLAVE); } catch(e){} }
+function cargarBorrador(){
+  var o = null;
+  try { o = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch(e){}
+  BORRADOR_LISTO = true;
+  if (!o || Date.now() - o.t > 7*86400000 || !o.D) return null;
+  Object.keys(o.D).forEach(function(k){ if (k in D) D[k] = o.D[k]; });
+  if (D.tipo && !T()) D.tipo = '';
+  if (D.fecha && parseKey(D.fecha) < diaMin()){ D.fecha = ''; D.hora = ''; }
+  ['nombre', 'whatsapp', 'email', 'agasajado', 'motivo', 'comentarios'].forEach(function(k){ $(k).value = D[k] || ''; });
+  document.querySelectorAll('.chips[data-campo]').forEach(function(g){
+    g.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('sel', D[g.dataset.campo] === c.textContent); });
+  });
+  return o.paso;
+}
+
+/* ===== Arranque ===== */
+function dibujarPortada(){
+  $('heroFoto').style.backgroundImage = 'url(\'' + foto('eventos-salon.jpg') + '\')';
+  $('espacios').innerHTML = CFG.sectores.concat([CFG.predio]).map(function(s){
+    return '<div class="esp"><div class="img" style="background-image:url(\'' + foto(s.foto) + '\')"></div><div class="t"><b>' + esc(s.nombre) + '</b><small>' + esc(s.detalle) + '</small><span class="cap">Hasta ' + s.cap + ' personas</span></div></div>';
+  }).join('');
+  if (CFG.testimonios && CFG.testimonios.length){
+    $('testiSec').style.display = 'block';
+    $('testis').innerHTML = CFG.testimonios.map(function(x){ return '<div class="testi"><p>“' + esc(x.texto) + '”</p><small>' + esc(x.autor) + '</small></div>'; }).join('');
+  }
+  $('waFlot').href = wa(CFG.whatsapp, '¡Hola Aldea! Quiero consultar por un evento.');
+  $('footWa').href = $('waFlot').href;
+  $('footIndia').href = 'https://www.instagram.com/' + CFG.india.instagram + '/';
+}
+function aplicarParametros(p){
+  p = p || {};
+  if (p.tipo && buscar(CFG.tipos, p.tipo)){ elegirTipo(p.tipo); return 1; }
+  if (p.cita){ D.soloCita = true; return 0; }
+  return null;
+}
+function arrancar(datos){
+  if (datos && datos.config) CFG = datos.config;
+  if (datos && datos.precios) P = datos.precios;
+  OCUP = (datos && datos.ocupados) || {}; CITAS = (datos && datos.citas) || {};
+  HOY = datos && datos.hoy ? parseKey(datos.hoy) : new Date(new Date().setHours(0,0,0,0));
+  dibujarPortada();
+  var pasoGuardado = cargarBorrador();
+  var seguir = function(prm){
+    var i = aplicarParametros(prm);
+    armarFlujo();
+    if (i !== null) irA(i);
+    else irA(pasoGuardado && flujo.indexOf(pasoGuardado) >= 0 ? flujo.indexOf(pasoGuardado) : 0);
+    if (i !== null) setTimeout(function(){ $('armador').scrollIntoView({ block:'start' }); }, 50);
+  };
+  if (EN_APPS_SCRIPT && google.script.url) google.script.url.getLocation(function(loc){ seguir(loc && loc.parameter); });
+  else { var prm = {}; location.search.replace(/[?&]([^=&]+)=([^&]*)/g, function(_, k, v){ prm[k] = decodeURIComponent(v); }); seguir(prm); }
+}
+$('siguiente').onclick = siguiente;
+$('atras').onclick = function(){ irA(idx - 1); };
+$('ctaCotizar').onclick = function(ev){ ev.preventDefault(); if (D.soloCita){ D.soloCita = false; irA(0); } $('armador').scrollIntoView({ behavior:'smooth', block:'start' }); };
+$('ctaCita').onclick = function(){ D.soloCita = true; irA(0); $('armador').scrollIntoView({ behavior:'smooth', block:'start' }); };
+
+/* ===== Demo (sin Apps Script) ===== */
+function demoDatos(){
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var oc = {}, cit = {};
+  for (var i = 4; i < 120; i += 3){
+    var f = new Date(hoy.getTime() + i*86400000), k = key(f);
+    if (f.getDay() === 6) oc[k] = { bloq: [], ev: [[16*60, 18*60+30, ['quincho']], [20*60, 26*60, ['salon']]] };
+    if (f.getDay() === 0) oc[k] = { bloq: [], ev: [[12*60, 16*60, ['patio']]] };
+  }
+  var m = new Date(hoy.getTime() + 2*86400000); cit[key(m)] = { aldea: ['18:00', '18:30'], india: ['19:00'] };
+  return { config: CFG_DEMO, precios: P_DEMO, hoy: key(hoy), ocupados: oc, citas: cit };
+}
+function demoLlamar(fn, arg, ok, ko){
+  setTimeout(function(){
+    if (fn === 'getDatosIniciales') return ok(demoDatos());
+    if (fn === 'validarCodigo') return arg === 'DEMO' ? ok({ codigo: 'DEMO', descuento: 20, piso: 300000 }) : ko({ message: 'Ese código no existe o ya no está activo. (En la demo probá DEMO)' });
+    var id = (fn === 'agendarCita' ? 'CI' : 'AV') + '-DEMO';
+    if (fn === 'enviarReserva'){ var c = cot(); var fm = aMin(D.hora) + c.duracion; return ok({ id: id, total: c.total, sena: c.sena, saldo: c.saldo, fin: pad(Math.floor(fm/60)%24) + ':' + pad(fm%60), pdf: '', glorin: arg.glorin ? CFG.urlGlorin : '',
+      whatsappComprobante: wa(CFG.whatsapp, 'Demo: comprobante de la reserva'), linkCalendario: '' }); }
+    if (fn === 'agendarCita'){ var e = CFG.citas.equipos[arg.equipo]; return ok({ id: id, equipo: e.nombre, quien: e.quien, pdf: '', linkCalendario: '', whatsapp: wa(e.whatsapp, 'Demo: confirmo la cita') }); }
+    ko({ message: 'No disponible en la demo.' });
+  }, 400);
+}
+
+if (DEMO){ $('demo').style.display = 'block'; arrancar(demoDatos()); }
+else llamar('getDatosIniciales', undefined, arrancar, function(){
+  CFG = CFG_DEMO; P = P_DEMO; HOY = new Date(new Date().setHours(0,0,0,0)); dibujarPortada();
+  $('tipos').innerHTML = '<div class="aviso">No pudimos cargar la agenda. Escribinos por WhatsApp y te ayudamos.</div>'; irA(0);
+});
+</script>
+</body>
+</html>

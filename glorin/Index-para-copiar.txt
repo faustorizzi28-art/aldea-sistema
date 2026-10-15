@@ -819,7 +819,23 @@ function aplicarParametros(p){
   p = p || {};
   if (p.paquete && buscar(CFG.paquetes, p.paquete)) { D.paquete = p.paquete; D.paqueteElegidoAMano = true; }
   if (p.zona && buscar(CFG.zonas, p.zona)) { D.zona = p.zona; $('zona').value = p.zona; }
-  if (p.paquete || p.zona) { dibujarPaquetes(); actualizar(); }
+  // Desde la web de eventos de Aldea: ?fecha=AAAA-MM-DD&hora=HH:MM&chicos=30&cumpleanero=Nombre&lugar=aldea
+  if (p.lugar === 'aldea') {
+    D.zona = 'aldea'; $('zona').value = 'aldea'; D.lugar = 'En Aldea de Valle';
+    document.querySelectorAll('.chips[data-campo="lugar"] .chip').forEach(function(c){ c.classList.toggle('sel', c.textContent === 'En Aldea de Valle'); });
+    if (!$('direccion').value) $('direccion').value = 'Aldea de Valle, Valle Escondido';
+  }
+  if (p.chicos && !$('cantChicos').value) $('cantChicos').value = String(p.chicos).replace(/\D/g, '').slice(0, 3);
+  if (p.cumpleanero && !$('cumpleanero').value) $('cumpleanero').value = String(p.cumpleanero).slice(0, 60);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(p.fecha || '')) {
+    var st = estadoDia(parseKey(p.fecha));
+    if (st !== 'off' && st !== 'lleno') {
+      D.fecha = p.fecha; mesVista = new Date(parseKey(p.fecha).getFullYear(), parseKey(p.fecha).getMonth(), 1);
+      D.hora = CFG.horarios.indexOf(p.hora) >= 0 && horaLibre(p.fecha, p.hora) ? p.hora : '';
+      dibujarCal();
+    }
+  }
+  if (p.paquete || p.zona || p.lugar || p.fecha) { dibujarPaquetes(); actualizar(); guardarBorrador(); }
 }
 
 function copiar(txt, btn){
