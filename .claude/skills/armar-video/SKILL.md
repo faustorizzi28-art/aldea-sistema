@@ -76,7 +76,21 @@ Composición `VideoHablado` (`videos/src/VideoHablado.tsx`): zooms de ritmo, gan
 4. `npx remotion render src/index.ts VideoHablado out/<nombre>.mp4 --props=guiones/<nombre>.json`
 5. Los clips de Fausto NO se suben al repositorio (`public/clips/` está en .gitignore).
 
-## 6. Cambiar el diseño
+## 6. Edición "de tendencia" (EspaciosPro) — usar por defecto para Aldea
+
+Investigado en octubre 2026: lo que funciona en Reels es cortar al ritmo de la música, intro que sube con un "drop",
+transiciones rápidas (whip/zoom con desenfoque, glitch RGB), cámara lenta, flash en los golpes, grano/destellos
+cinematográficos y textos animados. Todo eso está en `videos/src/EspaciosPro.tsx` (composiciones `EspaciosPro` y
+`EspaciosProHorizontal`, mismo guion que `Espacios`).
+- Música: `house-aldea.mp3` (120 bpm, drop en el segundo 4) y `phonk-bunkai.mp3` (130 bpm, para entrenamiento).
+  Se regeneran con `python3 videos/herramientas/generar-musica-v2.py` (también whip, boom, riser, shutter, glitch).
+- Entregar SIEMPRE también una versión con `"musica": null`, para que Fausto le ponga un audio en tendencia
+  desde Instagram (da más alcance que la música propia).
+- Normalizar el audio final: `ffmpeg ... -af "loudnorm=I=-14:TP=-1.5:LRA=9"`.
+- Datos de Aldea: WhatsApp 351 530 8489 · Instagram @aldeadevalle · República de China 1890, Valle Escondido.
+- La pileta no se muestra hasta que esté limpia para la temporada.
+
+## 7. Cambiar el diseño
 
 - Colores, usuario y tipografía: `videos/src/marca.ts`.
 - Animaciones y estilos de escena: `videos/src/Reel.tsx`.

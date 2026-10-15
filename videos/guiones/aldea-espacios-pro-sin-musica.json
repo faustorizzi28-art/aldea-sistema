@@ -1,0 +1,58 @@
+{
+  "titulo": "Aldea de Valle – Nuestros espacios",
+  "intro": {
+    "linea1": "Aldea de Valle",
+    "linea2": "Conocé nuestros espacios",
+    "video": "aldea-recorrido.mp4",
+    "videoHorizontal": "aldea-recorrido-h.mp4"
+  },
+  "espacios": [
+    {
+      "nombre": "Salón cerrado",
+      "descripcion": "Amplio y techado, para fiestas, cumples y eventos.",
+      "foto": "aldea-salon.jpg",
+      "paneo": "der"
+    },
+    {
+      "nombre": "Deck vidriado",
+      "descripcion": "Cerrado con vidrios, con vista al verde.",
+      "foto": "aldea-deck.jpg",
+      "paneo": "izq"
+    },
+    {
+      "nombre": "Patio de piedra",
+      "descripcion": "Bancos de madera bajo la pérgola, al aire libre.",
+      "foto": "aldea-patio-piedra.jpg",
+      "paneo": "der"
+    },
+    {
+      "nombre": "Quincho",
+      "descripcion": "Techado, con parrillas y vista a la cancha.",
+      "foto": "aldea-quincho.jpg",
+      "paneo": "izq"
+    },
+    {
+      "nombre": "Espacios verdes",
+      "descripcion": "Mucho parque para correr, jugar y disfrutar.",
+      "video": "aldea-recorrido.mp4",
+      "videoHorizontal": "aldea-recorrido-h.mp4",
+      "desde": 4.5,
+      "segundos": 4.6
+    },
+    {
+      "nombre": "Estacionamiento",
+      "descripcion": "Propio, para llegar sin vueltas.",
+      "foto": "aldea-estacionamiento.jpg",
+      "paneo": "izq",
+      "segundos": 4
+    }
+  ],
+  "cierre": {
+    "llamado": "Tu próximo evento, acá.",
+    "direccion": "República de China 1890 · Valle Escondido, Córdoba",
+    "whatsapp": "351 530 8489",
+    "usuario": "@aldeadevalle"
+  },
+  "musica": null,
+  "volumenMusica": 0.85
+}
