@@ -44,7 +44,7 @@ const CONFIG = {
   emailAviso: '',                       // vacío = al mail de la cuenta dueña del script
   emailIndia: '',                       // opcional: mail de Aldea India para avisarle sus citas
   direccion: 'Aldea de Valle · Valle Escondido, Córdoba',
-  urlWeb: 'https://script.google.com/macros/s/AKfycbwe6qEKJt4du8qYoViZPTCY1v9KpZPGhQ_pxwmFI6LkAq9XvlVNY6nbHKOxlT3bWGqPBQ/exec', // link de esta página (para los mails). Pegalo después de implementar.
+  urlWeb: 'https://script.google.com/macros/s/AKfycbzjwI6A77LzWAYjOfTXfnTJtkn7sQT9Mkmqg6jmyKiE4avq4UXvUX_QpMXEac1PeBt2SA/exec', // link de esta página (para los mails). Pegalo después de implementar.
   urlGlorin: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec',
   india: { nombre: 'Aldea India', whatsapp: '5493515119452', instagram: 'aldeaindia.eventos',
            detalle: 'Catering, DJ, ambientación y organización integral' },
