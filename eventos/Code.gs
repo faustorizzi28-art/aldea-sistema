@@ -138,7 +138,7 @@ const CONFIG = {
   ],
   modalidades: {
     barra: { nombre: 'Espacio + crédito de barra', destacado: true,
-             detalle: 'Pagás un espacio reducido y el resto queda como crédito para tragos y bebidas en la barra de Aldea. Barman incluido.' },
+             detalle: 'Pagás un espacio reducido y el resto queda como crédito para tragos y bebidas en la barra de Aldea. Se usa durante el evento y lo que sobra no se devuelve. Barman incluido.' },
     barralibre: { nombre: 'Espacio + barra libre', detalle: 'Barra libre de tragos y bebidas por persona durante el evento. Barman incluido.' },
     alquiler: { nombre: 'Solo el espacio', detalle: 'Alquilás el espacio y las bebidas se compran en la cantina durante el evento.' },
     almuerzo: { nombre: 'Jornada con almuerzo', detalle: 'Uso del predio + almuerzo (2 hamburguesas y gaseosa) por alumno.' },
@@ -174,6 +174,65 @@ const CONFIG = {
     }
   },
   testimonios: [                        // { texto: '...', autor: 'Nombre · Cumple de 40' }
+  ],
+  // Reglamento que se acepta al reservar. Se muestra en la web y va en el PDF.
+  // {sena}, {horas} y {fin} se reemplazan por la seña, las horas para señar y la hora máxima.
+  reglamento: [
+    { titulo: 'Reserva y pagos', items: [
+      'La fecha queda reservada al recibir la seña del {sena}% del total. Sin seña, la reserva se libera a las {horas} hs.',
+      'El saldo se abona el día del evento, antes de que comience.',
+      'Los pagos se hacen por transferencia al alias de Aldea de Valle o en efectivo. Mandanos siempre el comprobante por WhatsApp.',
+      'Los precios quedan congelados una vez señado. Los presupuestos sin seña pueden actualizarse.'
+    ] },
+    { titulo: 'Reprogramación y cancelación', items: [
+      'Podés reprogramar sin cargo una vez, avisando con al menos 7 días de anticipación y sujeto a disponibilidad de la nueva fecha.',
+      'Si cancelás, la seña no se devuelve, pero podés usarla para otra fecha dentro de los 6 meses siguientes.',
+      'Por lluvia u otra causa climática, si el evento es al aire libre, te ofrecemos un espacio techado si está disponible o reprogramar sin cargo.'
+    ] },
+    { titulo: 'Horarios', items: [
+      'El evento empieza y termina en el horario contratado. Ningún evento termina después de las {fin} hs.',
+      'Si el evento se extiende, se cobra el tiempo extra proporcional, siempre que el espacio esté disponible.',
+      'Cumpleaños y celebraciones: se puede entrar a decorar 1 hora antes. 15, casamientos y eventos formales: se coordina dejar las cosas el día anterior.',
+      'La decoración y los objetos propios se retiran al terminar el evento, o al día siguiente en el horario que acordemos.'
+    ] },
+    { titulo: 'Cantidad de personas', items: [
+      'El precio corresponde a la cantidad de personas o chicos contratada. Si asisten más, cada persona extra se cobra al valor vigente.',
+      'No se puede superar la capacidad máxima del sector elegido.'
+    ] },
+    { titulo: 'Bebidas y crédito de barra (vouchers)', items: [
+      'Las bebidas son exclusivamente de la barra y la cantina de Aldea. No se permite ingresar bebidas.',
+      'El crédito de barra (vouchers) se consume solo dentro del horario del evento.',
+      'El crédito que no se consume NO se devuelve, no se canjea por dinero ni se pasa a otra fecha.',
+      'Si el crédito se termina, se puede seguir consumiendo abonando en el momento.',
+      'La barra libre rige durante el horario contratado.',
+      'No se vende ni se sirve alcohol a menores de 18 años. Promovemos el consumo responsable.'
+    ] },
+    { titulo: 'Qué incluye el espacio', items: [
+      'Aldea cuenta con vajilla, manteles y mobiliario (mesas, sillas, bancos y livings) para la cantidad de personas contratada. Si necesitás algo especial, consultanos.',
+      'Incluye encargado durante el evento, limpieza antes y después, baños y estacionamiento.',
+      'Podés traer tu comida, la torta o contratar catering. El asador se usa con el parrillero o el encargado de Aldea.',
+      'La comida de la cantina (panchos, pizzas, empanadas) se encarga con al menos 48 hs de anticipación.'
+    ] },
+    { titulo: 'Cuidado del predio', items: [
+      'Las roturas o faltantes de vajilla, mobiliario o instalaciones se cobran al valor de reposición.',
+      'No se puede clavar, atornillar ni pegar cintas que dañen paredes, maderas o plantas.',
+      'No se permite pirotecnia, bengalas ni fuego fuera del fogón y los chulengos, que maneja el personal de Aldea.',
+      'Se fuma solo en espacios abiertos. La música respeta un volumen razonable y las normas vigentes.',
+      'Los proveedores externos (catering, DJ, decoración) tienen que coordinar con Aldea su horario de ingreso y respetar este reglamento.'
+    ] },
+    { titulo: 'Chicos, pileta y canchas', items: [
+      'Los chicos están siempre bajo la responsabilidad de los adultos del evento.',
+      'La pileta se usa solo en temporada, con guardavidas y en el horario contratado.',
+      'El uso de las canchas y los juegos es responsabilidad de quienes participan.'
+    ] },
+    { titulo: 'Seguridad y admisión', items: [
+      'Aldea se reserva el derecho de admisión y de terminar el evento si no se respeta este reglamento.',
+      'Los eventos nocturnos o con mucha gente pueden requerir personal de seguridad, que se cotiza aparte.',
+      'Aldea no se hace responsable por objetos personales perdidos u olvidados.'
+    ] },
+    { titulo: 'Fotos', items: [
+      'Podemos sacar fotos del espacio ambientado para nuestras redes. Si no querés que publiquemos fotos de tu evento, avisanos.'
+    ] }
   ]
 };
 
@@ -234,7 +293,7 @@ const COLUMNAS = [
   'ID', 'Recibido', 'Estado', 'Tipo', 'Fecha evento', 'Hora inicio', 'Hora fin', 'Duración', 'Sector',
   'Personas', 'Adultos aprox.', 'Nombre', 'WhatsApp', 'Email', 'Agasajado/a', 'Edad / motivo',
   'Modalidad', 'Detalle del presupuesto', 'Código', 'Total', 'Seña', 'Saldo',
-  'Decoración', 'Comida', 'Animación GLORIN', 'Cómo nos conoció', 'Comentarios',
+  'Decoración', 'Comida', 'Animación GLORIN', 'Cómo nos conoció', 'Comentarios', 'Reglamento',
   'PDF', 'WhatsApp link', 'ID evento calendario', 'Último aviso', 'Detalle completo (JSON)'
 ];
 const COLUMNAS_CITAS = [
@@ -677,7 +736,7 @@ function cotizar(d, P, C, cod) {
   }
   if (mod === 'barra') {
     var cred = Math.max(P.barraCreditoMinimo, n * P.barraCreditoPorPersona);
-    add('Crédito de barra (tragos y bebidas)', cred, 'Se consume durante el evento');
+    add('Crédito de barra (tragos y bebidas)', cred, 'Se consume durante el evento · lo que sobra no se devuelve');
   }
   if (mod === 'barralibre') add('Barra libre · ' + n + ' personas', n * P.barraLibrePorPersona, plata(P.barraLibrePorPersona) + ' por persona');
   if (T.tarifa === 'escuela') {
@@ -770,6 +829,7 @@ function enviarReserva(d) {
   const dow = new Date(Number(d.fecha.slice(0, 4)), Number(d.fecha.slice(5, 7)) - 1, Number(d.fecha.slice(8, 10))).getDay();
   if (T.dias && T.dias.indexOf(dow) < 0) throw new Error(T.id === 'asado' ? 'El asado sin cargo es de lunes a jueves.' : 'Ese día no está disponible para este tipo de evento.');
 
+  if (!d.aceptaReglamento) throw new Error('Para reservar tenés que aceptar el reglamento.');
   const cod = d.codigo ? buscarCodigo_(d.codigo) : null;
   const p = cotizar(d, precios_(), CONFIG, cod);
   if (p.error) throw new Error(p.error);
@@ -809,6 +869,7 @@ function enviarReserva(d) {
     'Detalle del presupuesto': lineasTexto_(p), 'Código': cod ? cod.codigo : (d.codigo ? d.codigo + ' (no válido)' : ''),
     'Total': p.total, 'Seña': p.sena, 'Saldo': p.saldo, 'Decoración': d.decoracion, 'Comida': d.comida,
     'Animación GLORIN': d.glorin ? 'Sí, quiere' : '', 'Cómo nos conoció': d.comoNosConocio, 'Comentarios': d.comentarios,
+    'Reglamento': 'Aceptado ' + Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm'),
     'PDF': pdf, 'WhatsApp link': waCliente, 'ID evento calendario': ev.getId(), 'Último aviso': '',
     'Detalle completo (JSON)': JSON.stringify(d)
   });
@@ -1010,12 +1071,25 @@ function crearPdf_(id, d, p, clase) {
       (T.modo === 'india' ? 'Catering, DJ y ambientación los cotiza ' + esc_(CONFIG.india.nombre) + ' (WhatsApp ' + telVisible_(CONFIG.india.whatsapp) + ').' : 'Lo terminamos de armar juntos en la cita.') +
       '</div>' : '') +
     '<div style="margin-top:18px;color:#5C6E5C;font-size:11px;line-height:1.5">' + condiciones_(T).map(esc_).join('<br>') + '</div>' +
+    '<div style="margin-top:20px;border-top:1px solid #E4DCCB;padding-top:12px;font-size:10px;line-height:1.45;color:#3C4F40">' +
+    '<div style="font-size:13px;font-weight:bold;margin-bottom:6px">Reglamento de eventos · Aldea de Valle</div>' +
+    reglamento_().map(function (s) {
+      return '<div style="margin-top:6px"><b>' + esc_(s.titulo) + '</b><br>' + s.items.map(function (i) { return '· ' + esc_(i); }).join('<br>') + '</div>';
+    }).join('') + '</div>' +
     '<div style="margin-top:18px;font-size:12px">Consultas: WhatsApp ' + telVisible_(CONFIG.whatsapp) + ' · ' + esc_(CONFIG.direccion) + '</div>' +
     '</div></body></html>';
   const blob = Utilities.newBlob(html, 'text/html', id + '.html').getAs('application/pdf').setName(id + ' · ' + T.nombre + ' · ' + d.nombre + '.pdf');
   const file = carpetaPresupuestos_().createFile(blob);
   try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { console.error(e); }
   return file.getUrl();
+}
+
+function reglamento_() {
+  return (CONFIG.reglamento || []).map(function (s) {
+    return { titulo: s.titulo, items: s.items.map(function (t) {
+      return t.replace(/\{sena\}/g, CONFIG.porcentajeSena).replace(/\{horas\}/g, CONFIG.horasParaSenar).replace(/\{fin\}/g, CONFIG.finMaximo);
+    }) };
+  });
 }
 
 function condiciones_(T) {

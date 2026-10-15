@@ -65,6 +65,15 @@ Si cierra la página, al volver sigue donde estaba.
   Podés crear uno por persona o desactivarlo con `Activo = No`.
 - La seña es siempre el 30% del total y vence a las 48 hs (`porcentajeSena` y `horasParaSenar` en `CONFIG`).
 
+## Reglamento
+
+Está en `CONFIG.reglamento` de `Code.gs`, dividido en secciones: reserva y pagos, reprogramación, horarios, personas,
+**bebidas y crédito de barra** (se consume en el horario del evento y lo que sobra no se devuelve), qué incluye el espacio
+(vajilla, manteles y mobiliario), cuidado del predio, chicos y pileta, seguridad y fotos.
+- Se ve en la web (sección al pie y en el paso final) y va completo en cada PDF.
+- Para reservar hay que tildar que se acepta. La columna **Reglamento** de la planilla guarda cuándo lo aceptaron.
+- Para cambiar un punto, editá el texto en `CONFIG.reglamento` y publicá una nueva versión.
+
 ## Sectores y capacidad (en `CONFIG` de `Code.gs`)
 
 | Sector | Entran | Para |
