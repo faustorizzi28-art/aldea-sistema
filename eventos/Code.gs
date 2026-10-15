@@ -42,7 +42,7 @@ const CONFIG = {
   nombreCalendarioCitas: 'Aldea · Citas',
   whatsapp: '5493515308489',            // Milagros: recibe consultas y comprobantes
   emailAviso: '',                       // vacío = al mail de la cuenta dueña del script
-  emailIndia: '',                       // opcional: mail de Aldea India para avisarle sus citas
+  emailIndia: 'aldeaindiaeventos@gmail.com', // mail de Aldea India: le llegan sus citas y la invitación al calendario
   direccion: 'Aldea de Valle · Valle Escondido, Córdoba',
   urlWeb: 'https://script.google.com/macros/s/AKfycbzjwI6A77LzWAYjOfTXfnTJtkn7sQT9Mkmqg6jmyKiE4avq4UXvUX_QpMXEac1PeBt2SA/exec', // link de esta página (para los mails). Pegalo después de implementar.
   urlGlorin: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec',
