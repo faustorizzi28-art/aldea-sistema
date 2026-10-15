@@ -2574,7 +2574,7 @@ function abrirTurno(){ mostrarBienvenida(); }
 function aplicarFiltroRol(){
   const rol = turnoActual && turnoActual.rol;
   const cfg = rol && ROLES[rol];
-  const tabsPermitidas = cfg ? cfg.tabs : Object.keys(SECTORES).concat(['panel','gastos','precios','config']);
+  const tabsPermitidas = cfg ? cfg.tabs : Object.keys(SECTORES).concat(['panel','calendario','gastos','precios','config']);
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.style.display = tabsPermitidas.includes(b.dataset.v) ? '' : 'none';
   });
