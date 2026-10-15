@@ -331,6 +331,150 @@
   .ep-nombre{font-weight:700;font-size:13.5px;}
   .ep-fecha{font-size:11px;font-family:'DM Mono',monospace;opacity:.9;white-space:nowrap;}
   .ep-meta{font-size:11.5px;opacity:.85;margin-top:3px;}
+
+  /* ══════════════ VERSIÓN 2 — más clara y fácil de usar ══════════════ */
+  body{padding-bottom:calc(48px + env(safe-area-inset-bottom));font-size:15px;}
+  header{padding:calc(14px + env(safe-area-inset-top)) 16px 0;}
+  .head-row{align-items:center;}
+  .brand h1{font-size:20px;}
+  .head-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  .head-meta .clock{font-size:15px;}
+  #fecha-larga{display:none;}
+  @media(min-width:600px){#fecha-larga{display:block;}}
+  .head-pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .sync-pill{margin-top:0;padding:5px 10px;font-size:11.5px;}
+  #modo-pill{margin-top:0 !important;}
+
+  /* Menú: botones con ícono arriba, fáciles de tocar */
+  .nav{gap:2px;margin-top:12px;padding-bottom:0;}
+  .nav-btn{flex-direction:column;gap:3px;padding:8px 12px 9px;min-width:68px;font-size:11.5px;border-radius:12px 12px 0 0;color:rgba(255,255,255,.62);}
+  .nav-btn span{font-size:19px;line-height:1;}
+  .nav-btn.active{background:var(--fondo);color:var(--tinta);border-bottom-color:transparent !important;}
+  @media(min-width:700px){.nav{justify-content:center;}}
+
+  .container{padding:0 16px;}
+  .vista{padding-top:20px;}
+
+  /* Tarjeta del turno (lo primero que se ve) */
+  .turno-hero{background:var(--blanco);border:1px solid var(--borde);border-radius:20px;padding:18px;box-shadow:var(--sombra);margin-bottom:18px;display:flex;align-items:center;gap:14px;}
+  .turno-hero .th-ico{width:48px;height:48px;border-radius:14px;background:var(--gris-claro);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .turno-hero.abierto .th-ico{background:var(--marca-suave);}
+  .turno-hero .th-body{flex:1;min-width:0;}
+  .turno-hero .th-titulo{font-size:16px;font-weight:800;}
+  .turno-hero .th-sub{font-size:12.5px;color:var(--gris);margin-top:2px;}
+  .turno-hero .btn{width:auto;padding:12px 16px;white-space:nowrap;}
+  .turno-hero.abierto .th-titulo{color:var(--ok);}
+  @media(max-width:420px){.turno-hero{flex-wrap:wrap;}.turno-hero .btn{width:100%;}}
+
+  /* Acciones rápidas */
+  .acciones-titulo{font-size:12px;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:.08em;margin:0 2px 10px;}
+  .acciones{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
+  @media(min-width:600px){.acciones{grid-template-columns:repeat(3,1fr);}}
+  .accion{background:var(--blanco);border:1px solid var(--borde);border-radius:18px;padding:16px 14px;text-align:left;cursor:pointer;box-shadow:var(--sombra);display:flex;flex-direction:column;gap:10px;min-height:112px;font-family:inherit;color:var(--tinta);transition:transform .1s;}
+  .accion:active{transform:scale(.97);}
+  .accion .ai{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+  .accion .at{font-size:15px;font-weight:800;line-height:1.2;}
+  .accion .as{font-size:11.5px;color:var(--gris);margin-top:-6px;line-height:1.3;}
+  .accion.c-cantina .ai{background:var(--cantina-suave);} .accion.c-eventos .ai{background:var(--eventos-suave);}
+  .accion.c-cancha .ai{background:var(--cancha-suave);} .accion.c-gastos .ai{background:var(--gastos-suave);}
+  .accion.c-panel .ai{background:var(--marca-suave);} .accion.c-precios .ai{background:#FFF4D6;}
+
+  .bloque-dueno{border:1.5px dashed var(--borde);border-radius:20px;padding:14px;margin-bottom:18px;}
+  .bloque-dueno > .acciones-titulo{display:flex;align-items:center;gap:6px;}
+
+  /* Secciones y tarjetas */
+  .panel-section{border-radius:18px;padding:18px;box-shadow:var(--sombra);}
+  .panel-section h3{font-size:15px;}
+  .sector-card,.kpi,.entry,.config-box,.form-card{border-radius:16px;}
+  .kpi .kv{font-size:17px;}
+  .feed-row{padding:11px 0;}
+  .feed-title{font-size:14px;}
+  .feed-sub{font-size:12px;}
+  .entry{padding:14px;}
+  .entry-name{font-size:15px;}
+  .entry-meta{font-size:12.5px;}
+  .entry-del{color:#C9C2AC;font-size:18px;}
+  .day-head{font-size:11.5px;}
+  .vacio{padding:40px 16px;font-size:14.5px;line-height:1.5;}
+
+  /* Formularios: campos grandes (16px evita el zoom del iPhone) */
+  .form-card{padding:20px;box-shadow:var(--sombra);border-width:1.5px;}
+  .form-card.open{animation:aparecer .18s ease-out;}
+  @keyframes aparecer{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .field{margin-bottom:15px;}
+  .field label{font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--tinta2);margin-bottom:6px;}
+  .field input,.field select,.field textarea,.buscador input,.welcome-input,.precio-item input{font-size:16px;}
+  .field input,.field select,.field textarea{padding:13px 14px;border-radius:12px;background:#fff;border:1.5px solid var(--borde);}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--marca);box-shadow:0 0 0 3px var(--marca-suave);}
+  .input-prefix span{left:13px;font-size:15px;}
+  .input-prefix input{padding-left:27px;}
+  .ayuda{font-size:12px;color:var(--gris);margin:-6px 0 14px;line-height:1.4;}
+  .form-titulo{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .form-titulo b{font-size:16px;}
+  .form-cerrar{background:var(--gris-claro);border:none;border-radius:10px;width:34px;height:34px;font-size:15px;cursor:pointer;}
+
+  /* Botones */
+  .btn{min-height:50px;border-radius:14px;font-size:15.5px;}
+  .btn-fab{box-shadow:var(--sombra);}
+  .metodo-opt{padding:12px;font-size:14px;border-radius:12px;}
+  .subtab{padding:12px 8px;font-size:13.5px;border-radius:13px;}
+  .msg{font-size:13px;}
+
+  /* Banner de sector más compacto */
+  .sector-banner{border-radius:20px;padding:18px;}
+  .sb-title{font-size:24px;}
+  .sb-stats{gap:8px;}
+
+  /* Cantina: productos y mesas más grandes */
+  .mesa-card{padding:18px 8px;border-radius:16px;}
+  .mesa-card .mn{font-size:13px;}
+  .mesa-card .mv{font-size:16px;}
+  .prod-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  @media(min-width:520px){.prod-grid{grid-template-columns:repeat(3,1fr);}}
+  .prod-btn{padding:14px 8px;border-radius:15px;}
+  .prod-emoji{font-size:26px;}
+  .prod-nombre{font-size:13px;}
+  .prod-precio{font-size:12.5px;}
+  .cat-pill{padding:9px 14px;font-size:13px;}
+  .ticket-bar{border-radius:18px 18px 0 0;box-shadow:0 -10px 30px -12px rgba(15,20,15,.3);border-top-width:3px;padding-bottom:env(safe-area-inset-bottom);}
+  .ticket-qty button{width:32px;height:32px;font-size:16px;}
+  .cmd-back{width:40px;height:40px;}
+
+  /* Bienvenida */
+  .welcome-card{border-radius:24px;padding:30px 22px;}
+  .welcome-title{font-size:30px;}
+  .welcome-input{padding:14px;border-radius:13px;}
+  .welcome-chip{padding:9px 14px;font-size:13.5px;}
+  .welcome-role{padding:13px 6px;font-size:13.5px;border-radius:13px;}
+  .welcome-role .wr-sub{font-size:11px;}
+  .welcome-btn{padding:15px;font-size:15.5px;border-radius:14px;}
+
+  /* Herramientas avanzadas plegadas */
+  details.avanzado{margin-top:16px;background:var(--blanco);border:1px solid var(--borde);border-radius:16px;padding:4px 16px;}
+  details.avanzado summary{cursor:pointer;font-weight:700;font-size:14px;padding:12px 0;list-style:none;}
+  details.avanzado summary::-webkit-details-marker{display:none;}
+  details.avanzado summary::after{content:' ▾';color:var(--gris);}
+  details.avanzado[open] summary::after{content:' ▴';}
+  details.avanzado .config-box{border:none;padding:12px 0;border-top:1px solid var(--borde);border-radius:0;margin-top:0 !important;}
+
+  /* Aviso flotante (toast) */
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--tinta);color:#fff;padding:13px 18px;border-radius:14px;font-size:14px;font-weight:700;box-shadow:var(--sombra-fuerte);z-index:300;opacity:0;pointer-events:none;transition:all .25s;max-width:calc(100vw - 32px);text-align:center;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+  .toast.ok{background:var(--ok);} .toast.err{background:var(--gastos);}
+
+  /* Encabezado compacto en el celular */
+  .brand h1{white-space:nowrap;}
+  @media(max-width:480px){
+    .brand .logo{font-size:9.5px;letter-spacing:.14em;}
+    .brand h1{font-size:18px;}
+    #modo-texto{display:none;}
+    #sync-texto{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .head-meta .clock{display:none;}
+  }
+  .turno-hero.abierto #turno-btn-cerrar{background:var(--gris-claro);color:var(--gastos);box-shadow:none;}
+  .sector-banner{padding:14px 16px;}
+  .sb-top{margin-bottom:10px;}
+  .sb-sub{display:none;}
 </style>
 </head>
 <body>
@@ -339,14 +483,14 @@
   <div class="welcome-card">
     <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAEvklEQVR42u3cwU0kSxBFURKVBfjvFKZgQbBCKhArOhq9yDxnNav+dFb9mw9pNOvj/e0FYIJXRwAIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWgGABggUgWACCBQgWgGABCBYgWACCBSBYgGABCBaAYAGCBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWMBUlyPgpm5/Xn4WBIv0UCX/fMLlV0IOD1UFRqz+8PNiYWFRWVxYWOQtqpSw1RO/DxYWFpXFhYVFRqzKz4pgAQgWP3T8mvQfy6VCviuCBSBY7LGyrCsECxAsrCzrCsECECxSV5Z1hWABgoWV1bmMrCsECxAsrKzOhWRdIViAYGFldS4l6wrBAgQLK6tzMVlXCBYgWFhZncvJukKwAMHCyupcWdYVggUIFlZW58qyrhAsQLCwsjpXlnWFYAGCBZ0ry7pCsADBgrRlY10hWIBgYWVZVwgWgGCRunSsKwQLECysLOsKwQIQLFKXj3WFYAGChZVlXSFYAIJF6hKyrhAsQLBghX4WggUgWACCBQgWfKnQz0KwAAQL68rKQrAAwYIa+tkIFoBgcd66srIQLECwsK6sLAQLQLCYtnisLAQLECysKysLwQIQLKYsHCsLwQIEC+vKykKwAASLKYvGykKwAMHCurKyECwAwWLKgrGyECxAsLCurCwECxAsrCs/M4IFIFicvFSsLMECECwsFN8BwQIEC+vKd0GwAASLkxeJlSVYAIKFJeK7IViAYGGB+I4IFoBgcfLysLIEC0CwsDh8ZwQLECwsDd8dwQIQLAvDGSBYAIKFZeEsECxAsLAonAmCBSBYloSzQbAABAsLwhkhWIBgYTk4KwQLQLAsBmeGYAEIFpaCsxMsAMHCQnCGCBYgWFgGzhLBAhAsiwBnKlgAgoUl4GwRLECwsACcMYIFIFhufpy1YAEIFm58Z45gAYKFm97ZI1gAguWGxzMQLADBcrPjWSBYgGDhRvdMECwAwXKT49kIFoBgucHxjATLEQCChZvbs0KwAMHCjY1nJlgAguWmxrMTLADBwg3tGSJYgGDhZsazFCwAwXIj45lu7XIEPGD5nxwLy02MZ4tgEbCuQLDcwGLnGQsWgGBZV3jWCBYgWLhxb1bIZ3jmggUgWNYVnj2CBQgWbtjf+Auj3gHB4kjih2C5WfEuCBaAYLlR8U4gWHRbQz4TwcJNindDsAAEyw2Kd0SwONMa+tkIFm5OvCuCBSBYbky8M4IFIFhuyihrk/8GggW47ATLCwd8czmCrX/Ncia5l1Z5ByysKevKiyquCBYcd/kJFtYVnqVgAVaWYFlXWFmCBVhZgmVdYWUhWGBlCZYXyQ2MZyxYgJUlWG5eECw3Hjz3cvLOCZZ1hWe+A/9ag5cP742FBSBYgGABCBaAYAGCBSBYAIIFCBaAYAEIFiBYAIIFIFiAYAEIFoBgAYIFIFgAggUIFoBgAQgWIFgAggUgWIBgAQgWIFiOABAsAMECBAtAsAAECxAsAMECECxAsAAEC0CwAMECECwAwQIEC0CwAAQLECwAwQIQLECwAAQLQLCAsT4BYsXDySxvrZ8AAAAASUVORK5CYII="/>
     <div class="welcome-logo">Aldea del Valle</div>
-    <div class="welcome-title">Bienvenido</div>
-    <div class="welcome-sub">Decinos quién inicia sesión hoy</div>
+    <div class="welcome-title">¡Hola!</div>
+    <div class="welcome-sub">Abrí tu turno para empezar. Si ya entraste antes, tocá tu nombre.</div>
     <input type="text" id="welcome-input" class="welcome-input" placeholder="Tu nombre" onkeydown="if(event.key==='Enter') document.getElementById('welcome-email').focus()"/>
     <div class="welcome-chips" id="welcome-chips"></div>
-    <input type="email" id="welcome-email" class="welcome-input" placeholder="Tu email (para el resumen de cada turno)" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
+    <input type="email" id="welcome-email" class="welcome-input" placeholder="Tu email (te llega el resumen del turno)" onkeydown="if(event.key==='Enter') confirmarIngreso()"/>
     <div class="welcome-role-label">¿Con qué rol entrás?</div>
     <div class="welcome-roles" id="welcome-roles"></div>
-    <button class="welcome-btn" onclick="confirmarIngreso()">Ingresar al sistema</button>
+    <button class="welcome-btn" onclick="confirmarIngreso()">Abrir mi turno</button>
   </div>
 </div>
 
@@ -384,25 +528,27 @@
     <div class="head-meta">
       <div class="clock" id="reloj">--:--</div>
       <div id="fecha-larga"></div>
-      <div class="sync-pill" onclick="cargarTodo()">
-        <span class="sync-dot off" id="sync-dot"></span>
-        <span id="sync-texto">Sin conectar</span>
-      </div>
-      <div class="sync-pill" onclick="toggleModoDueno()" id="modo-pill" style="margin-top:6px;">
-        <span id="modo-icon">🔒</span>
-        <span id="modo-texto">Modo empleado</span>
+      <div class="head-pills">
+        <div class="sync-pill" onclick="cargarTodo()" title="Tocá para actualizar">
+          <span class="sync-dot off" id="sync-dot"></span>
+          <span id="sync-texto">Sin conectar</span>
+        </div>
+        <div class="sync-pill" onclick="toggleModoDueno()" id="modo-pill">
+          <span id="modo-icon">🔒</span>
+          <span id="modo-texto">Modo empleado</span>
+        </div>
       </div>
     </div>
   </div>
   <div class="nav" id="nav">
-    <div class="nav-btn active c-panel" data-v="panel"><span>🏠</span>Panel</div>
+    <div class="nav-btn active c-panel" data-v="panel"><span>🏠</span>Inicio</div>
     <div class="nav-btn c-panel" data-v="calendario"><span>📅</span>Calendario</div>
     <div class="nav-btn c-eventos" data-v="eventos"><span>🎉</span>Eventos</div>
     <div class="nav-btn c-cancha" data-v="cancha"><span>⚽</span>Cancha</div>
     <div class="nav-btn c-cantina" data-v="cantina"><span>🍔</span>Cantina</div>
     <div class="nav-btn c-gastos" data-v="gastos"><span>💸</span>Gastos</div>
     <div class="nav-btn c-cantina" data-v="precios"><span>🍽️</span>Precios</div>
-    <div class="nav-btn c-config" data-v="config"><span>⚙️</span>Config</div>
+    <div class="nav-btn c-config" data-v="config"><span>⚙️</span>Ajustes</div>
   </div>
 </header>
 
@@ -413,37 +559,22 @@
     <div class="saludo" id="saludo-txt">Hola 👋</div>
     <div class="saludo-sub" id="saludo-sub"></div>
 
-    <div class="sector-grid">
-      <div class="sector-card c-eventos" onclick="irA('eventos')">
-        <div class="sc-top"><div class="sc-icon">🎉</div><span class="sc-arrow">→</span></div>
-        <div class="sc-label">Eventos</div>
-        <div class="sc-hoy" id="card-eventos-hoy">$0</div>
-        <div class="sc-meta" id="card-eventos-meta">hoy</div>
+    <!-- Turno de caja: lo primero que hay que hacer al llegar -->
+    <div class="turno-hero" id="turno-card">
+      <div class="th-ico" id="turno-ico">🗝️</div>
+      <div class="th-body turno-info">
+        <div class="th-titulo tn cerrado" id="turno-estado-txt">Cerrado</div>
+        <div class="th-sub" id="turno-sub-txt">No hay ningún turno abierto</div>
       </div>
-      <div class="sector-card c-cancha" onclick="irA('cancha')">
-        <div class="sc-top"><div class="sc-icon">⚽</div><span class="sc-arrow">→</span></div>
-        <div class="sc-label">Cancha</div>
-        <div class="sc-hoy" id="card-cancha-hoy">$0</div>
-        <div class="sc-meta" id="card-cancha-meta">hoy</div>
-      </div>
-      <div class="sector-card c-cantina" onclick="irA('cantina')">
-        <div class="sc-top"><div class="sc-icon">🍔</div><span class="sc-arrow">→</span></div>
-        <div class="sc-label">Cantina</div>
-        <div class="sc-hoy" id="card-cantina-hoy">$0</div>
-        <div class="sc-meta" id="card-cantina-meta">hoy</div>
-      </div>
+      <button class="btn btn-eventos" id="turno-btn-abrir" onclick="abrirTurno()" style="background:var(--marca);">Abrir mi turno</button>
+      <button class="btn btn-gastos" id="turno-btn-cerrar" onclick="abrirModalCierre()" style="display:none;">Cerrar caja</button>
     </div>
 
-    <div class="kpi-strip">
-      <div class="kpi"><div class="kv" id="kpi-ingreso" style="color:var(--ok)">$0</div><div class="kl">Ingresos</div></div>
-      <div class="kpi"><div class="kv" id="kpi-gasto" style="color:var(--gastos)">$0</div><div class="kl">Gastos</div></div>
-      <div class="kpi"><div class="kv" id="kpi-neto" style="color:var(--azul)">$0</div><div class="kl">Neto</div></div>
-      <div class="kpi"><div class="kv" id="kpi-ef">$0</div><div class="kl">Efectivo</div></div>
-      <div class="kpi"><div class="kv" id="kpi-tr">$0</div><div class="kl">Transferencia</div></div>
-    </div>
+    <div class="acciones-titulo">¿Qué querés hacer?</div>
+    <div class="acciones" id="acciones"></div>
 
     <div class="panel-section" id="caja-hoy-card">
-      <h3>💰 Movimiento de caja de hoy</h3>
+      <h3>💰 Caja de hoy</h3>
       <div class="kpi-strip" style="margin-bottom:0;">
         <div class="kpi"><div class="kv" id="hoy-ingreso" style="color:var(--ok)">$0</div><div class="kl">Ingresos</div></div>
         <div class="kpi"><div class="kv" id="hoy-gasto" style="color:var(--gastos)">$0</div><div class="kl">Egresos</div></div>
@@ -454,33 +585,52 @@
       <div style="font-size:11px;color:var(--gris);margin-top:10px;" id="caja-hoy-nota"></div>
     </div>
 
+
     <div class="panel-section">
-      <h3>📋 Próximo en la agenda</h3>
+      <h3>📋 Lo que viene</h3>
       <div id="panel-proximos"></div>
     </div>
 
     <div class="panel-section">
-      <h3>🕓 Actividad reciente — todos los sectores</h3>
+      <h3>🕓 Últimos movimientos</h3>
       <div id="panel-feed"></div>
     </div>
 
-    <div class="panel-section" id="turno-card">
-      <h3>🗝️ Turno de caja</h3>
-      <div class="turno-estado">
-        <div class="turno-info">
-          <div class="tl">Estado</div>
-          <div class="tn cerrado" id="turno-estado-txt">Cerrado</div>
-          <div class="turno-sub" id="turno-sub-txt">No hay ningún turno abierto</div>
+    <!-- Números generales: solo con Modo dueño -->
+    <div class="bloque-dueno" id="bloque-dueno">
+      <div class="acciones-titulo">🔓 Resumen general (solo dueño)</div>
+    <div class="sector-grid">
+        <div class="sector-card c-eventos" onclick="irA('eventos')">
+          <div class="sc-top"><div class="sc-icon">🎉</div><span class="sc-arrow">→</span></div>
+          <div class="sc-label">Eventos</div>
+          <div class="sc-hoy" id="card-eventos-hoy">$0</div>
+          <div class="sc-meta" id="card-eventos-meta">hoy</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <button class="btn btn-eventos" style="width:auto;padding:10px 16px;" id="turno-btn-abrir" onclick="abrirTurno()">Abrir turno</button>
-          <button class="btn btn-gastos" style="width:auto;padding:10px 16px;display:none;" id="turno-btn-cerrar" onclick="abrirModalCierre()">Cerrar e imprimir</button>
+        <div class="sector-card c-cancha" onclick="irA('cancha')">
+          <div class="sc-top"><div class="sc-icon">⚽</div><span class="sc-arrow">→</span></div>
+          <div class="sc-label">Cancha</div>
+          <div class="sc-hoy" id="card-cancha-hoy">$0</div>
+          <div class="sc-meta" id="card-cancha-meta">hoy</div>
+        </div>
+        <div class="sector-card c-cantina" onclick="irA('cantina')">
+          <div class="sc-top"><div class="sc-icon">🍔</div><span class="sc-arrow">→</span></div>
+          <div class="sc-label">Cantina</div>
+          <div class="sc-hoy" id="card-cantina-hoy">$0</div>
+          <div class="sc-meta" id="card-cantina-meta">hoy</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--gris);margin-top:10px;">El cierre se calcula desde que se abre el turno hasta que se cierra, aunque pase la medianoche — no por fecha calendario.</div>
-    </div>
 
-    <button class="btn btn-ghost" id="btn-cierre-historico" style="background:var(--tinta);color:white;display:none;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre por fecha (histórico)</button>
+      <div class="kpi-strip">
+        <div class="kpi"><div class="kv" id="kpi-ingreso" style="color:var(--ok)">$0</div><div class="kl">Ingresos</div></div>
+        <div class="kpi"><div class="kv" id="kpi-gasto" style="color:var(--gastos)">$0</div><div class="kl">Gastos</div></div>
+        <div class="kpi"><div class="kv" id="kpi-neto" style="color:var(--azul)">$0</div><div class="kl">Neto</div></div>
+        <div class="kpi"><div class="kv" id="kpi-ef">$0</div><div class="kl">Efectivo</div></div>
+        <div class="kpi"><div class="kv" id="kpi-tr">$0</div><div class="kl">Transferencia</div></div>
+      </div>
+
+      <button class="btn btn-ghost" id="btn-cierre-historico" style="background:var(--tinta);color:white;display:none;" onclick="imprimirCierreDelDia()">🖨️ Imprimir cierre del día</button>
+    </div>
+    <div style="font-size:12px;color:var(--gris);text-align:center;margin:4px 8px 0;">El cierre de caja suma todo lo cargado desde que abriste el turno hasta que lo cerrás, aunque pase la medianoche.</div>
   </div>
 
   <div class="vista" id="v-calendario">
@@ -502,8 +652,9 @@
 
   <!-- ════════ GASTOS ════════ -->
   <div class="vista" id="v-gastos">
-    <button class="btn btn-gastos btn-fab" onclick="toggleForm('gastos')" style="margin-bottom:14px;">＋ Nuevo gasto</button>
+    <button class="btn btn-gastos btn-fab" id="btn-nuevo-gastos" onclick="toggleForm('gastos')" style="margin-bottom:14px;">＋ Anotar un gasto</button>
     <div class="form-card" id="form-gastos">
+      <div class="form-titulo"><b>💸 Anotar un gasto</b><button class="form-cerrar" onclick="toggleForm('gastos')" title="Cerrar">✕</button></div>
       <div class="field">
         <label>Fecha</label>
         <input type="date" id="ga-fecha" oninput="mostrarFechaGasto()"/>
@@ -529,7 +680,7 @@
       </div>
       <div class="field"><label>Responsable</label><input type="text" id="ga-responsable" placeholder="¿Quién pagó?"/></div>
       <div class="field"><label>Observaciones</label><textarea id="ga-obs" placeholder="Notas…"></textarea></div>
-      <button class="btn btn-gastos" style="margin-top:6px;" onclick="guardarGasto()">Guardar gasto</button>
+      <button class="btn btn-gastos" style="margin-top:6px;" onclick="guardarGasto()">✓ Guardar gasto</button>
       <div class="msg" id="ga-msg"></div>
     </div>
 
@@ -569,6 +720,8 @@
       <button class="btn btn-ghost" onclick="cambiarPinDueno()">Cambiar PIN de dueño</button>
     </div>
 
+    <details class="avanzado">
+      <summary>📥 Cargas especiales (se usan una sola vez)</summary>
     <div class="config-box" style="margin-top:16px;">
       <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Importar eventos confirmados</h3>
       <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Carga los <span id="import-count">19</span> eventos del Excel "EVENTOS_CONFIRMADOS" (Julio a Noviembre) directamente al sector Eventos y al Google Sheet. Solo hace falta hacerlo una vez.</div>
@@ -589,6 +742,7 @@
       <button class="btn btn-cantina" id="btn-import-promos" onclick="importarPromosNuevas()">Cargar promos nuevas</button>
       <div class="msg" id="import-promos-msg"></div>
     </div>
+    </details>
   </div>
 
 </div>
@@ -599,7 +753,7 @@
    ════════════════════════════════════════════════════════ */
 const SECTORES = {
   eventos: {
-    label:'Eventos', icon:'🎉', tipo:'eventos',
+    label:'Eventos', icon:'🎉', tipo:'eventos', accion:'Registrar evento o pago',
     nombreLbl:'Cliente / Evento', nombrePh:'ej: Cumple de Mateo',
     horario:true,
     extra: { id:'tipoevento', label:'Tipo de evento', opciones:['Cumpleaños infantil','Evento adultos','15 años / Casamiento','Asado de cancha','Otro'] },
@@ -613,14 +767,14 @@ const SECTORES = {
     ],
   },
   cancha: {
-    label:'Cancha', icon:'⚽', tipo:'cancha',
+    label:'Cancha', icon:'⚽', tipo:'cancha', accion:'Registrar reserva o pago',
     nombreLbl:'Equipo / Persona', nombrePh:'ej: Los Pibes FC',
     horario:true,
     extra: { id:'cancha_sel', label:'Cancha', opciones:['Fútbol 11','Media Cancha 11','Sintético 7','Alquiler'] },
     camposExtra: [],
   },
   cantina: {
-    label:'Cantina', icon:'🍔', tipo:'cantina',
+    label:'Cantina', icon:'🍔', tipo:'cantina', accion:'Registrar caja de cantina',
     nombreLbl:'Turno / detalle', nombrePh:'ej: Turno tarde sábado',
     horario:false,
     extra: null,
@@ -720,6 +874,8 @@ function actualizarModoPill(){
   document.getElementById('modo-texto').textContent = on?'Modo dueño':'Modo empleado';
   const btnHist = document.getElementById('btn-cierre-historico');
   if(btnHist) btnHist.style.display = on ? 'block' : 'none';
+  const bloque = document.getElementById('bloque-dueno');
+  if(bloque) bloque.style.display = on ? '' : 'none';
 }
 function cambiarPinDueno(){
   const actual = prompt('PIN actual de dueño (para confirmar el cambio):');
@@ -734,7 +890,7 @@ function cambiarPinDueno(){
 /* ───── Reloj y saludo ───── */
 function tickReloj(){
   const d = new Date();
-  document.getElementById('reloj').textContent = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('reloj').textContent = d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
 }
 setInterval(tickReloj,1000); tickReloj();
 (function(){
@@ -776,8 +932,9 @@ function montarSector(key){
         <div class="sb-stat"><div class="v" id="${key}-stat-cant">0</div><div class="l">Movimientos</div></div>
       </div>
     </div>
-    <button class="btn btn-${key} btn-fab" onclick="toggleForm('${key}')">＋ Nuevo registro</button>
+    <button class="btn btn-${key} btn-fab" id="btn-nuevo-${key}" onclick="toggleForm('${key}')">＋ ${s.accion}</button>
     <div class="form-card" id="form-${key}" style="margin-top:14px;">
+      <div class="form-titulo"><b>${s.icon} ${s.accion}</b><button class="form-cerrar" onclick="toggleForm('${key}')" title="Cerrar">✕</button></div>
       <div class="row2">
         <div class="field"><label>Fecha</label><input type="date" id="${key}-fecha"/></div>
         ${s.horario ? `<div class="field"><label>Horario</label><input type="text" id="${key}-horario" placeholder="ej: 18:00-20:00"/></div>` : `<div class="field"><label>Turno</label><input type="text" id="${key}-horario" placeholder="ej: Tarde"/></div>`}
@@ -796,16 +953,16 @@ function montarSector(key){
         ? `<div class="field"><label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="${key}-${c.id}" style="width:16px;height:16px;"/> ${c.label}</label></div>`
         : `<div class="field"><label>${c.label}</label><input type="text" id="${key}-${c.id}" placeholder="${c.ph}"/></div>`
       ).join('')}
-      ${key==='eventos' ? `<div style="font-size:11px;color:var(--gris);margin:-4px 0 13px;">"Monto total" y "Seña" son datos del acuerdo. Abajo cargá el pago que estás registrando ahora (la seña, un pago parcial, o el saldo final).</div>` : ''}
+      ${key==='eventos' ? `<div class="ayuda">"Monto total" y "Seña" son lo que se acordó. Abajo cargá solo la plata que estás recibiendo ahora (la seña, una parte o el saldo).</div>` : ''}
       <div class="row2">
         <div class="field"><label>Efectivo $</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-efectivo" placeholder="0"/></div></div>
         <div class="field"><label>Transferencia $</label><div class="input-prefix"><span>$</span><input type="number" id="${key}-transferencia" placeholder="0"/></div></div>
       </div>
-      <div style="font-size:11px;color:var(--gris);margin:-6px 0 13px;">Se puede llenar uno solo, los dos, o un pago mixto entre ambos.</div>
+      <div class="ayuda">Completá lo que te pagaron: en efectivo, por transferencia o las dos cosas.</div>
       <div class="field"><label>Estado</label><select id="${key}-estado">${ESTADOS.map(e=>`<option>${e}</option>`).join('')}</select></div>
       <div class="field"><label>Responsable</label><input type="text" id="${key}-responsable" placeholder="¿Quién lo registra?"/></div>
       <div class="field"><label>Observaciones</label><textarea id="${key}-obs" placeholder="Notas…"></textarea></div>
-      <button class="btn btn-${key}" style="margin-top:6px;" onclick="guardarRegistro('${key}')">Guardar en ${s.label}</button>
+      <button class="btn btn-${key}" style="margin-top:6px;" onclick="guardarRegistro('${key}')">✓ Guardar</button>
       <div class="msg" id="${key}-msg"></div>
     </div>
     ${key==='cancha' ? `
@@ -829,9 +986,58 @@ function montarSector(key){
 }
 Object.keys(SECTORES).forEach(montarSector);
 
-function toggleForm(key){
-  const abierto = document.getElementById('form-'+key).classList.toggle('open');
-  if(key==='eventos' && abierto) actualizarPaquetesEvento();
+function toggleForm(key, forzarAbierto){
+  const form = document.getElementById('form-'+key);
+  const abierto = forzarAbierto ? (form.classList.add('open'), true) : form.classList.toggle('open');
+  const btn = document.getElementById(key==='gastos' ? 'btn-nuevo-gastos' : 'btn-nuevo-'+key);
+  if(btn) btn.style.display = abierto ? 'none' : '';
+  if(!abierto) return;
+  if(key==='eventos') actualizarPaquetesEvento();
+  // El responsable es quien tiene el turno abierto: se completa solo.
+  const resp = document.getElementById((key==='gastos'?'ga':key)+'-responsable');
+  if(resp && !resp.value && turnoActual) resp.value = turnoActual.responsable;
+  setTimeout(()=> form.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+}
+
+/* ───── Aviso flotante ───── */
+let toastTimer = null;
+function toast(texto, tipo){
+  let el = document.getElementById('toast');
+  if(!el){ el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; document.body.appendChild(el); }
+  el.textContent = texto;
+  el.className = 'toast show ' + (tipo||'');
+  const ticket = document.getElementById('ticket-bar');
+  el.style.bottom = (ticket && ticket.offsetParent) ? (ticket.offsetHeight + 16)+'px' : '';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 3200);
+}
+function cerrarFormTrasGuardar(key){
+  const form = document.getElementById('form-'+key);
+  if(form && form.classList.contains('open')) toggleForm(key);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ───── Acciones rápidas del inicio ───── */
+const ACCIONES = [
+  { tab:'cantina',    c:'cantina', icon:'🍔', titulo:'Cobrar en la cantina', sub:'Mesas y venta rápida', fn:()=>{ irA('cantina'); const t=document.querySelector('#v-cantina .subtab[data-sub="comanda"]'); if(t) cambiarSubtab('cantina','comanda',t); } },
+  { tab:'eventos',    c:'eventos', icon:'🎉', titulo:'Registrar un evento', sub:'Reserva, seña o pago', fn:()=>{ irA('eventos'); toggleForm('eventos', true); } },
+  { tab:'cancha',     c:'cancha',  icon:'⚽', titulo:'Cobrar la cancha', sub:'Reserva o pago de turno', fn:()=>{ irA('cancha'); toggleForm('cancha', true); } },
+  { tab:'gastos',     c:'gastos',  icon:'💸', titulo:'Anotar un gasto', sub:'Compras y pagos', fn:()=>{ irA('gastos'); toggleForm('gastos', true); } },
+  { tab:'calendario', c:'panel',   icon:'📅', titulo:'Ver el calendario', sub:'Eventos y reservas del mes', fn:()=> irA('calendario') },
+  { tab:'precios',    c:'precios', icon:'🏷️', titulo:'Precios de la carta', sub:'Cambiar o agregar productos', fn:()=> irA('precios') },
+];
+function renderAcciones(){
+  const host = document.getElementById('acciones');
+  if(!host) return;
+  const rol = turnoActual && turnoActual.rol;
+  const tabs = rol && ROLES[rol] ? ROLES[rol].tabs : ACCIONES.map(a=>a.tab);
+  host.innerHTML = ACCIONES.map((a,i)=> tabs.includes(a.tab)
+    ? `<button class="accion c-${a.c}" onclick="hacerAccion(${i})"><div class="ai">${a.icon}</div><div class="at">${a.titulo}</div><div class="as">${a.sub}</div></button>` : ''
+  ).join('');
+}
+function hacerAccion(i){
+  if(!turnoActual){ toast('Primero abrí tu turno 🗝️'); abrirTurno(); return; }
+  ACCIONES[i].fn();
 }
 function selMetodo(key, el){
   metodoSel[key] = el.dataset.m;
@@ -847,6 +1053,12 @@ function cambiarSubtab(key, sub, el){
   document.getElementById(mapaVistas[sub]).classList.add('active');
   if(key==='cancha' && sub==='fijos') renderTurnosFijos();
   if(key==='cantina' && sub==='comanda') renderComandaMesas();
+  if(key==='cantina'){
+    const b = document.getElementById('btn-nuevo-cantina');
+    const f = document.getElementById('form-cantina');
+    if(b) b.style.display = (sub==='comanda' || f.classList.contains('open')) ? 'none' : '';
+    if(sub==='comanda' && f.classList.contains('open')) toggleForm('cantina');
+  }
 }
 
 /* ───── Guardar un registro de sector ───── */
@@ -899,7 +1111,8 @@ async function guardarRegistro(key){
     const j = await r.json();
     msgEl.textContent = j.ok ? '✅ Guardado en Sheets' : '❌ '+j.error;
     msgEl.className = j.ok ? 'msg ok' : 'msg err';
-  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
+    if(j.ok){ toast('✅ Guardado', 'ok'); msgEl.textContent=''; cerrarFormTrasGuardar(key); }
+  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; toast('⚠️ Sin conexión: quedó guardado solo en este dispositivo', 'err'); }
 }
 
 /* El Google Sheet conectado solo guarda columnas fijas (fecha, horario, nombre,
@@ -1074,7 +1287,8 @@ async function guardarGasto(){
     const j = await r.json();
     msgEl.textContent = j.ok ? '✅ Guardado en Sheets' : '❌ '+j.error;
     msgEl.className = j.ok ? 'msg ok' : 'msg err';
-  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
+    if(j.ok){ toast('✅ Gasto guardado', 'ok'); msgEl.textContent=''; cerrarFormTrasGuardar('gastos'); }
+  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; toast('⚠️ Sin conexión: quedó guardado solo en este dispositivo', 'err'); }
 }
 
 function renderGastos(){
@@ -1118,6 +1332,17 @@ function renderGastos(){
 }
 
 /* ───── PANEL general (unifica los 3 sectores) ───── */
+/* "2026-10-15" → "Hoy", "Mañana" o "jue 16 oct" */
+function fechaCorta(iso){
+  if(!iso) return '';
+  const hoy = hoyISO();
+  const man = new Date(); man.setDate(man.getDate()+1);
+  if(iso===hoy) return 'Hoy';
+  if(iso===man.toISOString().split('T')[0]) return 'Mañana';
+  const d = new Date(iso+'T12:00:00');
+  if(isNaN(d)) return iso;
+  return d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'}).replace('.','');
+}
 function totalDia(lista, fecha){ return (lista||[]).filter(x=>x.fecha===fecha).reduce((a,x)=>a+(Number(x.efectivo)||0)+(Number(x.transferencia)||0),0); }
 function totalIngresos(lista){ return (lista||[]).reduce((a,x)=>({ef:a.ef+(Number(x.efectivo)||0), tr:a.tr+(Number(x.transferencia)||0)}),{ef:0,tr:0}); }
 
@@ -1150,7 +1375,7 @@ function renderPanel(){
   document.getElementById('hoy-ef').textContent = fmtHoy(efHoy, hoy);
   document.getElementById('hoy-tr').textContent = fmtHoy(trHoy, hoy);
   document.getElementById('caja-hoy-nota').textContent = modoDueno() ? ''
-    : (turnoActual ? `Turno abierto: ${turnoActual.responsable}` : 'Abrí tu turno (⬇ más abajo) para ver el movimiento de hoy.');
+    : (turnoActual ? `Turno abierto: ${turnoActual.responsable}` : 'Abrí tu turno (arriba) para ver la caja de hoy.');
 
   // Próximos en agenda (eventos + cancha con fecha >= hoy)
   const proximos = [].concat(
@@ -1166,7 +1391,7 @@ function renderPanel(){
       const s = SECTORES[p.sector];
       return `<div class="feed-row">
         <div class="feed-tag c-${p.sector}">${s.icon}</div>
-        <div class="feed-body"><div class="feed-title">${p.nombre}</div><div class="feed-sub">${p.fecha} ${p.horario||''}</div></div>
+        <div class="feed-body"><div class="feed-title">${p.nombre}</div><div class="feed-sub">${fechaCorta(p.fecha)}${p.horario?' · '+p.horario:''}${p.extra?' · '+p.extra:''}</div></div>
         <div class="feed-amt in">${fmtHoy((Number(p.efectivo)||0)+(Number(p.transferencia)||0), p.fecha)}</div>
       </div>`;
     }).join('');
@@ -1186,7 +1411,7 @@ function renderPanel(){
     elFeed.innerHTML = feed.map(f=>`
       <div class="feed-row">
         <div class="feed-tag c-${f.sector}">${f.icon}</div>
-        <div class="feed-body"><div class="feed-title">${f.nombre}</div><div class="feed-sub">${f.fecha}</div></div>
+        <div class="feed-body"><div class="feed-title">${f.nombre}</div><div class="feed-sub">${fechaCorta(f.fecha)}${f.responsable?' · '+f.responsable:''}</div></div>
         <div class="feed-amt ${f.signo}">${f.signo==='out'?'-':'+'}${fmtHoy(f.monto, f.fecha)}</div>
       </div>`).join('');
   }
@@ -1205,7 +1430,7 @@ async function cargarTodo(){
     if(json.ok){
       datos = { eventos: json.eventos||[], cancha: json.cancha||[], cantina: json.cantina||[], gastos: json.gastos||[] };
       document.getElementById('sync-dot').classList.remove('off');
-      document.getElementById('sync-texto').textContent='Actualizado '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('sync-texto').textContent='Al día '+new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
       renderPanel();
       ['eventos','cancha','cantina'].forEach(renderSector);
       renderGastos();
@@ -2056,16 +2281,24 @@ function actualizarTurnoUI(){
   const sub = document.getElementById('turno-sub-txt');
   const btnAbrir = document.getElementById('turno-btn-abrir');
   const btnCerrar = document.getElementById('turno-btn-cerrar');
+  const card = document.getElementById('turno-card');
+  const ico = document.getElementById('turno-ico');
   if(turnoActual){
-    el.textContent = 'Abierto'; el.className = 'tn abierto';
     const ini = new Date(turnoActual.inicio);
-    sub.textContent = `${turnoActual.responsable} · desde las ${ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
-    btnAbrir.style.display = 'none'; btnCerrar.style.display = 'block';
+    const rol = ROLES[turnoActual.rol];
+    el.textContent = `Hola, ${turnoActual.responsable.split(' ')[0]} 👋`; el.className = 'th-titulo tn abierto';
+    sub.textContent = `Turno abierto desde las ${ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}${rol?' · '+rol.label:''}`;
+    if(ico) ico.textContent = rol ? rol.icon : '✅';
+    if(card) card.classList.add('abierto');
+    btnAbrir.style.display = 'none'; btnCerrar.style.display = '';
   } else {
-    el.textContent = 'Cerrado'; el.className = 'tn cerrado';
-    sub.textContent = 'No hay ningún turno abierto';
-    btnAbrir.style.display = 'block'; btnCerrar.style.display = 'none';
+    el.textContent = 'Turno cerrado'; el.className = 'th-titulo tn cerrado';
+    sub.textContent = 'Abrí tu turno para empezar a cargar';
+    if(ico) ico.textContent = '🗝️';
+    if(card) card.classList.remove('abierto');
+    btnAbrir.style.display = ''; btnCerrar.style.display = 'none';
   }
+  renderAcciones();
 }
 
 /* ───── Roles ───── */
@@ -2094,6 +2327,8 @@ function elegirUsuarioBienvenida(nombre, rol){
   document.getElementById('welcome-input').value = nombre;
   document.getElementById('welcome-email').value = getEmailsPorUsuario()[nombre] || '';
   elegirRolBienvenida(rol);
+  // Si ya entró antes desde este dispositivo, alcanza con tocar su nombre.
+  if(getEmailsPorUsuario()[nombre] && ROLES[rol]) confirmarIngreso();
 }
 
 function renderWelcomeRoles(){
@@ -2158,6 +2393,7 @@ function aplicarFiltroRol(){
   });
   const activo = document.querySelector('.nav-btn.active');
   if(activo && activo.style.display==='none') irA('panel');
+  renderAcciones();
 }
 
 /* ───── Cierre de turno — cálculo compartido entre el modal y el ticket impreso ───── */
