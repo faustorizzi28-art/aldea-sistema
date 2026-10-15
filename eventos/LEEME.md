@@ -110,6 +110,13 @@ El link de Apps Script es largo. Para Instagram conviene publicar `Index.html` e
 poné el link `/exec` en `API_URL` dentro de `Index.html` y la página habla con la planilla por internet.
 Con un dominio propio (por ejemplo `aldeadevalle.com.ar`, se registra en nic.ar) se apunta a esa página.
 
+## Fotos
+
+Las fotos de eventos reales están en `img/ev-*.jpg`, optimizadas para que carguen rápido en el celular. En `CONFIG` se elige:
+`fotoPortada`, la `foto` de cada sector, `fotoIndia` (bloque de Aldea India) y `galeria` (sección "Así se vive la Aldea").
+Para sumar una foto: guardala en `img/` y agregala a `galeria` con su texto.
+La versión de Apps Script las toma de `main` en GitHub (`urlFotos`), así que se ven ahí una vez que esta rama esté mergeada.
+
 ## Links útiles
 
 - Con el tipo ya elegido (para historias, bio, botones): `…/exec?tipo=infantil`, `?tipo=adultos`, `?tipo=quince`, `?tipo=boda`, `?tipo=asado`, `?tipo=empresa`, `?tipo=escuela`

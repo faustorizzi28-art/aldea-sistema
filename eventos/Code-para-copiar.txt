@@ -69,24 +69,36 @@ const CONFIG = {
   sectores: [
     { id: 'quincho', nombre: 'Quincho + cancha sintética', cap: 40,
       detalle: 'Semicubierto con asador, pegado a la cancha de fútbol sintética. El clásico de los cumples.',
-      foto: 'cantina-tarde.jpg' },
+      foto: 'ev-quincho-noche.jpg' },
     { id: 'patio', nombre: 'Patio de piedra + parque + cancha de 11', cap: 80,
       detalle: 'Al aire libre, con parque y la cancha grande. Ideal de día y para el sunset.',
-      foto: 'cancha-futbol.jpg' },
+      foto: 'ev-patio-dia.jpg' },
     { id: 'salon', nombre: 'Salón cerrado', cap: 100,
       detalle: 'Cerrado y techado, para fiestas de noche o días de lluvia.',
-      foto: 'eventos-salon.jpg' },
+      foto: 'ev-salon-deco.jpg' },
     { id: 'deck', nombre: 'Deck', cap: 40,
       detalle: 'Íntimo y al aire libre, para reuniones chicas.',
-      foto: 'hero-fogon.jpg' }
+      foto: 'ev-deck.jpg' }
   ],
   predio: { id: 'predio', nombre: 'Predio completo (uso exclusivo)', cap: 400,
-            detalle: 'Todo el predio solo para tu evento.', foto: 'escuela-verano.jpg' },
+            detalle: 'Todo el predio solo para tu evento.', foto: 'ev-predio-noche.jpg' },
   // Horarios en que un sector está ocupado por actividades fijas (0=domingo … 6=sábado)
   bloqueosFijos: [
     { sector: 'salon', dias: [1, 2, 3, 4, 5], desde: '17:00', hasta: '23:00', motivo: 'Clases en el salón' }
   ],
   urlFotos: 'https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/main/img/',
+  fotoPortada: 'ev-portada-fogon-noche.jpg',
+  fotoIndia: 'ev-arco.jpg',
+  galeria: [                            // fotos de eventos reales (carpeta img/ del repo)
+    { foto: 'ev-arco.jpg', texto: 'Rincón para fotos' },
+    { foto: 'ev-mesa-limones.jpg', texto: 'Mesas al sol en el patio' },
+    { foto: 'ev-mesa-dulce.jpg', texto: 'Mesa dulce' },
+    { foto: 'ev-livings.jpg', texto: 'Livings al aire libre' },
+    { foto: 'ev-fogon.jpg', texto: 'Fogón de noche' },
+    { foto: 'ev-deco-noche.jpg', texto: 'Ambientación boho' },
+    { foto: 'ev-mesa-patio.jpg', texto: 'Patio de piedra' },
+    { foto: 'ev-cartel.jpg', texto: 'Aldea de Valle + Aldea India' }
+  ],
   // modo: 'reserva' (reserva online con seña) · 'india' (cita con Aldea India) · 'cita' (cita con Aldea)
   tipos: [
     { id: 'infantil', nombre: 'Cumple infantil', emoji: '🎈', modo: 'reserva', tarifa: 'infantil',
