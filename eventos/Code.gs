@@ -89,7 +89,7 @@ const CONFIG = {
   bloqueosFijos: [
     { sector: 'salon', dias: [1, 2, 3, 4, 5], desde: '17:00', hasta: '23:00', motivo: 'Clases en el salón' }
   ],
-  urlFotos: 'https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/main/img/',
+  urlFotos: 'https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/claude/charming-turing-p8a0h7/img/',  // cuando se pase a main, cambiar a .../main/img/
   fotoPortada: 'ev-portada-fogon-noche.jpg',
   fotoIndia: 'ev-arco.jpg',
   galeria: [                            // fotos de eventos reales (carpeta img/ del repo)
