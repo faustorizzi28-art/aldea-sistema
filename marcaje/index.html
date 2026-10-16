@@ -118,6 +118,8 @@
   .alerta .it:first-of-type{border-top:none;}
   .ahora{display:flex;flex-wrap:wrap;gap:6px;}
   .ahora span{background:var(--marca-suave);color:var(--ok);font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:20px;}
+  .ahora span{display:inline-flex;align-items:center;gap:8px;}
+  .salida-rapida{border:none;background:var(--naranja);color:#fff;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:14px;}
   .emp{border-top:1px solid var(--borde);padding:14px 0;}
   .emp:first-child{border-top:none;padding-top:0;}
   .emp .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
@@ -781,7 +783,7 @@ function pintarResumen(){
     ? `<div class="alerta"><b>📍 Falta fijar la ubicación de Aldea</b>Hasta que la fijes nadie puede marcar. <button class="link" onclick="tab('ajustes')">Ir a Ajustes</button></div>` : '';
   $('adm-ahora-card').classList.toggle('oculto', adm.mes!==mesHoy());
   $('adm-ahora').innerHTML = adm.adentro.length
-    ? adm.adentro.map(a => `<span>● ${esc(a.nombre)} · desde ${hora(a.desde)}</span>`).join('')
+    ? adm.adentro.map(a => `<span>● ${esc(a.nombre)} · desde ${hora(a.desde)} <button class="salida-rapida" onclick="abrirManual('${a.empleadoId}','SALIDA')">Marcar salida</button></span>`).join('')
     : '<div class="sub">No hay nadie con el turno abierto.</div>';
 
   const problemas = [];
@@ -947,7 +949,7 @@ function abrirManual(empId, tipo, refISO){
   $('mm-fecha').value = localInput(f);
   $('mm-fecha').max = localInput(new Date());
   $('mm-nota').value = tipo==='SALIDA' ? 'Se olvidó de marcar la salida' : tipo==='ENTRADA' ? 'Se olvidó de marcar la entrada' : '';
-  msg('mm-msg', refISO ? 'Revisá la hora: es una sugerencia.' : '', refISO ? 'info' : '');
+  msg('mm-msg', refISO ? 'Revisá la hora: es una sugerencia.' : tipo==='SALIDA' ? 'Poné la hora a la que se fue de verdad.' : '', (refISO || tipo==='SALIDA') ? 'info' : '');
   $('m-manual').classList.remove('oculto');
 }
 async function guardarManual(){
