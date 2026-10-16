@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLORIN Animaciones · Reservá tu cumple</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--rojo:#C8161A;--rojo-osc:#9E1114;--rojo-suave:#FBECEC;--tinta:#1A1A1A;--gris:#6B5F5A;--linea:#EADFD9;--fondo:#FFF3ED;--blanco:#fff;--ok:#1E8E5A;--radio:18px}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fondo);color:var(--tinta);font-family:Montserrat,system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;line-height:.95;margin:0;text-transform:uppercase;letter-spacing:.01em}
+  a{color:var(--rojo)} a:hover{color:var(--rojo-osc)}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px 140px}
+  header{position:relative;overflow:hidden;background:var(--rojo) url('https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/5ebe2862075e428462b9452a65748ab3aa427734/glorin/img/foto-portada.jpg') center 42%/cover no-repeat;color:#fff;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;padding:22px 20px 28px}
+  header::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(200,22,26,.8) 0%,rgba(200,22,26,.2) 42%,rgba(110,7,9,.94) 100%)}
+  header > *{position:relative;max-width:600px;margin-left:auto;margin-right:auto;width:100%}
+  .logo{margin-bottom:auto}
+  .logo img{display:block;width:190px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
+  .hero-k{display:block;width:56px;height:5px;background:#fff;border-radius:3px;margin-top:40px}
+  .hero-t{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-size:60px;line-height:.9;text-transform:uppercase;margin-top:14px}
+  .tag{font-weight:600;font-size:14px;margin-top:10px;opacity:.95}
+  .franja{background:var(--rojo);color:#fff;overflow:hidden;white-space:nowrap;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-size:22px;letter-spacing:.06em;padding:9px 0}
+  .franja span{display:inline-block;padding-left:100%;animation:corre 22s linear infinite}
+  @keyframes corre{to{transform:translateX(-100%)}}
+  .progreso{display:flex;gap:6px;margin:20px 0 8px}
+  .progreso span{flex:1;height:6px;border-radius:6px;background:var(--linea);transition:.3s}
+  .progreso span.on{background:var(--rojo)}
+  .paso-num{color:var(--rojo);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.22em}
+  .card{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:22px 20px;margin:14px 0;box-shadow:0 14px 32px -22px rgba(120,20,20,.35)}
+  .card h2{font-size:40px;color:var(--tinta);margin-bottom:8px}
+  .sub{color:var(--gris);margin:0 0 10px;font-size:15px}
+  label.q{display:block;font-weight:700;margin:18px 0 8px;font-size:15px}
+  label.q small{font-weight:500;color:var(--gris)}
+  .req::after{content:" *";color:var(--rojo)}
+  input[type=text],input[type=tel],input[type=email],input[type=number],textarea,select{width:100%;padding:13px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;background:#fff;color:var(--tinta)}
+  textarea{min-height:80px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px var(--rojo-suave)}
+  .err{border-color:var(--rojo)!important;background:#fff6f6}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--linea);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;color:var(--tinta);transition:.15s}
+  .chip:hover{border-color:var(--rojo)}
+  .chip.sel{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .chips.err{border-radius:14px;outline:2px solid var(--rojo);outline-offset:4px;background:transparent}
+  .fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0}
+  .cal-head b{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:30px;text-transform:uppercase;letter-spacing:.02em}
+  .navbtn{border:none;background:var(--rojo-suave);color:var(--rojo);width:44px;height:44px;border-radius:50%;font-size:22px;cursor:pointer;font-weight:800}
+  .navbtn:disabled{opacity:.3;cursor:default}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+  .cal .dow{font-size:12px;color:var(--gris);font-weight:800;padding:4px 0}
+  .dia{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--linea);background:#fff;font:inherit;font-weight:700;cursor:pointer;position:relative;color:var(--tinta);padding:0}
+  .dia.libre::after{content:"";position:absolute;bottom:5px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--ok)}
+  .dia.pocos::after{background:#E0A100}
+  .dia.lleno,.dia.off{background:#F6EEEA;color:#C2B4AE;cursor:not-allowed;border-color:#F6EEEA;text-decoration:line-through}
+  .dia.off{text-decoration:none}
+  .dia.sel{background:var(--rojo);color:#fff;border-color:var(--rojo)}
+  .dia.sel::after{background:#fff}
+  .leyenda{display:flex;gap:14px;font-size:13px;color:var(--gris);margin-top:12px;flex-wrap:wrap}
+  .leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+  .horas{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .hora{padding:12px 0;border-radius:12px;border:1.5px solid var(--linea);background:#fff;font:inherit;font-weight:700;cursor:pointer;color:var(--tinta)}
+  .hora.sel{background:var(--rojo);color:#fff;border-color:var(--rojo)}
+  .hora:disabled{background:#F6EEEA;color:#C9BBB5;border-color:#F6EEEA;cursor:not-allowed;text-decoration:line-through}
+  .paq{display:block;border:2px solid var(--linea);border-radius:16px;padding:16px 18px;margin:10px 0;cursor:pointer;position:relative;background:#fff;transition:.15s}
+  .paq.sel{border-color:var(--rojo);background:var(--rojo);color:#fff;box-shadow:0 14px 30px -14px rgba(200,22,26,.6)}
+  .paq .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .paq h3{font-family:Montserrat,system-ui,sans-serif;font-weight:800;text-transform:none;font-size:18px;letter-spacing:0;line-height:1.2}
+  .paq .precio{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;color:var(--tinta);font-size:32px;line-height:1;white-space:nowrap}
+  .paq.sel .precio{color:#fff}
+  .paq p{margin:6px 0 0;color:var(--gris);font-size:14px}
+  .paq.sel p{color:#fff;opacity:.92}
+  .badge{display:inline-block;background:#151515;color:#fff;font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.14em;margin-left:8px;vertical-align:middle}
+  .resumen{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+  .resumen td{padding:9px 0;border-bottom:1px dashed var(--linea)}
+  .resumen td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+  .resumen tr.total td{border:none;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:32px;color:var(--rojo);padding-top:14px}
+  .nota{font-size:14px;color:#3A3A3A;background:var(--fondo);border-left:4px solid var(--rojo);border-radius:10px;padding:12px 14px;margin-top:12px}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px}
+  .check input{width:22px;height:22px;accent-color:var(--rojo);flex:none;margin-top:1px}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:#151515;color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.18);z-index:10}
+  .barra .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .est{flex:1;min-width:0}
+  .est small{display:block;color:#B5B5B5;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.16em}
+  .est b{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:30px;line-height:1;color:#fff}
+  .btn{border:none;border-radius:999px;padding:14px 24px;font:inherit;font-weight:800;cursor:pointer;font-size:15px;min-height:48px}
+  .btn.pri{background:var(--rojo);color:#fff;box-shadow:0 10px 24px -10px rgba(200,22,26,.8)}
+  .btn.pri:hover{background:var(--rojo-osc)}
+  .btn.sec{background:rgba(255,255,255,.1);color:#fff;width:48px;padding:0}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .btn.wa{background:#25D366;color:#0A2B14;display:block;width:100%;text-align:center;text-decoration:none;margin-top:16px}
+  .aviso{background:#FFF4E5;border:1px solid #F5D49A;color:#7A4D00;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px;display:none}
+  .demo{background:#151515;color:#fff;font-size:12px;text-align:center;padding:6px}
+  .paso{display:none}
+  .paso.on{display:block;animation:ap .3s cubic-bezier(.16,1,.3,1)}
+  @keyframes ap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .ok-ico{width:76px;height:76px;border-radius:50%;background:var(--rojo);color:#fff;font-size:40px;display:grid;place-items:center;margin:6px auto 14px;box-shadow:0 14px 30px -12px rgba(200,22,26,.7)}
+  .cargando{text-align:center;color:var(--gris);padding:30px 0}
+  @media (max-width:380px){.horas{grid-template-columns:repeat(3,1fr)}.fila{grid-template-columns:1fr}.hero-t{font-size:50px}}
+  .durs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .dur{border:2px solid var(--linea);background:#fff;border-radius:14px;padding:12px 6px;font:inherit;cursor:pointer;color:var(--tinta);display:flex;flex-direction:column;align-items:center;gap:2px}
+  .dur b{font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:26px;line-height:1}
+  .dur span{font-size:13px;font-weight:700;color:var(--gris)}
+  .dur.sel{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .dur.sel span{color:#fff}
+  .dur:disabled{opacity:.45;cursor:not-allowed}
+  .extra{display:flex;align-items:center;gap:12px;border:2px solid var(--linea);border-radius:14px;padding:12px 14px;margin:8px 0;background:#fff}
+  .extra.sel{border-color:var(--rojo);background:var(--rojo-suave)}
+  .extra.nodisp{opacity:.6;background:#FAF5F2}
+  .ex-t{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+  .ex-t b{font-weight:800;font-size:15px}
+  .ex-p{font-weight:800;color:var(--rojo);font-size:14px}
+  .ex-t small{flex-basis:100%;color:var(--gris);font-size:13px;line-height:1.35}
+  .tog{border:none;border-radius:999px;padding:9px 14px;font:inherit;font-weight:800;font-size:13px;cursor:pointer;background:#151515;color:#fff;white-space:nowrap}
+  .extra.sel .tog{background:var(--rojo)}
+  .step{display:flex;align-items:center;gap:8px}
+  .step button{width:36px;height:36px;border-radius:50%;border:none;background:#151515;color:#fff;font-size:20px;font-weight:800;cursor:pointer;line-height:1}
+  .step b{min-width:16px;text-align:center;font-weight:800}
+  .tag-x{font-size:12px;font-weight:800;color:var(--gris);text-align:right;max-width:110px}
+  .paq.nodisp{opacity:.5;cursor:not-allowed}
+  .wa-flot{position:fixed;right:14px;bottom:92px;z-index:11;width:54px;height:54px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 10px 24px -8px rgba(0,0,0,.45);text-decoration:none}
+  .wa-flot svg{width:30px;height:30px;fill:#fff}
+  .pago{background:#fff;border:1.5px dashed var(--rojo);border-radius:14px;padding:12px 14px;margin-top:12px;text-align:left}
+  .pago .lin{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--linea)}
+  .pago .lin:last-child{border:none}
+  .pago .lin span{font-size:13px;color:var(--gris)}
+  .pago .lin b{font-size:15px;word-break:break-all}
+  .copiar{border:none;background:var(--rojo-suave);color:var(--rojo);border-radius:999px;padding:7px 12px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .btn.mp{background:#009EE3;color:#fff;display:block;width:100%;text-align:center;text-decoration:none;margin-top:12px}
+  .btn.cal{background:#fff;color:var(--tinta);border:1.5px solid var(--linea);display:block;width:100%;text-align:center;text-decoration:none;margin-top:10px}
+  .borrador{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:14px;display:none;align-items:center;gap:8px;justify-content:space-between}
+  .borrador button{border:none;background:none;color:var(--rojo);font:inherit;font-weight:800;cursor:pointer;font-size:13px}
+</style>
+</head>
+<body>
+<div id="demo" class="demo" style="display:none">MODO DEMO — así lo va a ver la familia. Las reservas no se guardan.</div>
+<header>
+  <div class="logo"><img src="https://raw.githubusercontent.com/faustorizzi28-art/aldea-sistema/5ebe2862075e428462b9452a65748ab3aa427734/glorin/img/logo-glorin.png" alt="GLORIN Animación Infantil"></div>
+  <span class="hero-k"></span>
+  <div class="hero-t">Que el cumple se mueva</div>
+  <div class="tag">Reservá tu fecha en 5 minutos · 2 h 30 min de juego con profes de educación física</div>
+</header>
+<div class="franja"><span>Juegos · Música · Deporte · Fútbol · Movimiento · Juegos · Música · Deporte · Fútbol · Movimiento · Juegos · Música · Deporte · Fútbol · Movimiento</span></div>
+
+<div class="wrap">
+  <div class="progreso" id="progreso"></div>
+  <div class="paso-num" id="pasoNum"></div>
+  <div class="borrador" id="borrador"><span>Recuperamos lo que habías completado ✨</span><button type="button" id="btnBorrar">Empezar de cero</button></div>
+
+  <!-- PASO 1: FECHA Y HORA -->
+  <section class="paso" data-paso="1">
+    <div class="card">
+      <h2>¿Cuándo es el cumple?</h2>
+      <p class="sub">Elegí un día con punto verde. Los días tachados ya están completos.</p>
+      <div id="calWrap"><div class="cargando">Cargando disponibilidad…</div></div>
+      <div id="horasWrap" style="display:none">
+        <label class="q req">¿A qué hora empieza la animación?</label>
+        <p class="sub" style="margin:0">La animación dura 2 h 30 min.</p>
+        <div class="horas" id="horas"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASO 2: CONTACTO Y CUMPLEAÑERO -->
+  <section class="paso" data-paso="2">
+    <div class="card">
+      <h2>Contanos de ustedes</h2>
+      <label class="q req" for="adulto">Tu nombre y apellido</label>
+      <input type="text" id="adulto" autocomplete="name">
+      <label class="q req" for="whatsapp">Tu WhatsApp</label>
+      <input type="tel" id="whatsapp" placeholder="351 123 4567" autocomplete="tel" inputmode="tel">
+      <p class="sub" style="margin:6px 0 0;font-size:13px">Con código de área, sin 0 ni 15. Por acá te confirmamos todo.</p>
+      <label class="q" for="email">Email <small>(opcional · te mandamos el resumen y te agendamos el cumple en tu calendario)</small></label>
+      <input type="email" id="email" autocomplete="email">
+    </div>
+    <div class="card">
+      <h2>El/la cumpleañero/a</h2>
+      <div class="fila">
+        <div><label class="q req" for="cumpleanero">Nombre</label><input type="text" id="cumpleanero"></div>
+        <div><label class="q req" for="edad">¿Cuántos cumple?</label><input type="number" id="edad" min="1" max="18" inputmode="numeric"></div>
+      </div>
+      <label class="q">¿Cómo es con los grupos?</label>
+      <div class="chips" data-campo="personalidad" data-unico>
+        <button type="button" class="chip">Súper extrovertido/a</button>
+        <button type="button" class="chip">Le cuesta al principio</button>
+        <button type="button" class="chip">Tímido/a, no le gusta ser el centro</button>
+        <button type="button" class="chip">Depende del día</button>
+      </div>
+      <label class="q" for="gustos">¿Qué le gusta? Temática, personajes, deportes, juegos favoritos <small>(así lo personalizamos)</small></label>
+      <textarea id="gustos" placeholder="Ej: le encanta el fútbol y Bluey, juega a la mancha todo el día…"></textarea>
+    </div>
+  </section>
+
+  <!-- PASO 3: INVITADOS -->
+  <section class="paso" data-paso="3">
+    <div class="card">
+      <h2>Los invitados</h2>
+      <div class="fila">
+        <div><label class="q req" for="cantChicos">¿Cuántos chicos aprox.?</label><input type="number" id="cantChicos" min="1" max="120" inputmode="numeric"></div>
+        <div><label class="q" for="adultos">¿Y adultos?</label><input type="number" id="adultos" min="0" inputmode="numeric"></div>
+      </div>
+      <label class="q req">¿Qué edades tienen los chicos?</label>
+      <div class="chips" data-campo="rangoEdades">
+        <button type="button" class="chip">2-3 años</button>
+        <button type="button" class="chip">4-5 años</button>
+        <button type="button" class="chip">6-7 años</button>
+        <button type="button" class="chip">8-9 años</button>
+        <button type="button" class="chip">10-12 años</button>
+        <button type="button" class="chip">13+</button>
+      </div>
+      <label class="q">¿Son mayormente compañeros del cole / sala?</label>
+      <div class="chips" data-campo="grupo" data-unico>
+        <button type="button" class="chip">Sí, se conocen todos</button>
+        <button type="button" class="chip">Mezcla (cole, primos, vecinos)</button>
+        <button type="button" class="chip">Mayormente familia</button>
+      </div>
+      <label class="q" for="atencionEspecial">¿Hay algún chico que necesite una atención especial o algo que debamos saber? <small>(opcional, es para cuidarlo mejor)</small></label>
+      <textarea id="atencionEspecial" placeholder="Ej: un nene con TEA al que no le gustan los ruidos fuertes, una nena con yeso…"></textarea>
+    </div>
+  </section>
+
+  <!-- PASO 4: LUGAR -->
+  <section class="paso" data-paso="4">
+    <div class="card">
+      <h2>¿Dónde es?</h2>
+      <label class="q req">Tipo de evento</label>
+      <div class="chips" data-campo="tipoEvento" data-unico>
+        <button type="button" class="chip">Cumpleaños</button>
+        <button type="button" class="chip">Evento escolar / jardín</button>
+        <button type="button" class="chip">Evento de barrio / club</button>
+        <button type="button" class="chip">Reunión familiar</button>
+        <button type="button" class="chip">Otro</button>
+      </div>
+      <label class="q req">Lugar</label>
+      <div class="chips" data-campo="lugar" data-unico>
+        <button type="button" class="chip">En casa</button>
+        <button type="button" class="chip">Salón / quincho</button>
+        <button type="button" class="chip">Club / plaza / parque</button>
+        <button type="button" class="chip">Escuela / jardín</button>
+        <button type="button" class="chip">En Aldea de Valle</button>
+      </div>
+      <label class="q req" for="zona">Zona</label>
+      <select id="zona"></select>
+      <label class="q req" for="direccion">Dirección (calle, número, barrio)</label>
+      <input type="text" id="direccion" autocomplete="street-address">
+      <label class="q req">¿Cómo es el espacio?</label>
+      <div class="chips" data-campo="espacio" data-unico>
+        <button type="button" class="chip">Patio / césped al aire libre</button>
+        <button type="button" class="chip">Lugar cerrado</button>
+        <button type="button" class="chip">Las dos cosas</button>
+      </div>
+      <label class="q">Tamaño aproximado del espacio para jugar</label>
+      <div class="chips" data-campo="tamanoEspacio" data-unico>
+        <button type="button" class="chip">Chico (menos de 30 m²)</button>
+        <button type="button" class="chip">Mediano (30-80 m²)</button>
+        <button type="button" class="chip">Grande (+80 m²)</button>
+        <button type="button" class="chip">No sé</button>
+      </div>
+      <label class="q">Si llueve, ¿hay lugar techado?</label>
+      <div class="chips" data-campo="planLluvia" data-unico>
+        <button type="button" class="chip">Sí, amplio</button>
+        <button type="button" class="chip">Sí, pero chico</button>
+        <button type="button" class="chip">No</button>
+      </div>
+      <label class="q">¿Hay enchufe cerca para nuestro parlante?</label>
+      <div class="chips" data-campo="enchufe" data-unico>
+        <button type="button" class="chip">Sí</button>
+        <button type="button" class="chip">No</button>
+        <button type="button" class="chip">No sé</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASO 5: CÓMO LO IMAGINAN -->
+  <section class="paso" data-paso="5">
+    <div class="card">
+      <h2>¿Cómo se lo imaginan?</h2>
+      <p class="sub">No hacemos un show fijo: armamos la animación según el grupo. <b>Todo es opcional</b>: si no sabés, seguí y lo charlamos por WhatsApp.</p>
+      <label class="q">Estilo de juegos</label>
+      <div class="chips" data-campo="estilo" data-unico>
+        <button type="button" class="chip">Más recreativo y musical</button>
+        <button type="button" class="chip">Más deportivo, con desafíos</button>
+        <button type="button" class="chip">Mezcla de los dos</button>
+        <button type="button" class="chip">Lo que recomienden</button>
+      </div>
+      <label class="q">¿Qué momentos quieren que animemos?</label>
+      <div class="chips" data-campo="momentos">
+        <button type="button" class="chip">Recepción (dibujo / juegos tranqui)</button>
+        <button type="button" class="chip">Merienda</button>
+        <button type="button" class="chip">Torta y feliz cumple</button>
+        <button type="button" class="chip">Piñata</button>
+        <button type="button" class="chip">Coreo / juegos musicales</button>
+        <button type="button" class="chip">Apertura de regalos</button>
+      </div>
+      <div class="fila">
+        <div><label class="q" for="horaMerienda">Hora aprox. merienda</label><input type="text" id="horaMerienda" placeholder="Ej: 17:30"></div>
+        <div><label class="q" for="horaTorta">Hora aprox. torta</label><input type="text" id="horaTorta" placeholder="Ej: 19:00"></div>
+      </div>
+      <label class="q" for="musica">Música que le gusta <small>(canciones, artistas)</small></label>
+      <input type="text" id="musica" placeholder="Ej: Tini, cumbia, canciones de Disney…">
+      <label class="q" for="evitar">¿Algo que prefieran evitar?</label>
+      <textarea id="evitar" placeholder="Ej: juegos con agua, música fuerte, que no lo pongan en el centro…"></textarea>
+    </div>
+  </section>
+
+  <!-- PASO 6: PAQUETE -->
+  <section class="paso" data-paso="6">
+    <div class="card">
+      <h2>Elegí el paquete</h2>
+      <p class="sub" id="recoTxt"></p>
+      <div id="paquetes"></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:32px">¿Cuánto tiempo?</h2>
+      <p class="sub">La animación estándar dura 2 h 30 min. Podés sumar tiempo.</p>
+      <div class="durs" id="duracion"></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:32px">Sumale extras</h2>
+      <p class="sub">Opcionales. Algunos tienen stock limitado por horario.</p>
+      <div id="extras"></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:32px">Tu presupuesto estimado</h2>
+      <table class="resumen" id="resumen"></table>
+      <div class="nota" id="notaSena"></div>
+    </div>
+  </section>
+
+  <!-- PASO 7: CONFIRMAR -->
+  <section class="paso" data-paso="7">
+    <div class="card">
+      <h2>¡Último paso!</h2>
+      <label class="q">¿Cómo nos conociste?</label>
+      <div class="chips" data-campo="comoNosConocio" data-unico>
+        <button type="button" class="chip">Nos vieron en otro cumple</button>
+        <button type="button" class="chip">Recomendación</button>
+        <button type="button" class="chip">Instagram</button>
+        <button type="button" class="chip">El colegio / jardín</button>
+        <button type="button" class="chip">Aldea de Valle</button>
+        <button type="button" class="chip">Otro</button>
+      </div>
+      <label class="q" for="comentarios">¿Algo más que nos quieras contar?</label>
+      <textarea id="comentarios" placeholder="Sorpresas, pedidos especiales, preguntas…"></textarea>
+      <div class="card" style="background:var(--fondo);margin-top:18px">
+        <b style="font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-weight:400;font-size:26px;text-transform:uppercase">Resumen</b>
+        <table class="resumen" id="resumenFinal"></table>
+      </div>
+      <label class="check"><input type="checkbox" id="acepto">
+        <span id="txtAcepto"></span></label>
+      <div class="aviso" id="error"></div>
+    </div>
+  </section>
+
+  <!-- ÉXITO -->
+  <section class="paso" data-paso="8">
+    <div class="card" style="text-align:center">
+      <div class="ok-ico">✓</div>
+      <h2>¡Recibimos tu reserva!</h2>
+      <p class="sub" id="okTxt"></p>
+      <table class="resumen" id="resumenOk" style="text-align:left"></table>
+      <div class="nota" id="okSena" style="text-align:left"></div>
+      <div class="pago" id="okPago" style="display:none"></div>
+      <a class="btn mp" id="btnMp" target="_blank" rel="noopener" style="display:none">Pagar la seña con Mercado Pago</a>
+      <a class="btn wa" id="btnWa" target="_blank" rel="noopener">Enviar por WhatsApp para confirmar</a>
+      <a class="btn cal" id="btnCal" target="_blank" rel="noopener" style="display:none">📅 Agendar en mi calendario</a>
+      <div class="aviso" id="okAvisos" style="text-align:left"></div>
+    </div>
+  </section>
+</div>
+
+<a class="wa-flot" id="waFlot" target="_blank" rel="noopener" aria-label="¿Dudas? Escribinos por WhatsApp" title="¿Dudas? Escribinos"><svg viewBox="0 0 32 32"><path d="M16 3C9 3 3.3 8.6 3.3 15.6c0 2.4.7 4.7 1.9 6.7L3 29l6.9-2.2c1.9 1 4 1.6 6.1 1.6 7 0 12.7-5.6 12.7-12.6S23 3 16 3zm0 23.1c-2 0-3.9-.6-5.5-1.6l-.4-.2-4.1 1.3 1.3-4-.3-.4c-1.1-1.7-1.7-3.6-1.7-5.6C5.3 9.8 10.1 5.1 16 5.1s10.7 4.7 10.7 10.5S21.9 26.1 16 26.1zm5.9-7.8c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.8 1.2 3.2 1.4 3.4c.2.2 2.4 3.6 5.7 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg></a>
+<div class="barra" id="barra">
+  <div class="in">
+    <button class="btn sec" id="btnAtras" type="button">←</button>
+    <div class="est"><small>Presupuesto estimado</small><b id="estTotal">—</b></div>
+    <button class="btn pri" id="btnSig" type="button">Siguiente</button>
+  </div>
+</div>
+
+<script>
+/* ===== Config por defecto (la real viene del servidor) ===== */
+var CFG = {
+  whatsapp:'5493516197928', sena:40000, duracionMin:150, bufferMin:60, maxSimultaneos:2, maxPorDia:4,
+  diasAnticipacionMin:2, diasHaciaAdelante:120, tiempoExtra:[30,60],
+  horarios:['09:00','09:30','10:00','10:30','11:00','11:30','12:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00'],
+  stock:{metegol:2, inflable:1},
+  paquetes:[
+    {id:'individual',nombre:'Individual',profes:1,precio:125000,detalle:'1 profe animador · ideal hasta 12-15 chicos'},
+    {id:'ultra',nombre:'Ultra Básico',profes:2,precio:195000,detalle:'2 profes · recreación y juegos · hasta 27-30 chicos'},
+    {id:'recreacion',nombre:'Recreación',profes:3,precio:235000,detalle:'3 profes · animación y recreación · grupos grandes o muy chiquitos'},
+    {id:'premium',nombre:'Premium',profes:3,precio:335000,detalle:'3 profes + inflable 3x6 con tobogán + metegol',incluye:{inflable:1,metegol:1}}],
+  extras:[
+    {id:'inflable',nombre:'Inflable 3x6 con tobogán',precio:80000,recurso:'inflable',maxCant:1,detalle:'Necesita un espacio de 3x6 m y un enchufe'},
+    {id:'metegol',nombre:'Metegol',precio:35000,recurso:'metegol',maxCant:2,detalle:'Precio por metegol · podés sumar hasta 2'},
+    {id:'maquillaje',nombre:'Maquillaje artístico',precio:150000,maxChicos:25,detalle:'Hasta 25 chicos'},
+    {id:'masas',nombre:'Taller de masas',precio:35000,detalle:'Cada chico arma y se lleva lo suyo'},
+    {id:'globologia',nombre:'Globología',precio:30000,detalle:'Una figura de globo para cada chico'},
+    {id:'kermes',nombre:'Kermés (juegos de feria)',precio:30000,detalle:'Juegos de feria con premios'}],
+  zonas:[{id:'cba',nombre:'Córdoba Capital',recargo:0},{id:'allende',nombre:'Villa Allende',recargo:0},{id:'calera',nombre:'La Calera',recargo:0},
+    {id:'manant',nombre:'Manantiales',recargo:0},{id:'aldea',nombre:'Aldea de Valle (Valle Escondido)',recargo:0},
+    {id:'vcp',nombre:'Villa Carlos Paz',recargo:50000},{id:'falda',nombre:'Falda del Carmen',recargo:50000},{id:'otra',nombre:'Otra zona (a confirmar)',recargo:50000}]
+};
+var OCUPADOS = {}, HOY = null;
+/* Funciona de dos formas: dentro de Apps Script (google.script.run) o como página normal
+   (GitHub Pages, abre bien desde Instagram) hablando con Apps Script por internet. */
+var API_URL = 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec';
+var EN_APPS_SCRIPT = !!(window.google && google.script && google.script.run);
+var DEMO = !EN_APPS_SCRIPT && (!API_URL || /[?&]demo/.test(location.search) || location.protocol === 'file:');
+function llamar(fn, arg, ok, ko){
+  ko = ko || function(){};
+  if (EN_APPS_SCRIPT){ var run = google.script.run.withSuccessHandler(ok).withFailureHandler(ko); if (arg === undefined) run[fn](); else run[fn](arg); return; }
+  var pedido = fn === 'getDatosIniciales'
+    ? fetch(API_URL + '?api=datos')
+    : fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ accion: fn, datos: arg }) });
+  pedido.then(function(r){ return r.json(); })
+    .then(function(j){ if (j && j.ok) ok(j.data); else ko({ message: (j && j.error) || 'Algo salió mal. Probá de nuevo.' }); })
+    .catch(function(){ ko({ message: 'No pudimos conectarnos. Revisá tu internet y probá de nuevo.' }); });
+}
+var TOTAL_PASOS = 7, paso = 1;
+var D = { fecha:'', hora:'', paquete:'', extras:{}, extraMin:0, zona:'cba', paqueteElegidoAMano:false };
+var mesVista = null;
+
+function $(id){ return document.getElementById(id); }
+function plata(n){ return '$' + Math.round(n).toLocaleString('es-AR'); }
+function pad(n){ return (n<10?'0':'') + n; }
+function key(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+function parseKey(k){ var p=k.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function aMin(h){ var p=h.split(':'); return (+p[0])*60 + (+p[1]); }
+function buscar(lista, id){ return lista.filter(function(x){ return x.id===id; })[0]; }
+function duracion(){ return CFG.duracionMin + (D.extraMin||0); }
+function txtDur(min){ var h=Math.floor(min/60), m=min%60; return h + ' h' + (m? ' ' + m : '') ; }
+
+/* ===== Inicio ===== */
+function iniciar(datos){
+  if (datos && datos.config) CFG = datos.config;
+  OCUPADOS = (datos && datos.ocupados) || {};
+  HOY = datos && datos.hoy ? parseKey(datos.hoy) : new Date(new Date().setHours(0,0,0,0));
+  mesVista = new Date(HOY.getFullYear(), HOY.getMonth(), 1);
+  var z = $('zona'); z.innerHTML = '';
+  CFG.zonas.forEach(function(o){ var op=document.createElement('option'); op.value=o.id; op.textContent=o.nombre + (o.recargo? ' (+' + plata(o.recargo) + ' traslado)':''); z.appendChild(op); });
+  z.value = D.zona;
+  dibujarCal(); dibujarPaquetes(); actualizar();
+}
+
+function demoDatos(){
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var oc = {};
+  for (var i=3;i<60;i++){
+    var d = new Date(hoy.getTime() + i*86400000), k = key(d), dow = d.getDay();
+    if (dow===6 && i%2===0) oc[k] = {bloqueado:false, eventos:[[900,1050,{}],[960,1110,{}],[1080,1230,{}],[1140,1290,{}]]};
+    else if (dow===6 || dow===0) oc[k] = {bloqueado:false, eventos:[[960,1110,{inflable:1,metegol:1}],[1020,1170,{metegol:1}]]};
+    if (i===11) oc[k] = {bloqueado:true, eventos:[]};
+  }
+  return {config:CFG, hoy:key(hoy), ocupados:oc};
+}
+
+/* ===== Disponibilidad ===== */
+function solapados(k, h, dur){
+  var dia = OCUPADOS[k]; if (!dia) return [];
+  var ini = aMin(h), fin = ini + dur;
+  return dia.eventos.filter(function(e){ return ini < e[1] + CFG.bufferMin && e[0] < fin + CFG.bufferMin; });
+}
+function horaLibre(k, h, dur){
+  var dia = OCUPADOS[k]; if (!dia) return true;
+  if (dia.bloqueado || dia.eventos.length >= CFG.maxPorDia) return false;
+  return solapados(k, h, dur || CFG.duracionMin).length < CFG.maxSimultaneos;
+}
+function stockLibre(recurso){
+  if (!D.fecha || !D.hora) return (CFG.stock||{})[recurso] || 0;
+  var usado = solapados(D.fecha, D.hora, duracion()).reduce(function(a,e){ return a + (((e[2]||{})[recurso])||0); }, 0);
+  return Math.max(0, ((CFG.stock||{})[recurso]||0) - usado);
+}
+function estadoDia(d){
+  var min = new Date(HOY.getTime() + CFG.diasAnticipacionMin*86400000);
+  var max = new Date(HOY.getTime() + CFG.diasHaciaAdelante*86400000);
+  if (d < min || d > max) return 'off';
+  var k = key(d);
+  var libres = CFG.horarios.filter(function(h){ return horaLibre(k,h); }).length;
+  if (!libres) return 'lleno';
+  return libres <= Math.ceil(CFG.horarios.length/3) ? 'pocos' : 'libre';
+}
+
+function dibujarCal(){
+  var w = $('calWrap');
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var y = mesVista.getFullYear(), m = mesVista.getMonth();
+  var primerMes = new Date(HOY.getFullYear(), HOY.getMonth(), 1);
+  var ultimo = new Date(HOY.getTime() + CFG.diasHaciaAdelante*86400000);
+  var h = '<div class="cal-head"><button class="navbtn" id="prevM" '+(mesVista<=primerMes?'disabled':'')+' aria-label="Mes anterior">‹</button>'
+        + '<b>'+meses[m]+' '+y+'</b><button class="navbtn" id="nextM" '+(new Date(y,m+1,1)>ultimo?'disabled':'')+' aria-label="Mes siguiente">›</button></div>';
+  h += '<div class="cal">';
+  ['L','M','M','J','V','S','D'].forEach(function(x){ h += '<div class="dow">'+x+'</div>'; });
+  var off = (new Date(y,m,1).getDay()+6)%7;
+  for (var i=0;i<off;i++) h += '<div></div>';
+  var dias = new Date(y,m+1,0).getDate();
+  for (var dd=1; dd<=dias; dd++){
+    var f = new Date(y,m,dd), k = key(f), st = estadoDia(f);
+    h += '<button type="button" class="dia '+st+(D.fecha===k?' sel':'')+'" data-k="'+k+'" '+((st==='off'||st==='lleno')?'disabled':'')+'>'+dd+'</button>';
+  }
+  h += '</div><div class="leyenda"><span><i style="background:var(--ok)"></i>Disponible</span><span><i style="background:#E0A100"></i>Pocos horarios</span><span><i style="background:#ccc"></i>Completo</span></div>';
+  w.innerHTML = h;
+  $('prevM').onclick = function(){ mesVista = new Date(y,m-1,1); dibujarCal(); };
+  $('nextM').onclick = function(){ mesVista = new Date(y,m+1,1); dibujarCal(); };
+  w.querySelectorAll('.dia[data-k]').forEach(function(b){ b.onclick = function(){ D.fecha = b.dataset.k; D.hora=''; dibujarCal(); dibujarHoras(); actualizar(); }; });
+  if (D.fecha) dibujarHoras();
+}
+function dibujarHoras(){
+  $('horasWrap').style.display = 'block';
+  var c = $('horas'); c.innerHTML = '';
+  CFG.horarios.forEach(function(h){
+    var b = document.createElement('button'); b.type='button'; b.className='hora'+(D.hora===h?' sel':''); b.textContent=h;
+    b.disabled = !horaLibre(D.fecha, h);
+    b.onclick = function(){ D.hora = h; D.extraMin = 0; dibujarHoras(); actualizar(); };
+    c.appendChild(b);
+  });
+}
+
+/* ===== Chips ===== */
+document.querySelectorAll('.chips[data-campo]').forEach(function(g){
+  var unico = g.hasAttribute('data-unico'), campo = g.dataset.campo;
+  g.querySelectorAll('.chip').forEach(function(c){
+    c.onclick = function(){
+      if (unico){ g.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('sel'); }); c.classList.add('sel'); }
+      else c.classList.toggle('sel');
+      var sel = [].map.call(g.querySelectorAll('.chip.sel'), function(x){ return x.textContent; });
+      D[campo] = unico ? (sel[0]||'') : sel;
+      g.classList.remove('err');
+      if (campo==='lugar' && sel[0]==='En Aldea de Valle'){ D.zona='aldea'; $('zona').value='aldea'; }
+      actualizar();
+    };
+  });
+});
+
+/* ===== Paquetes ===== */
+function paqueteDisponible(p){
+  var inc = p.incluye || {};
+  for (var r in inc) if (stockLibre(r) < inc[r]) return false;
+  return true;
+}
+function recomendado(){
+  var n = +$('cantChicos').value || 0;
+  var edades = D.rangoEdades || [];
+  var chiquitos = edades.indexOf('2-3 años')>=0 || edades.indexOf('4-5 años')>=0;
+  if (!n) return 'ultra';
+  if (n > 30 || (chiquitos && n > 22)) return 'recreacion';
+  if (n <= 12 && !chiquitos) return 'individual';
+  return 'ultra';
+}
+function dibujarPaquetes(){
+  var reco = recomendado();
+  if (!D.paqueteElegidoAMano) D.paquete = reco;
+  var actual = buscar(CFG.paquetes, D.paquete);
+  if (actual && !paqueteDisponible(actual)) { D.paquete = reco; D.paqueteElegidoAMano = false; }
+  var c = $('paquetes'); c.innerHTML = '';
+  CFG.paquetes.forEach(function(p){
+    var ok = paqueteDisponible(p);
+    var d = document.createElement('div'); d.className = 'paq' + (D.paquete===p.id?' sel':'') + (ok?'':' nodisp'); d.tabIndex = 0; d.setAttribute('role','radio');
+    d.innerHTML = '<div class="top"><h3>'+p.nombre+(p.id===reco?'<span class="badge">Recomendado</span>':'')+'</h3><span class="precio">'+plata(p.precio)+'</span></div><p>'+p.detalle+' · 2 h 30 min'+(ok?'':'<br><b>El inflable ya está reservado en ese horario.</b>')+'</p>';
+    if (ok) d.onclick = function(){ D.paquete = p.id; D.paqueteElegidoAMano = true; dibujarPaquetes(); actualizar(); };
+    c.appendChild(d);
+  });
+  var n = +$('cantChicos').value || 0;
+  $('recoTxt').textContent = n ? 'Para ' + n + ' chicos te recomendamos el marcado. Podés elegir otro.' : 'Todos duran 2 h 30 min.';
+  dibujarDuracion(); dibujarExtras();
+}
+
+/* ===== Duración ===== */
+function precioExtraMin(min){
+  var p = buscar(CFG.paquetes, D.paquete) || CFG.paquetes[1];
+  return Math.round(p.precio * min / CFG.duracionMin / 1000) * 1000;
+}
+function dibujarDuracion(){
+  var c = $('duracion'); if (!c) return;
+  c.innerHTML = '';
+  [0].concat(CFG.tiempoExtra || []).forEach(function(min){
+    var libre = !D.hora || horaLibre(D.fecha, D.hora, CFG.duracionMin + min);
+    if (!libre && D.extraMin === min) D.extraMin = 0;
+    var b = document.createElement('button'); b.type='button';
+    b.className = 'dur' + (D.extraMin===min?' sel':'');
+    b.disabled = !libre;
+    b.innerHTML = '<b>'+txtDur(CFG.duracionMin+min)+'</b><span>'+(min? (libre? '+'+plata(precioExtraMin(min)) : 'No disponible') : 'Incluido')+'</span>';
+    b.onclick = function(){ D.extraMin = min; dibujarDuracion(); dibujarExtras(); actualizar(); };
+    c.appendChild(b);
+  });
+}
+
+/* ===== Extras ===== */
+function maxExtra(e){
+  if (!e.recurso) return 1;
+  var p = buscar(CFG.paquetes, D.paquete) || {};
+  var incluido = (p.incluye||{})[e.recurso] || 0;
+  return Math.max(0, Math.min(e.maxCant || 1, stockLibre(e.recurso) - incluido));
+}
+function dibujarExtras(){
+  var c = $('extras'); if (!c) return;
+  c.innerHTML = '';
+  var p = buscar(CFG.paquetes, D.paquete) || {};
+  var n = +$('cantChicos').value || 0;
+  CFG.extras.forEach(function(e){
+    var max = maxExtra(e);
+    var incluido = e.recurso && (p.incluye||{})[e.recurso];
+    if ((D.extras[e.id]||0) > max) { if (max) D.extras[e.id] = max; else delete D.extras[e.id]; }
+    var cant = D.extras[e.id] || 0;
+    var nota = e.detalle || '';
+    if (e.maxChicos && n > e.maxChicos) nota += ' · Son ' + n + ' chicos: el adicional por los ' + (n - e.maxChicos) + ' extra lo cotizamos por WhatsApp';
+    var estado = '';
+    if (incluido && !max) estado = 'Incluido en ' + p.nombre;
+    else if (!max) estado = 'Sin stock en ese horario';
+    else if (incluido) nota = 'Ya incluye 1 en ' + p.nombre + ' · podés sumar ' + (max>1? 'hasta ' + max + ' más' : 'uno más');
+    else if (e.maxCant && max < e.maxCant) nota = 'Precio por unidad · en ese horario queda' + (max>1?'n ':' ') + max + ' disponible' + (max>1?'s':'');
+    var row = document.createElement('div');
+    row.className = 'extra' + (cant?' sel':'') + (max?'':' nodisp');
+    var ctrl;
+    if (!max) ctrl = '<span class="tag-x">'+estado+'</span>';
+    else if (max > 1) ctrl = '<div class="step"><button type="button" data-d="-1" aria-label="Quitar">−</button><b>'+cant+'</b><button type="button" data-d="1" aria-label="Agregar">+</button></div>';
+    else ctrl = '<button type="button" class="tog">'+(cant?'✓ Agregado':'Agregar')+'</button>';
+    row.innerHTML = '<div class="ex-t"><b>'+e.nombre+'</b><span class="ex-p">+'+plata(e.precio)+'</span><small>'+nota+'</small></div>' + ctrl;
+    var tog = row.querySelector('.tog');
+    if (tog) tog.onclick = function(){ if (cant) delete D.extras[e.id]; else D.extras[e.id] = 1; dibujarExtras(); actualizar(); };
+    row.querySelectorAll('.step button').forEach(function(btn){
+      btn.onclick = function(){ var v = Math.max(0, Math.min(max, cant + (+btn.dataset.d))); if (v) D.extras[e.id] = v; else delete D.extras[e.id]; dibujarExtras(); actualizar(); };
+    });
+    c.appendChild(row);
+  });
+}
+
+/* ===== Presupuesto ===== */
+function presupuesto(){
+  var p = buscar(CFG.paquetes, D.paquete) || CFG.paquetes[1];
+  var z = buscar(CFG.zonas, D.zona) || CFG.zonas[0];
+  var filas = [[ 'Paquete ' + p.nombre, p.precio ]];
+  if (D.extraMin) filas.push(['Tiempo extra (+' + D.extraMin + ' min)', precioExtraMin(D.extraMin)]);
+  CFG.extras.forEach(function(e){ var c = D.extras[e.id]; if (c) filas.push([e.nombre + (c>1? ' ×' + c : ''), e.precio * c]); });
+  if (z.recargo) filas.push(['Traslado ' + z.nombre, z.recargo]);
+  var total = filas.reduce(function(a,f){ return a+f[1]; }, 0);
+  return {filas:filas, total:total, paquete:p, zona:z};
+}
+function fechaLarga(k){
+  if (!k) return '';
+  var t = parseKey(k).toLocaleDateString('es-AR',{weekday:'long', day:'numeric', month:'long'});
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function horaFin(h){ var m = aMin(h) + duracion(); return pad(Math.floor(m/60)) + ':' + pad(m%60); }
+function tablaResumen(conDatos){
+  var pr = presupuesto(), h = '';
+  if (conDatos){
+    h += '<tr><td>Fecha</td><td>'+fechaLarga(D.fecha)+'</td></tr>';
+    h += '<tr><td>Horario</td><td>'+D.hora+' a '+horaFin(D.hora)+' h</td></tr>';
+    h += '<tr><td>Cumpleañero/a</td><td>'+esc($('cumpleanero').value)+' ('+esc($('edad').value)+')</td></tr>';
+    h += '<tr><td>Chicos</td><td>'+esc($('cantChicos').value)+'</td></tr>';
+  }
+  pr.filas.forEach(function(f){ h += '<tr><td>'+f[0]+'</td><td>'+plata(f[1])+'</td></tr>'; });
+  h += '<tr class="total"><td>Total</td><td>'+plata(pr.total)+'</td></tr>';
+  return h;
+}
+function esc(s){ return String(s||'').replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function actualizar(){
+  ocultarError();
+  D.zona = $('zona').value || D.zona;
+  var pr = presupuesto();
+  $('estTotal').textContent = paso >= 6 || D.paqueteElegidoAMano ? plata(pr.total) : 'desde ' + plata(CFG.paquetes[0].precio);
+  $('resumen').innerHTML = tablaResumen(false);
+  $('notaSena').innerHTML = 'Para <b>reservar la fecha</b> se abona una seña de <b>'+plata(CFG.sena)+'</b> por transferencia. El resto, <b>'+plata(pr.total-CFG.sena)+'</b>, en efectivo el día del evento.';
+  $('txtAcepto').innerHTML = 'Entiendo que la fecha queda reservada recién cuando GLORIN confirma la <b>seña de '+plata(CFG.sena)+'</b>, y que el total final se confirma por WhatsApp.';
+  if (paso===7) $('resumenFinal').innerHTML = tablaResumen(true);
+}
+['cantChicos'].forEach(function(id){ $(id).addEventListener('input', function(){ dibujarPaquetes(); actualizar(); }); });
+$('zona').addEventListener('change', actualizar);
+
+/* ===== Navegación ===== */
+var REQ = {
+  1: function(){ if(!D.fecha) return 'Elegí un día del calendario.'; if(!D.hora) return 'Elegí el horario de inicio.'; },
+  2: function(){ return falta(['adulto','whatsapp','cumpleanero','edad']) || (($('whatsapp').value.replace(/\D/g,'').length<10) ? marcar('whatsapp','Revisá el WhatsApp: código de área + número (ej: 351 6197928).') : '') || (($('email').value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim())) ? marcar('email','Revisá el email (o dejalo vacío).') : ''); },
+  3: function(){ return falta(['cantChicos']) || faltaChip('rangoEdades'); },
+  4: function(){ return faltaChip('tipoEvento') || faltaChip('lugar') || falta(['direccion']) || faltaChip('espacio'); },
+  5: function(){ return ''; },
+  6: function(){ return D.paquete ? '' : 'Elegí un paquete.'; },
+  7: function(){ return $('acepto').checked ? '' : 'Marcá la casilla de la seña para enviar.'; }
+};
+function marcar(id,msg){ $(id).classList.add('err'); $(id).focus(); return msg; }
+function falta(ids){ for (var i=0;i<ids.length;i++){ var e=$(ids[i]); if(!String(e.value).trim()) return marcar(ids[i],'Completá los campos marcados con *.'); } return ''; }
+function faltaChip(c){ var v=D[c]; if(!v || (Array.isArray(v)&&!v.length)){ var g=document.querySelector('[data-campo="'+c+'"]'); g.classList.add('err'); g.scrollIntoView({behavior:'smooth',block:'center'}); return 'Elegí una opción en las preguntas marcadas con *.'; } return ''; }
+document.querySelectorAll('input,textarea').forEach(function(e){ e.addEventListener('input', function(){ e.classList.remove('err'); }); });
+
+function irA(n){
+  paso = n;
+  document.querySelectorAll('.paso').forEach(function(s){ s.classList.toggle('on', +s.dataset.paso===n); });
+  var pg = $('progreso'); pg.innerHTML = '';
+  for (var i=1;i<=TOTAL_PASOS;i++){ var s=document.createElement('span'); if(i<=n) s.className='on'; pg.appendChild(s); }
+  $('pasoNum').textContent = n<=TOTAL_PASOS ? 'Paso ' + n + ' de ' + TOTAL_PASOS : '';
+  $('btnAtras').style.visibility = n>1 && n<=TOTAL_PASOS ? 'visible' : 'hidden';
+  $('btnSig').textContent = n===TOTAL_PASOS ? 'Enviar reserva' : 'Siguiente';
+  $('barra').style.display = n>TOTAL_PASOS ? 'none' : 'block';
+  if (n===6) dibujarPaquetes();
+  $('waFlot').style.display = n>TOTAL_PASOS ? 'none' : 'grid';
+  actualizar();
+  if (n<=TOTAL_PASOS) guardarBorrador();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$('btnAtras').onclick = function(){ if (paso>1) irA(paso-1); };
+$('btnSig').onclick = function(){
+  var err = REQ[paso] && REQ[paso]();
+  if (err){ mostrarError(err); return; }
+  ocultarError();
+  if (paso < TOTAL_PASOS) irA(paso+1); else enviar();
+};
+function mostrarError(m){
+  var e=$('error');
+  if (paso===7){ e.textContent=m; e.style.display='block'; }
+  else { var t=$('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.className='aviso'; document.querySelector('.paso.on .card').appendChild(t);}
+    var cur = document.querySelector('.paso.on .card'); if (t.parentNode!==cur) cur.appendChild(t);
+    t.textContent=m; t.style.display='block'; }
+}
+function ocultarError(){ var t=$('toast'); if(t) t.style.display='none'; $('error').style.display='none'; }
+
+/* ===== Envío ===== */
+function recolectar(){
+  var ids = ['adulto','whatsapp','email','cumpleanero','edad','gustos','cantChicos','adultos','atencionEspecial','direccion','horaMerienda','horaTorta','musica','evitar','comentarios'];
+  var o = {};
+  Object.keys(D).forEach(function(k){ o[k] = D[k]; });
+  ids.forEach(function(i){ o[i] = $(i).value.trim(); });
+  o.rangoEdades = (D.rangoEdades||[]).join(', ');
+  o.zona = $('zona').value;
+  return o;
+}
+function enviar(){
+  var b = $('btnSig'); b.disabled = true; b.textContent = 'Enviando…';
+  var datos = recolectar();
+  var listo = function(r){ b.disabled=false; exito(r, datos); };
+  var falla = function(e){
+    b.disabled=false; b.textContent='Enviar reserva';
+    var m = (e && e.message) || 'No se pudo enviar. Revisá tu conexión y probá de nuevo.';
+    mostrarError(m);
+    if (/ocup|reserv/i.test(m)) {  // otra familia ganó el horario: refrescamos la agenda
+      llamar('getDatosIniciales', undefined, function(datos){ OCUPADOS = datos.ocupados || {}; dibujarCal(); dibujarPaquetes(); actualizar(); });
+    }
+  };
+  if (DEMO){ setTimeout(function(){ var pr=presupuesto(); listo({ok:true,id:'GL-DEMO',total:pr.total,sena:CFG.sena,saldo:pr.total-CFG.sena,paquete:pr.paquete.nombre,fin:horaFin(D.hora),avisos:[]}); }, 700); }
+  else llamar('enviarReserva', datos, listo, falla);
+}
+function exito(r, d){
+  borrarBorrador(); BORRADOR_LISTO = false; $('borrador').style.display = 'none';
+  var pg = CFG.pago || {};
+  var hayPago = pg.alias || pg.cbu;
+  $('okTxt').textContent = 'Código de reserva: ' + r.id + '. ' + (hayPago
+    ? 'Para confirmar la fecha transferí la seña y mandanos el comprobante por WhatsApp.'
+    : 'Para confirmar la fecha, mandanos el mensaje por WhatsApp y te pasamos los datos de la seña.')
+    + (d.email ? ' También te mandamos el resumen a ' + d.email + '.' : '');
+  if (hayPago){
+    var lin = function(et, v){ return v ? '<div class="lin"><div><span>'+et+'</span><br><b>'+esc(v)+'</b></div><button type="button" class="copiar" data-v="'+esc(v)+'">Copiar</button></div>' : ''; };
+    $('okPago').innerHTML = '<b>Datos para la seña · '+plata(r.sena)+'</b>' + lin('Alias', pg.alias) + lin('CBU', pg.cbu) + (pg.titular ? '<div class="lin"><div><span>Titular'+(pg.banco ? ' · ' + esc(pg.banco) : '')+'</span><br><b>'+esc(pg.titular)+'</b></div></div>' : '') + '<p class="sub" style="margin:8px 0 0;font-size:13px">Podés transferir desde cualquier banco o billetera (Mercado Pago, Naranja X, Ualá…).</p>';
+    $('okPago').style.display = 'block';
+    $('okPago').querySelectorAll('.copiar').forEach(function(bt){ bt.onclick = function(){ copiar(bt.dataset.v, bt); }; });
+  }
+  if (pg.linkMercadoPago){ $('btnMp').href = pg.linkMercadoPago; $('btnMp').style.display = 'block'; }
+  if (r.linkCalendario){ $('btnCal').href = r.linkCalendario; $('btnCal').style.display = 'block'; }
+  if (r.avisos && r.avisos.length){ $('okAvisos').innerHTML = r.avisos.map(esc).join('<br>'); $('okAvisos').style.display = 'block'; }
+  $('resumenOk').innerHTML = tablaResumen(true);
+  $('okSena').innerHTML = 'La fecha queda <b>bloqueada</b> cuando recibimos la seña de <b>'+plata(r.sena)+'</b>. Saldo de <b>'+plata(r.total-r.sena)+'</b> en efectivo el día del cumple.';
+  var extras = presupuesto().filas.slice(1).map(function(f){ return f[0]; });
+  var msg = '¡Hola GLORIN! 🎈 Acabo de completar la reserva ' + r.id + '\n'
+    + '• Fecha: ' + fechaLarga(d.fecha) + ', ' + d.hora + ' a ' + r.fin + ' h\n'
+    + '• Cumple de ' + d.cumpleanero + ' (' + d.edad + ' años) · ' + d.cantChicos + ' chicos\n'
+    + '• Lugar: ' + d.direccion + '\n'
+    + '• Paquete: ' + r.paquete + (extras.length ? ' + ' + extras.join(', ') : '') + '\n'
+    + '• Total estimado: ' + plata(r.total) + '\n'
+    + (hayPago ? 'Te mando el comprobante de la seña de ' + plata(r.sena) + ' 👇 Soy ' + d.adulto + '.'
+               : 'Quiero confirmar y pagar la seña de ' + plata(r.sena) + '. Soy ' + d.adulto + '.');
+  $('btnWa').textContent = hayPago ? 'Mandar comprobante por WhatsApp' : 'Enviar por WhatsApp para confirmar';
+  $('btnWa').href = 'https://wa.me/' + CFG.whatsapp + '?text=' + encodeURIComponent(msg);
+  irA(8);
+}
+
+/* ===== Borrador (si cierran la página, al volver sigue todo cargado) ===== */
+var CAMPOS = ['adulto','whatsapp','email','cumpleanero','edad','gustos','cantChicos','adultos','atencionEspecial','direccion','horaMerienda','horaTorta','musica','evitar','comentarios'];
+var CLAVE_BORRADOR = 'glorin-reserva-v1';
+var BORRADOR_LISTO = false;  // no guardar hasta haber leído el borrador anterior
+function guardarBorrador(){
+  if (!BORRADOR_LISTO) return;
+  try {
+    var o = { D: D, campos: {}, zona: $('zona').value, paso: paso, t: Date.now() };
+    CAMPOS.forEach(function(i){ o.campos[i] = $(i).value; });
+    localStorage.setItem(CLAVE_BORRADOR, JSON.stringify(o));
+  } catch(e){}
+}
+function borrarBorrador(){ try { localStorage.removeItem(CLAVE_BORRADOR); } catch(e){} }
+function cargarBorrador(){
+  try {
+    var o = JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null');
+    if (!o || Date.now() - o.t > 30*86400000) { BORRADOR_LISTO = true; return; }
+    Object.keys(o.D || {}).forEach(function(k){ D[k] = o.D[k]; });
+    CAMPOS.forEach(function(i){ if (o.campos && o.campos[i] != null) $(i).value = o.campos[i]; });
+    if (o.zona) $('zona').value = D.zona = o.zona;
+    // Volver a marcar los chips
+    document.querySelectorAll('.chips[data-campo]').forEach(function(g){
+      var v = D[g.dataset.campo]; if (!v) return;
+      var lista = Array.isArray(v) ? v : [v];
+      g.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('sel', lista.indexOf(c.textContent) >= 0); });
+    });
+    // La fecha guardada puede haberse ocupado: si ya no está libre, se vuelve a elegir
+    if (D.fecha && ['off','lleno'].indexOf(estadoDia(parseKey(D.fecha))) >= 0) { D.fecha = ''; D.hora = ''; D.extraMin = 0; }
+    if (D.hora && !horaLibre(D.fecha, D.hora, duracion())) { D.hora = ''; D.extraMin = 0; }
+    if (D.fecha){ var f = parseKey(D.fecha); mesVista = new Date(f.getFullYear(), f.getMonth(), 1); }
+    $('borrador').style.display = 'flex';
+    dibujarCal(); dibujarPaquetes(); actualizar();
+    BORRADOR_LISTO = true;
+    if (D.fecha && D.hora && o.paso > 1) irA(Math.min(o.paso, TOTAL_PASOS));
+  } catch(e){}
+  finally { BORRADOR_LISTO = true; }
+}
+$('btnBorrar').onclick = function(){ borrarBorrador(); location.reload(); };
+document.addEventListener('input', function(){ clearTimeout(window._tb); window._tb = setTimeout(guardarBorrador, 600); });
+
+/* ===== Link con paquete o zona elegidos: .../exec?paquete=premium&zona=vcp ===== */
+function aplicarParametros(p){
+  p = p || {};
+  if (p.paquete && buscar(CFG.paquetes, p.paquete)) { D.paquete = p.paquete; D.paqueteElegidoAMano = true; }
+  if (p.zona && buscar(CFG.zonas, p.zona)) { D.zona = p.zona; $('zona').value = p.zona; }
+  if (p.paquete || p.zona) { dibujarPaquetes(); actualizar(); }
+}
+
+function copiar(txt, btn){
+  var ok = function(){ btn.textContent = '¡Copiado!'; setTimeout(function(){ btn.textContent = 'Copiar'; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ copiaVieja(txt); ok(); });
+  else { copiaVieja(txt); ok(); }
+}
+function copiaVieja(txt){ var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch(e){} document.body.removeChild(t); }
+
+function arrancar(datos){
+  iniciar(datos);
+  $('waFlot').href = 'https://wa.me/' + CFG.whatsapp + '?text=' + encodeURIComponent('¡Hola GLORIN! 🎈 Estoy reservando un cumple y tengo una consulta:');
+  cargarBorrador();
+  if (EN_APPS_SCRIPT && google.script.url) google.script.url.getLocation(function(loc){ aplicarParametros(loc && loc.parameter); });
+  else { var prm = {}; location.search.replace(/[?&]([^=&]+)=([^&]*)/g, function(_, k, v){ prm[k] = decodeURIComponent(v); }); aplicarParametros(prm); }
+}
+
+/* ===== Arranque ===== */
+irA(1);
+$('waFlot').href = 'https://wa.me/' + CFG.whatsapp;
+if (DEMO){ $('demo').style.display='block'; arrancar(demoDatos()); }
+else llamar('getDatosIniciales', undefined, arrancar, function(){
+  $('calWrap').innerHTML = '<div class="aviso" style="display:block">No pudimos cargar la agenda. Escribinos por WhatsApp y te ayudamos.</div>';
+});
+</script>
+</body>
+</html>
