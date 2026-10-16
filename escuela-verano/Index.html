@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{ --c1:#2F4A38; --c2:#F2CA11; --crema:#F4EFE3; --tinta:#1F2A22; --gris:#6B6F68; --linea:#E3DCCB; --ok:#2E8B57; --mal:#C0392B; --aviso:#E08A00; --wa:#25D366; --r:16px; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--crema);color:var(--tinta);font:16px/1.45 'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding-bottom:84px}
+  h1,h2,h3{margin:0 0 .4em;line-height:1.1}
+  .serif{font-family:'Instrument Serif',serif;font-weight:400}
+  a{color:var(--c1)}
+  button,input,select,textarea{font:inherit}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px}
+  .top{position:sticky;top:0;z-index:20;background:var(--c1);color:#fff;display:flex;align-items:center;gap:10px;padding:12px 16px;box-shadow:0 2px 14px rgba(0,0,0,.15)}
+  .top .marca{flex:1;font:400 22px 'Instrument Serif',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top .marca small{font:500 12px 'Archivo';opacity:.7;margin-left:6px}
+  .top button,.top select{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:999px;padding:8px 14px;font-weight:600;cursor:pointer}
+  .top select{max-width:150px}
+  .top select option{color:#000}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:13px 20px;font-weight:700;cursor:pointer;background:var(--c1);color:#fff;text-decoration:none;transition:transform .08s,opacity .15s}
+  .btn:active{transform:scale(.97)}
+  .btn[disabled]{opacity:.5;pointer-events:none}
+  .btn.acento{background:var(--c2);color:var(--c1)}
+  .btn.claro{background:#fff;color:var(--c1);border:1.5px solid var(--linea)}
+  .btn.wa{background:var(--wa);color:#fff}
+  .btn.mal{background:var(--mal)}
+  .btn.full{width:100%}
+  .btn.sm{padding:8px 14px;font-size:14px}
+  .btn.xs{padding:5px 10px;font-size:13px;font-weight:600}
+  .fila{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .fila>*{flex:0 0 auto}
+  .crece{flex:1 1 auto!important}
+  .card{background:#fff;border-radius:var(--r);padding:18px;box-shadow:0 1px 0 var(--linea),0 6px 22px rgba(31,42,34,.06);margin:14px 0}
+  .card h3{font-size:18px}
+  .muted{color:var(--gris)}
+  .chico{font-size:13px}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--crema);font-size:13px;font-weight:600;white-space:nowrap}
+  .chip.ok{background:#DDF3E5;color:#1C6B3F}.chip.mal{background:#FBE1DE;color:#9B2B20}.chip.aviso{background:#FFF0CC;color:#8A5A00}.chip.info{background:#E2ECF7;color:#1C4C7A}
+  label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px}
+  label small{font-weight:400;color:var(--gris)}
+  input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],input[type=time],input[type=month],select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;background:#fff;color:var(--tinta);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--c1)}
+  textarea{min-height:80px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .opcion{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;background:#fff;cursor:pointer;margin:8px 0}
+  .opcion.on{border-color:var(--c1);background:color-mix(in srgb,var(--c1) 7%,#fff)}
+  .opcion.off{opacity:.45;pointer-events:none}
+  .opcion input{margin-top:3px;accent-color:var(--c1);width:18px;height:18px}
+  .seg{display:flex;background:#fff;border:1.5px solid var(--linea);border-radius:999px;padding:4px;gap:4px}
+  .seg button{flex:1;border:0;background:transparent;padding:9px 12px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--gris)}
+  .seg button.on{background:var(--c1);color:#fff}
+  .hero{background:var(--c1);color:#fff;padding:40px 16px 34px;position:relative;overflow:hidden}
+  .hero h1{font:400 clamp(38px,9vw,64px)/1 'Instrument Serif',serif}
+  .hero h1 em{color:var(--c2)}
+  .hero p{max-width:560px;opacity:.9;font-size:17px}
+  .sol{position:absolute;right:-90px;top:-90px;width:200px;height:200px;border-radius:50%;background:var(--c2);opacity:.85}
+  .sedes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:-22px;position:relative}
+  @media(max-width:640px){.sedes{grid-template-columns:1fr}}
+  .sede{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08);display:flex;flex-direction:column}
+  .sede .banda{padding:18px;color:#fff}
+  .sede .banda h2{font:400 32px 'Instrument Serif',serif;margin:0}
+  .sede .cuerpo{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .sede ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:15px}
+  .sede li b{display:inline-block;min-width:96px;color:var(--gris);font-weight:600}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{padding:9px 8px;border-bottom:1px solid var(--linea);text-align:left;vertical-align:top}
+  table.t th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
+  .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .pasos{display:flex;gap:6px;margin:16px 0}
+  .pasos span{flex:1;height:6px;border-radius:9px;background:var(--linea)}
+  .pasos span.on{background:var(--c1)}
+  .presu{position:sticky;bottom:0;z-index:10;background:var(--c1);color:#fff;border-radius:18px 18px 0 0;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 -6px 24px rgba(0,0,0,.18);margin:0 -16px}
+  .presu .monto{font:700 24px 'Archivo'}
+  .presu small{opacity:.8;display:block;font-size:12px}
+  .semana{border:1.5px solid var(--linea);border-radius:14px;padding:10px 12px;background:#fff;margin:8px 0}
+  .semana.on{border-color:var(--c1);background:color-mix(in srgb,var(--c1) 7%,#fff)}
+  .dias{display:flex;gap:6px;margin-top:8px}
+  .dias button{flex:1;padding:8px 0;border-radius:10px;border:1.5px solid var(--linea);background:#fff;font-weight:600;font-size:13px;cursor:pointer}
+  .dias button.on{background:var(--c1);color:#fff;border-color:var(--c1)}
+  .dias button[disabled]{opacity:.3}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--linea);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .nav button{flex:1;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--gris);padding:6px 2px;cursor:pointer}
+  .nav button i{font-style:normal;font-size:21px;line-height:1}
+  .nav button.on{color:var(--c1)}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;-webkit-overflow-scrolling:touch}
+  .tabs button{flex:0 0 auto;border:0;border-radius:999px;padding:9px 15px;background:#fff;font-weight:600;cursor:pointer;color:var(--gris);box-shadow:0 1px 0 var(--linea)}
+  .tabs button.on{background:var(--c1);color:#fff}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+  .kpi{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 0 var(--linea)}
+  .kpi b{display:block;font-size:22px}
+  .kpi span{font-size:12px;color:var(--gris);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .barra{height:8px;border-radius:9px;background:var(--linea);overflow:hidden}
+  .barra i{display:block;height:100%;background:var(--c1)}
+  .lista-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linea)}
+  .lista-item:last-child{border-bottom:0}
+  .asis{display:flex;gap:4px}
+  .asis button{width:42px;height:40px;border-radius:10px;border:1.5px solid var(--linea);background:#fff;font-weight:700;cursor:pointer}
+  .asis button.on.p{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .asis button.on.t{background:var(--aviso);color:#fff;border-color:var(--aviso)}
+  .asis button.on.a{background:var(--mal);color:#fff;border-color:var(--mal)}
+  .marcar{width:100%;aspect-ratio:2.2/1;max-height:220px;border:0;border-radius:24px;font:700 26px 'Archivo';color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+  .marcar small{font:500 14px 'Archivo';opacity:.85}
+  .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:10px}
+  .fotos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--linea);cursor:zoom-in}
+  .post{background:#fff;border-radius:var(--r);padding:14px;margin:12px 0;box-shadow:0 1px 0 var(--linea)}
+  .banner{border-radius:14px;padding:14px;background:var(--c2);color:var(--c1);margin:10px 0}
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(20,28,22,.55);display:flex;align-items:flex-end;justify-content:center}
+  .modal[hidden]{display:none}
+  .modal .caja{background:var(--crema);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px 26px}
+  @media(min-width:700px){.modal{align-items:center}.modal .caja{border-radius:22px}}
+  .modal .cerrar{float:right;border:0;background:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+  #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:60;background:#1F2A22;color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
+  #toast.on{opacity:1}
+  #toast.mal{background:var(--mal)}
+  .cargando{display:flex;align-items:center;justify-content:center;min-height:60vh;font:400 28px 'Instrument Serif',serif;color:var(--c1)}
+  .spin{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:g .7s linear infinite}
+  @keyframes g{to{transform:rotate(360deg)}}
+  .wa-flota{position:fixed;right:16px;bottom:18px;z-index:25;width:56px;height:56px;border-radius:50%;background:var(--wa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .pie{text-align:center;padding:30px 16px;color:var(--gris);font-size:14px}
+  .pie a{margin:0 8px}
+  .vacio{text-align:center;color:var(--gris);padding:26px 10px}
+  .codigo{letter-spacing:10px;font-size:26px!important;text-align:center;font-weight:700}
+  .sep{height:1px;background:var(--linea);margin:14px 0}
+  .derecha{text-align:right}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"><div class="cargando">☀️ Cargando…</div></div>
+<div id="modal" class="modal" hidden onclick="if(event.target===this)cerrarModal()"><div class="caja" id="modalCaja"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ================= Base ================= */
+let PUB = null, cotizar = null, PAGINA = '', HASH = '';
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('ev_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('ev_' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('ev_' + k); } catch (e) {} }
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pesos = n => '$' + Math.round(Number(n) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const DSEM = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const fecha = iso => new Date(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10), 12);
+const fCorta = iso => iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '';
+const fLarga = iso => { if (!iso) return ''; const f = fecha(iso); return DSEM[f.getDay()] + ' ' + f.getDate() + ' de ' + MESES[f.getMonth()]; };
+const sumarDias = (iso, n) => { const f = fecha(iso); f.setDate(f.getDate() + n); return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0'); };
+const lunes = iso => { const f = fecha(iso); return sumarDias(iso, -((f.getDay() + 6) % 7)); };
+const ahoraHora = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const sede = id => PUB.sedes.find(s => s.id === id);
+const grupo = id => PUB.grupos.find(g => g.id === id) || { id, nombre: id || '—', emoji: '' };
+const nGrupo = id => id === 'todos' ? 'Todos los grupos' : (grupo(id).emoji + ' ' + grupo(id).nombre);
+const foto = id => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1200';
+const wa = (tel, txt) => 'https://wa.me/' + String(tel || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(txt || '');
+function edadEn(nac, ref) { let e = +ref.slice(0, 4) - +nac.slice(0, 4); if (ref.slice(5) < nac.slice(5)) e--; return e; }
+function grupoPorEdad(nac, ref) {
+  const e = edadEn(nac, ref);
+  return PUB.grupos.find(g => e >= g.edadMin && e <= g.edadMax) || (e < PUB.grupos[0].edadMin ? PUB.grupos[0] : PUB.grupos[PUB.grupos.length - 1]);
+}
+
+function api(accion, datos, rol) {
+  return new Promise((res, rej) => {
+    google.script.run.withSuccessHandler(r => {
+      if (r && r.ok) return res(r.data);
+      if (r && r.auth && rol) { LS.del('tok_' + rol); setTimeout(() => location.reload(), 1500); }
+      rej(new Error((r && r.error) || 'Algo falló. Probá de nuevo.'));
+    }).withFailureHandler(e => rej(new Error(e && e.message ? e.message : 'Sin conexión. Probá de nuevo.')))
+      .api(accion, datos || {}, rol ? LS.get('tok_' + rol, '') : '');
+  });
+}
+function toast(msg, mal) { const t = $('#toast'); t.textContent = msg; t.className = 'on' + (mal ? ' mal' : ''); clearTimeout(t._t); t._t = setTimeout(() => t.className = '', mal ? 4500 : 2600); }
+function modal(html) { $('#modalCaja').innerHTML = '<button class="cerrar" onclick="cerrarModal()">✕</button>' + html; $('#modal').hidden = false; }
+function cerrarModal() { $('#modal').hidden = true; $('#modalCaja').innerHTML = ''; }
+function pintar(html) { $('#app').innerHTML = html; }
+async function conBoton(btn, fn) {
+  const txt = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>'; }
+  try { return await fn(); } catch (e) { toast(e.message, true); } finally { if (btn && document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = txt; } }
+}
+function tema(id) {
+  const s = id && sede(id);
+  document.documentElement.style.setProperty('--c1', s ? s.color : '#2F4A38');
+  document.documentElement.style.setProperty('--c2', s ? s.acento : '#F2CA11');
+}
+function copiar(txt) { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('Copiado ✓')).catch(() => prompt('Copiá esto:', txt)); }
+function verFoto(id) { modal('<img src="' + foto(id) + '" style="width:100%;border-radius:14px;margin-top:10px" alt="">'); }
+const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+google.script.url.getLocation(loc => {
+  PAGINA = (loc.parameter && loc.parameter.p) || '';
+  HASH = loc.hash || '';
+  api('publico').then(d => {
+    PUB = d;
+    cotizar = new Function('return ' + d.cotizar)();
+    arrancar();
+  }).catch(e => pintar('<div class="cargando">No pudimos cargar 😕<br><small style="font-size:16px">' + esc(e.message) + '</small></div>'));
+});
+
+function arrancar() {
+  if (PAGINA === 'profes') return LS.get('tok_profe') ? profeCargar() : vLogin('profe');
+  if (PAGINA === 'admin') return LS.get('tok_admin') ? adminCargar() : vAdminLogin();
+  if (PAGINA === 'cuenta' || HASH === 'renovar') return LS.get('tok_familia') ? cuentaCargar() : vLogin('familia');
+  const b = LS.get('borrador');
+  if (b && b.paso && b.sede && sede(b.sede)) { W = b; return vWizard(); }
+  vInicio();
+}
+
+/* ================= FAMILIAS · público ================= */
+function precioDesde(s) { return s.precios.semanas[1]; }
+
+function vInicio() {
+  tema(null);
+  const s = PUB.sedes;
+  const etiquetas = s[0].ficha.map(f => f[0]);
+  pintar(`
+  <header class="top"><div class="marca">☀️ ${esc(PUB.marca)} <small>${esc(PUB.temporada)}</small></div><button onclick="irCuenta()">Mi cuenta</button></header>
+  <section class="hero"><div class="sol"></div><div class="wrap" style="position:relative">
+    <h1>Un verano para<br><em>acordarse siempre</em></h1>
+    <p>Pileta, deporte, juegos y amigos. Elegí la sede, armá tu presupuesto en un minuto e inscribí a tus hijos desde el celular.</p>
+  </div></section>
+  <div class="wrap">
+    <div class="sedes">${s.map(x => `
+      <article class="sede">
+        <div class="banda" style="background:${x.color}"><h2>${esc(x.nombre)}</h2><div style="opacity:.85">${esc(x.bajada)}</div></div>
+        <div class="cuerpo">
+          <ul>${x.ficha.slice(0, 4).map(f => `<li><b>${esc(f[0])}</b>${esc(f[1])}</li>`).join('')}</ul>
+          <div class="muted chico">Del ${fLarga(x.inicio)} al ${fLarga(x.fin)}</div>
+          <div><span class="muted">Semana desde</span> <b style="font-size:20px">${pesos(precioDesde(x))}</b></div>
+          <div class="fila" style="margin-top:auto">
+            <button class="btn" style="background:${x.color}" onclick="vSede('${x.id}')">Ver todo</button>
+            <button class="btn acento" style="background:${x.acento};color:${x.color}" onclick="empezar('${x.id}')">Inscribir</button>
+          </div>
+        </div>
+      </article>`).join('')}
+    </div>
+
+    <div class="card">
+      <h2 class="serif" style="font-size:30px">¿Qué diferencia hay?</h2>
+      <div class="scroll-x"><table class="t">
+        <tr><th></th>${s.map(x => `<th style="color:${x.color}">${esc(x.nombre)}</th>`).join('')}</tr>
+        ${etiquetas.map((e, i) => `<tr><td><b>${esc(e)}</b></td>${s.map(x => `<td>${esc((x.ficha[i] || [])[1] || '—')}</td>`).join('')}</tr>`).join('')}
+        <tr><td><b>Día suelto</b></td>${s.map(x => `<td>${pesos(x.precios.dia)}</td>`).join('')}</tr>
+        <tr><td><b>1 semana</b></td>${s.map(x => `<td>${pesos(x.precios.semanas[1])}</td>`).join('')}</tr>
+        <tr><td><b>4 semanas</b></td>${s.map(x => `<td>${pesos(x.precios.semanas[4])}</td>`).join('')}</tr>
+        <tr><td><b>Dirección</b></td>${s.map(x => `<td>${esc(x.direccion)}</td>`).join('')}</tr>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h3>¿Ya inscribiste a tus hijos?</h3>
+      <p class="muted">Entrá con tu mail para ver las fotos del día, la asistencia, el cronograma de la semana y renovar.</p>
+      <button class="btn" onclick="irCuenta()">Entrar a mi cuenta</button>
+    </div>
+  </div>
+  <div class="pie">¿Trabajás con nosotros? <a href="${PUB.url}?p=profes">Soy profe</a>·<a href="${PUB.url}?p=admin">Administración</a></div>
+  <a class="wa-flota" href="${wa(s[0].whatsapp, '¡Hola! Quiero consultar por la escuela de verano.')}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>`);
+  scrollTo(0, 0);
+}
+
+function irCuenta() { location.href = PUB.url + '?p=cuenta'; }
+
+function vSede(id) {
+  const s = sede(id); tema(id); LS.set('sede', id);
+  const P = s.precios;
+  const hoy = PUB.hoy;
+  pintar(`
+  <header class="top"><button onclick="vInicio()">←</button><div class="marca">${esc(s.nombre)}</div><button onclick="empezar('${id}')">Inscribir</button></header>
+  <section class="hero" style="padding-bottom:26px"><div class="sol"></div><div class="wrap" style="position:relative">
+    <h1>${esc(s.nombre)}</h1><p>${esc(s.bajada)}</p>
+    <p class="chico">📍 ${esc(s.direccion)}<br>📅 Del ${fLarga(s.inicio)} al ${fLarga(s.fin)} · lunes a viernes</p>
+    <div class="fila"><button class="btn acento" onclick="empezar('${id}')">Inscribirme</button>
+    <a class="btn wa" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank">💬 WhatsApp</a></div>
+  </div></section>
+  <div class="wrap">
+    <div class="card"><h3>Cómo es</h3>
+      <table class="t">${s.ficha.map(f => `<tr><td style="width:120px"><b>${esc(f[0])}</b></td><td>${esc(f[1])}</td></tr>`).join('')}</table>
+    </div>
+    <div class="card"><h3>Grupos por edad</h3>
+      <div class="fila">${PUB.grupos.map(g => `<span class="chip">${g.emoji} ${esc(g.nombre)} · ${g.edadMin} a ${g.edadMax} años</span>`).join('')}</div>
+      <p class="muted chico" style="margin-bottom:0">Cupo de ${s.cupoPorGrupo} chicos por grupo y por día. La edad se cuenta al empezar la temporada.</p>
+    </div>
+    <div class="card"><h3>Temáticas de cada semana</h3>
+      ${s.semanas.map((w, i) => `<div class="lista-item">
+        <div style="font-size:28px;width:36px;text-align:center">${esc((w.tematica && w.tematica.emoji) || '☀️')}</div>
+        <div class="crece"><b>${w.tematica ? esc(w.tematica.titulo) : 'Semana ' + (i + 1)}</b><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}${w.dias.length < 5 ? ' · ' + w.dias.length + ' días (feriado)' : ''}</div>
+        ${w.tematica && w.tematica.descripcion ? `<div class="chico">${esc(w.tematica.descripcion)}</div>` : ''}</div>
+        ${w.hasta < hoy ? '<span class="chip">Terminó</span>' : ''}</div>`).join('')}
+    </div>
+    <div class="card"><h3>Precios</h3>
+      <table class="t">
+        <tr><td>Día suelto</td><td class="derecha"><b>${pesos(P.dia)}</b></td></tr>
+        ${P.semanas.slice(1, 6).map((p, i) => `<tr><td>${i + 1} ${i ? 'semanas' : 'semana'}</td><td class="derecha"><b>${pesos(p)}</b>${i ? ` <span class="muted chico">(${pesos(p / (i + 1))} c/u)</span>` : ''}</td></tr>`).join('')}
+        <tr><td>Más semanas</td><td class="derecha muted">calculalo en el presupuesto</td></tr>
+        ${P.turnos.filter(t => t.factor !== 1).map(t => `<tr><td>${esc(t.nombre)}</td><td class="derecha">+${Math.round((t.factor - 1) * 100)}%</td></tr>`).join('')}
+        ${P.extras.map(e => `<tr><td>${esc(e.nombre)} <span class="muted chico">${esc(e.detalle || '')}</span></td><td class="derecha">${pesos(e.precioDia)} por día</td></tr>`).join('')}
+      </table>
+      <div class="fila" style="margin-top:12px">
+        ${P.descuentoHermanos ? `<span class="chip ok">👫 Hermanos ${P.descuentoHermanos}% off</span>` : ''}
+        ${P.descuentoRenovacion ? `<span class="chip ok">🔁 Renovando ${P.descuentoRenovacion}% off</span>` : ''}
+        ${P.anticipado && P.anticipado.hasta >= hoy ? `<span class="chip aviso">⏰ ${P.anticipado.pct}% off inscribiéndote hasta el ${fCorta(P.anticipado.hasta)}</span>` : ''}
+      </div>
+      <p class="muted chico">Los días sueltos nunca cuestan más que la semana completa. Se reserva el lugar con una seña del ${P.senaPct}%.</p>
+      <button class="btn full" onclick="empezar('${id}')">Calcular mi presupuesto</button>
+    </div>
+    <div class="card"><h3>¿Todavía no te decidís?</h3>
+      <p class="muted">Dejanos tu mail y te avisamos temáticas, novedades y cuándo se llenan los cupos.</p>
+      <div class="grid2"><div><label>Nombre</label><input type="text" id="intNom"></div><div><label>Mail</label><input type="email" id="intMail" inputmode="email"></div></div>
+      <button class="btn claro" style="margin-top:12px" onclick="conBoton(this, async () => { await api('interesado', {sede:'${id}', nombre:val('intNom'), email:val('intMail')}); toast('¡Listo! Te vamos a escribir ☀️'); })">Quiero recibir novedades</button>
+    </div>
+  </div>
+  <a class="wa-flota" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank">💬</a>`);
+  scrollTo(0, 0);
+}
+
+/* ---------- Armador de plan (semanas / días + turno + extras) ---------- */
+let PL = null;  // { sede, plan, cant, renov, alCambiar }
+function planNuevo(sedeId) { const s = sede(sedeId); return { modalidad: 'semanas', semanas: [], dias: [], turno: s.precios.turnos[0].id, extras: [] }; }
+function htmlPlan() {
+  const s = sede(PL.sede), p = PL.plan, hoy = PUB.hoy;
+  const semanasHtml = s.semanas.map((w, i) => {
+    const empezo = w.dias[0] < hoy, termino = w.hasta < hoy;
+    if (p.modalidad === 'semanas') {
+      const on = p.semanas.includes(w.id);
+      return `<label class="opcion ${on ? 'on' : ''} ${empezo ? 'off' : ''}"><input type="checkbox" ${on ? 'checked' : ''} ${empezo ? 'disabled' : ''} onchange="plTogg('semanas','${w.id}')">
+        <div class="crece"><b>Semana ${i + 1}</b> · ${fCorta(w.desde)} al ${fCorta(w.hasta)} ${w.dias.length < 5 ? '<span class="chip">' + w.dias.length + ' días</span>' : ''}
+        <div class="muted chico">${w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : ''}${empezo ? ' · ya empezó (elegí días sueltos)' : ''}</div></div></label>`;
+    }
+    if (termino) return '';
+    const dias = [0, 1, 2, 3, 4].map(k => sumarDias(w.id, k));
+    return `<div class="semana"><b>Semana ${i + 1}</b> <span class="muted chico">${w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : ''}</span>
+      <div class="dias">${dias.map(d => { const ok = w.dias.includes(d) && d >= hoy; const on = p.dias.includes(d);
+        return `<button ${ok ? '' : 'disabled'} class="${on ? 'on' : ''}" onclick="plTogg('dias','${d}')">${DSEM[fecha(d).getDay()]}<br>${fecha(d).getDate()}</button>`; }).join('')}</div></div>`;
+  }).join('');
+  return `
+    <div class="seg"><button class="${p.modalidad === 'semanas' ? 'on' : ''}" onclick="plSet('modalidad','semanas')">Por semana</button><button class="${p.modalidad === 'dias' ? 'on' : ''}" onclick="plSet('modalidad','dias')">Días sueltos</button></div>
+    ${p.modalidad === 'semanas' ? `<div class="fila" style="margin-top:10px"><button class="btn xs claro" onclick="plTodas()">Elegir todas las que quedan</button>${p.semanas.length ? `<button class="btn xs claro" onclick="plSet('semanas',[])">Borrar</button>` : ''}</div>` : `<p class="muted chico">Tocá los días que viene. Si elegís muchos de una misma semana, nunca pagás más que la semana completa.</p>`}
+    ${semanasHtml}
+    <label>Horario</label>
+    ${s.precios.turnos.map(t => `<label class="opcion ${p.turno === t.id ? 'on' : ''}"><input type="radio" name="turno" ${p.turno === t.id ? 'checked' : ''} onchange="plSet('turno','${t.id}')"><div><b>${esc(t.nombre)}</b>${t.factor !== 1 ? `<div class="muted chico">+${Math.round((t.factor - 1) * 100)}%</div>` : ''}</div></label>`).join('')}
+    ${s.precios.extras.length ? '<label>Extras</label>' + s.precios.extras.map(e => `<label class="opcion ${p.extras.includes(e.id) ? 'on' : ''}"><input type="checkbox" ${p.extras.includes(e.id) ? 'checked' : ''} onchange="plTogg('extras','${e.id}')"><div><b>${esc(e.nombre)}</b> · ${pesos(e.precioDia)} por día<div class="muted chico">${esc(e.detalle || '')}</div></div></label>`).join('') : ''}`;
+}
+function plSet(k, v) { PL.plan[k] = v; PL.alCambiar(); }
+function plTogg(k, v) { const a = PL.plan[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); PL.alCambiar(); }
+function plTodas() { PL.plan.semanas = sede(PL.sede).semanas.filter(w => w.dias[0] >= PUB.hoy).map(w => w.id); PL.alCambiar(); }
+function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.cant), { hoy: PUB.hoy, renovacion: PL.renov }); }
+function htmlPresu(q, texto, accion) {
+  const cant = Math.max(1, PL.cant);
+  return `<div class="presu"><div class="crece"><small>${q.cantDias ? esc(q.detalleBase) + ' · ' + cant + (cant > 1 ? ' chicos' : ' chico') : 'Elegí cuándo viene'}</small>
+    <div class="monto">${pesos(q.total)}</div>${q.descuento ? `<small>Ahorrás ${pesos(q.descuento)}</small>` : ''}</div>
+    <button class="btn acento" ${q.errores.length ? 'disabled' : ''} onclick="${accion}">${texto}</button></div>`;
+}
+function detallePresu(q, nombres) {
+  return `<table class="t">${q.porChico.map((c, i) => `<tr><td>${esc(nombres[i] || 'Chico ' + (i + 1))}<div class="muted chico">${esc(q.detalleBase)} · ${esc(q.turno.nombre)}${q.extras.length ? ' · ' + q.extras.map(e => esc(e.nombre)).join(', ') : ''}${c.motivos.length ? '<br>Descuento: ' + esc(c.motivos.join(' + ')) : ''}</div></td>
+    <td class="derecha">${c.descuento ? `<s class="muted">${pesos(c.subtotal)}</s><br>` : ''}<b>${pesos(c.total)}</b></td></tr>`).join('')}
+    <tr><td><b>Total</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
+    <tr><td>Seña para reservar (${q.senaPct}%)</td><td class="derecha"><b>${pesos(q.sena)}</b></td></tr></table>
+    <p class="muted chico">Del ${fLarga(q.dias[0] || '')} al ${fLarga(q.dias[q.dias.length - 1] || '')} · ${q.cantDias} días</p>`;
+}
+
+/* ---------- Inscripción paso a paso ---------- */
+let W = null;
+const chicoVacio = () => ({ nombre: '', nacimiento: '', dni: '', obraSocial: '', alergias: '', medicacion: '', condiciones: '', sabeNadar: '', autorizaFotos: 'Sí' });
+function empezar(id) {
+  const b = LS.get('borrador');
+  W = b && b.sede === id ? b : { sede: id, paso: 1, plan: planNuevo(id), chicos: [chicoVacio()], adulto: {}, acepta: false };
+  W.paso = W.paso || 1;
+  vWizard();
+}
+function guardarW() { LS.set('borrador', W); }
+function vWizard() {
+  const s = sede(W.sede); tema(W.sede);
+  PL = { sede: W.sede, plan: W.plan, cant: W.chicos.filter(c => c.nombre).length || W.chicos.length, renov: false, alCambiar: () => { guardarW(); vWizard(); } };
+  const titulos = ['¿Cuándo viene?', '¿Quién viene?', 'Tus datos', 'Revisá y confirmá'];
+  let cuerpo = '';
+  if (W.paso === 1) cuerpo = htmlPlan();
+  if (W.paso === 2) cuerpo = W.chicos.map((c, i) => htmlChico(c, i)).join('') + `<button class="btn claro full" onclick="leerChicos();W.chicos.push(chicoVacio());guardarW();vWizard()">+ Sumar otro hijo/a ${s.precios.descuentoHermanos ? '(' + s.precios.descuentoHermanos + '% off)' : ''}</button>`;
+  if (W.paso === 3) cuerpo = htmlAdulto(W.adulto);
+  if (W.paso === 4) {
+    const q = plCotizar();
+    cuerpo = `<div class="card"><h3>${esc(s.nombre)}</h3>${detallePresu(q, W.chicos.map(c => c.nombre))}</div>
+      <div class="card"><h3>Reglamento</h3><ul class="chico" style="padding-left:18px;margin:0">
+        <li>El lugar queda reservado con la seña. El saldo se paga antes del primer día.</li>
+        <li>Solo retiran a los chicos los adultos autorizados (con DNI).</li>
+        <li>Avisanos cualquier cambio de salud, alergia o medicación.</li>
+        <li>Los días que el chico falta no se recuperan ni se devuelven, salvo con certificado médico.</li>
+        <li>Traer: malla, toalla, protector solar, gorra, ojotas y botella de agua, todo con nombre.</li>
+      </ul>
+      <label class="opcion ${W.acepta ? 'on' : ''}" style="margin-top:12px"><input type="checkbox" ${W.acepta ? 'checked' : ''} onchange="W.acepta=this.checked;guardarW();vWizard()"><div>Leí y acepto el reglamento. Los datos de salud son verdaderos.</div></label></div>`;
+  }
+  const q = plCotizar();
+  pintar(`
+  <header class="top"><button onclick="${W.paso > 1 ? 'pasoAtras()' : `vSede('${W.sede}')`}">←</button><div class="marca">${esc(s.nombre)} <small>paso ${W.paso} de 4</small></div><button onclick="if(confirm('¿Borrar todo lo cargado?')){LS.del('borrador');vSede('${W.sede}')}">Borrar</button></header>
+  <div class="wrap">
+    <div class="pasos">${[1, 2, 3, 4].map(n => `<span class="${n <= W.paso ? 'on' : ''}"></span>`).join('')}</div>
+    <h2 class="serif" style="font-size:34px">${titulos[W.paso - 1]}</h2>
+    ${W.paso === 1 ? `<p class="muted">El precio es por chico. Al sumar hermanos en el paso 2 se aplica el descuento.</p>` : ''}
+    <div id="pasoCuerpo">${cuerpo}</div>
+    <div style="height:18px"></div>
+    ${W.paso < 4 ? htmlPresu(q, 'Seguir →', 'pasoSig()') : `<div class="presu"><div class="crece"><small>Total</small><div class="monto">${pesos(q.total)}</div><small>Seña ${pesos(q.sena)}</small></div><button class="btn acento" ${W.acepta ? '' : 'disabled'} onclick="enviarInscripcion(this)">Inscribir ✓</button></div>`}
+  </div>`);
+}
+function htmlChico(c, i) {
+  const s = sede(W.sede);
+  const g = c.nacimiento && /^\d{4}-\d{2}-\d{2}$/.test(c.nacimiento) ? grupoPorEdad(c.nacimiento, s.inicio) : null;
+  const edad = g ? edadEn(c.nacimiento, s.inicio) : null;
+  const sel = (id, v, ops) => `<select id="${id}">${ops.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+  return `<div class="card"><div class="fila"><h3 class="crece">${i ? 'Hijo/a ' + (i + 1) : 'Hijo/a'}</h3>${W.chicos.length > 1 ? `<button class="btn xs claro" onclick="leerChicos();W.chicos.splice(${i},1);guardarW();vWizard()">Quitar</button>` : ''}</div>
+    <label>Nombre y apellido</label><input type="text" id="ch${i}_nombre" value="${esc(c.nombre)}" autocomplete="off">
+    <div class="grid2"><div><label>Fecha de nacimiento</label><input type="date" id="ch${i}_nacimiento" value="${esc(c.nacimiento)}" onchange="leerChicos();guardarW();vWizard()"></div>
+    <div><label>DNI</label><input type="tel" id="ch${i}_dni" value="${esc(c.dni)}" inputmode="numeric"></div></div>
+    ${g ? `<p style="margin:8px 0 0"><span class="chip info">${g.emoji} Grupo ${esc(g.nombre)} · ${edad} años al empezar</span></p>` : ''}
+    ${edad !== null && edad < PUB.edadMin ? `<p class="chip mal" style="margin-top:6px">Es desde los ${PUB.edadMin} años</p>` : ''}
+    <label>Obra social / prepaga <small>y número de afiliado</small></label><input type="text" id="ch${i}_obraSocial" value="${esc(c.obraSocial)}">
+    <label>Alergias <small>(alimentos, picaduras, remedios…)</small></label><input type="text" id="ch${i}_alergias" value="${esc(c.alergias)}" placeholder="Ninguna">
+    <label>Medicación que toma</label><input type="text" id="ch${i}_medicacion" value="${esc(c.medicacion)}" placeholder="Ninguna">
+    <label>¿Algo que tengamos que saber? <small>(condición de salud, miedos, necesidades)</small></label><textarea id="ch${i}_condiciones">${esc(c.condiciones)}</textarea>
+    <div class="grid2"><div><label>¿Sabe nadar?</label>${sel('ch' + i + '_sabeNadar', c.sabeNadar, ['', 'Sí', 'Un poco', 'No'])}</div>
+    <div><label>¿Puede salir en las fotos?</label>${sel('ch' + i + '_autorizaFotos', c.autorizaFotos, ['Sí', 'No'])}</div></div>
+  </div>`;
+}
+function leerChicos() {
+  W.chicos = W.chicos.map((c, i) => { const o = {}; Object.keys(chicoVacio()).forEach(k => { const el = document.getElementById('ch' + i + '_' + k); o[k] = el ? el.value.trim() : c[k]; }); return o; });
+}
+function htmlAdulto(a) {
+  const campo = (k, lab, tipo, extra) => `<label>${lab}</label><input type="${tipo || 'text'}" id="ad_${k}" value="${esc(a[k] || '')}" ${extra || ''}>`;
+  return `<div class="card"><h3>Adulto responsable</h3>
+    ${campo('nombre', 'Nombre y apellido')}
+    ${campo('email', 'Mail <small>(con este mail entrás a tu cuenta)</small>', 'email', 'inputmode="email" autocomplete="email"')}
+    <div class="grid2"><div>${campo('whatsapp', 'WhatsApp', 'tel', 'inputmode="tel" placeholder="351 123 4567"')}</div><div>${campo('dni', 'DNI', 'tel', 'inputmode="numeric"')}</div></div>
+    ${campo('direccion', 'Dirección')}</div>
+  <div class="card"><h3>Seguridad</h3>
+    <div class="grid2"><div>${campo('emergenciaNombre', 'Contacto de emergencia')}</div><div>${campo('emergenciaTel', 'Teléfono de emergencia', 'tel', 'inputmode="tel"')}</div></div>
+    <label>¿Quiénes pueden retirar a los chicos? <small>Nombre y DNI, uno por renglón</small></label><textarea id="ad_autorizadosRetiro" placeholder="Ana Pérez — 30.123.456&#10;Abuelo Juan — 12.345.678">${esc(a.autorizadosRetiro || '')}</textarea>
+    <label>¿Cómo nos conociste?</label><select id="ad_comoNosConocio">${['', 'Instagram', 'Recomendación de otra familia', 'Ya vinimos otros años', 'Aldea (canchas, escuelas, eventos)', 'Google', 'Otro'].map(o => `<option ${o === a.comoNosConocio ? 'selected' : ''}>${o}</option>`).join('')}</select></div>`;
+}
+function leerAdulto() { ['nombre', 'email', 'whatsapp', 'dni', 'direccion', 'emergenciaNombre', 'emergenciaTel', 'autorizadosRetiro', 'comoNosConocio'].forEach(k => { const el = document.getElementById('ad_' + k); if (el) W.adulto[k] = el.value.trim(); }); }
+function pasoAtras() { if (W.paso === 2) leerChicos(); if (W.paso === 3) leerAdulto(); W.paso--; guardarW(); vWizard(); scrollTo(0, 0); }
+function pasoSig() {
+  const s = sede(W.sede);
+  if (W.paso === 1) { const q = plCotizar(); if (q.errores.length) return toast(q.errores[0], true); }
+  if (W.paso === 2) {
+    leerChicos();
+    for (const c of W.chicos) {
+      if (!c.nombre) return toast('Falta el nombre de cada chico.', true);
+      if (!c.nacimiento) return toast('Falta la fecha de nacimiento de ' + c.nombre + '.', true);
+      if (edadEn(c.nacimiento, s.inicio) < PUB.edadMin) return toast(c.nombre + ' tiene que tener al menos ' + PUB.edadMin + ' años.', true);
+    }
+  }
+  if (W.paso === 3) {
+    leerAdulto(); const a = W.adulto;
+    if (!a.nombre) return toast('Falta tu nombre.', true);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a.email || '')) return toast('Revisá el mail.', true);
+    if ((a.whatsapp || '').replace(/\D/g, '').length < 8) return toast('Falta tu WhatsApp.', true);
+    if (!a.emergenciaNombre || !a.emergenciaTel) return toast('Falta el contacto de emergencia.', true);
+  }
+  W.paso++; guardarW(); vWizard(); scrollTo(0, 0);
+}
+function enviarInscripcion(btn) {
+  conBoton(btn, async () => {
+    const r = await api('inscribir', { sede: W.sede, plan: W.plan, chicos: W.chicos, adulto: W.adulto, acepta: W.acepta });
+    LS.set('email', W.adulto.email);
+    LS.del('borrador');
+    vListo(r);
+  });
+}
+function vListo(r) {
+  const p = r.pago;
+  const alias = p.alias;
+  pintar(`
+  <header class="top"><div class="marca">☀️ ${esc(r.sede)}</div></header>
+  <div class="wrap">
+    <div class="card" style="text-align:center;margin-top:22px">
+      <div style="font-size:54px">🎉</div>
+      <h2 class="serif" style="font-size:34px">¡Inscripción recibida!</h2>
+      <p>${esc(r.items.map(i => i.chico).join(' y '))} · ${esc(r.detalle)}<br>Del ${fLarga(r.desde)} al ${fLarga(r.hasta)}</p>
+      <p class="muted">Te mandamos un mail con todo el detalle.</p>
+    </div>
+    <div class="card"><h3>Para reservar el lugar: seña de ${pesos(r.sena)}</h3>
+      <p class="muted chico">Total ${pesos(r.total)}. El saldo lo pagás antes del primer día.</p>
+      <div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
+      <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>
+    </div>
+    <div class="card"><h3>¿Y ahora?</h3>
+      <p>Entrá a <b>Mi cuenta</b> con tu mail para ver las fotos del día, la asistencia, el cronograma de la semana y el saldo.</p>
+      <button class="btn full" onclick="irCuenta()">Entrar a mi cuenta</button>
+    </div>
+  </div>`);
+  scrollTo(0, 0);
+}
+
+/* ================= Ingreso con mail (familias y profes) ================= */
+function vLogin(rol) {
+  tema(rol === 'familia' ? LS.get('sede', null) : null);
+  const esProfe = rol === 'profe';
+  pintar(`
+  <header class="top"><div class="marca">☀️ ${esProfe ? 'Profes' : 'Mi cuenta'} <small>${esc(PUB.marca)}</small></div>${esProfe ? '' : '<button onclick="location.href=PUB.url">Inicio</button>'}</header>
+  <div class="wrap" style="max-width:460px">
+    <div class="card" style="margin-top:28px">
+      <h2 class="serif" style="font-size:32px">${esProfe ? '¡Hola, profe!' : '¡Hola!'}</h2>
+      <p class="muted">${esProfe ? 'Entrá con el mail que te cargó la administración.' : 'Entrá con el mail que usaste en la inscripción.'} Te mandamos un código de 6 números, sin contraseñas.</p>
+      <div id="paso1"><label>Tu mail</label><input type="email" id="lgMail" inputmode="email" autocomplete="email" value="${esc(LS.get('email', ''))}">
+        <button class="btn full" style="margin-top:14px" onclick="pedirCodigo(this,'${rol}')">Mandame el código</button></div>
+      <div id="paso2" hidden><label>Código que te llegó al mail</label><input type="tel" id="lgCod" class="codigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code" oninput="if(this.value.length===6)verificar(document.getElementById('btnVer'),'${rol}')">
+        <button class="btn full" id="btnVer" style="margin-top:14px" onclick="verificar(this,'${rol}')">Entrar</button>
+        <p class="muted chico">¿No llegó? Mirá en spam o <a href="#" onclick="document.getElementById('paso2').hidden=true;document.getElementById('paso1').hidden=false;return false">pedilo de nuevo</a>.</p></div>
+    </div>
+    ${esProfe ? '' : '<p class="muted chico" style="text-align:center">¿Primera vez? <a href="' + PUB.url + '">Inscribí a tus hijos acá</a></p>'}
+  </div>`);
+}
+function pedirCodigo(btn, rol) {
+  const email = val('lgMail');
+  conBoton(btn, async () => {
+    await api('pedirCodigo', { email, rol });
+    LS.set('email', email);
+    $('#paso1').hidden = true; $('#paso2').hidden = false; $('#lgCod').focus();
+    toast('Te mandamos el código a ' + email);
+  });
+}
+function verificar(btn, rol) {
+  conBoton(btn, async () => {
+    const r = await api('verificarCodigo', { email: LS.get('email', ''), rol, codigo: val('lgCod') });
+    LS.set('tok_' + rol, r.token);
+    rol === 'profe' ? profeCargar() : cuentaCargar();
+  });
+}
+function salir(rol) { LS.del('tok_' + rol); location.reload(); }
+
+/* ================= FAMILIAS · Mi cuenta ================= */
+let C = null, cTab = 'inicio';
+async function cuentaCargar() {
+  pintar('<div class="cargando">☀️ Cargando tu cuenta…</div>');
+  try { C = await api('miCuenta', {}, 'familia'); } catch (e) { return pintar('<div class="cargando">' + esc(e.message) + '</div>'); }
+  const s = C.inscripciones.find(i => i.estado !== 'Cancelada');
+  tema(s ? s.sede : (C.chicos[0] && C.chicos[0].sede));
+  if (HASH === 'renovar') { HASH = ''; return vRenovar(); }
+  vCuenta(cTab);
+}
+function vCuenta(tab) {
+  cTab = tab;
+  const tabs = [['inicio', '🏠', 'Inicio'], ['fotos', '📸', 'Fotos'], ['semana', '📅', 'Semana'], ['asistencia', '✅', 'Asistencia'], ['datos', '👤', 'Datos']];
+  const cuerpo = { inicio: cInicio, fotos: cFotos, semana: cSemana, asistencia: cAsistencia, datos: cDatos }[tab]();
+  pintar(`<header class="top"><div class="marca">☀️ Hola, ${esc((C.familia.adulto || '').split(' ')[0])}</div><button onclick="cuentaCargar()">↻</button></header>
+  <div class="wrap">${cuerpo}</div>
+  <nav class="nav">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vCuenta('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
+}
+function inscDeChico(id) { return C.inscripciones.filter(i => i.chicoId === id && i.estado !== 'Cancelada').sort((a, b) => a.desde < b.desde ? -1 : 1); }
+function cInicio() {
+  const hoy = C.hoy;
+  const saldo = C.inscripciones.filter(i => i.estado !== 'Cancelada').reduce((a, i) => a + i.saldo, 0);
+  const cards = C.chicos.map(c => {
+    const ins = inscDeChico(c.id);
+    const vigentes = ins.filter(i => i.hasta >= hoy);
+    const ultimo = ins.length ? ins[ins.length - 1].hasta : '';
+    const restantes = vigentes.reduce((a, i) => a + i.restantes, 0);
+    const hoyA = C.asistencia.find(a => a.chicoId === c.id && a.fecha === hoy);
+    const vaHoy = vigentes.some(i => i.dias.includes(hoy));
+    const s = sede(c.sede) || PUB.sedes[0];
+    const pct = s.precios.descuentoRenovacion;
+    return `<div class="card">
+      <div class="fila"><div class="crece"><h3 style="margin:0">${esc(c.nombre)}</h3><div class="muted chico">${esc(nGrupo(c.grupo))} · ${esc(s.nombre)}</div></div>
+      ${vaHoy ? (hoyA ? `<span class="chip ${hoyA.estado === 'ausente' ? 'mal' : 'ok'}">${hoyA.retiradoPor ? '👋 Retirado ' + esc(hoyA.retiro) : hoyA.estado === 'ausente' ? 'Ausente hoy' : '✅ Llegó ' + esc(hoyA.llegada || '')}</span>` : '<span class="chip info">Hoy viene</span>') : ''}</div>
+      ${vigentes.length ? `<p style="margin:10px 0 4px">Le ${restantes === 1 ? 'queda <b>1 día</b>' : 'quedan <b>' + restantes + ' días</b>'} · hasta el ${fLarga(ultimo)}</p>
+        <div class="barra"><i style="width:${Math.min(100, Math.round(100 * (1 - restantes / Math.max(1, vigentes.reduce((a, i) => a + i.dias.length, 0)))))}%"></i></div>` : `<p class="muted">No tiene días por delante.</p>`}
+      ${(vigentes.length && restantes <= 3) || (!vigentes.length && ins.length) ? `<div class="banner"><b>${vigentes.length ? '⏳ Se le termina pronto' : '☀️ ¿Vuelve?'}</b><br>${pct && vigentes.length ? 'Renovando antes de que termine tenés <b>' + pct + '% off</b>. ' : ''}Sumá semanas o días en un minuto.
+        <div style="margin-top:8px"><button class="btn sm" onclick="vRenovar('${c.id}')">🔁 Renovar</button></div></div>` : ''}
+      ${vigentes.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.modalidad)}</b> · ${fCorta(i.desde)} al ${fCorta(i.hasta)}<div class="muted chico">${esc(i.turno)}${i.extras ? ' · ' + esc(i.extras) : ''}</div></div>
+        <div class="derecha">${i.saldo > 0 ? `<span class="chip aviso">Debe ${pesos(i.saldo)}</span>` : '<span class="chip ok">Pago ✓</span>'}</div></div>`).join('')}
+    </div>`;
+  }).join('');
+  return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">Pagalo por transferencia y mandá el comprobante.</div></div><button class="btn sm" onclick="verPago()">Cómo pagar</button></div></div>` : ''}
+    ${cards || '<div class="vacio">Todavía no hay chicos cargados.</div>'}
+    <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
+    ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}`;
+}
+function verPago() {
+  const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
+  const s = sede(i ? i.sede : C.chicos[0].sede), p = s.pago;
+  modal(`<h3>Cómo pagar</h3><div class="banner"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:24px">${esc(p.alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
+    <div class="fila"><button class="btn claro" onclick="copiar('${esc(p.alias)}')">Copiar alias</button>
+    <a class="btn wa crece" target="_blank" href="${wa(s.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano (' + C.familia.adulto + ').')}">💬 Mandar comprobante</a></div>`);
+}
+function htmlPost(p) {
+  return `<div class="post"><div class="fila"><div class="crece"><b>${esc(nGrupo(p.grupo))}</b> <span class="muted chico">· ${esc(p.profe)}</span></div><span class="muted chico">${fCorta(p.fecha.slice(0, 10))} ${esc(p.fecha.slice(11))}</span></div>
+    ${p.texto ? `<p style="margin:8px 0 0;white-space:pre-wrap">${esc(p.texto)}</p>` : ''}
+    ${p.fotos.length ? `<div class="fotos">${p.fotos.map(f => `<img loading="lazy" src="${foto(f)}" onclick="verFoto('${esc(f)}')" alt="">`).join('')}</div>` : ''}</div>`;
+}
+function cFotos() {
+  return `<h2 class="serif" style="font-size:32px;margin-top:16px">Fotos y novedades</h2>
+    ${C.publicaciones.length ? C.publicaciones.map(htmlPost).join('') : '<div class="vacio">📸 Cuando los profes suban fotos del día, las vas a ver acá.</div>'}`;
+}
+function cronoHtml(items, semanaId) {
+  const delaSemana = items.filter(c => c.semana === semanaId);
+  if (!delaSemana.length) return '<p class="muted">Todavía no está cargado el cronograma de esta semana.</p>';
+  const dias = ['todos'].concat(['lun', 'mar', 'mie', 'jue', 'vie']);
+  const nom = { todos: 'Todos los días', lun: 'Lunes', mar: 'Martes', mie: 'Miércoles', jue: 'Jueves', vie: 'Viernes' };
+  return dias.map(d => { const its = delaSemana.filter(c => c.dia === d).sort((a, b) => (a.hora || '') < (b.hora || '') ? -1 : 1);
+    return its.length ? `<h4 style="margin:14px 0 4px">${nom[d]}</h4>` + its.map(c => `<div class="lista-item"><b style="width:52px">${esc(c.hora)}</b><div class="crece">${esc(c.actividad)}<div class="muted chico">${c.grupo !== 'todos' ? esc(nGrupo(c.grupo)) + ' · ' : ''}${esc(c.lugar || '')}${c.profe ? ' · ' + esc(c.profe) : ''}</div></div></div>`).join('') : ''; }).join('');
+}
+function cSemana() {
+  const l = lunes(C.hoy), prox = sumarDias(l, 7);
+  const sedes = [...new Set(C.inscripciones.filter(i => i.estado !== 'Cancelada').map(i => i.sede))];
+  if (!sedes.length) return '<div class="vacio">Sin inscripciones activas.</div>';
+  return sedes.map(sid => { const s = sede(sid);
+    return [[l, 'Esta semana'], [prox, 'La semana que viene']].map(([id, tit]) => { const w = s.semanas.find(x => x.id === id);
+      return `<div class="card"><div class="muted chico">${esc(s.nombre)} · ${tit}</div>
+        <h3>${w && w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : tit}</h3>${w && w.tematica && w.tematica.descripcion ? `<p>${esc(w.tematica.descripcion)}</p>` : ''}
+        ${cronoHtml(C.cronograma.filter(c => c.sede === sid), id)}</div>`; }).join(''); }).join('');
+}
+function cAsistencia() {
+  return C.chicos.map(c => { const a = C.asistencia.filter(x => x.chicoId === c.id);
+    const pres = a.filter(x => x.estado === 'presente' || x.estado === 'tarde').length;
+    return `<div class="card"><h3>${esc(c.nombre)}</h3><p class="muted chico">${pres} ${pres === 1 ? 'día' : 'días'} presente${a.length - pres ? ' · ' + (a.length - pres) + ' ausente' : ''}</p>
+      ${a.length ? a.map(x => `<div class="lista-item"><div class="crece"><b>${fLarga(x.fecha)}</b><div class="muted chico">${x.llegada ? 'Llegó ' + esc(x.llegada) : ''}${x.retiradoPor ? ' · Retiró ' + esc(x.retiradoPor) + ' ' + esc(x.retiro) : ''}${x.nota ? ' · ' + esc(x.nota) : ''}</div></div>
+        <span class="chip ${x.estado === 'ausente' ? 'mal' : x.estado === 'tarde' ? 'aviso' : 'ok'}">${x.estado === 'ausente' ? 'Ausente' : x.estado === 'tarde' ? 'Tarde' : 'Presente'}</span></div>`).join('') : '<p class="muted">Todavía no hay asistencia tomada.</p>'}</div>`; }).join('') || '<div class="vacio">Sin datos.</div>';
+}
+function cDatos() {
+  const f = C.familia;
+  return `<div class="card"><h3>${esc(f.adulto)}</h3><p class="muted chico">${esc(f.email)} · ${esc(f.whatsapp)}<br>Emergencia: ${esc(f.emergenciaNombre)} ${esc(f.emergenciaTel)}</p>
+    <label>Autorizados a retirar</label><textarea id="dAut">${esc(f.autorizadosRetiro || '')}</textarea>
+    <button class="btn sm" style="margin-top:10px" onclick="conBoton(this, async()=>{await api('guardarChico',{id:'${C.chicos[0] ? C.chicos[0].id : ''}',autorizadosRetiro:val('dAut')},'familia');toast('Guardado ✓')})">Guardar</button></div>
+  ${C.chicos.map(c => `<div class="card"><h3>${esc(c.nombre)}</h3><p class="muted chico">${fLarga(c.nacimiento)} · ${esc(nGrupo(c.grupo))}</p>
+    <label>Obra social</label><input type="text" id="d${c.id}_obraSocial" value="${esc(c.obraSocial)}">
+    <label>Alergias</label><input type="text" id="d${c.id}_alergias" value="${esc(c.alergias)}">
+    <label>Medicación</label><input type="text" id="d${c.id}_medicacion" value="${esc(c.medicacion)}">
+    <label>Condiciones / a tener en cuenta</label><textarea id="d${c.id}_condiciones">${esc(c.condiciones)}</textarea>
+    <div class="grid2"><div><label>¿Sabe nadar?</label><select id="d${c.id}_sabeNadar">${['', 'Sí', 'Un poco', 'No'].map(o => `<option ${o === c.sabeNadar ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+    <div><label>Fotos</label><select id="d${c.id}_autorizaFotos">${['Sí', 'No'].map(o => `<option ${o === c.autorizaFotos ? 'selected' : ''}>${o}</option>`).join('')}</select></div></div>
+    <button class="btn sm" style="margin-top:12px" onclick="guardarSalud(this,'${c.id}')">Guardar cambios</button></div>`).join('')}
+  <div class="card"><h3>Pagos registrados</h3>${C.pagos.length ? C.pagos.map(p => `<div class="lista-item"><div class="crece">${fLarga(p.fecha)}<div class="muted chico">${esc(p.chico)} · ${esc(p.medio)}</div></div><b>${pesos(p.monto)}</b></div>`).join('') : '<p class="muted">Todavía no hay pagos cargados.</p>'}</div>
+  <div class="card"><h3>Inscripciones</h3>${C.inscripciones.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> · ${fCorta(i.desde)} al ${fCorta(i.hasta)}<div class="muted chico">${esc(sede(i.sede).nombre)} · ${esc(i.modalidad)} · ${esc(i.turno)} · ${i.dias.length} días</div></div><div class="derecha"><b>${pesos(i.total)}</b><br><span class="chip ${i.estado === 'Pagada' ? 'ok' : i.estado === 'Cancelada' ? '' : 'aviso'}">${esc(i.estado)}</span></div></div>`).join('')}</div>
+  <button class="btn claro full" onclick="salir('familia')">Cerrar sesión</button>`;
+}
+function guardarSalud(btn, id) {
+  const d = { id }; ['obraSocial', 'alergias', 'medicacion', 'condiciones', 'sabeNadar', 'autorizaFotos'].forEach(k => d[k] = val('d' + id + '_' + k));
+  conBoton(btn, async () => { await api('guardarChico', d, 'familia'); toast('Guardado ✓'); });
+}
+
+/* ---------- Renovar / sumar ---------- */
+let R = null;
+function vRenovar(chicoId) {
+  const sid = (chicoId && C.chicos.find(c => c.id === chicoId) || C.chicos[0] || {}).sede || PUB.sedes[0].id;
+  R = { sede: sid, chicoIds: chicoId ? [chicoId] : C.chicos.map(c => c.id), plan: planNuevo(sid) };
+  pintarRenovar();
+}
+function pintarRenovar() {
+  tema(R.sede);
+  const hoy = C.hoy;
+  const renov = C.inscripciones.some(i => R.chicoIds.includes(i.chicoId) && i.estado !== 'Cancelada' && i.hasta >= sumarDias(hoy, -7));
+  PL = { sede: R.sede, plan: R.plan, cant: R.chicoIds.length, renov, alCambiar: pintarRenovar };
+  const q = plCotizar();
+  pintar(`<header class="top"><button onclick="vCuenta('inicio')">←</button><div class="marca">Sumar días</div></header>
+  <div class="wrap">
+    ${renov && sede(R.sede).precios.descuentoRenovacion ? `<div class="banner">🔁 Por renovar tenés <b>${sede(R.sede).precios.descuentoRenovacion}% off</b></div>` : ''}
+    <label>Sede</label><div class="seg">${PUB.sedes.map(s => `<button class="${s.id === R.sede ? 'on' : ''}" onclick="R.sede='${s.id}';R.plan=planNuevo('${s.id}');pintarRenovar()">${esc(s.nombre)}</button>`).join('')}</div>
+    <label>¿Quién viene?</label>
+    ${C.chicos.map(c => `<label class="opcion ${R.chicoIds.includes(c.id) ? 'on' : ''}"><input type="checkbox" ${R.chicoIds.includes(c.id) ? 'checked' : ''} onchange="const a=R.chicoIds,i=a.indexOf('${c.id}');i>=0?a.splice(i,1):a.push('${c.id}');pintarRenovar()"><div><b>${esc(c.nombre)}</b><div class="muted chico">${esc(nGrupo(c.grupo))}</div></div></label>`).join('')}
+    <p class="muted chico">¿Un hermano nuevo? <a href="${PUB.url}" onclick="LS.del('borrador')">Inscribilo desde el formulario</a> con el mismo mail.</p>
+    <label>¿Cuándo?</label>
+    ${htmlPlan()}
+    ${q.cantDias && R.chicoIds.length ? `<div class="card">${detallePresu(q, R.chicoIds.map(id => C.chicos.find(c => c.id === id).nombre))}</div>` : ''}
+    <div style="height:18px"></div>
+    ${htmlPresu(q, 'Confirmar ✓', 'confirmarRenovar(this)')}
+  </div>`);
+}
+function confirmarRenovar(btn) {
+  if (!R.chicoIds.length) return toast('Elegí a quién inscribís.', true);
+  conBoton(btn, async () => { const r = await api('renovar', { sede: R.sede, chicoIds: R.chicoIds, plan: R.plan }, 'familia'); vListo(r); });
+}
+
+/* ================= PROFES ================= */
+let PR = null, prTab = 'hoy', LISTA = null, FOTOS = [];
+async function profeCargar(tab) {
+  if (!PR) pintar('<div class="cargando">☀️ Cargando…</div>');
+  try { PR = await api('profeInicio', {}, 'profe'); } catch (e) { return pintar('<div class="cargando">' + esc(e.message) + '</div>'); }
+  tema(PR.profe.sedes.length === 1 ? PR.profe.sedes[0] : null);
+  vProfe(tab || prTab);
+}
+function vProfe(tab) {
+  prTab = tab;
+  const tabs = [['hoy', '📍', 'Marcar'], ['asis', '✅', 'Asistencia'], ['subir', '📸', 'Subir'], ['semana', '📅', 'Semana'], ['horas', '💰', 'Mis horas']];
+  pintar(`<header class="top"><div class="marca">☀️ ${esc(PR.profe.nombre.split(' ')[0])} <small>profe</small></div><button onclick="profeCargar()">↻</button></header>
+  <div class="wrap" id="prCuerpo"></div>
+  <nav class="nav">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vProfe('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
+  ({ hoy: pHoy, asis: pAsis, subir: pSubir, semana: pSemana, horas: pHoras })[tab]();
+}
+function pHoy() {
+  const ab = PR.abierto;
+  const sinUbic = PR.ubicaciones.every(u => !u.lat);
+  $('#prCuerpo').innerHTML = `
+    <p class="muted" style="margin-top:16px">${fLarga(PR.hoy)} · ${PR.profe.sedes.map(s => esc(sede(s).nombre)).join(' / ')}</p>
+    <button class="marcar" id="btnMarcar" style="background:${ab ? 'var(--mal)' : 'var(--ok)'}" onclick="marcar(this)">${ab ? 'Marcar SALIDA' : 'Marcar ENTRADA'}<small>${ab ? 'Entraste a las ' + esc(ab.desde) + ' en ' + esc(sede(ab.sede).nombre) : 'Tocá cuando llegás'}</small></button>
+    <p class="muted chico" id="gpsInfo">${sinUbic ? '⚠️ La administración todavía no cargó la ubicación de la sede.' : 'Se usa el GPS del celular: tenés que estar en la sede para marcar.'}</p>
+    ${PR.hoyMarc.length ? `<div class="card"><h3>Hoy</h3>${PR.hoyMarc.map(m => `<div class="lista-item"><span class="chip ${m.tipo === 'ENTRADA' ? 'ok' : 'mal'}">${m.tipo}</span><b class="crece">${esc(m.hora)}</b><span class="muted chico">${esc(sede(m.sede) ? sede(m.sede).nombre : m.sede)}</span></div>`).join('')}</div>` : ''}
+    <div class="fila"><button class="btn claro crece" onclick="vProfe('asis')">✅ Tomar asistencia</button><button class="btn claro crece" onclick="vProfe('subir')">📸 Subir fotos</button></div>`;
+}
+function marcar(btn) {
+  if (!navigator.geolocation) return toast('Este celular no tiene GPS disponible.', true);
+  btn.disabled = true; const txt = btn.innerHTML; btn.innerHTML = '<span class="spin"></span><small>Buscando tu ubicación…</small>';
+  let mejor = null, fin = false;
+  const terminar = () => {
+    if (fin) return; fin = true; navigator.geolocation.clearWatch(wid);
+    if (!mejor) { btn.disabled = false; btn.innerHTML = txt; return toast('No pudimos leer tu ubicación. Activá el GPS (ubicación precisa) y probá de nuevo.', true); }
+    api('marcar', { lat: mejor.latitude, lng: mejor.longitude, precision: mejor.accuracy, esperado: PR.abierto ? 'SALIDA' : 'ENTRADA' }, 'profe')
+      .then(r => { if (r.refrescar) toast(r.mensaje, true); else toast((r.tipo === 'ENTRADA' ? '¡Buen día! Entrada ' : '¡Gracias! Salida ') + r.hora + ' · ' + r.sede); profeCargar('hoy'); })
+      .catch(e => { toast(e.message, true); btn.disabled = false; btn.innerHTML = txt; });
+  };
+  const wid = navigator.geolocation.watchPosition(p => { if (!mejor || p.coords.accuracy < mejor.accuracy) mejor = p.coords; if (mejor.accuracy <= 25) terminar(); },
+    e => { if (!mejor) { fin = true; navigator.geolocation.clearWatch(wid); btn.disabled = false; btn.innerHTML = txt; toast(e.code === 1 ? 'Tenés que permitir la ubicación para marcar.' : 'No pudimos leer tu ubicación.', true); } },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+  setTimeout(terminar, 9000);
+}
+let AS = { sede: '', fecha: '', grupo: 'todos', cambios: {} };
+function pAsis() {
+  if (!AS.sede) { AS.sede = PR.profe.sedes[0]; AS.fecha = PR.hoy; AS.grupo = PR.profe.grupos[0] || 'todos'; }
+  $('#prCuerpo').innerHTML = `
+    ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === AS.sede ? 'on' : ''}" onclick="AS.sede='${s}';AS.cambios={};pAsis()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
+    <div class="grid2"><div><label>Día</label><input type="date" value="${AS.fecha}" onchange="AS.fecha=this.value;AS.cambios={};pAsis()"></div>
+    <div><label>Grupo</label><select onchange="AS.grupo=this.value;AS.cambios={};pAsis()"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === AS.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
+    <div id="asisLista"><div class="vacio"><span class="spin"></span></div></div>`;
+  api('lista', { sede: AS.sede, fecha: AS.fecha, grupo: AS.grupo }, 'profe').then(r => { LISTA = r; pintarLista(); }).catch(e => $('#asisLista').innerHTML = '<div class="vacio">' + esc(e.message) + '</div>');
+}
+function itemAs(c) { return Object.assign({ chicoId: c.chicoId, estado: c.estado, llegada: c.llegada, retiradoPor: c.retiradoPor, retiro: c.retiro, nota: c.nota }, AS.cambios[c.chicoId] || {}); }
+function pintarLista() {
+  const L = LISTA.chicos;
+  if (!L.length) return $('#asisLista').innerHTML = '<div class="vacio">No hay chicos inscriptos ese día en este grupo.</div>';
+  const pres = L.filter(c => ['presente', 'tarde'].includes(itemAs(c).estado)).length;
+  const pend = Object.keys(AS.cambios).length;
+  $('#asisLista').innerHTML = `<div class="fila" style="margin:14px 0 4px"><b class="crece">${pres} de ${L.length} presentes</b><button class="btn xs claro" onclick="todosPresentes()">Todos presentes</button></div>
+    <div class="card" style="padding:4px 14px">${L.map(c => { const it = itemAs(c);
+      const badges = [c.alergias && !/^ningun/i.test(c.alergias) ? '⚠️' : '', c.medicacion && !/^ningun/i.test(c.medicacion) ? '💊' : '', c.condiciones ? '❗' : '', c.sabeNadar === 'No' ? '🚫🏊' : c.sabeNadar === 'Un poco' ? '🏊?' : '', c.autorizaFotos === 'No' ? '📵' : '', c.saldo > 0 ? '💸' : ''].filter(Boolean).join(' ');
+      return `<div class="lista-item"><div class="crece" onclick="fichaChico('${c.chicoId}')" style="cursor:pointer"><b>${esc(c.nombre)}</b> <span class="chico">${badges}</span>
+        <div class="muted chico">${c.edad} años · ${esc(c.turno)}${it.llegada ? ' · llegó ' + esc(it.llegada) : ''}${it.retiradoPor ? ' · 👋 ' + esc(it.retiradoPor) + ' ' + esc(it.retiro) : ''}</div></div>
+        <div class="asis">${[['p', 'presente', 'P'], ['t', 'tarde', 'T'], ['a', 'ausente', 'A']].map(([cl, e, l]) => `<button class="${cl} ${it.estado === e ? 'on' : ''}" onclick="marcarAs('${c.chicoId}','${e}')">${l}</button>`).join('')}
+        <button title="Retiro" onclick="retiro('${c.chicoId}')">👋</button></div></div>`; }).join('')}</div>
+    <p class="muted chico">⚠️ alergia · 💊 medicación · ❗ a tener en cuenta · 🚫🏊 no sabe nadar · 📵 sin fotos · 💸 saldo pendiente. Tocá el nombre para ver la ficha.</p>
+    <div style="height:10px"></div>
+    <div class="presu"><div class="crece"><small>${pend ? pend + ' cambios sin guardar' : 'Todo guardado'}</small><div class="monto">${pres}/${L.length}</div></div><button class="btn acento" ${pend ? '' : 'disabled'} onclick="guardarAs(this)">Guardar</button></div>`;
+}
+function marcarAs(id, estado) {
+  const c = LISTA.chicos.find(x => x.chicoId === id), it = itemAs(c);
+  const nuevo = it.estado === estado ? '' : estado;
+  AS.cambios[id] = Object.assign({}, AS.cambios[id], { estado: nuevo, llegada: nuevo && nuevo !== 'ausente' ? (it.llegada || ahoraHora()) : '' });
+  pintarLista();
+}
+function todosPresentes() { LISTA.chicos.forEach(c => { const it = itemAs(c); if (!it.estado) AS.cambios[c.chicoId] = Object.assign({}, AS.cambios[c.chicoId], { estado: 'presente', llegada: it.llegada || ahoraHora() }); }); pintarLista(); }
+function retiro(id) {
+  const c = LISTA.chicos.find(x => x.chicoId === id);
+  const auts = String(c.autorizados || '').split(/\n|;|,(?![^(]*\))/).map(s => s.trim()).filter(Boolean);
+  modal(`<h3>¿Quién retira a ${esc(c.nombre)}?</h3>
+    ${auts.length ? auts.map((a, i) => `<button class="btn claro full" style="margin:6px 0;justify-content:flex-start" onclick="confirmarRetiro('${id}', ${i})">👤 ${esc(a)}</button>`).join('') : '<p class="chip mal">La familia no cargó autorizados. Pedí DNI y avisá a la administración.</p>'}
+    <label>Otra persona <small>(pedí DNI)</small></label><input type="text" id="retOtro" placeholder="Nombre y DNI">
+    <button class="btn full" style="margin-top:12px" onclick="confirmarRetiro('${id}', -1)">Registrar retiro ${ahoraHora()}</button>
+    <p class="muted chico">Adulto: ${esc(c.adulto)} · <a href="${wa(c.whatsapp, 'Hola, te escribimos de la escuela de verano por ' + c.nombre + '.')}" target="_blank">WhatsApp</a></p>`);
+  modal._auts = auts;
+}
+function confirmarRetiro(id, i) {
+  const quien = i >= 0 ? modal._auts[i] : val('retOtro');
+  if (!quien) return toast('Escribí quién lo retira.', true);
+  const c = LISTA.chicos.find(x => x.chicoId === id), it = itemAs(c);
+  AS.cambios[id] = Object.assign({}, AS.cambios[id], { retiradoPor: quien, retiro: ahoraHora(), estado: it.estado || 'presente', llegada: it.llegada || '' });
+  cerrarModal(); pintarLista();
+  if (i < 0) toast('Ojo: no está en la lista de autorizados', true);
+}
+function fichaChico(id) {
+  const c = LISTA.chicos.find(x => x.chicoId === id);
+  const r = (k, v) => v ? `<tr><td class="muted" style="width:120px">${k}</td><td>${esc(v)}</td></tr>` : '';
+  modal(`<h3>${esc(c.nombre)}</h3><p class="muted chico">${c.edad} años · ${esc(nGrupo(c.grupo))} · ${esc(c.turno)}${c.extras ? ' · ' + esc(c.extras) : ''}</p>
+    <table class="t">${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos === 'No' ? 'NO autoriza fotos' : 'Sí')}${r('Obra social', c.obraSocial)}
+    ${r('Adulto', c.adulto)}${r('Emergencia', c.emergencia)}${r('Retiran', c.autorizados)}</table>
+    <label>Nota del día</label><input type="text" id="notaDia" value="${esc(itemAs(c).nota || '')}">
+    <div class="fila" style="margin-top:12px"><button class="btn" onclick="AS.cambios['${id}']=Object.assign({},AS.cambios['${id}'],{nota:val('notaDia')});cerrarModal();pintarLista()">Guardar nota</button>
+    <a class="btn wa" target="_blank" href="${wa(c.whatsapp, 'Hola, te escribimos de la escuela de verano por ' + c.nombre + '.')}">💬 Familia</a></div>`);
+}
+function guardarAs(btn) {
+  const items = Object.keys(AS.cambios).map(id => itemAs(LISTA.chicos.find(c => c.chicoId === id)));
+  conBoton(btn, async () => { await api('guardarAsistencia', { sede: AS.sede, fecha: AS.fecha, grupo: AS.grupo, items }, 'profe'); AS.cambios = {}; toast('Asistencia guardada ✓'); pAsis(); });
+}
+let SUB = { sede: '', grupo: '' };
+function pSubir() {
+  if (!SUB.sede) { SUB.sede = PR.profe.sedes[0]; SUB.grupo = PR.profe.grupos[0] || 'todos'; }
+  $('#prCuerpo').innerHTML = `<h2 class="serif" style="font-size:30px;margin-top:16px">Contá cómo fue el día</h2>
+    <p class="muted chico">Lo ven las familias del grupo en su cuenta.</p>
+    ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === SUB.sede ? 'on' : ''}" onclick="SUB.sede='${s}';pSubir()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
+    <label>Para</label><select onchange="SUB.grupo=this.value;avisoFotos()"><option value="todos">Todos los grupos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === SUB.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
+    <div id="avisoFotos"></div>
+    <label>Texto</label><textarea id="pubTxt" placeholder="Hoy hicimos la búsqueda del tesoro 🏴‍☠️…"></textarea>
+    <label>Fotos <small>(hasta 10)</small></label><input type="file" accept="image/*" multiple onchange="elegirFotos(this.files)">
+    <div class="fotos" id="prevFotos">${FOTOS.map(f => `<img src="data:image/jpeg;base64,${f.b64}" alt="">`).join('')}</div>
+    <button class="btn full" style="margin-top:16px" onclick="publicar(this)">Publicar</button>
+    ${PR.publicaciones.length ? '<h3 style="margin-top:24px">Lo que subiste</h3>' + PR.publicaciones.map(htmlPost).join('') : ''}`;
+  avisoFotos();
+}
+function avisoFotos() {
+  api('lista', { sede: SUB.sede, fecha: PR.hoy, grupo: SUB.grupo }, 'profe').then(r => {
+    const no = r.chicos.filter(c => c.autorizaFotos === 'No');
+    const el = $('#avisoFotos'); if (el) el.innerHTML = no.length ? `<div class="banner" style="background:#FBE1DE;color:#9B2B20">📵 No pueden salir en fotos: <b>${no.map(c => esc(c.nombre)).join(', ')}</b></div>` : '';
+  }).catch(() => {});
+}
+async function elegirFotos(files) {
+  const lista = [...files].slice(0, 10 - FOTOS.length);
+  for (const f of lista) FOTOS.push({ b64: await achicar(f), tipo: 'image/jpeg' });
+  $('#prevFotos').innerHTML = FOTOS.map((f, i) => `<img src="data:image/jpeg;base64,${f.b64}" onclick="FOTOS.splice(${i},1);this.remove()" alt="" title="Tocá para quitar">`).join('');
+}
+function achicar(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { const max = 1400, k = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      res(cv.toDataURL('image/jpeg', 0.82).split(',')[1]); };
+    img.onerror = rej; img.src = url;
+  });
+}
+function publicar(btn) {
+  conBoton(btn, async () => { const r = await api('publicar', { sede: SUB.sede, grupo: SUB.grupo, texto: val('pubTxt'), fotos: FOTOS }, 'profe'); FOTOS = []; toast('¡Publicado! ' + r.fotos + ' fotos'); profeCargar('subir'); });
+}
+function pSemana() {
+  const l = lunes(PR.hoy);
+  $('#prCuerpo').innerHTML = PR.profe.sedes.map(sid => { const s = sede(sid);
+    return [[l, 'Esta semana'], [sumarDias(l, 7), 'La semana que viene']].map(([id, t]) => { const w = s.semanas.find(x => x.id === id);
+      return `<div class="card"><div class="muted chico">${esc(s.nombre)} · ${t}</div><h3>${w && w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : t}</h3>${cronoHtml(PR.cronograma.filter(c => c.sede === sid), id)}</div>`; }).join(''); }).join('');
+}
+function pHoras() {
+  const L = PR.liq;
+  $('#prCuerpo').innerHTML = `<label>Mes</label><input type="month" value="${L.mes}" onchange="api('profeInicio',{mes:this.value},'profe').then(r=>{PR=r;pHoras()})">
+    <div class="kpis"><div class="kpi"><span>Horas</span><b>${String(L.horas).replace('.', ',')}</b></div><div class="kpi"><span>Días</span><b>${L.dias}</b></div>
+    <div class="kpi"><span>A cobrar</span><b>${pesos(L.devengado)}</b></div><div class="kpi"><span>Cobrado</span><b>${pesos(L.pagado)}</b></div></div>
+    <p class="muted chico">${esc(L.formaPago)} · ${pesos(L.valor)}. ${L.saldo > 0 ? 'Te queda por cobrar <b>' + pesos(L.saldo) + '</b>.' : ''}</p>
+    <div class="card">${L.turnos.length ? L.turnos.slice().reverse().map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(t.entrada)} a ${esc(t.salida)}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') : '<p class="muted">Sin turnos este mes.</p>'}</div>
+    <button class="btn claro full" onclick="salir('profe')">Cerrar sesión</button>`;
+}
+
+/* ================= ADMINISTRACIÓN ================= */
+let A = null, aTab = 'inicio', aSede = '', aMes = '';
+function vAdminLogin() {
+  pintar(`<header class="top"><div class="marca">☀️ Administración</div></header>
+  <div class="wrap" style="max-width:420px"><div class="card" style="margin-top:28px">
+    <h2 class="serif" style="font-size:30px">Entrar</h2><p class="muted">Cada sede tiene su PIN. Con el PIN general ves las dos.</p>
+    <label>PIN</label><input type="password" id="pin" class="codigo" inputmode="numeric" onkeydown="if(event.key==='Enter')document.getElementById('btnPin').click()">
+    <button class="btn full" id="btnPin" style="margin-top:14px" onclick="conBoton(this, async()=>{const r=await api('adminLogin',{pin:val('pin')});LS.set('tok_admin',r.token);adminCargar()})">Entrar</button>
+  </div></div>`);
+}
+async function adminCargar(tab) {
+  if (!A) pintar('<div class="cargando">☀️ Cargando…</div>');
+  try { A = await api('tablero', { sede: aSede, mes: aMes }, 'admin'); } catch (e) { return pintar('<div class="cargando">' + esc(e.message) + '</div>'); }
+  aSede = A.sede; aMes = A.mes;
+  tema(A.sede === 'todas' ? null : A.sede);
+  vAdmin(tab || aTab);
+}
+function vAdmin(tab) {
+  aTab = tab;
+  const tabs = [['inicio', 'Inicio'], ['insc', 'Inscriptos'], ['cobros', 'Cobros'], ['profes', 'Profes'], ['contenido', 'Contenido'], ['mails', 'Mails'], ['ajustes', 'Ajustes']];
+  pintar(`<header class="top"><div class="marca">☀️ Admin <small>${A.sede === 'todas' ? 'las dos sedes' : esc(sede(A.sede).nombre)}</small></div>
+    ${A.sesionSede === 'todas' ? `<select onchange="aSede=this.value;adminCargar()"><option value="todas">Todas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === A.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
+    <button onclick="adminCargar()">↻</button></header>
+  <div class="wrap"><div class="tabs">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vAdmin('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="adCuerpo"></div></div>`);
+  ({ inicio: aInicio, insc: aInsc, cobros: aCobros, profes: aProfes, contenido: aContenido, mails: aMails, ajustes: aAjustes })[tab]();
+}
+const nomSede = id => id === 'ambas' ? 'Ambas' : (sede(id) ? sede(id).nombre : id);
+const sedesVis = () => PUB.sedes.filter(s => A.sede === 'todas' || s.id === A.sede);
+function aInicio() {
+  const K = A.kpis;
+  const ocup = sedesVis().map(s => `<div class="card"><h3>${esc(s.nombre)} · esta semana</h3>
+    <p class="muted chico">Hoy: ${K.hoyPresentes[s.id] || 0} presentes de ${K.hoyEsperados[s.id] || 0} inscriptos</p>
+    ${PUB.grupos.map(g => { const n = A.porGrupo[s.id + '|' + g.id] || 0; return `<div style="margin:8px 0"><div class="fila"><span class="crece">${g.emoji} ${esc(g.nombre)}</span><b>${n}</b><span class="muted chico">/ ${s.cupoPorGrupo} por día</span></div><div class="barra"><i style="width:${Math.min(100, 100 * n / s.cupoPorGrupo)}%"></i></div></div>`; }).join('')}
+    <p class="muted chico" style="margin-bottom:0">Chicos distintos con al menos un día esta semana.</p></div>`).join('');
+  $('#adCuerpo').innerHTML = `
+    <div class="kpis"><div class="kpi"><span>Chicos</span><b>${K.chicos}</b></div><div class="kpi"><span>Facturado</span><b>${pesos(K.facturado)}</b></div>
+    <div class="kpi"><span>Cobrado</span><b style="color:var(--ok)">${pesos(K.cobrado)}</b></div><div class="kpi"><span>Por cobrar</span><b style="color:var(--mal)">${pesos(K.pendiente)}</b></div>
+    <div class="kpi"><span>Interesados</span><b>${K.interesados}</b></div><div class="kpi"><span>Mails disponibles hoy</span><b>${K.cuotaMail}</b></div></div>
+    <div class="card"><h3>🔁 Se les termina y no renovaron (${A.vencen.length})</h3>${A.vencen.length ? A.vencen.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">Último día ${fLarga(i.hasta)} · ${esc(nomSede(i.sede))}</div></div>
+      <a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WhatsApp</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','renovacion')">Mail</button></div>`).join('') : '<p class="muted">Nadie por ahora. 🎉</p>'}
+      <p class="muted chico" style="margin-bottom:0">A estas familias les llega solo un mail para renovar, con descuento, unos días antes de terminar.</p></div>
+    <div class="card"><h3>💸 Deben (${A.deudas.length})</h3>${A.deudas.slice(0, 12).map(htmlDeuda).join('') || '<p class="muted">Todo al día.</p>'}${A.deudas.length > 12 ? `<button class="btn claro full" onclick="vAdmin('cobros')">Ver todas</button>` : ''}</div>
+    ${ocup}
+    <div class="card"><h3>👩‍🏫 Profes ahora</h3>${A.profes.filter(p => p.adentro).map(p => `<div class="lista-item"><span class="chip ok">Adentro</span><b class="crece">${esc(p.nombre)}</b><span class="muted chico">${esc(p.adentro)}</span></div>`).join('') || '<p class="muted">Nadie marcó entrada.</p>'}</div>`;
+}
+function htmlDeuda(i) {
+  return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
+    <b>${pesos(i.saldo)}</b><div class="fila" style="gap:4px"><button class="btn xs" onclick="formPago('${i.id}')">Pago</button><a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WA</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','deuda')">Mail</button></div></div>`;
+}
+function recordar(btn, id, tipo) { conBoton(btn, async () => { await api('recordar', { inscripcionId: id, tipo }, 'admin'); toast('Mail enviado ✓'); }); }
+function formPago(id) {
+  const i = A.inscripciones.find(x => x.id === id);
+  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)}</b></span></p>
+    <div class="grid2"><div><label>Monto</label><input type="number" id="pgMonto" value="${i.saldo}" inputmode="numeric"></div><div><label>Fecha</label><input type="date" id="pgFecha" value="${A.hoy}"></div></div>
+    <label>Medio</label><select id="pgMedio"><option>Transferencia</option><option>Efectivo</option><option>Mercado Pago</option><option>Otro</option></select>
+    <label>Nota</label><input type="text" id="pgNota">
+    <label class="opcion on"><input type="checkbox" id="pgAvisar" checked><div>Mandarle a la familia el mail de “recibimos tu pago”</div></label>
+    <button class="btn full" onclick="conBoton(this, async()=>{await api('registrarPago',{inscripcionId:'${id}',monto:val('pgMonto'),fecha:val('pgFecha'),medio:val('pgMedio'),nota:val('pgNota'),avisar:document.getElementById('pgAvisar').checked},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar()})">Guardar pago</button>`);
+}
+let FI = { q: '', estado: '', grupo: '', vigentes: true };
+function aInsc() {
+  $('#adCuerpo').innerHTML = `<div class="card"><div class="grid2"><div><label>Buscar</label><input type="text" id="fq" value="${esc(FI.q)}" placeholder="Chico, familia, mail…" oninput="FI.q=this.value;listaInsc()"></div>
+    <div class="grid2"><div><label>Estado</label><select onchange="FI.estado=this.value;listaInsc()"><option value="">Todos</option>${PUB.estados.map(e => `<option ${e === FI.estado ? 'selected' : ''}>${e}</option>`).join('')}</select></div>
+    <div><label>Grupo</label><select onchange="FI.grupo=this.value;listaInsc()"><option value="">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === FI.grupo ? 'selected' : ''}>${esc(g.nombre)}</option>`).join('')}</select></div></div></div>
+    <div class="fila" style="margin-top:10px"><label class="opcion ${FI.vigentes ? 'on' : ''}" style="margin:0"><input type="checkbox" ${FI.vigentes ? 'checked' : ''} onchange="FI.vigentes=this.checked;aInsc()"><span>Solo con días por delante</span></label>
+    <button class="btn sm claro" onclick="exportarCSV()">⬇ Exportar planilla</button><a class="btn sm claro" target="_blank" href="${A.planilla}">Abrir Google Sheet</a></div></div>
+    <div id="listaInsc"></div>`;
+  listaInsc();
+}
+function inscFiltradas() {
+  const q = FI.q.toLowerCase();
+  return A.inscripciones.filter(i => (!FI.estado || i.estado === FI.estado) && (!FI.grupo || i.grupo === FI.grupo) && (!FI.vigentes || i.hasta >= A.hoy) &&
+    (!q || (i.chico + ' ' + i.adulto + ' ' + i.email + ' ' + i.id).toLowerCase().includes(q)));
+}
+function listaInsc() {
+  const L = inscFiltradas();
+  $('#listaInsc').innerHTML = `<p class="muted chico">${L.length} inscripciones · ${pesos(L.reduce((a, i) => a + i.total, 0))} · saldo ${pesos(L.reduce((a, i) => a + i.saldo, 0))}</p>
+    <div class="card" style="padding:4px 14px">${L.slice(0, 200).map(i => `<div class="lista-item"><div class="crece" style="cursor:pointer" onclick="fichaAdmin('${i.id}')"><b>${esc(i.chico)}</b> <span class="chip">${esc(nGrupo(i.grupo))}</span>
+      <div class="muted chico">${esc(i.adulto)} · ${fCorta(i.desde)} al ${fCorta(i.hasta)} · ${i.dias.length} días · ${esc(i.turno)}${A.sede === 'todas' ? ' · ' + esc(nomSede(i.sede)) : ''}</div></div>
+      <div class="derecha"><b>${pesos(i.total)}</b><br><span class="chip ${i.estado === 'Pagada' ? 'ok' : i.estado === 'Cancelada' ? '' : i.estado === 'Señada' ? 'info' : 'aviso'}">${esc(i.estado)}${i.saldo > 0 && i.estado !== 'Cancelada' ? ' · ' + pesos(i.saldo) : ''}</span></div></div>`).join('') || '<div class="vacio">Sin resultados.</div>'}</div>`;
+}
+function fichaAdmin(id) {
+  const i = A.inscripciones.find(x => x.id === id), c = A.chicos.find(x => x.id === i.chicoId) || {}, f = A.familias.find(x => x.id === i.familiaId) || {};
+  const r = (k, v) => v ? `<tr><td class="muted" style="width:130px">${k}</td><td>${esc(v)}</td></tr>` : '';
+  modal(`<h3>${esc(i.chico)}</h3><p class="muted chico">${esc(i.id)} · ${esc(nomSede(i.sede))} · ${esc(i.modalidad)} · ${esc(i.turno)}${i.extras ? ' · ' + esc(i.extras) : ''}<br>${i.dias.map(fCorta).join(', ')}</p>
+    <table class="t">${r('Total', pesos(i.total))}${r('Pagado', pesos(i.pagado))}${r('Saldo', pesos(i.saldo))}${r('Estado', i.estado)}${r('Notas', i.notas)}
+    ${r('Nacimiento', fLarga(c.nacimiento || ''))}${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Obra social', c.obraSocial)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos)}
+    ${r('Adulto', f.adulto)}${r('Mail', f.email)}${r('WhatsApp', f.whatsapp)}${r('Emergencia', f.emergencia)}${r('Retiran', f.autorizados)}${r('Nos conoció por', f.comoNosConocio)}</table>
+    <label>Grupo</label><select id="fgGrupo">${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === i.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
+    <div class="grid2"><div><label>Total (corregir precio)</label><input type="number" id="fgTotal" value="${i.total}"></div><div><label>Notas</label><input type="text" id="fgNotas" value="${esc(i.notas || '')}"></div></div>
+    <div class="fila" style="margin-top:14px">
+      <button class="btn" onclick="guardarFicha(this,'${id}')">Guardar</button>
+      <button class="btn claro" onclick="cerrarModal();formPago('${id}')">Registrar pago</button>
+      <a class="btn wa" target="_blank" href="${wa(f.whatsapp, 'Hola ' + (f.adulto || '').split(' ')[0] + '! Te escribimos de la escuela de verano por ' + i.chico + '.')}">WhatsApp</a>
+      ${i.estado === 'Cancelada' ? `<button class="btn claro" onclick="estadoInsc(this,'${id}','Pendiente')">Reactivar</button>` : `<button class="btn mal" onclick="if(confirm('¿Cancelar esta inscripción? Libera el cupo.'))estadoInsc(this,'${id}','Cancelada')">Cancelar</button>`}
+    </div>`);
+}
+function guardarFicha(btn, id) {
+  const i = A.inscripciones.find(x => x.id === id);
+  conBoton(btn, async () => {
+    if (val('fgGrupo') !== i.grupo) await api('asignarGrupo', { chicoId: i.chicoId, grupo: val('fgGrupo') }, 'admin');
+    if (i.estado !== 'Cancelada' && (Number(val('fgTotal')) !== i.total || val('fgNotas') !== (i.notas || ''))) await api('cambiarEstado', { inscripcionId: id, estado: 'Pendiente', total: val('fgTotal'), notas: val('fgNotas') }, 'admin');
+    cerrarModal(); toast('Guardado ✓'); adminCargar();
+  });
+}
+function estadoInsc(btn, id, estado) { conBoton(btn, async () => { await api('cambiarEstado', { inscripcionId: id, estado }, 'admin'); cerrarModal(); toast('Listo ✓'); adminCargar(); }); }
+function exportarCSV() {
+  const L = inscFiltradas(), cs = {}; A.chicos.forEach(c => cs[c.id] = c);
+  const cols = [['ID', i => i.id], ['Sede', i => nomSede(i.sede)], ['Chico', i => i.chico], ['Grupo', i => grupo(i.grupo).nombre], ['Nacimiento', i => (cs[i.chicoId] || {}).nacimiento], ['Adulto', i => i.adulto], ['WhatsApp', i => i.whatsapp], ['Mail', i => i.email],
+    ['Desde', i => i.desde], ['Hasta', i => i.hasta], ['Días', i => i.dias.length], ['Turno', i => i.turno], ['Extras', i => i.extras], ['Total', i => i.total], ['Pagado', i => i.pagado], ['Saldo', i => i.saldo], ['Estado', i => i.estado],
+    ['Alergias', i => (cs[i.chicoId] || {}).alergias], ['Medicación', i => (cs[i.chicoId] || {}).medicacion], ['Sabe nadar', i => (cs[i.chicoId] || {}).sabeNadar], ['Fotos', i => (cs[i.chicoId] || {}).autorizaFotos]];
+  const csv = [cols.map(c => c[0])].concat(L.map(i => cols.map(c => c[1](i)))).map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'inscripciones-' + A.hoy + '.csv'; a.click();
+}
+function aCobros() {
+  const porMedio = {}; A.pagos.forEach(p => porMedio[p.medio] = (porMedio[p.medio] || 0) + p.monto);
+  $('#adCuerpo').innerHTML = `
+    <div class="kpis"><div class="kpi"><span>Cobrado</span><b>${pesos(A.kpis.cobrado)}</b></div><div class="kpi"><span>Por cobrar</span><b style="color:var(--mal)">${pesos(A.kpis.pendiente)}</b></div>
+    ${Object.keys(porMedio).map(m => `<div class="kpi"><span>${esc(m)}</span><b>${pesos(porMedio[m])}</b></div>`).join('')}</div>
+    <div class="card"><h3>Deben (${A.deudas.length})</h3><p class="muted chico">A los que ya empezaron o empiezan en 3 días les llega un recordatorio automático cada 3 días.</p>${A.deudas.map(htmlDeuda).join('') || '<p class="muted">Todo al día. 🎉</p>'}</div>
+    <div class="card"><h3>Últimos pagos</h3>${A.pagos.slice(0, 60).map(p => `<div class="lista-item"><div class="crece"><b>${esc(p.chico)}</b><div class="muted chico">${fLarga(p.fecha)} · ${esc(p.medio)}${p.nota ? ' · ' + esc(p.nota) : ''}${A.sede === 'todas' ? ' · ' + esc(nomSede(p.sede)) : ''}</div></div><b>${pesos(p.monto)}</b></div>`).join('') || '<p class="muted">Todavía no hay pagos.</p>'}</div>`;
+}
+function aProfes() {
+  const tot = A.profes.reduce((a, p) => (a.d += p.liq.devengado, a.p += p.liq.pagado, a), { d: 0, p: 0 });
+  $('#adCuerpo').innerHTML = `<div class="fila"><div class="crece"><label>Mes</label><input type="month" value="${A.mes}" onchange="aMes=this.value;adminCargar('profes')"></div><button class="btn" style="margin-top:28px" onclick="formProfe()">+ Profe</button></div>
+    <div class="kpis"><div class="kpi"><span>A pagar en el mes</span><b>${pesos(tot.d)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(tot.p)}</b></div><div class="kpi"><span>Debemos</span><b style="color:var(--mal)">${pesos(tot.d - tot.p)}</b></div></div>
+    ${A.profes.map(p => `<div class="card" style="${p.activo ? '' : 'opacity:.55'}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(p.nombre)} ${p.adentro ? '<span class="chip ok">Adentro</span>' : ''}</h3>
+      <div class="muted chico">${esc(nomSede(p.sede))} · ${esc(String(p.grupos || '').split(',').filter(Boolean).map(nGrupo).join(', ') || 'sin grupo')} · ${esc(PUB.formasPago[p.formaPago] || p.formaPago)} ${pesos(p.valor)}</div></div>
+      <button class="btn xs claro" onclick="formProfe('${p.id}')">Editar</button></div>
+      <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span>Horas</span><b>${String(p.liq.horas).replace('.', ',')}</b></div><div class="kpi"><span>Días</span><b>${p.liq.dias}</b></div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
+      <div class="fila"><button class="btn xs" onclick="formPagoProfe('${p.id}')">Registrar pago</button><button class="btn xs claro" onclick="verTurnos('${p.id}')">Ver turnos</button><button class="btn xs claro" onclick="formMarcaje('${p.id}')">Marcaje a mano</button>
+      ${p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + '!')}">WhatsApp</a>` : ''}</div></div>`).join('') || '<div class="vacio">Sumá a los profes con su mail: entran a la app con ese mail.</div>'}`;
+}
+function formProfe(id) {
+  const p = A.profes.find(x => x.id === id) || { activo: true, formaPago: 'hora', grupos: '' };
+  const gs = String(p.grupos || '').split(',');
+  modal(`<h3>${id ? 'Editar profe' : 'Nuevo profe'}</h3>
+    <label>Nombre</label><input type="text" id="pfNom" value="${esc(p.nombre || '')}">
+    <div class="grid2"><div><label>Mail <small>(entra con este)</small></label><input type="email" id="pfMail" value="${esc(p.email || '')}"></div><div><label>WhatsApp</label><input type="tel" id="pfWa" value="${esc(p.whatsapp || '')}"></div></div>
+    ${A.sesionSede === 'todas' ? `<label>Sede</label><select id="pfSede"><option value="ambas">Ambas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === p.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
+    <label>Grupos a cargo</label>${PUB.grupos.map(g => `<label class="opcion" style="margin:4px 0"><input type="checkbox" class="pfG" value="${g.id}" ${gs.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}</span></label>`).join('')}
+    <div class="grid2"><div><label>Forma de pago</label><select id="pfForma">${Object.keys(PUB.formasPago).map(k => `<option value="${k}" ${k === p.formaPago ? 'selected' : ''}>${PUB.formasPago[k]}</option>`).join('')}</select></div><div><label>Valor</label><input type="number" id="pfValor" value="${p.valor || ''}"></div></div>
+    <label>Notas</label><input type="text" id="pfNotas" value="${esc(p.notas || '')}">
+    <label class="opcion ${p.activo ? 'on' : ''}"><input type="checkbox" id="pfAct" ${p.activo ? 'checked' : ''}><span>Activo (puede entrar a la app)</span></label>
+    <button class="btn full" onclick="conBoton(this, async()=>{await api('guardarProfe',{id:'${id || ''}',nombre:val('pfNom'),email:val('pfMail'),whatsapp:val('pfWa'),sede:val('pfSede'),grupos:[...document.querySelectorAll('.pfG:checked')].map(x=>x.value),formaPago:val('pfForma'),valor:val('pfValor'),notas:val('pfNotas'),activo:document.getElementById('pfAct').checked},'admin');cerrarModal();toast('${id ? 'Guardado' : 'Profe sumado: le mandamos el link por mail'} ✓');adminCargar('profes')})">Guardar</button>`);
+}
+function formPagoProfe(id) {
+  const p = A.profes.find(x => x.id === id);
+  modal(`<h3>Pago a ${esc(p.nombre)}</h3><p class="muted chico">${A.mes}: le toca ${pesos(p.liq.devengado)}, ya cobró ${pesos(p.liq.pagado)}.</p>
+    <div class="grid2"><div><label>Monto</label><input type="number" id="ppM" value="${Math.max(0, p.liq.saldo)}"></div><div><label>Fecha</label><input type="date" id="ppF" value="${A.hoy}"></div></div>
+    <label>Concepto</label><input type="text" id="ppC" value="Horas ${A.mes}">
+    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('pagarProfe',{profeId:'${id}',monto:val('ppM'),fecha:val('ppF'),concepto:val('ppC')},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar('profes')})">Guardar</button>`);
+}
+function verTurnos(id) {
+  const p = A.profes.find(x => x.id === id);
+  modal(`<h3>${esc(p.nombre)} · ${A.mes}</h3>${p.liq.turnos.map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(nomSede(t.sede))} · ${t.entrada} a ${t.salida}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') || '<p class="muted">Sin turnos.</p>'}`);
+}
+function formMarcaje(id) {
+  const p = A.profes.find(x => x.id === id);
+  modal(`<h3>Marcaje a mano · ${esc(p.nombre)}</h3><p class="muted chico">Para cuando se olvidó de marcar o no tenía señal.</p>
+    <div class="grid2"><div><label>Día</label><input type="date" id="mmF" value="${A.hoy}"></div><div><label>Hora</label><input type="time" id="mmH" value="09:00"></div></div>
+    <div class="grid2"><div><label>Tipo</label><select id="mmT"><option>ENTRADA</option><option>SALIDA</option></select></div><div><label>Sede</label><select id="mmS">${sedesVis().map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('')}</select></div></div>
+    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('marcajeManual',{profeId:'${id}',fecha:val('mmF'),hora:val('mmH'),tipo:val('mmT'),sede:val('mmS')},'admin');toast('Cargado ✓');adminCargar('profes').then(()=>formMarcaje('${id}'))})">Cargar</button>`);
+}
+let CT = { sede: '', semana: '' };
+function aContenido() {
+  const ss = sedesVis();
+  if (!CT.sede || !ss.find(s => s.id === CT.sede)) CT.sede = ss[0].id;
+  const s = sede(CT.sede);
+  if (!CT.semana) CT.semana = (s.semanas.find(w => w.hasta >= A.hoy) || s.semanas[0]).id;
+  const tem = A.tematicas.filter(t => t.sede === CT.sede);
+  const crono = A.cronograma.filter(c => c.sede === CT.sede);
+  const idxSem = s.semanas.findIndex(w => w.id === CT.semana);
+  $('#adCuerpo').innerHTML = `${ss.length > 1 ? `<div class="seg" style="margin:8px 0">${ss.map(x => `<button class="${x.id === CT.sede ? 'on' : ''}" onclick="CT.sede='${x.id}';CT.semana='';aContenido()">${esc(x.nombre)}</button>`).join('')}</div>` : ''}
+    <div class="card"><h3>Temáticas por semana</h3><p class="muted chico">Las ven las familias al inscribirse, y el domingo les llega la de la semana siguiente.</p>
+      ${s.semanas.map((w, i) => { const t = tem.find(x => x.semana === w.id) || {}; return `<div class="lista-item"><input type="text" id="te${w.id}" value="${esc(t.emoji || '')}" style="width:56px;text-align:center" maxlength="4">
+        <div class="crece"><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}</div><input type="text" id="tt${w.id}" value="${esc(t.titulo || '')}" placeholder="Título"><input type="text" id="td${w.id}" value="${esc(t.descripcion || '')}" placeholder="Descripción corta" style="margin-top:4px"></div>
+        <button class="btn xs" onclick="conBoton(this, async()=>{await api('guardarTematica',{sede:'${CT.sede}',semana:'${w.id}',emoji:val('te${w.id}'),titulo:val('tt${w.id}'),descripcion:val('td${w.id}')},'admin');toast('Guardado ✓')})">✓</button></div>`; }).join('')}
+    </div>
+    <div class="card"><h3>Cronograma semanal</h3>
+      <div class="fila"><button class="btn xs claro" ${idxSem <= 0 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem - 1] || {}).id}';aContenido()">←</button>
+      <b class="crece" style="text-align:center">Semana ${idxSem + 1} · ${fCorta(CT.semana)}</b>
+      <button class="btn xs claro" ${idxSem >= s.semanas.length - 1 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem + 1] || {}).id}';aContenido()">→</button></div>
+      ${crono.filter(c => c.semana === CT.semana).sort((a, b) => (['todos'].concat(['lun', 'mar', 'mie', 'jue', 'vie']).indexOf(a.dia) - ['todos', 'lun', 'mar', 'mie', 'jue', 'vie'].indexOf(b.dia)) || ((a.hora || '') < (b.hora || '') ? -1 : 1))
+        .map(c => `<div class="lista-item"><span class="chip">${c.dia}</span><b>${esc(c.hora)}</b><div class="crece">${esc(c.actividad)}<div class="muted chico">${esc(nGrupo(c.grupo))}${c.lugar ? ' · ' + esc(c.lugar) : ''}${c.profe ? ' · ' + esc(c.profe) : ''}</div></div>
+        <button class="btn xs claro" onclick="if(confirm('¿Borrar?'))conBoton(this, async()=>{await api('borrarCrono',{id:'${c.id}'},'admin');adminCargar('contenido')})">✕</button></div>`).join('') || '<p class="muted">Vacío.</p>'}
+      <div class="sep"></div><b>Agregar actividad</b>
+      <div class="grid2"><div><label>Día</label><select id="crD"><option value="todos">Todos los días</option><option value="lun">Lunes</option><option value="mar">Martes</option><option value="mie">Miércoles</option><option value="jue">Jueves</option><option value="vie">Viernes</option></select></div>
+      <div><label>Hora</label><input type="time" id="crH" value="09:00"></div></div>
+      <label>Actividad</label><input type="text" id="crA" placeholder="Natación, búsqueda del tesoro…">
+      <div class="grid2"><div><label>Grupo</label><select id="crG"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div><div><label>Lugar</label><input type="text" id="crL" placeholder="Pileta, cancha 1…"></div></div>
+      <label>Profe</label><input type="text" id="crP">
+      <div class="fila" style="margin-top:12px"><button class="btn" onclick="conBoton(this, async()=>{await api('guardarCrono',{sede:'${CT.sede}',semana:'${CT.semana}',dia:val('crD'),hora:val('crH'),actividad:val('crA'),grupo:val('crG'),lugar:val('crL'),profe:val('crP')},'admin');toast('Agregado ✓');adminCargar('contenido')})">Agregar</button>
+      ${s.semanas[idxSem + 1] ? `<button class="btn claro" onclick="conBoton(this, async()=>{const r=await api('copiarCrono',{sede:'${CT.sede}',desde:'${CT.semana}',hasta:'${s.semanas[idxSem + 1].id}'},'admin');toast(r.copiados+' actividades copiadas a la semana siguiente');CT.semana='${s.semanas[idxSem + 1].id}';adminCargar('contenido')})">Copiar esta semana a la siguiente</button>` : ''}</div>
+    </div>
+    <div class="card"><h3>Publicaciones de los profes</h3>${A.publicaciones.filter(p => p.sede === CT.sede).map(p => htmlPost(p) + `<div class="derecha" style="margin:-6px 0 10px"><button class="btn xs claro" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:${!p.visible}},'admin');adminCargar('contenido')})">${p.visible ? '🙈 Ocultar a las familias' : '👁 Volver a mostrar'}</button></div>`).join('') || '<p class="muted">Todavía no subieron nada.</p>'}</div>`;
+}
+const PLANTILLAS = {
+  abiertas: ['☀️ ¡Abrimos las inscripciones a la escuela de verano!', 'Ya podés inscribir a tus hijos a la escuela de verano. Elegí semanas o días sueltos, mirá las temáticas de cada semana y armá el presupuesto desde el celular.\n\nInscribiéndote antes del fin de noviembre tenés descuento. ¡Los cupos son limitados!'],
+  llevar: ['🎒 Qué traer a la escuela de verano', 'Te recordamos qué tiene que traer cada día, todo con nombre:\n\n• Malla y toalla\n• Protector solar y gorra\n• Ojotas\n• Botella de agua\n• Muda de ropa\n\n¡Nos vemos!'],
+  cupos: ['⏳ Quedan pocos lugares', 'Se están llenando los grupos de las próximas semanas. Si querés asegurar el lugar, inscribite o renová desde tu cuenta.'],
+  lluvia: ['🌧️ Aviso por lluvia', 'Hoy por la lluvia las actividades se hacen bajo techo. Mandá muda de ropa extra. ¡Los esperamos igual!']
+};
+function aMails() {
+  $('#adCuerpo').innerHTML = `<div class="card"><h3>Mandar un mail a las familias</h3>
+    <p class="muted chico">Hoy quedan <b>${A.kpis.cuotaMail}</b> mails (Google limita la cantidad por día).</p>
+    <div class="fila">${Object.keys(PLANTILLAS).map(k => `<button class="btn xs claro" onclick="document.getElementById('mlA').value=PLANTILLAS['${k}'][0];document.getElementById('mlM').value=PLANTILLAS['${k}'][1]">${PLANTILLAS[k][0].split(' ').slice(0, 4).join(' ')}</button>`).join('')}</div>
+    <div class="grid2">${A.sesionSede === 'todas' ? `<div><label>Sede</label><select id="mlS"><option value="todas">Las dos</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === A.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select></div>` : ''}
+    <div><label>A quién</label><select id="mlD"><option value="activas">Familias con días por delante</option><option value="inscriptas">Todas las familias inscriptas</option><option value="deudores">Las que deben</option><option value="interesados">Interesados (sin inscribir)</option><option value="todos">Inscriptas + interesados</option></select></div>
+    <div><label>Grupo</label><select id="mlG"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
+    <label>Asunto</label><input type="text" id="mlA">
+    <label>Mensaje</label><textarea id="mlM" style="min-height:160px"></textarea>
+    <div class="fila" style="margin-top:12px"><button class="btn claro" onclick="mandarMail(this,true)">Mandarme una prueba</button><button class="btn" onclick="if(confirm('¿Mandar a todas las familias del filtro?'))mandarMail(this,false)">Enviar</button></div></div>
+    <div class="card"><h3>Avisos automáticos</h3><ul class="chico" style="padding-left:18px">
+      <li><b>Al inscribirse:</b> resumen, datos de pago y link a su cuenta. A la administración le llega el aviso con botón de WhatsApp.</li>
+      <li><b>2 días antes de que termine:</b> mail para renovar con descuento y la temática que viene.</li>
+      <li><b>Deudas:</b> recordatorio cada 3 días a quienes ya empezaron o empiezan en 3 días.</li>
+      <li><b>Domingos 18 h:</b> la temática y el cronograma de la semana siguiente.</li>
+      <li><b>Todos los días 8 h:</b> resumen a la administración con vencimientos, deudas y botones de WhatsApp.</li></ul></div>`;
+}
+function mandarMail(btn, prueba) {
+  conBoton(btn, async () => { const r = await api('mailMasivo', { sede: val('mlS'), a: val('mlD'), grupo: val('mlG'), asunto: val('mlA'), mensaje: document.getElementById('mlM').value, prueba }, 'admin'); toast(prueba ? 'Te llegó la prueba ✓' : 'Enviado a ' + r.enviados + ' familias ✓'); });
+}
+function aAjustes() {
+  const aj = A.ajustes;
+  $('#adCuerpo').innerHTML = `${A.ubicaciones.map(u => `<div class="card"><h3>📍 Ubicación de ${esc(u.nombre)}</h3>
+      <p class="muted chico">Los profes solo pueden marcar a menos de ${u.radio} m de este punto. Parate en el centro de la sede y tocá “Usar mi ubicación”.</p>
+      <p>${u.lat ? `<b>${u.lat.toFixed(6)}, ${u.lng.toFixed(6)}</b> · <a target="_blank" href="https://maps.google.com/?q=${u.lat},${u.lng}">ver en el mapa</a>` : '<span class="chip mal">Sin cargar</span>'}</p>
+      <div class="fila"><div><label>Radio (m)</label><input type="number" id="rad${u.id}" value="${u.radio}" style="width:110px"></div>
+      <button class="btn" style="margin-top:28px" onclick="usarUbic(this,'${u.id}')">Usar mi ubicación</button>
+      ${u.lat ? `<button class="btn claro" style="margin-top:28px" onclick="conBoton(this, async()=>{await api('fijarUbicacion',{sede:'${u.id}',lat:${u.lat},lng:${u.lng},radio:val('rad${u.id}')},'admin');toast('Radio guardado ✓');adminCargar('ajustes')})">Guardar radio</button>` : ''}</div></div>`).join('')}
+    <div class="card"><h3>🔗 Links para compartir</h3>
+      ${[['Familias (Instagram, WhatsApp)', A.url], ['Familias · mi cuenta', A.url + '?p=cuenta'], ['Profes', A.url + '?p=profes'], ['Administración', A.url + '?p=admin']].map(([t, u]) => `<div class="lista-item"><div class="crece"><b>${t}</b><div class="muted chico" style="word-break:break-all">${esc(u)}</div></div><button class="btn xs claro" onclick="copiar('${esc(u)}')">Copiar</button></div>`).join('')}
+      <a class="btn claro sm" style="margin-top:10px" target="_blank" href="${A.planilla}">Abrir la planilla</a></div>
+    <div class="card"><h3>🔐 PIN y mails de la administración</h3>
+      ${Object.keys(aj).sort().map(k => `<label>${esc(k.replace('pin_', 'PIN · ').replace('email_', 'Mail de aviso · ').replace('pinGeneral', 'PIN general').replace('emailGeneral', 'Mail general').replace('aldea', 'Aldea de Valle').replace('colonia', 'Colonia de Güey'))}</label><input type="text" class="ajuste" data-k="${k}" value="${esc(aj[k])}">`).join('')}
+      <button class="btn" style="margin-top:12px" onclick="conBoton(this, async()=>{const v={};document.querySelectorAll('.ajuste').forEach(x=>v[x.dataset.k]=x.value);await api('guardarAjustes',{valores:v},'admin');toast('Guardado ✓')})">Guardar</button></div>
+    <button class="btn claro full" onclick="salir('admin')">Cerrar sesión</button>`;
+}
+function usarUbic(btn, id) {
+  if (!navigator.geolocation) return toast('Sin GPS.', true);
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(p => {
+    api('fijarUbicacion', { sede: id, lat: p.coords.latitude, lng: p.coords.longitude, radio: val('rad' + id) }, 'admin')
+      .then(() => { toast('Ubicación guardada (precisión ' + Math.round(p.coords.accuracy) + ' m) ✓'); adminCargar('ajustes'); })
+      .catch(e => { toast(e.message, true); btn.disabled = false; });
+  }, () => { toast('No se pudo leer la ubicación.', true); btn.disabled = false; }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+}
+</script>
+</body>
+</html>
