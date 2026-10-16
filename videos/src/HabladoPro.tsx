@@ -49,7 +49,9 @@ export type GuionHabladoPro = {
   apoyos?: Apoyo[];
   acento?: string; // color de la barrita / detalles
   musica?: string | null;
-  volumenMusica?: number;
+  volumenMusica?: number; // volumen de la música mientras habla (por defecto 0.13)
+  volumenMusicaSinVoz?: number; // volumen en los huecos sin voz (si no está, igual al anterior)
+  musicaHasta?: number; // segundo del video donde la música termina de apagarse (ej. antes de que entre la letra)
 };
 
 export const duracionHabladoPro = (g: GuionHabladoPro) => Math.round(g.segundos * FPS);
@@ -255,10 +257,21 @@ export const HabladoPro: React.FC<GuionHabladoPro> = (g) => {
       {musica && (
         <Audio
           src={staticFile(`musica/${musica}`)}
-          volume={(f) =>
-            (g.volumenMusica ?? 0.13) *
-            interpolate(f, [0, 10, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-          }
+          volume={(f) => {
+            const t = f / FPS;
+            const bajo = g.volumenMusica ?? 0.13;
+            const alto = g.volumenMusicaSinVoz ?? bajo;
+            // "ducking": baja cuando hay voz, sube en los huecos (rampas de 0.25 s)
+            let cerca = 99;
+            for (const fr of g.frases) {
+              const d = t < fr.inicio ? fr.inicio - t : t > fr.fin ? t - fr.fin : 0;
+              cerca = Math.min(cerca, d);
+            }
+            const v = bajo + (alto - bajo) * Math.min(1, Math.max(0, (cerca - 0.05) / 0.25));
+            const fin = g.musicaHasta ?? durationInFrames / FPS;
+            const fade = interpolate(t, [0, 0.3, fin - 1.5, fin], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+            return v * fade;
+          }}
         />
       )}
     </AbsoluteFill>

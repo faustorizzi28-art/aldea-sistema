@@ -637,6 +637,8 @@
    "foto": "bunkai-grupo-aldea.jpg"
   }
  ],
- "musica": "ritmo-entreno.mp3",
- "volumenMusica": 0.12
+ "musica": "tarot.mp3",
+ "volumenMusica": 0.14,
+ "volumenMusicaSinVoz": 0.6,
+ "musicaHasta": 34.4
 }
