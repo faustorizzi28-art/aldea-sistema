@@ -8,6 +8,8 @@ import hablado from "../guiones/hablado-2026-10-12.json";
 import { Espacios, GuionEspacios, duracionEspacios } from "./Espacios";
 import espacios from "../guiones/aldea-espacios.json";
 import { EspaciosPro, duracionEspaciosPro } from "./EspaciosPro";
+import { HabladoPro, GuionHabladoPro, duracionHabladoPro } from "./HabladoPro";
+import habladoPro from "../guiones/hablado-pro-2026-10-12.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -76,6 +78,17 @@ export const RemotionRoot: React.FC = () => {
       durationInFrames={duracionEspaciosPro(espacios as GuionEspacios)}
       defaultProps={espacios as GuionEspacios}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionEspaciosPro(props) })}
+    />
+    {/* Estilo de los reels de Aldea: persona hablando + subtítulos palabra por palabra + destacados + b-roll */}
+    <Composition
+      id="HabladoPro"
+      component={HabladoPro}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHabladoPro(habladoPro as GuionHabladoPro)}
+      defaultProps={habladoPro as GuionHabladoPro}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHabladoPro(props) })}
     />
     </>
   );

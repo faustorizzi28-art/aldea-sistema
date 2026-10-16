@@ -90,7 +90,28 @@ cinematográficos y textos animados. Todo eso está en `videos/src/EspaciosPro.t
 - Datos de Aldea: WhatsApp 351 530 8489 · Instagram @aldeadevalle · República de China 1890, Valle Escondido.
 - La pileta no se muestra hasta que esté limpia para la temporada.
 
-## 7. Cambiar el diseño
+## 7. ESTILO DE LA CASA para videos hablados (HabladoPro) — usar siempre que alguien hable a cámara
+
+Es el estilo de los reels que ya publica Aldea (referencias que pasó Fausto el 16/10/2026):
+persona hablando a cámara en el predio + subtítulos palabra por palabra (Montserrat ExtraBold blanca con sombra,
+centro-abajo) + "destacados" en las frases clave (línea chica arriba, PALABRA ENORME en Montserrat Black cursiva,
+línea fina en cursiva abajo con barrita de color, y un emoji) + cortes a imágenes de apoyo con título condensado
+en cursiva (Anton) + destellos de luz al entrar/salir + zoom alternado por frase + música bajita.
+Gancho de entrada tipo "Este video es para ese amigo…" / "Tu hijo llega de la escuela ¿y pasa horas con el celular?"
+y cierre con llamado ("Mandá este video al grupo", "Escribinos FÚTBOL").
+
+Pasos:
+1. Pasar el clip a `videos/public/clips/` vertical 1080x1920 con la voz limpia (ver sección 5, paso 1).
+2. Transcribir SIN internet abierto: modelo Whisper small de sherpa-onnx (se baja de GitHub, que sí está permitido):
+   `curl -L -o m.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-small.tar.bz2`
+   y `.../asr-models/silero_vad.onnx`; `pip install sherpa-onnx`;
+   `python3 -I videos/herramientas/transcribir.py <clip> videos/guiones/transcripcion-X.json <carpeta_modelo>`.
+3. Corregir a mano los nombres propios (Claude, Bunkai Dojo, Aldea, GLORIN…) y recalcular tiempos (ver guion de ejemplo
+   `videos/guiones/hablado-pro-2026-10-12.json`). Si una frase no se entiende, NO inventarla: dejarla con "…".
+4. Elegir 3–4 destacados (gancho, idea central, llamado final) y apoyos (b-roll) cuando nombra lugares/actividades.
+5. `npx remotion render src/index.ts HabladoPro out/X.mp4 --props=guiones/X.json` y normalizar a -14 LUFS.
+
+## 8. Cambiar el diseño
 
 - Colores, usuario y tipografía: `videos/src/marca.ts`.
 - Animaciones y estilos de escena: `videos/src/Reel.tsx`.
