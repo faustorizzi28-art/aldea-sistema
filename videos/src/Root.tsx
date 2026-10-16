@@ -10,6 +10,8 @@ import espacios from "../guiones/aldea-espacios.json";
 import { EspaciosPro, duracionEspaciosPro } from "./EspaciosPro";
 import { HabladoPro, GuionHabladoPro, duracionHabladoPro } from "./HabladoPro";
 import habladoPro from "../guiones/hablado-pro-2026-10-12.json";
+import { HabladoSuave, duracionHabladoSuave } from "./HabladoSuave";
+import suave from "../guiones/suave-mananas-noches.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -89,6 +91,17 @@ export const RemotionRoot: React.FC = () => {
       durationInFrames={duracionHabladoPro(habladoPro as GuionHabladoPro)}
       defaultProps={habladoPro as GuionHabladoPro}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHabladoPro(props) })}
+    />
+    {/* Versión "pro" del estilo hablado: fundidos, sin efectos ruidosos, subtítulos tranquilos */}
+    <Composition
+      id="HabladoSuave"
+      component={HabladoSuave}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHabladoSuave(suave as GuionHabladoPro)}
+      defaultProps={suave as GuionHabladoPro}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHabladoSuave(props) })}
     />
     </>
   );

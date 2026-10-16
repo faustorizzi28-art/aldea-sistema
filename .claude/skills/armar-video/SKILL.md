@@ -114,7 +114,18 @@ Pasos:
    sobre la voz. Solo cortar y subir volumen: loudnorm en DOS pasadas con `linear=true` (mide y aplica ganancia, no comprime).
 7. Priorizar SIEMPRE material propio de Fausto (sus clases, alumnos, salidas) por sobre fotos genéricas de la web.
 
-## 8. Cambiar el diseño
+## 8. EDICIÓN FLUIDA "PRO" (HabladoSuave) — POR DEFECTO para videos de Fausto hablando (pedido 16/10)
+Fausto pidió que "no se note tanto la edición": nada de saltos de zoom, destellos, whoosh ni subtítulos que rebotan.
+1. Listar las tomas buenas en `videos/guiones/tomas-X.json` (archivo, desde, hasta; `congelar` = segundos de imagen quieta
+   al final de una toma para tapar con una imagen de apoyo) y unirlas con fundidos:
+   `python3 videos/herramientas/unir-tomas.py videos/guiones/tomas-X.json videos/public/clips/X.mp4`
+2. Transcribir cada toma por separado (transcribir.py) y pasar los tiempos al video unido:
+   `python3 videos/herramientas/frases-de-tomas.py tomas-X.json frases.json t1.json t2.json …`
+3. Corregir textos con `herramientas/corregir-frases.py` y armar el guion (ver `guiones/suave-lo-que-ven.json`).
+   Máximo 3 destacados; imágenes de apoyo con títulos simples; música con ducking.
+4. `npx remotion render src/index.ts HabladoSuave out/X.mp4 --props=guiones/X.json` y `herramientas/masterizar.sh out/X.mp4 final.mp4`.
+
+## 9. Cambiar el diseño
 
 - Colores, usuario y tipografía: `videos/src/marca.ts`.
 - Animaciones y estilos de escena: `videos/src/Reel.tsx`.

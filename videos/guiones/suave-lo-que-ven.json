@@ -1,0 +1,442 @@
+{
+ "titulo": "Lo que ven los papás",
+ "video": "fausto-lo-que-ven.mp4",
+ "segundos": 22.5,
+ "frases": [
+  {
+   "texto": "Esto es lo que ven los papás…",
+   "inicio": 0.18,
+   "fin": 1.89,
+   "palabras": [
+    {
+     "p": "Esto",
+     "i": 0.18,
+     "f": 0.46
+    },
+    {
+     "p": "es",
+     "i": 0.46,
+     "f": 0.64
+    },
+    {
+     "p": "lo",
+     "i": 0.64,
+     "f": 0.83
+    },
+    {
+     "p": "que",
+     "i": 0.83,
+     "f": 1.06
+    },
+    {
+     "p": "ven",
+     "i": 1.06,
+     "f": 1.29
+    },
+    {
+     "p": "los",
+     "i": 1.29,
+     "f": 1.52
+    },
+    {
+     "p": "papás…",
+     "i": 1.52,
+     "f": 1.89
+    }
+   ]
+  },
+  {
+   "texto": "…y esto es lo que no ven.",
+   "inicio": 3.39,
+   "fin": 5.1,
+   "palabras": [
+    {
+     "p": "…y",
+     "i": 3.39,
+     "f": 3.6
+    },
+    {
+     "p": "esto",
+     "i": 3.6,
+     "f": 3.91
+    },
+    {
+     "p": "es",
+     "i": 3.91,
+     "f": 4.12
+    },
+    {
+     "p": "lo",
+     "i": 4.12,
+     "f": 4.32
+    },
+    {
+     "p": "que",
+     "i": 4.32,
+     "f": 4.58
+    },
+    {
+     "p": "no",
+     "i": 4.58,
+     "f": 4.79
+    },
+    {
+     "p": "ven.",
+     "i": 4.79,
+     "f": 5.1
+    }
+   ]
+  },
+  {
+   "texto": "Un cumple de dos horas no empieza cuando llegan los chicos.",
+   "inicio": 6.61,
+   "fin": 9.6,
+   "palabras": [
+    {
+     "p": "Un",
+     "i": 6.61,
+     "f": 6.78
+    },
+    {
+     "p": "cumple",
+     "i": 6.78,
+     "f": 7.12
+    },
+    {
+     "p": "de",
+     "i": 7.12,
+     "f": 7.28
+    },
+    {
+     "p": "dos",
+     "i": 7.28,
+     "f": 7.49
+    },
+    {
+     "p": "horas",
+     "i": 7.49,
+     "f": 7.79
+    },
+    {
+     "p": "no",
+     "i": 7.79,
+     "f": 7.96
+    },
+    {
+     "p": "empieza",
+     "i": 7.96,
+     "f": 8.34
+    },
+    {
+     "p": "cuando",
+     "i": 8.34,
+     "f": 8.67
+    },
+    {
+     "p": "llegan",
+     "i": 8.67,
+     "f": 9.01
+    },
+    {
+     "p": "los",
+     "i": 9.01,
+     "f": 9.22
+    },
+    {
+     "p": "chicos.",
+     "i": 9.22,
+     "f": 9.6
+    }
+   ]
+  },
+  {
+   "texto": "Empieza antes: la planificación, el armado, el juego, chequear que esté todo listo.",
+   "inicio": 9.71,
+   "fin": 14.46,
+   "palabras": [
+    {
+     "p": "Empieza",
+     "i": 9.71,
+     "f": 10.15
+    },
+    {
+     "p": "antes:",
+     "i": 10.15,
+     "f": 10.54
+    },
+    {
+     "p": "la",
+     "i": 10.54,
+     "f": 10.74
+    },
+    {
+     "p": "planificación,",
+     "i": 10.74,
+     "f": 11.52
+    },
+    {
+     "p": "el",
+     "i": 11.52,
+     "f": 11.72
+    },
+    {
+     "p": "armado,",
+     "i": 11.72,
+     "f": 12.16
+    },
+    {
+     "p": "el",
+     "i": 12.16,
+     "f": 12.35
+    },
+    {
+     "p": "juego,",
+     "i": 12.35,
+     "f": 12.75
+    },
+    {
+     "p": "chequear",
+     "i": 12.75,
+     "f": 13.24
+    },
+    {
+     "p": "que",
+     "i": 13.24,
+     "f": 13.48
+    },
+    {
+     "p": "esté",
+     "i": 13.48,
+     "f": 13.77
+    },
+    {
+     "p": "todo",
+     "i": 13.77,
+     "f": 14.07
+    },
+    {
+     "p": "listo.",
+     "i": 14.07,
+     "f": 14.46
+    }
+   ]
+  },
+  {
+   "texto": "Lo mismo pasa en una clase.",
+   "inicio": 14.55,
+   "fin": 16.23,
+   "palabras": [
+    {
+     "p": "Lo",
+     "i": 14.55,
+     "f": 14.75
+    },
+    {
+     "p": "mismo",
+     "i": 14.75,
+     "f": 15.09
+    },
+    {
+     "p": "pasa",
+     "i": 15.09,
+     "f": 15.39
+    },
+    {
+     "p": "en",
+     "i": 15.39,
+     "f": 15.59
+    },
+    {
+     "p": "una",
+     "i": 15.59,
+     "f": 15.83
+    },
+    {
+     "p": "clase.",
+     "i": 15.83,
+     "f": 16.23
+    }
+   ]
+  },
+  {
+   "texto": "Por eso, cuando un chico se va feliz, para mí no es suerte.",
+   "inicio": 16.37,
+   "fin": 19.26,
+   "palabras": [
+    {
+     "p": "Por",
+     "i": 16.37,
+     "f": 16.57
+    },
+    {
+     "p": "eso,",
+     "i": 16.57,
+     "f": 16.81
+    },
+    {
+     "p": "cuando",
+     "i": 16.81,
+     "f": 17.12
+    },
+    {
+     "p": "un",
+     "i": 17.12,
+     "f": 17.28
+    },
+    {
+     "p": "chico",
+     "i": 17.28,
+     "f": 17.56
+    },
+    {
+     "p": "se",
+     "i": 17.56,
+     "f": 17.72
+    },
+    {
+     "p": "va",
+     "i": 17.72,
+     "f": 17.87
+    },
+    {
+     "p": "feliz,",
+     "i": 17.87,
+     "f": 18.19
+    },
+    {
+     "p": "para",
+     "i": 18.19,
+     "f": 18.43
+    },
+    {
+     "p": "mí",
+     "i": 18.43,
+     "f": 18.59
+    },
+    {
+     "p": "no",
+     "i": 18.59,
+     "f": 18.75
+    },
+    {
+     "p": "es",
+     "i": 18.75,
+     "f": 18.9
+    },
+    {
+     "p": "suerte.",
+     "i": 18.9,
+     "f": 19.26
+    }
+   ]
+  },
+  {
+   "texto": "Es trabajo.",
+   "inicio": 19.37,
+   "fin": 20.25,
+   "palabras": [
+    {
+     "p": "Es",
+     "i": 19.37,
+     "f": 19.62
+    },
+    {
+     "p": "trabajo.",
+     "i": 19.62,
+     "f": 20.25
+    }
+   ]
+  },
+  {
+   "texto": "Y hay que hacerlo con muchas ganas.",
+   "inicio": 20.49,
+   "fin": 22.33,
+   "palabras": [
+    {
+     "p": "Y",
+     "i": 20.49,
+     "f": 20.62
+    },
+    {
+     "p": "hay",
+     "i": 20.62,
+     "f": 20.83
+    },
+    {
+     "p": "que",
+     "i": 20.83,
+     "f": 21.05
+    },
+    {
+     "p": "hacerlo",
+     "i": 21.05,
+     "f": 21.43
+    },
+    {
+     "p": "con",
+     "i": 21.43,
+     "f": 21.65
+    },
+    {
+     "p": "muchas",
+     "i": 21.65,
+     "f": 21.99
+    },
+    {
+     "p": "ganas.",
+     "i": 21.99,
+     "f": 22.33
+    }
+   ]
+  }
+ ],
+ "acento": "#F2CA11",
+ "destacados": [
+  {
+   "inicio": 18.19,
+   "fin": 19.360000000000003,
+   "arriba": "para mí",
+   "grande": "no es suerte"
+  },
+  {
+   "inicio": 19.32,
+   "fin": 20.4,
+   "arriba": "es",
+   "grande": "trabajo"
+  },
+  {
+   "inicio": 21.43,
+   "fin": 22.5,
+   "arriba": "y hay que hacerlo con",
+   "grande": "muchas ganas"
+  }
+ ],
+ "apoyos": [
+  {
+   "inicio": 1.95,
+   "fin": 3.35,
+   "foto": "cumpleanos-infantil.jpg",
+   "titulo": "LO QUE VEN"
+  },
+  {
+   "inicio": 5.0,
+   "fin": 6.65,
+   "foto": "aldea-salon.jpg",
+   "titulo": "LO QUE NO VEN"
+  },
+  {
+   "inicio": 10.54,
+   "fin": 13.24,
+   "foto": "eventos-salon.jpg"
+  },
+  {
+   "inicio": 15.59,
+   "fin": 16.38,
+   "video": "fausto-jardin-manana.mp4",
+   "desde": 3
+  }
+ ],
+ "musica": "ritmo-entreno.mp3",
+ "volumenMusica": 0.12,
+ "volumenMusicaSinVoz": 0.4
+}

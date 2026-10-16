@@ -1,0 +1,39 @@
+[
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w08.mp4",
+  "desde": 1.6,
+  "hasta": 3.65,
+  "congelar": 1.4
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w07.mp4",
+  "desde": 1.1,
+  "hasta": 3.1,
+  "congelar": 1.4
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w06.mp4",
+  "desde": 0.6,
+  "hasta": 3.9
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w05.mp4",
+  "desde": 0.7,
+  "hasta": 5.8
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w04.mp4",
+  "desde": 0.75,
+  "hasta": 2.7
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w02.mp4",
+  "desde": 0.75,
+  "hasta": 3.95
+ },
+ {
+  "archivo": "/tmp/claude-0/-home-user-aldea-sistema/c483a6ea-cf98-5620-afbc-5cfee2addf2c/scratchpad/zip1/w01.mp4",
+  "desde": 0.65,
+  "hasta": 3.95
+ }
+]

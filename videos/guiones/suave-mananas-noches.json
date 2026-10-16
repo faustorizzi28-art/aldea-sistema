@@ -1,0 +1,623 @@
+{
+ "titulo": "A la mañana soy esto (suave)",
+ "video": "fausto-mananas-noches-suave.mp4",
+ "segundos": 33.4,
+ "frases": [
+  {
+   "texto": "A la mañana soy esto.",
+   "inicio": 0.14,
+   "fin": 1.98,
+   "palabras": [
+    {
+     "p": "A",
+     "i": 0.14,
+     "f": 0.34
+    },
+    {
+     "p": "la",
+     "i": 0.34,
+     "f": 0.62
+    },
+    {
+     "p": "mañana",
+     "i": 0.62,
+     "f": 1.16
+    },
+    {
+     "p": "soy",
+     "i": 1.16,
+     "f": 1.5
+    },
+    {
+     "p": "esto.",
+     "i": 1.5,
+     "f": 1.98
+    }
+   ]
+  },
+  {
+   "texto": "Y a la noche soy esto.",
+   "inicio": 3.35,
+   "fin": 4.51,
+   "palabras": [
+    {
+     "p": "Y",
+     "i": 3.35,
+     "f": 3.47
+    },
+    {
+     "p": "a",
+     "i": 3.47,
+     "f": 3.59
+    },
+    {
+     "p": "la",
+     "i": 3.59,
+     "f": 3.75
+    },
+    {
+     "p": "noche",
+     "i": 3.75,
+     "f": 4.03
+    },
+    {
+     "p": "soy",
+     "i": 4.03,
+     "f": 4.23
+    },
+    {
+     "p": "esto.",
+     "i": 4.23,
+     "f": 4.51
+    }
+   ]
+  },
+  {
+   "texto": "Profe de Educación Física, karateca,",
+   "inicio": 6.05,
+   "fin": 8.14,
+   "palabras": [
+    {
+     "p": "Profe",
+     "i": 6.05,
+     "f": 6.4
+    },
+    {
+     "p": "de",
+     "i": 6.4,
+     "f": 6.6
+    },
+    {
+     "p": "Educación",
+     "i": 6.6,
+     "f": 7.14
+    },
+    {
+     "p": "Física,",
+     "i": 7.14,
+     "f": 7.59
+    },
+    {
+     "p": "karateca,",
+     "i": 7.59,
+     "f": 8.14
+    }
+   ]
+  },
+  {
+   "texto": "animador de fiestas infantiles,",
+   "inicio": 8.36,
+   "fin": 10.45,
+   "palabras": [
+    {
+     "p": "animador",
+     "i": 8.36,
+     "f": 8.94
+    },
+    {
+     "p": "de",
+     "i": 8.94,
+     "f": 9.17
+    },
+    {
+     "p": "fiestas",
+     "i": 9.17,
+     "f": 9.7
+    },
+    {
+     "p": "infantiles,",
+     "i": 9.7,
+     "f": 10.45
+    }
+   ]
+  },
+  {
+   "texto": "coordinador de predios deportivos,",
+   "inicio": 10.56,
+   "fin": 12.65,
+   "palabras": [
+    {
+     "p": "coordinador",
+     "i": 10.56,
+     "f": 11.26
+    },
+    {
+     "p": "de",
+     "i": 11.26,
+     "f": 11.47
+    },
+    {
+     "p": "predios",
+     "i": 11.47,
+     "f": 11.95
+    },
+    {
+     "p": "deportivos,",
+     "i": 11.95,
+     "f": 12.65
+    }
+   ]
+  },
+  {
+   "texto": "encargado del mismo.",
+   "inicio": 12.82,
+   "fin": 14.21,
+   "palabras": [
+    {
+     "p": "encargado",
+     "i": 12.82,
+     "f": 13.46
+    },
+    {
+     "p": "del",
+     "i": 13.46,
+     "f": 13.75
+    },
+    {
+     "p": "mismo.",
+     "i": 13.75,
+     "f": 14.21
+    }
+   ]
+  },
+  {
+   "texto": "Para mí es uno solo.",
+   "inicio": 14.46,
+   "fin": 15.98,
+   "palabras": [
+    {
+     "p": "Para",
+     "i": 14.46,
+     "f": 14.81
+    },
+    {
+     "p": "mí",
+     "i": 14.81,
+     "f": 15.04
+    },
+    {
+     "p": "es",
+     "i": 15.04,
+     "f": 15.28
+    },
+    {
+     "p": "uno",
+     "i": 15.28,
+     "f": 15.57
+    },
+    {
+     "p": "solo.",
+     "i": 15.57,
+     "f": 15.98
+    }
+   ]
+  },
+  {
+   "texto": "Cambia la ropa, cambia el lugar, pero lo que hago es lo mismo:",
+   "inicio": 16.16,
+   "fin": 19.37,
+   "palabras": [
+    {
+     "p": "Cambia",
+     "i": 16.16,
+     "f": 16.5
+    },
+    {
+     "p": "la",
+     "i": 16.5,
+     "f": 16.67
+    },
+    {
+     "p": "ropa,",
+     "i": 16.67,
+     "f": 16.96
+    },
+    {
+     "p": "cambia",
+     "i": 16.96,
+     "f": 17.3
+    },
+    {
+     "p": "el",
+     "i": 17.3,
+     "f": 17.47
+    },
+    {
+     "p": "lugar,",
+     "i": 17.47,
+     "f": 17.81
+    },
+    {
+     "p": "pero",
+     "i": 17.81,
+     "f": 18.06
+    },
+    {
+     "p": "lo",
+     "i": 18.06,
+     "f": 18.23
+    },
+    {
+     "p": "que",
+     "i": 18.23,
+     "f": 18.44
+    },
+    {
+     "p": "hago",
+     "i": 18.44,
+     "f": 18.69
+    },
+    {
+     "p": "es",
+     "i": 18.69,
+     "f": 18.86
+    },
+    {
+     "p": "lo",
+     "i": 18.86,
+     "f": 19.03
+    },
+    {
+     "p": "mismo:",
+     "i": 19.03,
+     "f": 19.37
+    }
+   ]
+  },
+  {
+   "texto": "formo personas a través del movimiento.",
+   "inicio": 19.56,
+   "fin": 21.98,
+   "palabras": [
+    {
+     "p": "formo",
+     "i": 19.56,
+     "f": 19.93
+    },
+    {
+     "p": "personas",
+     "i": 19.93,
+     "f": 20.45
+    },
+    {
+     "p": "a",
+     "i": 20.45,
+     "f": 20.61
+    },
+    {
+     "p": "través",
+     "i": 20.61,
+     "f": 21.03
+    },
+    {
+     "p": "del",
+     "i": 21.03,
+     "f": 21.3
+    },
+    {
+     "p": "movimiento.",
+     "i": 21.3,
+     "f": 21.98
+    }
+   ]
+  },
+  {
+   "texto": "Lo que por ahí se ve es solamente la clase.",
+   "inicio": 22.17,
+   "fin": 24.33,
+   "palabras": [
+    {
+     "p": "Lo",
+     "i": 22.17,
+     "f": 22.33
+    },
+    {
+     "p": "que",
+     "i": 22.33,
+     "f": 22.53
+    },
+    {
+     "p": "por",
+     "i": 22.53,
+     "f": 22.73
+    },
+    {
+     "p": "ahí",
+     "i": 22.73,
+     "f": 22.93
+    },
+    {
+     "p": "se",
+     "i": 22.93,
+     "f": 23.09
+    },
+    {
+     "p": "ve",
+     "i": 23.09,
+     "f": 23.25
+    },
+    {
+     "p": "es",
+     "i": 23.25,
+     "f": 23.41
+    },
+    {
+     "p": "solamente",
+     "i": 23.41,
+     "f": 23.85
+    },
+    {
+     "p": "la",
+     "i": 23.85,
+     "f": 24.01
+    },
+    {
+     "p": "clase.",
+     "i": 24.01,
+     "f": 24.33
+    }
+   ]
+  },
+  {
+   "texto": "Lo que no se ve son los kilómetros de preparación y las ganas de volver al otro día entero.",
+   "inicio": 24.52,
+   "fin": 29.81,
+   "palabras": [
+    {
+     "p": "Lo",
+     "i": 24.52,
+     "f": 24.71
+    },
+    {
+     "p": "que",
+     "i": 24.71,
+     "f": 24.95
+    },
+    {
+     "p": "no",
+     "i": 24.95,
+     "f": 25.14
+    },
+    {
+     "p": "se",
+     "i": 25.14,
+     "f": 25.33
+    },
+    {
+     "p": "ve",
+     "i": 25.33,
+     "f": 25.52
+    },
+    {
+     "p": "son",
+     "i": 25.52,
+     "f": 25.76
+    },
+    {
+     "p": "los",
+     "i": 25.76,
+     "f": 26.0
+    },
+    {
+     "p": "kilómetros",
+     "i": 26.0,
+     "f": 26.57
+    },
+    {
+     "p": "de",
+     "i": 26.57,
+     "f": 26.76
+    },
+    {
+     "p": "preparación",
+     "i": 26.76,
+     "f": 27.38
+    },
+    {
+     "p": "y",
+     "i": 27.38,
+     "f": 27.52
+    },
+    {
+     "p": "las",
+     "i": 27.52,
+     "f": 27.76
+    },
+    {
+     "p": "ganas",
+     "i": 27.76,
+     "f": 28.09
+    },
+    {
+     "p": "de",
+     "i": 28.09,
+     "f": 28.28
+    },
+    {
+     "p": "volver",
+     "i": 28.28,
+     "f": 28.67
+    },
+    {
+     "p": "al",
+     "i": 28.67,
+     "f": 28.86
+    },
+    {
+     "p": "otro",
+     "i": 28.86,
+     "f": 29.14
+    },
+    {
+     "p": "día",
+     "i": 29.14,
+     "f": 29.38
+    },
+    {
+     "p": "entero.",
+     "i": 29.38,
+     "f": 29.81
+    }
+   ]
+  },
+  {
+   "texto": "Porque un día sin movimiento es un día perdido.",
+   "inicio": 30.0,
+   "fin": 32.83,
+   "palabras": [
+    {
+     "p": "Porque",
+     "i": 30.0,
+     "f": 30.4
+    },
+    {
+     "p": "un",
+     "i": 30.4,
+     "f": 30.6
+    },
+    {
+     "p": "día",
+     "i": 30.6,
+     "f": 30.84
+    },
+    {
+     "p": "sin",
+     "i": 30.84,
+     "f": 31.09
+    },
+    {
+     "p": "movimiento",
+     "i": 31.09,
+     "f": 31.69
+    },
+    {
+     "p": "es",
+     "i": 31.69,
+     "f": 31.89
+    },
+    {
+     "p": "un",
+     "i": 31.89,
+     "f": 32.09
+    },
+    {
+     "p": "día",
+     "i": 32.09,
+     "f": 32.33
+    },
+    {
+     "p": "perdido.",
+     "i": 32.33,
+     "f": 32.83
+    }
+   ]
+  }
+ ],
+ "acento": "#D7263D",
+ "destacados": [
+  {
+   "inicio": 14.41,
+   "fin": 16.13,
+   "arriba": "para mí es",
+   "grande": "uno solo"
+  },
+  {
+   "inicio": 19.509999999999998,
+   "fin": 22.18,
+   "arriba": "formo",
+   "grande": "personas",
+   "abajo": "a través del movimiento"
+  },
+  {
+   "inicio": 30.4,
+   "fin": 33.4,
+   "arriba": "un día sin movimiento es un día",
+   "grande": "perdido"
+  }
+ ],
+ "apoyos": [
+  {
+   "inicio": 2.0,
+   "fin": 3.35,
+   "video": "fausto-jardin-manana.mp4",
+   "desde": 1.5,
+   "titulo": "A LA MAÑANA"
+  },
+  {
+   "inicio": 4.55,
+   "fin": 6.1,
+   "video": "kickboxing-noche.mp4",
+   "desde": 12,
+   "titulo": "A LA NOCHE"
+  },
+  {
+   "inicio": 6.05,
+   "fin": 7.59,
+   "foto": "fausto-sierras-selfie.jpg",
+   "x": 72
+  },
+  {
+   "inicio": 7.59,
+   "fin": 8.459999999999999,
+   "video": "karate-4109.mp4",
+   "desde": 4.5
+  },
+  {
+   "inicio": 8.459999999999999,
+   "fin": 10.66,
+   "foto": "cumpleanos-infantil.jpg"
+  },
+  {
+   "inicio": 10.66,
+   "fin": 12.92,
+   "video": "aldea-recorrido.mp4",
+   "desde": 4
+  },
+  {
+   "inicio": 16.16,
+   "fin": 17.81,
+   "foto": "aldea-patio-piedra.jpg"
+  },
+  {
+   "inicio": 22.37,
+   "fin": 24.43,
+   "video": "karate-4110.mp4",
+   "desde": 1
+  },
+  {
+   "inicio": 25.52,
+   "fin": 27.38,
+   "foto": "fausto-sierras-grupo.jpg",
+   "x": 35
+  },
+  {
+   "inicio": 27.38,
+   "fin": 29.91,
+   "foto": "bunkai-grupo-aldea.jpg"
+  }
+ ],
+ "musica": "tarot.mp3",
+ "volumenMusica": 0.13,
+ "volumenMusicaSinVoz": 0.55,
+ "musicaHasta": 33.3
+}
