@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aldea del Valle · Reservá tu cancha</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--panel:#0F2318;--panel2:#1F3D2B;--acento:#EFC42C;--cancha:#0E8F5C;--cancha-suave:#E6F7EE;--tinta:#15140F;--gris:#6E6A5C;--borde:#E6E1D0;--fondo:#F6F3E9;--blanco:#FFFEFA;--rojo:#B3261E;--rojo-suave:#FBE9E7;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--fondo);color:var(--tinta);font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
+  .wrap{max-width:480px;margin:0 auto;padding:0 16px 60px;}
+  header{background:linear-gradient(160deg,var(--panel),var(--panel2));color:#fff;padding:22px 16px 26px;text-align:center;}
+  header .marca{font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--acento);}
+  header h1{font-size:24px;margin:6px 0 4px;}
+  header .sub{font-size:13px;color:#C9D6CB;}
+  .card{background:var(--blanco);border:1px solid var(--borde);border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 8px 24px -8px rgba(15,20,15,.1);}
+  .card h2{font-size:15px;margin:0 0 10px;}
+  label{display:block;font-weight:700;font-size:13px;margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  select,input[type=text],input[type=tel]{width:100%;padding:12px 13px;border:1.5px solid var(--borde);border-radius:10px;font:inherit;font-size:15px;background:#fff;color:var(--tinta);}
+  input:focus,select:focus{outline:none;border-color:var(--cancha);}
+  .dias{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+  .dia{flex:0 0 auto;border:1.5px solid var(--borde);border-radius:12px;padding:8px 12px;text-align:center;cursor:pointer;min-width:52px;}
+  .dia .d{font-size:10px;color:var(--gris);text-transform:uppercase;}
+  .dia .n{font-size:17px;font-weight:800;}
+  .dia.sel{border-color:var(--cancha);background:var(--cancha-suave);}
+  .canchas{display:flex;gap:8px;flex-wrap:wrap;}
+  .cancha-chip{border:1.5px solid var(--borde);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:700;font-size:13.5px;}
+  .cancha-chip.sel{border-color:var(--cancha);background:var(--cancha-suave);color:var(--cancha);}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;}
+  .slot{border:1.5px solid var(--borde);border-radius:10px;padding:10px 4px;text-align:center;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .slot.ocupado{opacity:.35;text-decoration:line-through;cursor:default;background:var(--gris-claro,#F1EDDF);}
+  .slot.sel{border-color:var(--cancha);background:var(--cancha);color:#fff;}
+  .btn{border:none;border-radius:12px;padding:14px 18px;font-size:15px;font-weight:800;background:var(--cancha);color:#fff;width:100%;cursor:pointer;}
+  .btn:disabled{opacity:.5;}
+  .btn.ghost{background:var(--gris-claro,#F1EDDF);color:var(--tinta);}
+  .btn.wa{background:#25D366;}
+  .resumen{font-size:13.5px;color:var(--gris);background:var(--cancha-suave);border-radius:10px;padding:10px 12px;margin:12px 0;}
+  .resumen b{color:var(--tinta);}
+  .msg{font-size:13px;margin-top:8px;}
+  .msg.err{color:var(--rojo);background:var(--rojo-suave);padding:8px 10px;border-radius:8px;}
+  .oculto{display:none!important;}
+  .pago-datos{background:#fff;border:1.5px dashed var(--acento);border-radius:10px;padding:12px;margin:10px 0;font-size:14px;line-height:1.7;}
+  .cargando{text-align:center;padding:30px;color:var(--gris);font-size:13px;}
+  .check{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;margin-top:14px;}
+  .check input{width:18px;height:18px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">Aldea del Valle</div>
+  <h1>Reservá tu cancha</h1>
+  <div class="sub">Elegí día, cancha y horario — queda al toque</div>
+</header>
+<div class="wrap">
+
+  <div class="card" id="paso-fecha">
+    <h2>1. ¿Qué día?</h2>
+    <div class="dias" id="dias"></div>
+  </div>
+
+  <div class="card" id="paso-cancha">
+    <h2>2. ¿Qué cancha?</h2>
+    <div class="canchas" id="canchas"></div>
+  </div>
+
+  <div class="card" id="paso-horario">
+    <h2>3. ¿Qué horario?</h2>
+    <div id="slots-host"></div>
+  </div>
+
+  <div class="card oculto" id="paso-datos">
+    <h2>4. Tus datos</h2>
+    <label>Nombre</label>
+    <input type="text" id="f-nombre" placeholder="Nombre y apellido"/>
+    <label>WhatsApp</label>
+    <input type="tel" id="f-tel" placeholder="Ej: 351 6197928"/>
+    <label class="check"><input type="checkbox" id="f-mesa"/> ¿Vas a necesitar mesa / consumir en Cantina?</label>
+    <div class="resumen" id="resumen"></div>
+    <button class="btn" id="btn-reservar" onclick="reservar()">Reservar</button>
+    <div class="msg" id="msg-reserva"></div>
+  </div>
+
+  <div class="card oculto" id="paso-ok">
+    <h2>✅ ¡Listo, reserva recibida!</h2>
+    <div class="resumen" id="resumen-ok"></div>
+    <div class="pago-datos" id="pago-datos"></div>
+    <button class="btn wa" id="btn-comprobante">💬 Mandar comprobante por WhatsApp</button>
+  </div>
+
+  <div class="cargando" id="cargando">Cargando…</div>
+</div>
+
+<script>
+const API_URL_FIJA = ''; // pegá acá la URL /exec una vez implementado el Apps Script
+
+let CFG = null;
+let fechaSel = null, canchaSel = null, horaSel = null;
+let ocupadosCache = {};
+
+function apiUrl(){ return API_URL_FIJA; }
+
+async function api(metodo, params, body){
+  const url = apiUrl() + (params ? ('?' + new URLSearchParams(params).toString()) : '');
+  const opts = metodo === 'POST' ? { method:'POST', body: JSON.stringify(body) } : {};
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+function diasArray(n){
+  const out = [];
+  const hoy = new Date();
+  for(let i=0;i<n;i++){
+    const d = new Date(hoy); d.setDate(hoy.getDate()+i);
+    out.push(d);
+  }
+  return out;
+}
+function yyyymmdd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtMiles(n){ return '$ '+Math.round(n).toLocaleString('es-AR'); }
+
+async function init(){
+  if(!apiUrl()){
+    document.getElementById('cargando').textContent = 'Falta configurar la URL del Apps Script (API_URL_FIJA) en este archivo.';
+    return;
+  }
+  const r = await api('GET', {accion:'config'});
+  if(!r.ok){ document.getElementById('cargando').textContent = 'No se pudo cargar la configuración.'; return; }
+  CFG = r.config;
+  document.getElementById('cargando').classList.add('oculto');
+
+  const diasHost = document.getElementById('dias');
+  const dias = diasArray(CFG.diasHaciaAdelante);
+  const nombresDia = ['dom','lun','mar','mié','jué','vie','sáb'];
+  diasHost.innerHTML = dias.map(d=>`<div class="dia" data-f="${yyyymmdd(d)}" onclick="elegirFecha('${yyyymmdd(d)}', this)"><div class="d">${nombresDia[d.getDay()]}</div><div class="n">${d.getDate()}</div></div>`).join('');
+
+  const canchasHost = document.getElementById('canchas');
+  canchasHost.innerHTML = CFG.canchas.map(c=>`<div class="cancha-chip" data-c="${c}" onclick="elegirCancha('${c}', this)">${c}</div>`).join('');
+
+  elegirFecha(yyyymmdd(dias[0]), diasHost.children[0]);
+}
+
+async function elegirFecha(f, el){
+  fechaSel = f; horaSel = null;
+  document.querySelectorAll('#dias .dia').forEach(x=>x.classList.toggle('sel', x===el));
+  await cargarOcupados();
+  pintarSlots();
+  ocultarDatos();
+}
+function elegirCancha(c, el){
+  canchaSel = c; horaSel = null;
+  document.querySelectorAll('#canchas .cancha-chip').forEach(x=>x.classList.toggle('sel', x===el));
+  pintarSlots();
+  ocultarDatos();
+}
+async function cargarOcupados(){
+  const r = await api('GET', {accion:'disponibilidad', fecha: fechaSel});
+  ocupadosCache = r.ok ? r.ocupados : {};
+}
+function pintarSlots(){
+  const host = document.getElementById('slots-host');
+  if(!canchaSel){ host.innerHTML = '<div style="color:var(--gris);font-size:13px;">Elegí una cancha primero.</div>'; return; }
+  const horas = [];
+  for(let h=CFG.horaInicio; h<CFG.horaFin; h++) horas.push(h);
+  host.innerHTML = '<div class="slots">' + horas.map(h=>{
+    const ocupado = !!ocupadosCache[canchaSel+'|'+h];
+    const sel = horaSel === h;
+    return `<div class="slot ${ocupado?'ocupado':''} ${sel?'sel':''}" ${ocupado?'':`onclick="elegirHora(${h})"`}>${String(h).padStart(2,'0')}:00</div>`;
+  }).join('') + '</div>';
+}
+function elegirHora(h){
+  horaSel = h;
+  pintarSlots();
+  mostrarDatos();
+}
+function ocultarDatos(){ document.getElementById('paso-datos').classList.add('oculto'); document.getElementById('paso-ok').classList.add('oculto'); }
+function mostrarDatos(){
+  document.getElementById('paso-datos').classList.remove('oculto');
+  const horarioTxt = String(horaSel).padStart(2,'0')+':00 a '+String(horaSel+1).padStart(2,'0')+':00';
+  document.getElementById('resumen').innerHTML =
+    `<b>${canchaSel}</b> · ${fechaLegible(fechaSel)} · ${horarioTxt}<br>Precio: <b>${fmtMiles(CFG.precioHora)}</b> · Seña para reservar: <b>${fmtMiles(CFG.sena)}</b>`;
+  document.getElementById('paso-datos').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function fechaLegible(f){
+  const d = new Date(f+'T12:00:00');
+  return d.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'});
+}
+
+async function reservar(){
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const tel = document.getElementById('f-tel').value.trim();
+  const mesa = document.getElementById('f-mesa').checked;
+  const msgEl = document.getElementById('msg-reserva');
+  if(!nombre || !tel){ msgEl.textContent = 'Completá nombre y WhatsApp.'; msgEl.className = 'msg err'; return; }
+
+  const btn = document.getElementById('btn-reservar');
+  btn.disabled = true; btn.textContent = 'Reservando…';
+  msgEl.textContent = ''; msgEl.className = 'msg';
+
+  const r = await api('POST', null, { nombre, tel, mesa, fecha: fechaSel, cancha: canchaSel, hora: horaSel });
+  btn.disabled = false; btn.textContent = 'Reservar';
+
+  if(!r.ok){ msgEl.textContent = r.error || 'No se pudo reservar.'; msgEl.className = 'msg err'; return; }
+
+  document.getElementById('paso-datos').classList.add('oculto');
+  document.getElementById('paso-ok').classList.remove('oculto');
+  document.getElementById('resumen-ok').innerHTML =
+    `<b>${canchaSel}</b> · ${fechaLegible(fechaSel)} · ${r.horario}<br>Resta pagar en el lugar: <b>${fmtMiles(r.resto)}</b>`;
+  document.getElementById('pago-datos').innerHTML =
+    `Transferí la seña de <b>${fmtMiles(r.sena)}</b> a:<br>Alias: <b>${r.pago.alias}</b> (${r.pago.banco})<br>Titular: ${r.pago.titular}`;
+  document.getElementById('btn-comprobante').onclick = ()=> window.open(r.whatsappComprobante, '_blank');
+  document.getElementById('paso-ok').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+init();
+</script>
+</body>
+</html>
