@@ -110,6 +110,9 @@ Pasos:
    `videos/guiones/hablado-pro-2026-10-12.json`). Si una frase no se entiende, NO inventarla: dejarla con "…".
 4. Elegir 3–4 destacados (gancho, idea central, llamado final) y apoyos (b-roll) cuando nombra lugares/actividades.
 5. `npx remotion render src/index.ts HabladoPro out/X.mp4 --props=guiones/X.json` y normalizar a -14 LUFS.
+6. VOZ NATURAL (pedido de Fausto, 16/10): NO usar reducción de ruido (afftdn) ni highpass ni loudnorm comprimido
+   sobre la voz. Solo cortar y subir volumen: loudnorm en DOS pasadas con `linear=true` (mide y aplica ganancia, no comprime).
+7. Priorizar SIEMPRE material propio de Fausto (sus clases, alumnos, salidas) por sobre fotos genéricas de la web.
 
 ## 8. Cambiar el diseño
 

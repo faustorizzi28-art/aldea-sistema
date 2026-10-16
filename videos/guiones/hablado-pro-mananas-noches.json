@@ -574,21 +574,23 @@
   {
    "inicio": 2.0,
    "fin": 3.2,
-   "foto": "gimnasia-artistica.jpg",
+   "video": "fausto-jardin-manana.mp4",
+   "desde": 1.5,
    "titulo": "☀️ A LA MAÑANA"
   },
   {
    "inicio": 4.7,
    "fin": 5.9,
-   "video": "karate-4108.mp4",
-   "desde": 0.2,
+   "video": "kickboxing-noche.mp4",
+   "desde": 12,
    "titulo": "🌙 A LA NOCHE"
   },
   {
    "inicio": 5.98,
    "fin": 7.52,
-   "foto": "clase-chicos.jpg",
-   "titulo": "PROFE DE EF"
+   "foto": "fausto-sierras-selfie.jpg",
+   "titulo": "PROFE DE EF",
+   "x": 72
   },
   {
    "inicio": 7.52,
@@ -624,11 +626,17 @@
    "titulo": "LA CLASE"
   },
   {
+   "inicio": 26.139999999999997,
+   "fin": 28.08,
+   "foto": "fausto-sierras-grupo.jpg",
+   "x": 35
+  },
+  {
    "inicio": 28.08,
    "fin": 30.6,
-   "foto": "kickboxing.jpg"
+   "foto": "bunkai-grupo-aldea.jpg"
   }
  ],
  "musica": "ritmo-entreno.mp3",
- "volumenMusica": 0.16
+ "volumenMusica": 0.12
 }

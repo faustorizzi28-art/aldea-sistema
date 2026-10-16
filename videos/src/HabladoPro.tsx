@@ -38,7 +38,7 @@ const SOMBRA = "0 4px 14px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.6)";
 export type Palabra = { p: string; i: number; f: number };
 export type Frase = { texto: string; inicio: number; fin: number; palabras: Palabra[] };
 export type Destacado = { inicio: number; fin: number; arriba?: string; grande: string; abajo?: string; emoji?: string };
-export type Apoyo = { inicio: number; fin: number; foto?: string; video?: string; desde?: number; titulo?: string };
+export type Apoyo = { inicio: number; fin: number; foto?: string; video?: string; desde?: number; titulo?: string; x?: number };
 
 export type GuionHabladoPro = {
   titulo: string;
@@ -87,7 +87,10 @@ const ImagenApoyo: React.FC<{ a: Apoyo }> = ({ a }) => {
           style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }}
         />
       ) : (
-        <Img src={staticFile(`fotos/${a.foto}`)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} />
+        <Img
+          src={staticFile(`fotos/${a.foto}`)}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: `${a.x ?? 50}% 50%`, transform: `scale(${zoom})` }}
+        />
       )}
       {a.titulo && (
         <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 560 }}>
