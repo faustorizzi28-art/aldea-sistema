@@ -372,6 +372,27 @@
   </div>
 </div>
 
+<div class="cierre-overlay" id="turno-viejo-overlay" style="z-index:195;">
+  <div class="cierre-card">
+    <div class="cierre-top">
+      <div>
+        <div class="cierre-logo">⚠️ Aldea del Valle</div>
+        <div class="cierre-title">Tenés un turno abierto hace rato</div>
+        <div class="cierre-sub" id="turno-viejo-sub"></div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--gris);margin:4px 0 16px;">
+      Para que el resumen y el mail de cierre reflejen bien lo que pasó, cerralo
+      antes de seguir. Si es un evento largo que de verdad sigue en curso, podés
+      seguir con este turno igual.
+    </div>
+    <div class="row2">
+      <button class="btn btn-ghost" onclick="seguirConTurnoViejo()">Seguir con este turno</button>
+      <button class="btn" style="background:var(--marca);color:white;" onclick="cerrarAvisoTurnoViejoYAbrirCierre()">Cerrar turno ahora</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="head-row">
     <div class="brand">
@@ -2059,7 +2080,10 @@ function actualizarTurnoUI(){
   if(turnoActual){
     el.textContent = 'Abierto'; el.className = 'tn abierto';
     const ini = new Date(turnoActual.inicio);
-    sub.textContent = `${turnoActual.responsable} · desde las ${ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
+    const horaTxt = ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    sub.textContent = turnoViejo()
+      ? `⚠️ ${turnoActual.responsable} · abierto desde el ${ini.toLocaleDateString('es-AR')} ${horaTxt}`
+      : `${turnoActual.responsable} · desde las ${horaTxt}`;
     btnAbrir.style.display = 'none'; btnCerrar.style.display = 'block';
   } else {
     el.textContent = 'Cerrado'; el.className = 'tn cerrado';
@@ -2171,6 +2195,28 @@ function calcularTotalesTurno(inicioISO, finISO){
   const gastosTurno = (datos.gastos||[]).filter(enTurno);
   const gastoTotal = gastosTurno.reduce((a,g)=>a+(Number(g.monto)||0),0);
   return { inicio, fin, ev, ca, ct, ingresoEf, ingresoTr, ingresoTotal, gastosTurno, gastoTotal, neto: ingresoTotal-gastoTotal };
+}
+
+const TURNO_VIEJO_HORAS = 16;
+function turnoViejo(){
+  if(!turnoActual) return false;
+  const horas = (Date.now() - new Date(turnoActual.inicio).getTime()) / 36e5;
+  return horas > TURNO_VIEJO_HORAS;
+}
+function mostrarAvisoTurnoViejo(){
+  if(!turnoActual) return;
+  const ini = new Date(turnoActual.inicio);
+  document.getElementById('turno-viejo-sub').textContent =
+    `${turnoActual.responsable} · abierto desde el ${ini.toLocaleDateString('es-AR')} a las ${ini.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('turno-viejo-overlay').classList.add('show');
+}
+function seguirConTurnoViejo(){
+  sessionStorage.setItem('aldea_turno_viejo_visto','1');
+  document.getElementById('turno-viejo-overlay').classList.remove('show');
+}
+function cerrarAvisoTurnoViejoYAbrirCierre(){
+  document.getElementById('turno-viejo-overlay').classList.remove('show');
+  abrirModalCierre();
 }
 
 function abrirModalCierre(){
@@ -2299,6 +2345,7 @@ function imprimirCierreDelDia(){
   aplicarFiltroRol();
   if(url){ cargarTodo(); cargarPreciosDesdeSheets(); }
   if(!turnoActual){ setTimeout(mostrarBienvenida, 300); }
+  else if(turnoViejo() && !sessionStorage.getItem('aldea_turno_viejo_visto')){ setTimeout(mostrarAvisoTurnoViejo, 300); }
 })();
 </script>
 </body>
