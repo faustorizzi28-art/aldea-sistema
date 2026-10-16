@@ -135,7 +135,9 @@ const Subtitulo: React.FC<{ palabras: Palabra[]; ocultar: (t: number) => boolean
   if (k < 0) return null;
   // agrupa de a 2 palabras cortas
   const ini = k % 2 === 0 ? k : k - 1;
-  const grupo = palabras.slice(ini, ini + 2).filter((w, j) => j === 0 || w.p.length <= 7);
+  const grupo = palabras
+    .slice(ini, ini + 2)
+    .filter((w, j) => j === 0 || (w.p.length <= 7 && w.i - palabras[ini].f < 0.25 && !/[.,:;?!]$/.test(palabras[ini].p)));
   const texto = grupo.map((w) => w.p).join(" ");
   const f0 = Math.round(palabras[ini].i * FPS);
   const pop = interpolate(frame - f0, [0, 3, 6], [0.82, 1.06, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
@@ -192,7 +194,7 @@ const TituloDestacado: React.FC<{ d: Destacado; acento: string }> = ({ d, acento
           >
             {letras.map((c, i) => (
               <span key={i} style={{ display: "inline-block", opacity: s(2 + i * 0.8), transform: `translateY(${(1 - s(2 + i * 0.8)) * 50}px)` }}>
-                {c === " " ? " " : c}
+                {c === " " ? "\u00a0" : c}
               </span>
             ))}
           </div>
