@@ -12,6 +12,8 @@ import { HabladoPro, GuionHabladoPro, duracionHabladoPro } from "./HabladoPro";
 import habladoPro from "../guiones/hablado-pro-2026-10-12.json";
 import { HabladoSuave, duracionHabladoSuave } from "./HabladoSuave";
 import suave from "../guiones/suave-mananas-noches.json";
+import { Historia, GuionHistoria, duracionHistoria } from "./Historia";
+import historia from "../guiones/historia-lunes-2026-10-19.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -102,6 +104,17 @@ export const RemotionRoot: React.FC = () => {
       durationInFrames={duracionHabladoSuave(suave as GuionHabladoPro)}
       defaultProps={suave as GuionHabladoPro}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHabladoSuave(props) })}
+    />
+    {/* Historias cortas (10–15 s) con tomas que se funden y placa final */}
+    <Composition
+      id="Historia"
+      component={Historia}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHistoria(historia as GuionHistoria)}
+      defaultProps={historia as GuionHistoria}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
     />
     </>
   );

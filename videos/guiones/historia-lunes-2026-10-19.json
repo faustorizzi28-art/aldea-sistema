@@ -1,0 +1,12 @@
+{
+  "titulo": "Historia lunes – arranque de semana",
+  "tomas": [
+    { "video": "fausto-jardin-manana.mp4", "desde": 2, "segundos": 2.4, "texto": "Lunes." },
+    { "foto": "fausto-sierras-selfie.jpg", "x": 72, "segundos": 2.4, "texto": "Nueva semana." },
+    { "video": "karate-4109.mp4", "desde": 3.6, "segundos": 2.4, "texto": "Mismas ganas." },
+    { "video": "kickboxing-noche.mp4", "desde": 12, "segundos": 2.4, "texto": "De la mañana a la noche." }
+  ],
+  "cierre": { "arriba": "FRASE DE LA SEMANA", "texto": "Un día sin movimiento es un día perdido.", "segundos": 4.2 },
+  "musica": "ritmo-entreno.mp3",
+  "volumenMusica": 0.55
+}
