@@ -42,12 +42,17 @@ const CONFIG = {
 function abrirSheet_() { return SpreadsheetApp.openById(CONFIG.sheetId); }
 
 function doGet(e) {
-  const accion = (e.parameter && e.parameter.accion) || 'disponibilidad';
+  const prm = (e && e.parameter) || {};
+  if (!prm.accion) {
+    return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Aldea del Valle · Reservá tu cancha')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   try {
-    if (accion === 'disponibilidad') {
-      const fecha = e.parameter.fecha;
-      if (!fecha) throw new Error('Falta la fecha');
-      return responder_({ ok: true, ocupados: ocupadosDelDia_(fecha) });
+    if (prm.accion === 'disponibilidad') {
+      if (!prm.fecha) throw new Error('Falta la fecha');
+      return responder_({ ok: true, ocupados: ocupadosDelDia_(prm.fecha) });
     }
     return responder_({ ok: true, config: configPublica_() });
   } catch (err) {

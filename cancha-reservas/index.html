@@ -94,13 +94,16 @@
 </div>
 
 <script>
-const API_URL_FIJA = ''; // pegá acá la URL /exec una vez implementado el Apps Script
+// Si publicás esta página aparte (no servida por el propio Apps Script),
+// pegá acá la URL /exec. Si la sirve el mismo Apps Script (Implementar →
+// Aplicación web), dejalo vacío: usa su propia URL sola.
+const API_URL_FIJA = '';
 
 let CFG = null;
 let fechaSel = null, canchaSel = null, horaSel = null;
 let ocupadosCache = {};
 
-function apiUrl(){ return API_URL_FIJA; }
+function apiUrl(){ return API_URL_FIJA || window.location.href.split('?')[0]; }
 
 async function api(metodo, params, body){
   const url = apiUrl() + (params ? ('?' + new URLSearchParams(params).toString()) : '');
@@ -122,10 +125,6 @@ function yyyymmdd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart
 function fmtMiles(n){ return '$ '+Math.round(n).toLocaleString('es-AR'); }
 
 async function init(){
-  if(!apiUrl()){
-    document.getElementById('cargando').textContent = 'Falta configurar la URL del Apps Script (API_URL_FIJA) en este archivo.';
-    return;
-  }
   const r = await api('GET', {accion:'config'});
   if(!r.ok){ document.getElementById('cargando').textContent = 'No se pudo cargar la configuración.'; return; }
   CFG = r.config;

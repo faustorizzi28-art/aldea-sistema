@@ -29,6 +29,10 @@ mezclada con las reservas que carga a mano, sin nada duplicado.
 
 ## Instalación (una sola vez)
 
+Igual que con GLORIN: todo corre desde un solo proyecto de Apps Script,
+que sirve la página y guarda los datos — no hace falta subir nada a
+Netlify ni a ningún otro lado.
+
 1. Andá a **script.google.com** → **Nuevo proyecto** (no hace falta que
    esté adentro del Sheet, porque el script abre la planilla por su ID).
 2. Borrá el contenido de `Code.gs` que aparece por defecto y pegá el
@@ -38,20 +42,23 @@ mezclada con las reservas que carga a mano, sin nada duplicado.
    transferencia son los mismos que ya usás en GLORIN. Si cambia el
    precio de la cancha o la seña, los números están ahí arriba
    (`precioHora`, `sena`).
-4. Guardá (disquete o Ctrl+S).
-5. **Implementar → Nueva implementación → tipo "Aplicación web"** →
+4. En el editor, al lado de "Archivos", tocá el **+** → **HTML** → y
+   ponele de nombre exactamente **Index** (sin ".html", Apps Script se lo
+   agrega solo). Pegá ahí adentro todo el contenido de `index.html` de
+   esta carpeta.
+5. Guardá (disquete o Ctrl+S).
+6. **Implementar → Nueva implementación → tipo "Aplicación web"** →
    Ejecutar como: **Yo** → Quién tiene acceso: **Cualquier usuario** →
    Implementar. Va a pedir que aceptes permisos (para leer/escribir tu
    Sheet y mandar mails) — aceptalo.
-6. Copiá la URL que termina en `/exec`.
-7. Abrí `index.html` de esta carpeta, buscá la línea:
-   ```js
-   const API_URL_FIJA = '';
-   ```
-   y pegá la URL ahí adentro, entre las comillas.
-8. Subí `index.html` a donde quieras publicarlo (por ejemplo, otra página
-   en el mismo Netlify que ya usás para el Centro de Gestión, o un link
-   aparte) — ese es el link que compartís para que reserven.
+7. Copiá la URL que termina en `/exec` — ese es el link que compartís
+   para que la gente reserve.
+
+No hace falta tocar nada de `API_URL_FIJA` en `index.html`: al estar
+servida por el mismo Apps Script, la página usa su propia URL sola.
+Esa línea solo se usa si en algún momento preferís publicar la página
+aparte (por ejemplo en el mismo Netlify del Centro de Gestión) — en ese
+caso sí hay que pegar ahí la URL `/exec`.
 
 ## Si después cambiás el código
 
