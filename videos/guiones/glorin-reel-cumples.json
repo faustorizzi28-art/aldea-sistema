@@ -4,32 +4,33 @@
   "acento": "#FFFFFF",
   "tomas": [
     {
-      "foto": "glorin-portada.jpg",
-      "x": 40,
-      "segundos": 2.6,
+      "video": "glorin-baile.mp4",
+      "desde": 3.2,
+      "segundos": 2.8,
       "texto": "¿Se viene el cumple?"
     },
     {
-      "foto": "cumpleanos-infantil.jpg",
+      "foto": "glorin-cumple-baile1.jpg",
       "segundos": 2.6,
       "texto": "Vos disfrutás."
     },
     {
-      "foto": "glorin-portada.jpg",
-      "x": 85,
-      "segundos": 2.6,
-      "texto": "Nosotros nos encargamos de la diversión."
-    },
-    {
-      "foto": "cumpleanos-salon.jpg",
+      "video": "glorin-ronda.mp4",
+      "desde": 12,
       "segundos": 2.8,
-      "texto": "Juegos.\nMúsica.\nDeporte."
+      "texto": "Nosotros nos encargamos\nde la diversión."
     },
     {
-      "foto": "glorin-portada.jpg",
-      "x": 15,
+      "foto": "glorin-cumple-baile2.jpg",
+      "x": 60,
       "segundos": 2.6,
-      "texto": "Fútbol.\nMovimiento.\nRisas."
+      "texto": "Juegos.\nMúsica.\nMovimiento."
+    },
+    {
+      "video": "glorin-baile.mp4",
+      "desde": 25,
+      "segundos": 2.6,
+      "texto": "Chicos y grandes."
     },
     {
       "fondo": "#C8161A",
