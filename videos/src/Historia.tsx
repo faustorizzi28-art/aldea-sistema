@@ -1,6 +1,9 @@
 import React from "react";
 import { AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { loadFont } from "@remotion/fonts";
 import { FPS, MARCA } from "./marca";
+
+loadFont({ family: "Bebas Neue", url: staticFile("fonts/bebas-neue-latin-400-normal.woff2"), weight: "400" });
 
 // ---------------------------------------------------------------------------
 // HISTORIA: video corto para historias (10–15 s). Tomas que se funden entre sí,
@@ -11,11 +14,22 @@ const MONT = "'Montserrat', sans-serif";
 const SOMBRA = "0 3px 14px rgba(0,0,0,0.55)";
 const FUNDIDO = 10;
 
-export type TomaHistoria = { foto?: string; video?: string; desde?: number; segundos: number; texto?: string; x?: number };
+export type TomaHistoria = {
+  foto?: string;
+  video?: string;
+  desde?: number;
+  segundos: number;
+  texto?: string;
+  x?: number;
+  fondo?: string; // sin foto ni video: fondo de color liso
+  lista?: string[]; // renglones que aparecen de a uno (para "lo que incluye")
+};
 export type GuionHistoria = {
   titulo: string;
   tomas: TomaHistoria[];
-  cierre: { arriba?: string; texto: string; color?: string; segundos: number };
+  cierre: { arriba?: string; texto: string; color?: string; segundos: number; logo?: string; boton?: string; abajo?: string };
+  letra?: "montserrat" | "bebas"; // tipografía de los textos grandes
+  acento?: string;
   musica?: string | null;
   volumenMusica?: number;
 };
@@ -23,7 +37,9 @@ export type GuionHistoria = {
 export const duracionHistoria = (g: GuionHistoria) =>
   Math.round((g.tomas.reduce((t, x) => t + x.segundos, 0) + g.cierre.segundos) * FPS);
 
-const Toma: React.FC<{ t: TomaHistoria; primera: boolean }> = ({ t, primera }) => {
+const BEBAS = "'Bebas Neue', sans-serif";
+
+const Toma: React.FC<{ t: TomaHistoria; primera: boolean; letra?: string; acento?: string }> = ({ t, primera, letra, acento }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const op = primera ? 1 : interpolate(frame, [0, FUNDIDO], [0, 1], { extrapolateRight: "clamp" });
@@ -37,23 +53,53 @@ const Toma: React.FC<{ t: TomaHistoria; primera: boolean }> = ({ t, primera }) =
     <AbsoluteFill style={{ opacity: op, backgroundColor: "black" }}>
       {t.video ? (
         <OffthreadVideo src={staticFile(`clips/${t.video}`)} startFrom={Math.round((t.desde ?? 0) * FPS)} muted style={estilo} />
-      ) : (
+      ) : t.foto ? (
         <Img src={staticFile(`fotos/${t.foto}`)} style={{ ...estilo, objectPosition: `${t.x ?? 50}% 50%` }} />
+      ) : (
+        <AbsoluteFill style={{ backgroundColor: t.fondo ?? MARCA.rojo }} />
+      )}
+      {t.lista && (
+        <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: 26, paddingTop: 160 }}>
+          {t.lista.map((r, k) => {
+            const v = interpolate(frame, [FUNDIDO + 6 + k * 9, FUNDIDO + 16 + k * 9], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+            return (
+              <div
+                key={k}
+                style={{
+                  fontFamily: MONT,
+                  fontWeight: 800,
+                  fontSize: 68,
+                  color: "white",
+                  opacity: v,
+                  transform: `translateX(${(1 - v) * -40}px)`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 20,
+                }}
+              >
+                <span style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: acento ?? MARCA.amarillo, display: "inline-block" }} />
+                {r}
+              </div>
+            );
+          })}
+        </AbsoluteFill>
       )}
       <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.45) 100%)" }} />
       {t.texto && (
         <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 300 }}>
           <div
             style={{
-              fontFamily: MONT,
-              fontWeight: 900,
-              fontStyle: "italic",
-              fontSize: 96,
-              lineHeight: 1,
+              fontFamily: letra === "bebas" ? BEBAS : MONT,
+              fontWeight: letra === "bebas" ? 400 : 900,
+              fontStyle: letra === "bebas" ? "normal" : "italic",
+              fontSize: letra === "bebas" ? 140 : 96,
+              letterSpacing: letra === "bebas" ? "0.01em" : undefined,
+              lineHeight: letra === "bebas" ? 0.95 : 1,
               color: "white",
               textShadow: SOMBRA,
               textAlign: "center",
               maxWidth: 920,
+              whiteSpace: "pre-line",
               opacity: txt,
               transform: `translateY(${(1 - txt) * 18}px)`,
             }}
@@ -66,34 +112,49 @@ const Toma: React.FC<{ t: TomaHistoria; primera: boolean }> = ({ t, primera }) =
   );
 };
 
-const Cierre: React.FC<{ c: GuionHistoria["cierre"] }> = ({ c }) => {
+const Cierre: React.FC<{ c: GuionHistoria["cierre"]; letra?: string; acento?: string }> = ({ c, letra, acento }) => {
   const frame = useCurrentFrame();
   const op = interpolate(frame, [0, FUNDIDO], [0, 1], { extrapolateRight: "clamp" });
-  const a = interpolate(frame, [8, 20], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const b = interpolate(frame, [16, 30], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const v = (d: number) => interpolate(frame, [d, d + 12], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const sube = (d: number): React.CSSProperties => ({ opacity: v(d), transform: `translateY(${(1 - v(d)) * 20}px)` });
   return (
-    <AbsoluteFill style={{ backgroundColor: c.color ?? MARCA.rojo, opacity: op, alignItems: "center", paddingTop: 420 }}>
+    <AbsoluteFill style={{ backgroundColor: c.color ?? MARCA.rojo, opacity: op, alignItems: "center", paddingTop: c.logo ? 300 : 420, gap: 30 }}>
+      {c.logo && <Img src={staticFile(`fotos/${c.logo}`)} style={{ width: 760, height: "auto", ...sube(6) }} />}
       {c.arriba && (
-        <div style={{ fontFamily: MONT, fontWeight: 800, fontSize: 44, letterSpacing: "0.18em", color: MARCA.amarillo, opacity: a, marginBottom: 30 }}>
-          {c.arriba}
-        </div>
+        <div style={{ fontFamily: MONT, fontWeight: 800, fontSize: 44, letterSpacing: "0.18em", color: acento ?? MARCA.amarillo, ...sube(8) }}>{c.arriba}</div>
       )}
       <div
         style={{
-          fontFamily: MONT,
-          fontWeight: 900,
-          fontStyle: "italic",
-          fontSize: 104,
-          lineHeight: 1.02,
+          fontFamily: letra === "bebas" ? BEBAS : MONT,
+          fontWeight: letra === "bebas" ? 400 : 900,
+          fontStyle: letra === "bebas" ? "normal" : "italic",
+          fontSize: letra === "bebas" ? 150 : 104,
+          lineHeight: letra === "bebas" ? 0.95 : 1.02,
           color: "white",
           textAlign: "center",
           maxWidth: 900,
-          opacity: b,
-          transform: `translateY(${(1 - b) * 20}px)`,
+          ...sube(16),
         }}
       >
         {c.texto}
       </div>
+      {c.boton && (
+        <div
+          style={{
+            fontFamily: MONT,
+            fontWeight: 800,
+            fontSize: 50,
+            color: c.color ?? MARCA.rojo,
+            backgroundColor: "white",
+            padding: "22px 46px",
+            borderRadius: 999,
+            ...sube(26),
+          }}
+        >
+          {c.boton}
+        </div>
+      )}
+      {c.abajo && <div style={{ fontFamily: MONT, fontWeight: 600, fontSize: 38, color: "white", ...sube(34) }}>{c.abajo}</div>}
     </AbsoluteFill>
   );
 };
@@ -109,12 +170,12 @@ export const Historia: React.FC<GuionHistoria> = (g) => {
         desde += dur;
         return (
           <Sequence key={i} from={Math.max(0, ini - (i ? FUNDIDO : 0))} durationInFrames={dur + (i ? FUNDIDO : 0) + FUNDIDO}>
-            <Toma t={t} primera={i === 0} />
+            <Toma t={t} primera={i === 0} letra={g.letra} acento={g.acento} />
           </Sequence>
         );
       })}
       <Sequence from={desde - FUNDIDO}>
-        <Cierre c={g.cierre} />
+        <Cierre c={g.cierre} letra={g.letra} acento={g.acento} />
       </Sequence>
       {g.musica && (
         <Audio

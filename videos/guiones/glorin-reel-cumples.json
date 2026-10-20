@@ -1,0 +1,56 @@
+{
+  "titulo": "GLORIN – ¿Se viene el cumple?",
+  "letra": "bebas",
+  "acento": "#FFFFFF",
+  "tomas": [
+    {
+      "foto": "glorin-portada.jpg",
+      "x": 40,
+      "segundos": 2.6,
+      "texto": "¿Se viene el cumple?"
+    },
+    {
+      "foto": "cumpleanos-infantil.jpg",
+      "segundos": 2.6,
+      "texto": "Vos disfrutás."
+    },
+    {
+      "foto": "glorin-portada.jpg",
+      "x": 85,
+      "segundos": 2.6,
+      "texto": "Nosotros nos encargamos de la diversión."
+    },
+    {
+      "foto": "cumpleanos-salon.jpg",
+      "segundos": 2.8,
+      "texto": "Juegos.\nMúsica.\nDeporte."
+    },
+    {
+      "foto": "glorin-portada.jpg",
+      "x": 15,
+      "segundos": 2.6,
+      "texto": "Fútbol.\nMovimiento.\nRisas."
+    },
+    {
+      "fondo": "#C8161A",
+      "segundos": 4.2,
+      "texto": "Sumale:",
+      "lista": [
+        "Inflable con tobogán",
+        "Metegol",
+        "Globología",
+        "Juegos de feria"
+      ]
+    }
+  ],
+  "cierre": {
+    "logo": "logo-glorin.png",
+    "texto": "Reservá tu fecha",
+    "boton": "WhatsApp 351 619 7928",
+    "abajo": "Link de reserva en la bio",
+    "color": "#9E1114",
+    "segundos": 4.6
+  },
+  "musica": "house-aldea.mp3",
+  "volumenMusica": 0.75
+}
