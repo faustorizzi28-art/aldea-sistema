@@ -15,6 +15,7 @@ import suave from "../guiones/suave-mananas-noches.json";
 import { Historia, GuionHistoria, duracionHistoria } from "./Historia";
 import historia from "../guiones/historia-lunes-2026-10-19.json";
 import glorin from "../guiones/glorin-reel-cumples.json";
+import aldeaPileta from "../guiones/historia-aldea-pileta.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -125,6 +126,16 @@ export const RemotionRoot: React.FC = () => {
       fps={FPS}
       durationInFrames={duracionHistoria(glorin as GuionHistoria)}
       defaultProps={glorin as GuionHistoria}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
+    />
+    <Composition
+      id="AldeaHistoria"
+      component={Historia}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHistoria(aldeaPileta as GuionHistoria)}
+      defaultProps={aldeaPileta as GuionHistoria}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
     />
     </>

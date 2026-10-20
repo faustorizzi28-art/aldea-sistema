@@ -1,0 +1,40 @@
+{
+  "titulo": "Aldea – La pileta ya se prepara",
+  "tomas": [
+    {
+      "video": "pileta-4221.mp4",
+      "desde": 0,
+      "segundos": 3.4,
+      "texto": "Shhh…"
+    },
+    {
+      "video": "pileta-4220.mp4",
+      "desde": 1,
+      "segundos": 3.4,
+      "texto": "La pileta ya\nse está preparando"
+    },
+    {
+      "video": "pileta-4219.mp4",
+      "desde": 0,
+      "segundos": 1.5,
+      "texto": "☀️"
+    },
+    {
+      "video": "pileta-4221.mp4",
+      "desde": 3.6,
+      "segundos": 3.2,
+      "texto": "Se viene el verano\nmás divertido\ndel Valle"
+    }
+  ],
+  "cierre": {
+    "logo": "logo-aldea.png",
+    "arriba": "ESCUELA DE VERANO 2026–27",
+    "texto": "Muy pronto: preventa",
+    "abajo": "@aldeadevalle",
+    "color": "#0E5A6B",
+    "segundos": 4.5
+  },
+  "acento": "#F2A65A",
+  "musica": "house-aldea.mp3",
+  "volumenMusica": 0.6
+}

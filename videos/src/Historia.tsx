@@ -119,7 +119,7 @@ const Cierre: React.FC<{ c: GuionHistoria["cierre"]; letra?: string; acento?: st
   const sube = (d: number): React.CSSProperties => ({ opacity: v(d), transform: `translateY(${(1 - v(d)) * 20}px)` });
   return (
     <AbsoluteFill style={{ backgroundColor: c.color ?? MARCA.rojo, opacity: op, alignItems: "center", paddingTop: c.logo ? 300 : 420, gap: 30 }}>
-      {c.logo && <Img src={staticFile(`fotos/${c.logo}`)} style={{ width: 760, height: "auto", ...sube(6) }} />}
+      {c.logo && <Img src={staticFile(`fotos/${c.logo}`)} style={{ maxWidth: 760, maxHeight: 380, width: "auto", height: "auto", ...sube(6) }} />}
       {c.arriba && (
         <div style={{ fontFamily: MONT, fontWeight: 800, fontSize: 44, letterSpacing: "0.18em", color: acento ?? MARCA.amarillo, ...sube(8) }}>{c.arriba}</div>
       )}
