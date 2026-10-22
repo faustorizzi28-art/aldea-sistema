@@ -99,6 +99,8 @@
   .card{background:var(--negro); border:1px solid var(--linea); border-radius:18px; padding:22px;}
   .card .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:rgba(242,202,17,.12); color:var(--amarillo); font-size:22px;}
   .card h3{margin:16px 0 6px; font:800 18px 'Archivo',sans-serif;}
+  .card.destacada{border-color:var(--rojo); background:linear-gradient(160deg,rgba(215,38,30,.16),var(--negro) 70%);}
+  .card.destacada .ic{background:rgba(215,38,30,.2); color:var(--rojo);}
   .card p{margin:0; font-size:15px; line-height:1.55; color:var(--crema2);}
 
   /* cupo + precios */
@@ -138,7 +140,10 @@
   .opciones input:focus-visible + span{outline:2px solid var(--rojo); outline-offset:4px;}
   .check{display:flex; gap:10px; align-items:flex-start; font:500 13.5px/1.45 'Archivo',sans-serif; margin-top:16px; color:#3F3C34;}
   .check input{width:20px; height:20px; flex:0 0 auto; margin-top:1px; accent-color:var(--negro);}
-  .total{display:flex; justify-content:space-between; align-items:baseline; margin-top:18px; padding-top:16px; border-top:1.5px dashed #DAD3C1;}
+  .detalle{margin-top:18px; padding-top:14px; border-top:1.5px dashed #DAD3C1; font-size:14px; color:#5B574C; display:grid; gap:4px;}
+  .detalle div{display:flex; justify-content:space-between; gap:12px;}
+  .detalle b{color:var(--negro);}
+  .total{display:flex; justify-content:space-between; align-items:baseline; margin-top:8px;}
   .total .k{font:700 13px 'Archivo',sans-serif; color:#5B574C;}
   .total .v{font-family:'Anton',sans-serif; font-size:34px;}
   .form .btn{width:100%; margin-top:14px; padding:17px; font-size:15px;}
@@ -200,7 +205,7 @@
         <span class="apodo">“Ninja”</span>
         <span class="nombre">Guido Cannetti</span>
       </h1>
-      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a entrenar con vos, contar su historia y sacarse fotos. <b>Solo 120 lugares.</b></p>
+      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Después, asado. <b>Solo 120 lugares.</b></p>
       <div class="chips">
         <span class="chip rojo">Ex UFC</span>
         <span class="chip">BKFC · Puño limpio</span>
@@ -259,14 +264,16 @@
 
 <section id="evento">
   <div class="wrap">
-    <div class="eyebrow">El evento</div>
-    <h2 class="titulo display">Una tarde con <em>el Ninja</em></h2>
-    <p class="texto">Para los que entrenan y para los que miran todas las carteleras. No hace falta experiencia: el Ninja adapta el entrenamiento a cada nivel.</p>
+    <div class="eyebrow">El seminario</div>
+    <h2 class="titulo display">Lo que vas a <em>entrenar</em></h2>
+    <p class="texto">Para los que entrenan y para los que miran todas las carteleras. No hace falta experiencia: el Ninja adapta cada bloque al nivel de cada uno.</p>
     <div class="cards">
-      <div class="card aparecer"><div class="ic">🥊</div><h3>Seminario técnico</h3><p>Entrenamiento guiado por el Ninja: golpes, defensa y lo que aprendió en la UFC.</p></div>
-      <div class="card aparecer"><div class="ic">🎤</div><h3>Charla y preguntas</h3><p>Su camino de Argentina al octágono, el salto al puño limpio y cómo se prepara una pelea.</p></div>
-      <div class="card aparecer"><div class="ic">📸</div><h3>Fotos y firmas</h3><p>Tiempo para sacarte la foto con él. Traé tus guantes o tu remera para firmar.</p></div>
-      <div class="card aparecer"><div class="ic">🔥</div><h3>En Aldea de Valle</h3><p>Al aire libre, con cantina y asado en el predio para quedarse después.</p></div>
+      <div class="card aparecer"><div class="ic">🥋</div><h3>MMA</h3><p>Cómo se combinan golpes, derribos y suelo. Lo que funciona de verdad en el octágono.</p></div>
+      <div class="card aparecer"><div class="ic">🦵</div><h3>Muay Thai</h3><p>Patadas, rodillas, codos y el clinch tailandés, con los detalles que no se ven por TV.</p></div>
+      <div class="card aparecer"><div class="ic">🥊</div><h3>Kickboxing</h3><p>Combinaciones de manos y piernas, distancia y cómo salir de la línea de ataque.</p></div>
+      <div class="card aparecer destacada"><div class="ic">✊</div><h3>Tips de puño limpio</h3><p>Lo que aprendió en la BKFC: cómo se cierra la mano sin guante, guardia, cortes y por qué cambia todo.</p></div>
+      <div class="card aparecer"><div class="ic">🎤</div><h3>Charla, fotos y firmas</h3><p>Su camino de Argentina a la UFC y al bare knuckle. Después, fotos con él: traé guantes o remera para firmar.</p></div>
+      <div class="card aparecer"><div class="ic">🍖</div><h3>Asado en Aldea</h3><p>Para cerrar: asado en el predio, con opción de bebida libre. Lo sumás al inscribirte.</p></div>
     </div>
   </div>
 </section>
@@ -322,8 +329,15 @@
           <label><input type="radio" name="exp" value="BJJ / Grappling"><span>BJJ / Grappling</span></label>
           <label><input type="radio" name="exp" value="Otra"><span>Otra</span></label>
         </div>
+        <label>¿Te quedás al asado?</label>
+        <div class="opciones" id="f-asado"></div>
+        <div id="asado-personas" class="oculto">
+          <label for="f-personas">¿Cuántos se quedan? <small>(contándote a vos)</small></label>
+          <select id="f-personas"></select>
+        </div>
         <label class="check"><input id="f-acepta" type="checkbox"> <span>Declaro estar en condiciones físicas de hacer actividad y participo bajo mi responsabilidad. Los menores de 18 vienen con autorización de un adulto.</span></label>
-        <div class="total"><span class="k" id="total-k">Total</span><span class="v" id="total-v">—</span></div>
+        <div class="detalle" id="detalle"></div>
+        <div class="total"><span class="k">Total</span><span class="v" id="total-v">—</span></div>
         <button class="btn btn-negro" id="btn-enviar" onclick="enviar()">Confirmar inscripción</button>
         <div class="msg" id="msg"></div>
       </div>
@@ -354,6 +368,7 @@
     <details><summary>¿Tengo que saber pelear?</summary><p>No. El seminario es para todos los niveles, y si preferís venir solo a la charla y a las fotos también podés.</p></details>
     <details><summary>¿Qué tengo que llevar?</summary><p>Ropa cómoda para entrenar, agua y, si tenés, vendas y guantes. Si querés que te firme algo, traelo.</p></details>
     <details><summary>¿Cuándo queda confirmado mi lugar?</summary><p>Cuando mandás el comprobante de transferencia por WhatsApp. Las inscripciones sin pago pueden liberarse para que entre otra persona.</p></details>
+    <details><summary>¿Cómo es lo del asado?</summary><p>Es opcional y se suma al inscribirte: asado $10.000 por persona, o asado con bebida libre $23.000. Podés anotar acompañantes aunque no hagan el seminario.</p></details>
     <details><summary>¿Pueden ir menores?</summary><p>Sí, con autorización de un adulto responsable.</p></details>
     <details><summary>¿Hay devolución?</summary><p>Si el evento se suspende, se devuelve el 100%. Si no podés ir, podés pasarle tu lugar a otra persona avisándonos por WhatsApp.</p></details>
   </div>
@@ -377,7 +392,11 @@ const CUPO_DEMO = { inscriptos: 0, cupoMaximo: 120, objetivo: 100, precios: [
   { nombre: 'Preventa', precio: 42000, hasta: '2026-10-31' },
   { nombre: 'General', precio: 49000, hasta: '2026-11-13' },
   { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
-]};
+], asado: [
+  { id: 'no', nombre: 'Sin asado', precio: 0 },
+  { id: 'asado', nombre: 'Asado', precio: 10000 },
+  { id: 'bebida', nombre: 'Asado + bebida libre', precio: 23000 },
+], maxPersonasAsado: 6 };
 
 const enAppsScript = typeof google !== 'undefined' && google.script && google.script.run;
 const modoDemo = !enAppsScript && !API_URL_FIJA;
@@ -399,7 +418,9 @@ function conTarifa(e){ return Object.assign({}, e, { tarifa: e.precios.find(p =>
 function demoInscribir(d){
   if (!d.acepta) throw new Error('Completá: aceptar el deslinde');
   const t = conTarifa(CUPO_DEMO).tarifa;
-  return { ok:true, codigo:'NC-000', precio:t.precio, tarifa:t.nombre, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola! (demo)') };
+  const op = CUPO_DEMO.asado.find(a => a.id === d.asado) || CUPO_DEMO.asado[0];
+  const asado = { nombre: op.nombre, personas: op.precio ? d.personasAsado : 0, total: op.precio * (op.precio ? d.personasAsado : 0) };
+  return { ok:true, codigo:'NC-000', precio:t.precio, tarifa:t.nombre, asado, total: t.precio + asado.total, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola! (demo)') };
 }
 
 const pesos = n => '$' + Math.round(n).toLocaleString('es-AR');
@@ -422,16 +443,35 @@ function pintarEstado(e){
       <div class="k">${p.nombre}</div><div class="v display">${pesos(p.precio)}</div><div class="h">${pas ? 'Terminó' : 'Hasta el ' + fechaCorta(p.hasta)}</div></div>`;
   }).join('');
 
-  if (e.tarifa) {
-    $('total-k').textContent = 'Total · ' + e.tarifa.nombre;
-    $('total-v').textContent = pesos(e.tarifa.precio);
-    $('flot-precio').textContent = pesos(e.tarifa.precio);
+  if (!$('f-asado').children.length) {
+    $('f-asado').innerHTML = e.asado.map((a, i) => `<label><input type="radio" name="asado" value="${a.id}" ${i ? '' : 'checked'}><span>${a.nombre}${a.precio ? ' · ' + pesos(a.precio) : ''}</span></label>`).join('');
+    $('f-personas').innerHTML = Array.from({ length: e.maxPersonasAsado }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? 'personas' : 'persona (solo yo)'}</option>`).join('');
+    $('f-asado').addEventListener('change', pintarTotal);
+    $('f-personas').addEventListener('change', pintarTotal);
   }
+  if (e.tarifa) $('flot-precio').textContent = pesos(e.tarifa.precio);
+  pintarTotal();
   if (quedan <= 0 || !e.tarifa) {
     $('paso-form').classList.add('oculto');
     $('paso-agotado').classList.remove('oculto');
     if (!e.tarifa) $('paso-agotado').querySelector('p').textContent = 'Las inscripciones online ya cerraron. Escribinos por WhatsApp.';
   }
+}
+
+function asadoElegido(){
+  const id = (document.querySelector('input[name=asado]:checked') || {}).value || 'no';
+  const op = ESTADO.asado.find(a => a.id === id) || ESTADO.asado[0];
+  const personas = op.precio ? parseInt($('f-personas').value, 10) || 1 : 0;
+  return { id, nombre: op.nombre, precio: op.precio, personas, total: op.precio * personas };
+}
+
+function pintarTotal(){
+  if (!ESTADO || !ESTADO.tarifa) return;
+  const a = asadoElegido();
+  $('asado-personas').classList.toggle('oculto', !a.precio);
+  $('detalle').innerHTML = `<div><span>Entrada · ${ESTADO.tarifa.nombre}</span><b>${pesos(ESTADO.tarifa.precio)}</b></div>` +
+    (a.personas ? `<div><span>${a.nombre} × ${a.personas}</span><b>${pesos(a.total)}</b></div>` : '');
+  $('total-v').textContent = pesos(ESTADO.tarifa.precio + a.total);
 }
 
 async function enviar(){
@@ -440,6 +480,8 @@ async function enviar(){
     nombre: $('f-nombre').value.trim(), dni: $('f-dni').value.trim(), tel: $('f-tel').value.trim(),
     email: $('f-email').value.trim(), experiencia: exp ? exp.value : '', acepta: $('f-acepta').checked,
   };
+  const a = asadoElegido();
+  d.asado = a.id; d.personasAsado = a.personas;
   const msg = $('msg'), btn = $('btn-enviar');
   const faltan = [];
   if (d.nombre.length < 3) faltan.push('nombre y apellido');
@@ -453,8 +495,9 @@ async function enviar(){
     const r = await llamar('inscribir', d);
     $('paso-form').classList.add('oculto');
     $('paso-ok').classList.remove('oculto');
-    $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b> · ' + r.tarifa + ' ' + pesos(r.precio);
-    $('pago').innerHTML = `Transferí <b>${pesos(r.precio)}</b> al alias:<br>
+    $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b> · Entrada ' + r.tarifa + ' ' + pesos(r.precio) +
+      (r.asado && r.asado.personas ? '<br>' + r.asado.nombre + ' × ' + r.asado.personas + ': ' + pesos(r.asado.total) : '');
+    $('pago').innerHTML = `Transferí <b>${pesos(r.total)}</b> al alias:<br>
       <span class="alias">${r.pago.alias}</span><button class="copiar" id="btn-copiar">Copiar</button><br>
       <small>${r.pago.banco} · Titular: ${r.pago.titular}</small>`;
     $('btn-copiar').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(r.pago.alias); $('btn-copiar').textContent = '¡Copiado!'; };

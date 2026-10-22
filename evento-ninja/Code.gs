@@ -37,13 +37,20 @@ const CONFIG = {
     { nombre: 'General',  precio: 49000, hasta: '2026-11-13' },
     { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
   ],
+  // Opciones de asado después del seminario (precio por persona)
+  asado: [
+    { id: 'no',     nombre: 'Sin asado',                 precio: 0 },
+    { id: 'asado',  nombre: 'Asado',                     precio: 10000 },
+    { id: 'bebida', nombre: 'Asado + bebida libre',      precio: 23000 },
+  ],
+  maxPersonasAsado: 6,            // cuántos puede anotar al asado contando al inscripto
   // TODO: completar con el alias que se cree junto con Teclan
   pago: { alias: 'COMPLETAR.ALIAS', banco: 'COMPLETAR', titular: 'COMPLETAR' },
 };
 
 const ESTADO_PENDIENTE = '⏳ Falta pago';
 const ESTADO_CANCELADO = '❌ Cancelado';
-const COLUMNAS = ['Alta', 'Código', 'Nombre', 'DNI', 'WhatsApp', 'Email', 'Experiencia', 'Tarifa', 'Precio', 'Estado', 'Obs'];
+const COLUMNAS = ['Alta', 'Código', 'Nombre', 'DNI', 'WhatsApp', 'Email', 'Experiencia', 'Tarifa', 'Precio', 'Estado', 'Obs', 'Asado', 'Personas asado', 'Total asado', 'Total a pagar'];
 
 function abrirPestana_() {
   const ss = SpreadsheetApp.openById(CONFIG.sheetId);
@@ -90,6 +97,8 @@ function estado() {
     objetivo: CONFIG.objetivo,
     tarifa: tarifa,
     precios: CONFIG.precios,
+    asado: CONFIG.asado,
+    maxPersonasAsado: CONFIG.maxPersonasAsado,
   };
 }
 
@@ -107,29 +116,44 @@ function inscribir(d) {
     const dni = soloDigitos_(d.dni);
     if (activas.some(f => soloDigitos_(f[3]) === dni)) throw new Error('Ya hay una inscripción con ese DNI. Si no te llegaron los datos de pago, escribinos por WhatsApp.');
 
+    const asado = opcionAsado_(d);
+    const total = tarifa.precio + asado.total;
+
     const sh = abrirPestana_();
     const codigo = 'NC-' + String(sh.getLastRow()).padStart(3, '0');
     sh.appendRow([
       new Date(), codigo, String(d.nombre).trim(), dni, String(d.tel).trim(),
       String(d.email || '').trim(), d.experiencia || '', tarifa.nombre, tarifa.precio,
       ESTADO_PENDIENTE, 'Inscripción web',
+      asado.nombre, asado.personas, asado.total, total,
     ]);
 
     const waAviso = linkWhatsApp_(d.tel, '¡Hola ' + String(d.nombre).trim().split(' ')[0] + '! Te escribimos de Aldea de Valle por tu inscripción al evento con el Ninja Cannetti (' + codigo + ').');
-    avisarDueno_(d, codigo, tarifa, activas.length + 1, waAviso);
+    avisarDueno_(d, codigo, tarifa, asado, total, activas.length + 1, waAviso);
 
     return {
       ok: true,
       codigo: codigo,
       precio: tarifa.precio,
       tarifa: tarifa.nombre,
+      asado: asado,
+      total: total,
       pago: CONFIG.pago,
       whatsappComprobante: linkWhatsApp_(CONFIG.whatsapp,
-        'Hola! Te mando el comprobante de mi inscripción al evento del Ninja Cannetti. Código ' + codigo + ' · ' + String(d.nombre).trim() + ' · DNI ' + dni),
+        'Hola! Te mando el comprobante de mi inscripción al evento del Ninja Cannetti. Código ' + codigo + ' · ' + String(d.nombre).trim() + ' · DNI ' + dni +
+        (asado.personas ? ' · ' + asado.nombre + ' x' + asado.personas : '') + ' · Total $' + fmtMiles_(total)),
     };
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Valida la opción de asado elegida y calcula su total (el precio sale de CONFIG, no de la página). */
+function opcionAsado_(d) {
+  const op = CONFIG.asado.find(a => a.id === d.asado) || CONFIG.asado[0];
+  if (!op.precio) return { id: op.id, nombre: op.nombre, personas: 0, total: 0 };
+  const personas = Math.max(1, Math.min(CONFIG.maxPersonasAsado, parseInt(d.personasAsado, 10) || 1));
+  return { id: op.id, nombre: op.nombre, personas: personas, total: op.precio * personas };
 }
 
 function filasActivas_() {
@@ -160,7 +184,7 @@ function linkWhatsApp_(tel, texto) {
   return 'https://wa.me/' + n + '?text=' + encodeURIComponent(texto || '');
 }
 
-function avisarDueno_(d, codigo, tarifa, total, waAviso) {
+function avisarDueno_(d, codigo, tarifa, asado, totalPagar, total, waAviso) {
   const destino = CONFIG.emailAviso || Session.getEffectiveUser().getEmail();
   const asunto = '🥊 Inscripción ' + codigo + ' — ' + d.nombre + ' (' + total + '/' + CONFIG.cupoMaximo + ')';
   const html =
@@ -170,6 +194,8 @@ function avisarDueno_(d, codigo, tarifa, total, waAviso) {
     (d.email ? '<p>' + esc_(d.email) + '</p>' : '') +
     '<p>Experiencia: ' + esc_(d.experiencia || '—') + '</p>' +
     '<p>' + esc_(tarifa.nombre) + ': $' + fmtMiles_(tarifa.precio) + ' · Código ' + codigo + '</p>' +
+    (asado.personas ? '<p>🍖 ' + esc_(asado.nombre) + ' × ' + asado.personas + ': $' + fmtMiles_(asado.total) + '</p>' : '') +
+    '<p><b>Total a pagar: $' + fmtMiles_(totalPagar) + '</b></p>' +
     '<p>Van <b>' + total + '</b> de ' + CONFIG.cupoMaximo + ' (objetivo ' + CONFIG.objetivo + ')</p>' +
     '<p><a href="' + esc_(waAviso) + '" style="background:#25D366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:bold;">💬 Escribirle por WhatsApp</a></p>' +
     '</div>';

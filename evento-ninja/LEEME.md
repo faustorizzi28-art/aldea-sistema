@@ -11,13 +11,18 @@ Aldea de Valle**. Cupo máximo 120, objetivo 100.
   cuántos lugares quedan (barra de cupo en vivo).
 - El precio cambia solo según la fecha (preventa → general → última hora).
 - Completa nombre, DNI, WhatsApp, email (opcional), qué entrena y acepta
-  el deslinde. Le aparece su código (NC-001, NC-002…), el alias con botón
+  el deslinde. Puede sumar **asado** ($10.000 p/p) o **asado + bebida
+  libre** ($23.000 p/p) e indicar cuántos se quedan (hasta 6, contándolo).
+  La página le muestra el detalle y el total a transferir. Le aparece su código (NC-001, NC-002…), el alias con botón
   "Copiar" y un botón para mandar el comprobante por WhatsApp.
 - Si el cupo se llena, el formulario se cierra y aparece "Lista de espera".
 
 **Para vos**
 - Cada inscripción entra en la pestaña **Ninja Cannetti** del Sheet de
   siempre (se crea sola), con estado "⏳ Falta pago".
+- En la planilla quedan también las columnas Asado, Personas asado,
+  Total asado y Total a pagar (sumando la columna Personas asado sabés
+  cuánta carne comprar).
 - Te llega un mail con el conteo (ej. "37/120") y un botón para escribirle.
 - Llegó el comprobante → cambiá el estado a "✅ Pagado".
 - No pagó y querés liberar el lugar → "❌ Cancelado" (deja de contar para el cupo).
@@ -27,6 +32,7 @@ Aldea de Valle**. Cupo máximo 120, objetivo 100.
 
 En `Code.gs`, bloque `CONFIG`:
 - `pago`: **alias, banco y titular** de la cuenta que se arme con Teclan.
+- `asado`: precios por persona de cada opción y `maxPersonasAsado`.
 - `precios`: montos y fechas de corte (hoy: $42.000 hasta 31/10,
   $49.000 hasta 13/11, $55.000 el 14/11).
 - `whatsapp`: número que recibe comprobantes (hoy el mismo de la cancha).
@@ -34,8 +40,8 @@ En `Code.gs`, bloque `CONFIG`:
 En `index.html` (abajo, en el `<script>`):
 - `EVENTO`: **hora** de inicio (está puesta a las 16:00 provisoria).
 - `WHATSAPP`: el mismo número de arriba.
-- La sección "El evento" describe seminario + charla + fotos: ajustar si el
-  formato acordado con Teclan es otro.
+- La sección del seminario lista MMA, Muay Thai, kickboxing, tips de puño
+  limpio (BKFC), charla/fotos y asado: ajustar si cambia algo con Teclan.
 
 Foto: si Teclan o el Ninja pasan una foto con permiso de uso, subila como
 `img/ninja-cannetti.jpg` y cambiá el `src` a una URL pública (dentro de
@@ -73,3 +79,5 @@ Con el escalonado propuesto, si los primeros 40 entran en preventa
 (apenas $280.000 menos que todo a $49.000) a cambio de generar urgencia
 desde el primer día. Ojo: falta restar gastos chicos (sonido, flyer/pauta,
 seguro, colchonetas si hacen falta) y la parte que corresponda a Teclan.
+
+Preguntas pendientes para cerrar la organización: ver `PREGUNTAS.md`.
