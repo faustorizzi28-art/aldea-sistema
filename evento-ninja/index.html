@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ninja Cannetti en Aldea de Valle</title>
+<meta name="description" content="Guido 'Ninja' Cannetti, ex UFC y peleador de BKFC, el 14 de noviembre en Aldea de Valle, Córdoba. Cupo limitado a 120 personas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --negro:#0C0C0B; --negro2:#161614; --negro3:#211F1B; --linea:rgba(244,239,227,.12);
+    --crema:#F4EFE3; --crema2:rgba(244,239,227,.68); --amarillo:#F2CA11; --rojo:#D7261E; --verde:#2F4A38;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--negro); color:var(--crema); font-family:'Archivo',system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden;}
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+  ::selection{background:var(--amarillo); color:var(--negro);}
+  .display{font-family:'Anton',Impact,sans-serif; font-weight:400; text-transform:uppercase; letter-spacing:.01em;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 16px;}
+  .eyebrow{font:700 12px 'Archivo',sans-serif; letter-spacing:.28em; text-transform:uppercase; color:var(--amarillo);}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation:none!important; transition:none!important;} }
+
+  /* barra superior */
+  .top{position:sticky; top:0; z-index:20; background:rgba(12,12,11,.86); backdrop-filter:blur(10px); border-bottom:1px solid var(--linea);}
+  .top .wrap{display:flex; align-items:center; gap:12px; padding-top:12px; padding-bottom:12px;}
+  .top .marca{flex:1; font:700 12px 'Archivo',sans-serif; letter-spacing:.2em; text-transform:uppercase; color:var(--crema2);}
+  .top .marca b{color:var(--crema);}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer; text-decoration:none; font:800 14px 'Archivo',sans-serif; letter-spacing:.12em; text-transform:uppercase; padding:14px 22px; border-radius:999px; transition:transform .12s, background .15s, color .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn-amarillo{background:var(--amarillo); color:var(--negro);}
+  .btn-amarillo:hover{background:var(--crema);}
+  .btn-borde{background:transparent; color:var(--crema); box-shadow:inset 0 0 0 1.5px rgba(244,239,227,.4);}
+  .btn-borde:hover{background:rgba(244,239,227,.1);}
+  .btn-wa{background:#25D366; color:#062A12;}
+  .top .btn{padding:10px 16px; font-size:12px;}
+
+  /* hero */
+  .hero{position:relative; overflow:hidden; padding:clamp(40px,8vw,90px) 0 clamp(36px,6vw,64px); background:
+    radial-gradient(120% 80% at 85% 0%, rgba(215,38,30,.38), transparent 60%),
+    radial-gradient(90% 70% at 0% 100%, rgba(242,202,17,.14), transparent 60%), var(--negro);}
+  .hero .fondo-txt{position:absolute; right:-2vw; top:50%; transform:translateY(-50%); font-family:'Anton',sans-serif; font-size:clamp(160px,34vw,440px); line-height:.8; color:transparent; -webkit-text-stroke:1.5px rgba(244,239,227,.07); pointer-events:none; user-select:none;}
+  .hero .grid{position:relative; display:grid; grid-template-columns:1.25fr .75fr; gap:clamp(24px,4vw,48px); align-items:end;}
+  @media (max-width:820px){ .hero .grid{grid-template-columns:1fr;} }
+  .hero h1{margin:14px 0 0; font-size:clamp(64px,15vw,168px); line-height:.86;}
+  .hero h1 .apodo{display:block; color:var(--amarillo);}
+  .hero h1 .nombre{display:block; font-size:.42em; letter-spacing:.04em; color:var(--crema); margin-top:.18em;}
+  .hero .bajada{margin:22px 0 0; max-width:560px; font-size:clamp(17px,2.6vw,21px); line-height:1.5; color:var(--crema2); text-wrap:pretty;}
+  .hero .bajada b{color:var(--crema);}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px;}
+  .chip{font:700 12px 'Archivo',sans-serif; letter-spacing:.14em; text-transform:uppercase; padding:8px 12px; border-radius:999px; border:1px solid var(--linea); background:rgba(244,239,227,.05);}
+  .chip.rojo{background:var(--rojo); border-color:var(--rojo);}
+  .acciones{display:flex; flex-wrap:wrap; gap:12px; margin-top:28px;}
+
+  .foto{position:relative; aspect-ratio:4/5; border-radius:20px; overflow:hidden; background:linear-gradient(160deg,var(--negro3),var(--negro2)); border:1px solid var(--linea);}
+  .foto img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:grayscale(.2) contrast(1.05);}
+  .foto .sin-foto{position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
+  .foto .sin-foto .display{font-size:clamp(80px,14vw,150px); line-height:.9; color:var(--amarillo);}
+  .foto .sin-foto .display small{display:block; font-size:.32em; color:var(--crema); letter-spacing:.08em;}
+  .foto .sello{position:absolute; left:14px; bottom:14px; right:14px; display:flex; justify-content:space-between; align-items:flex-end; gap:8px;}
+  .foto .sello span{font:800 11px 'Archivo',sans-serif; letter-spacing:.18em; text-transform:uppercase; background:var(--negro); padding:7px 10px; border-radius:8px;}
+  @media (max-width:820px){ .foto{aspect-ratio:16/11; max-height:360px;} }
+
+  /* franja fecha + cuenta regresiva */
+  .franja{background:var(--amarillo); color:var(--negro);}
+  .franja .wrap{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:4px 24px; padding-top:20px; padding-bottom:20px; align-items:center;}
+  .franja .k{margin-bottom:4px; font:800 11px 'Archivo',sans-serif; letter-spacing:.22em; text-transform:uppercase; opacity:.7;}
+  .franja .v{font-family:'Anton',sans-serif; font-size:clamp(26px,4.4vw,36px); line-height:1.05; text-transform:uppercase;}
+  .cuenta{display:flex; gap:10px;}
+  .cuenta div{text-align:center; min-width:48px;}
+  .cuenta b{display:block; font-family:'Anton',sans-serif; font-size:clamp(28px,5vw,40px); line-height:1; font-weight:400;}
+  .cuenta small{font:800 10px 'Archivo',sans-serif; letter-spacing:.18em; text-transform:uppercase; opacity:.7;}
+
+  section{padding:clamp(48px,8vw,96px) 0; scroll-margin-top:60px;}
+  h2.titulo{margin:12px 0 0; font-size:clamp(40px,8vw,76px); line-height:.95;}
+  h2.titulo em{font-style:normal; color:var(--amarillo);}
+  p.texto{font-size:clamp(16px,2.2vw,19px); line-height:1.6; color:var(--crema2); max-width:640px; text-wrap:pretty;}
+  p.texto b{color:var(--crema);}
+
+  /* récord */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--linea); border:1px solid var(--linea); border-radius:18px; overflow:hidden; margin-top:32px;}
+  @media (max-width:700px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{background:var(--negro2); padding:22px 18px;}
+  .stat .n{font-family:'Anton',sans-serif; font-size:clamp(40px,7vw,60px); line-height:1; color:var(--amarillo);}
+  .stat .l{margin-top:8px; font-size:14px; line-height:1.4; color:var(--crema2);}
+  .linea-tiempo{margin-top:36px; display:grid; gap:0;}
+  .hito{display:grid; grid-template-columns:88px 1fr; gap:16px; padding:16px 0; border-top:1px solid var(--linea);}
+  .hito .anio{font-family:'Anton',sans-serif; font-size:24px; color:var(--rojo);}
+  .hito p{margin:0; font-size:16px; line-height:1.55; color:var(--crema2);}
+  .hito p b{color:var(--crema);}
+
+  /* qué incluye */
+  #evento{background:var(--negro2); border-top:1px solid var(--linea); border-bottom:1px solid var(--linea);}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:32px;}
+  .card{background:var(--negro); border:1px solid var(--linea); border-radius:18px; padding:22px;}
+  .card .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:rgba(242,202,17,.12); color:var(--amarillo); font-size:22px;}
+  .card h3{margin:16px 0 6px; font:800 18px 'Archivo',sans-serif;}
+  .card p{margin:0; font-size:15px; line-height:1.55; color:var(--crema2);}
+
+  /* cupo + precios */
+  .cupo{margin-top:30px; background:var(--negro2); border:1px solid var(--linea); border-radius:18px; padding:20px;}
+  .cupo .fila{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .cupo .grande{font-family:'Anton',sans-serif; font-size:clamp(34px,6vw,48px); line-height:1;}
+  .cupo .grande span{color:var(--amarillo);}
+  .barra{position:relative; height:14px; border-radius:999px; background:rgba(244,239,227,.08); margin-top:14px; overflow:hidden;}
+  .barra i{position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,var(--amarillo),var(--rojo)); border-radius:999px; transition:width 1s ease;}
+  .cupo .nota{margin-top:10px; font-size:13.5px; color:var(--crema2);}
+  .precios{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:16px;}
+  .precio{border:1.5px solid var(--linea); border-radius:16px; padding:18px; position:relative;}
+  .precio.vigente{border-color:var(--amarillo); background:rgba(242,202,17,.07);}
+  .precio.pasado{opacity:.42;}
+  .precio .k{font:800 11px 'Archivo',sans-serif; letter-spacing:.2em; text-transform:uppercase; color:var(--crema2);}
+  .precio .v{font-family:'Anton',sans-serif; font-size:40px; line-height:1.1; margin-top:6px;}
+  .precio .h{font-size:13px; color:var(--crema2);}
+  .precio .badge{position:absolute; top:-10px; right:14px; background:var(--amarillo); color:var(--negro); font:800 10px 'Archivo',sans-serif; letter-spacing:.16em; text-transform:uppercase; padding:5px 9px; border-radius:999px;}
+
+  /* formulario */
+  #inscripcion .grid{display:grid; grid-template-columns:.9fr 1.1fr; gap:clamp(24px,5vw,56px); align-items:start;}
+  @media (max-width:860px){ #inscripcion .grid{grid-template-columns:1fr;} }
+  .form{scroll-margin-top:70px; background:var(--crema); color:var(--negro); border-radius:22px; padding:clamp(20px,4vw,32px); box-shadow:0 30px 80px -30px rgba(215,38,30,.45);}
+  .form h3{margin:0 0 4px; font-family:'Anton',sans-serif; font-weight:400; font-size:32px; text-transform:uppercase;}
+  .form .sub{margin:0 0 14px; font-size:14px; color:#5B574C;}
+  .form label{display:block; font:700 13px 'Archivo',sans-serif; margin:14px 0 6px;}
+  .form label small{font-weight:500; color:#7A7566;}
+  .form input[type=text],.form input[type=tel],.form input[type=email],.form select{width:100%; padding:13px 14px; border:1.5px solid #DAD3C1; border-radius:12px; font:500 16px 'Archivo',sans-serif; background:#FFFEFA; color:var(--negro);}
+  .form input:focus,.form select:focus{outline:none; border-color:var(--negro);}
+  .dos{display:grid; grid-template-columns:1fr 1fr; gap:0 12px;}
+  @media (max-width:420px){ .dos{grid-template-columns:1fr;} }
+  .opciones{display:flex; flex-wrap:wrap; gap:8px;}
+  .opciones label{margin:0; font-weight:600; font-size:14px; padding:9px 13px; border:1.5px solid #DAD3C1; border-radius:999px; cursor:pointer; background:#FFFEFA;}
+  .opciones input{position:absolute; opacity:0; pointer-events:none;}
+  .opciones input:checked + span{color:var(--crema);}
+  .opciones label:has(input:checked){background:var(--negro); border-color:var(--negro); color:var(--crema);}
+  .opciones input:focus-visible + span{outline:2px solid var(--rojo); outline-offset:4px;}
+  .check{display:flex; gap:10px; align-items:flex-start; font:500 13.5px/1.45 'Archivo',sans-serif; margin-top:16px; color:#3F3C34;}
+  .check input{width:20px; height:20px; flex:0 0 auto; margin-top:1px; accent-color:var(--negro);}
+  .total{display:flex; justify-content:space-between; align-items:baseline; margin-top:18px; padding-top:16px; border-top:1.5px dashed #DAD3C1;}
+  .total .k{font:700 13px 'Archivo',sans-serif; color:#5B574C;}
+  .total .v{font-family:'Anton',sans-serif; font-size:34px;}
+  .form .btn{width:100%; margin-top:14px; padding:17px; font-size:15px;}
+  .form .btn-negro{background:var(--negro); color:var(--amarillo);}
+  .form .btn-negro:hover{background:var(--rojo); color:var(--crema);}
+  .form .btn:disabled{opacity:.55; cursor:default;}
+  .msg{margin-top:10px; font-size:14px;}
+  .msg.err{color:#8E1A14; background:#FBE3DF; padding:10px 12px; border-radius:10px;}
+  .oculto{display:none!important;}
+  .ok-icono{width:60px; height:60px; border-radius:50%; background:var(--negro); color:var(--amarillo); display:grid; place-items:center; font-size:30px; margin-bottom:12px;}
+  .pago{background:#FFFEFA; border:2px dashed var(--negro); border-radius:14px; padding:16px; margin:14px 0; font-size:15px; line-height:1.75;}
+  .pago .alias{font-family:'Anton',sans-serif; font-size:26px; letter-spacing:.02em; word-break:break-all;}
+  .copiar{border:none; background:var(--amarillo); color:var(--negro); font:800 11px 'Archivo',sans-serif; letter-spacing:.14em; text-transform:uppercase; padding:7px 11px; border-radius:999px; cursor:pointer; margin-left:6px; vertical-align:middle;}
+  .demo{margin-top:12px; font-size:12.5px; color:#7A4A00; background:#FFF2C4; padding:8px 10px; border-radius:8px;}
+
+  .pasos{display:grid; gap:14px; margin-top:26px;}
+  .paso{display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:start;}
+  .paso .num{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:20px; background:var(--negro3); color:var(--amarillo); border:1px solid var(--linea);}
+  .paso h4{margin:4px 0 4px; font:800 16px 'Archivo',sans-serif;}
+  .paso p{margin:0; font-size:15px; line-height:1.5; color:var(--crema2);}
+
+  /* FAQ */
+  details{border-top:1px solid var(--linea); padding:18px 0;}
+  details:last-child{border-bottom:1px solid var(--linea);}
+  summary{cursor:pointer; list-style:none; display:flex; justify-content:space-between; gap:16px; font:700 17px 'Archivo',sans-serif;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:'+'; font-family:'Anton',sans-serif; color:var(--amarillo); font-size:22px; line-height:1;}
+  details[open] summary::after{content:'–';}
+  details p{margin:10px 0 0; color:var(--crema2); line-height:1.6; font-size:15.5px; max-width:720px;}
+
+  footer{padding:40px 0 110px; border-top:1px solid var(--linea); color:var(--crema2); font-size:14px;}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:center;}
+  footer b{color:var(--crema);}
+
+  /* botón flotante celular */
+  .flotante{position:fixed; left:16px; right:16px; bottom:14px; z-index:25; display:none;}
+  .flotante .btn{width:100%; box-shadow:0 14px 40px -10px rgba(0,0,0,.7);}
+  @media (max-width:700px){ .flotante.visible{display:block;} .top .btn{display:none;} }
+
+  .aparecer{opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease;}
+  .aparecer.si{opacity:1; transform:none;}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <div class="marca"><b>Aldea de Valle</b> × Teclan</div>
+    <a class="btn btn-amarillo" href="#inscripcion">Inscribirme</a>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="fondo-txt" aria-hidden="true">NINJA</div>
+  <div class="wrap grid">
+    <div>
+      <div class="eyebrow">Córdoba · Sábado 14 de noviembre</div>
+      <h1 class="display">
+        <span class="apodo">“Ninja”</span>
+        <span class="nombre">Guido Cannetti</span>
+      </h1>
+      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a entrenar con vos, contar su historia y sacarse fotos. <b>Solo 120 lugares.</b></p>
+      <div class="chips">
+        <span class="chip rojo">Ex UFC</span>
+        <span class="chip">BKFC · Puño limpio</span>
+        <span class="chip">The Ultimate Fighter</span>
+      </div>
+      <div class="acciones">
+        <a class="btn btn-amarillo" href="#inscripcion">Asegurar mi lugar →</a>
+        <a class="btn btn-borde" href="#ninja">Quién es</a>
+      </div>
+    </div>
+    <div class="foto aparecer">
+      <!-- Para usar una foto real: subí img/ninja-cannetti.jpg (con permiso del peleador / Teclan) -->
+      <img src="../img/ninja-cannetti.jpg" alt="Guido 'Ninja' Cannetti" onerror="this.remove()">
+      <div class="sin-foto"><div class="display">10<small>victorias en MMA</small></div></div>
+      <div class="sello"><span>14 · NOV</span><span>Aldea de Valle</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="franja">
+  <div class="wrap">
+    <div><div class="k">Cuándo</div><div class="v" id="txt-fecha">Sáb 14 de noviembre</div></div>
+    <div><div class="k">Dónde</div><div class="v">Aldea de Valle · Córdoba</div></div>
+    <div>
+      <div class="k">Faltan</div>
+      <div class="cuenta" id="cuenta" aria-live="off">
+        <div><b id="c-d">--</b><small>días</small></div>
+        <div><b id="c-h">--</b><small>hs</small></div>
+        <div><b id="c-m">--</b><small>min</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="ninja">
+  <div class="wrap">
+    <div class="eyebrow">El peleador</div>
+    <h2 class="titulo display">De la UFC al <em>puño limpio</em></h2>
+    <p class="texto">Guido Cannetti, porteño, entró a la UFC por <b>The Ultimate Fighter: Latinoamérica</b> (2014), en el equipo de Fabrício Werdum. Peleó casi diez años en la organización más grande del mundo, consiguió su primer nocaut en el octágono a los 42 años y, lejos de retirarse, en 2026 debutó en <b>Bare Knuckle Fighting Championship</b>, la liga de boxeo sin guantes. Y ganó.</p>
+
+    <div class="stats aparecer">
+      <div class="stat"><div class="n">9</div><div class="l">años en la UFC<br>(2014–2023)</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">victorias en MMA profesional</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">triunfos por nocaut o sumisión</div></div>
+      <div class="stat"><div class="n">1–0</div><div class="l">invicto en BKFC<br>(puño limpio)</div></div>
+    </div>
+
+    <div class="linea-tiempo">
+      <div class="hito"><div class="anio">2014</div><p><b>The Ultimate Fighter: Latinoamérica.</b> Integra el equipo Werdum y firma con la UFC.</p></div>
+      <div class="hito"><div class="anio">2015</div><p><b>Primera victoria en la UFC</b>, en UFC 190, en Río de Janeiro.</p></div>
+      <div class="hito"><div class="anio">2022</div><p><b>Nocaut a los 42 años</b> en UFC Vegas 61: uno de los peleadores más longevos del plantel.</p></div>
+      <div class="hito"><div class="anio">2026</div><p><b>Debut en BKFC</b> en el Antel Arena de Montevideo: le gana por decisión unánime a Emiliano “El Toro” Nielli, a cinco rounds.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="evento">
+  <div class="wrap">
+    <div class="eyebrow">El evento</div>
+    <h2 class="titulo display">Una tarde con <em>el Ninja</em></h2>
+    <p class="texto">Para los que entrenan y para los que miran todas las carteleras. No hace falta experiencia: el Ninja adapta el entrenamiento a cada nivel.</p>
+    <div class="cards">
+      <div class="card aparecer"><div class="ic">🥊</div><h3>Seminario técnico</h3><p>Entrenamiento guiado por el Ninja: golpes, defensa y lo que aprendió en la UFC.</p></div>
+      <div class="card aparecer"><div class="ic">🎤</div><h3>Charla y preguntas</h3><p>Su camino de Argentina al octágono, el salto al puño limpio y cómo se prepara una pelea.</p></div>
+      <div class="card aparecer"><div class="ic">📸</div><h3>Fotos y firmas</h3><p>Tiempo para sacarte la foto con él. Traé tus guantes o tu remera para firmar.</p></div>
+      <div class="card aparecer"><div class="ic">🔥</div><h3>En Aldea de Valle</h3><p>Al aire libre, con cantina y asado en el predio para quedarse después.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="inscripcion">
+  <div class="wrap grid">
+    <div>
+      <div class="eyebrow">Inscripción</div>
+      <h2 class="titulo display">Asegurá <em>tu lugar</em></h2>
+      <p class="texto">El cupo es de <b>120 personas</b> y se llena por orden de pago. Cuanto antes te anotás, menos pagás.</p>
+
+      <div class="cupo">
+        <div class="fila">
+          <div class="grande" id="cupo-txt"><span>—</span> / 120</div>
+          <div class="eyebrow" id="cupo-quedan">Cargando…</div>
+        </div>
+        <div class="barra"><i id="cupo-barra"></i></div>
+        <div class="nota" id="cupo-nota">lugares ocupados</div>
+      </div>
+
+      <div class="precios" id="precios"></div>
+
+      <div class="pasos">
+        <div class="paso"><div class="num">1</div><div><h4>Completá el formulario</h4><p>Tus datos quedan registrados con un código de inscripción.</p></div></div>
+        <div class="paso"><div class="num">2</div><div><h4>Transferí al alias</h4><p>Te mostramos el alias del evento apenas te inscribís.</p></div></div>
+        <div class="paso"><div class="num">3</div><div><h4>Mandá el comprobante</h4><p>Por WhatsApp, con un botón. Con eso tu lugar queda confirmado.</p></div></div>
+      </div>
+    </div>
+
+    <div class="form" id="form-card">
+      <div id="paso-form">
+        <h3>Inscribirme</h3>
+        <p class="sub">Tarda menos de un minuto.</p>
+        <label for="f-nombre">Nombre y apellido</label>
+        <input id="f-nombre" type="text" autocomplete="name" placeholder="Ej: Juan Pérez">
+        <div class="dos">
+          <div>
+            <label for="f-dni">DNI</label>
+            <input id="f-dni" type="tel" inputmode="numeric" placeholder="Sin puntos">
+          </div>
+          <div>
+            <label for="f-tel">WhatsApp</label>
+            <input id="f-tel" type="tel" autocomplete="tel" placeholder="351 123 4567">
+          </div>
+        </div>
+        <label for="f-email">Email <small>(opcional)</small></label>
+        <input id="f-email" type="email" autocomplete="email" placeholder="tu@mail.com">
+        <label>¿Entrenás algo?</label>
+        <div class="opciones" id="f-exp">
+          <label><input type="radio" name="exp" value="Nada todavía"><span>Nada todavía</span></label>
+          <label><input type="radio" name="exp" value="MMA"><span>MMA</span></label>
+          <label><input type="radio" name="exp" value="Boxeo / Kick"><span>Boxeo / Kick</span></label>
+          <label><input type="radio" name="exp" value="BJJ / Grappling"><span>BJJ / Grappling</span></label>
+          <label><input type="radio" name="exp" value="Otra"><span>Otra</span></label>
+        </div>
+        <label class="check"><input id="f-acepta" type="checkbox"> <span>Declaro estar en condiciones físicas de hacer actividad y participo bajo mi responsabilidad. Los menores de 18 vienen con autorización de un adulto.</span></label>
+        <div class="total"><span class="k" id="total-k">Total</span><span class="v" id="total-v">—</span></div>
+        <button class="btn btn-negro" id="btn-enviar" onclick="enviar()">Confirmar inscripción</button>
+        <div class="msg" id="msg"></div>
+      </div>
+
+      <div id="paso-ok" class="oculto">
+        <div class="ok-icono">✓</div>
+        <h3>¡Estás adentro!</h3>
+        <p class="sub" id="ok-sub"></p>
+        <div class="pago" id="pago"></div>
+        <button class="btn btn-wa" id="btn-comprobante">Mandar comprobante por WhatsApp</button>
+        <p class="sub" style="margin-top:12px">Tu lugar queda confirmado cuando recibimos el comprobante. Guardá tu código.</p>
+      </div>
+
+      <div id="paso-agotado" class="oculto">
+        <h3>Cupo completo</h3>
+        <p class="sub">Se llenaron los 120 lugares. Escribinos y te avisamos si se libera alguno.</p>
+        <a class="btn btn-wa" id="btn-espera" href="#">Lista de espera por WhatsApp</a>
+      </div>
+      <div class="demo oculto" id="demo">Vista previa: el formulario no guarda datos hasta que la página se publique desde Apps Script.</div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow">Preguntas</div>
+    <h2 class="titulo display" style="margin-bottom:20px">Lo que <em>todos preguntan</em></h2>
+    <details><summary>¿Tengo que saber pelear?</summary><p>No. El seminario es para todos los niveles, y si preferís venir solo a la charla y a las fotos también podés.</p></details>
+    <details><summary>¿Qué tengo que llevar?</summary><p>Ropa cómoda para entrenar, agua y, si tenés, vendas y guantes. Si querés que te firme algo, traelo.</p></details>
+    <details><summary>¿Cuándo queda confirmado mi lugar?</summary><p>Cuando mandás el comprobante de transferencia por WhatsApp. Las inscripciones sin pago pueden liberarse para que entre otra persona.</p></details>
+    <details><summary>¿Pueden ir menores?</summary><p>Sí, con autorización de un adulto responsable.</p></details>
+    <details><summary>¿Hay devolución?</summary><p>Si el evento se suspende, se devuelve el 100%. Si no podés ir, podés pasarle tu lugar a otra persona avisándonos por WhatsApp.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><b>Aldea de Valle</b> × <b>Teclan</b> · Córdoba</div>
+    <a class="btn btn-borde" id="btn-consulta" href="#">Consultas por WhatsApp</a>
+  </div>
+</footer>
+
+<div class="flotante" id="flotante"><a class="btn btn-amarillo" href="#inscripcion">Inscribirme · <span id="flot-precio">—</span></a></div>
+
+<script>
+// Si la página se publica fuera de Apps Script (ej. Netlify), pegá acá la URL /exec.
+const API_URL_FIJA = '';
+const EVENTO = new Date('2026-11-14T16:00:00-03:00'); // ajustar al horario confirmado
+const WHATSAPP = '5493516197928';
+const CUPO_DEMO = { inscriptos: 0, cupoMaximo: 120, objetivo: 100, precios: [
+  { nombre: 'Preventa', precio: 42000, hasta: '2026-10-31' },
+  { nombre: 'General', precio: 49000, hasta: '2026-11-13' },
+  { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
+]};
+
+const enAppsScript = typeof google !== 'undefined' && google.script && google.script.run;
+const modoDemo = !enAppsScript && !API_URL_FIJA;
+let ESTADO = null;
+
+function llamar(fn, arg){
+  if (enAppsScript) return new Promise((ok, mal) => google.script.run.withSuccessHandler(ok).withFailureHandler(mal)[fn](arg));
+  if (API_URL_FIJA) {
+    const opts = fn === 'inscribir' ? { method:'POST', body: JSON.stringify(arg) } : {};
+    return fetch(API_URL_FIJA + (fn === 'estado' ? '?accion=estado' : ''), opts).then(r => r.json()).then(r => {
+      if (!r.ok) throw new Error(r.error); return fn === 'estado' ? r.estado : r;
+    });
+  }
+  return Promise.resolve(fn === 'estado' ? conTarifa(CUPO_DEMO) : demoInscribir(arg));
+}
+
+function hoyStr(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Cordoba' }); }
+function conTarifa(e){ return Object.assign({}, e, { tarifa: e.precios.find(p => hoyStr() <= p.hasta) || null }); }
+function demoInscribir(d){
+  if (!d.acepta) throw new Error('Completá: aceptar el deslinde');
+  const t = conTarifa(CUPO_DEMO).tarifa;
+  return { ok:true, codigo:'NC-000', precio:t.precio, tarifa:t.nombre, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola! (demo)') };
+}
+
+const pesos = n => '$' + Math.round(n).toLocaleString('es-AR');
+const wa = (n, t) => 'https://wa.me/' + n + '?text=' + encodeURIComponent(t);
+const fechaCorta = s => new Date(s + 'T12:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'short' });
+const $ = id => document.getElementById(id);
+
+function pintarEstado(e){
+  ESTADO = e;
+  const n = Math.min(e.inscriptos, e.cupoMaximo), quedan = e.cupoMaximo - n;
+  $('cupo-txt').innerHTML = '<span>' + n + '</span> / ' + e.cupoMaximo;
+  $('cupo-quedan').textContent = quedan > 0 ? 'Quedan ' + quedan : 'Agotado';
+  $('cupo-barra').style.width = (n / e.cupoMaximo * 100) + '%';
+  $('cupo-nota').textContent = quedan <= 20 && quedan > 0 ? '¡Últimos lugares!' : 'lugares ocupados';
+
+  const hoy = hoyStr();
+  $('precios').innerHTML = e.precios.map(p => {
+    const vig = e.tarifa && e.tarifa.nombre === p.nombre, pas = hoy > p.hasta;
+    return `<div class="precio ${vig ? 'vigente' : ''} ${pas ? 'pasado' : ''}">${vig ? '<span class="badge">Ahora</span>' : ''}
+      <div class="k">${p.nombre}</div><div class="v display">${pesos(p.precio)}</div><div class="h">${pas ? 'Terminó' : 'Hasta el ' + fechaCorta(p.hasta)}</div></div>`;
+  }).join('');
+
+  if (e.tarifa) {
+    $('total-k').textContent = 'Total · ' + e.tarifa.nombre;
+    $('total-v').textContent = pesos(e.tarifa.precio);
+    $('flot-precio').textContent = pesos(e.tarifa.precio);
+  }
+  if (quedan <= 0 || !e.tarifa) {
+    $('paso-form').classList.add('oculto');
+    $('paso-agotado').classList.remove('oculto');
+    if (!e.tarifa) $('paso-agotado').querySelector('p').textContent = 'Las inscripciones online ya cerraron. Escribinos por WhatsApp.';
+  }
+}
+
+async function enviar(){
+  const exp = document.querySelector('input[name=exp]:checked');
+  const d = {
+    nombre: $('f-nombre').value.trim(), dni: $('f-dni').value.trim(), tel: $('f-tel').value.trim(),
+    email: $('f-email').value.trim(), experiencia: exp ? exp.value : '', acepta: $('f-acepta').checked,
+  };
+  const msg = $('msg'), btn = $('btn-enviar');
+  const faltan = [];
+  if (d.nombre.length < 3) faltan.push('nombre y apellido');
+  if (d.dni.replace(/\D/g, '').length < 7) faltan.push('DNI');
+  if (d.tel.replace(/\D/g, '').length < 8) faltan.push('WhatsApp');
+  if (!d.acepta) faltan.push('aceptar el deslinde');
+  if (faltan.length) { msg.textContent = 'Completá: ' + faltan.join(', ') + '.'; msg.className = 'msg err'; return; }
+
+  btn.disabled = true; btn.textContent = 'Guardando…'; msg.textContent = ''; msg.className = 'msg';
+  try {
+    const r = await llamar('inscribir', d);
+    $('paso-form').classList.add('oculto');
+    $('paso-ok').classList.remove('oculto');
+    $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b> · ' + r.tarifa + ' ' + pesos(r.precio);
+    $('pago').innerHTML = `Transferí <b>${pesos(r.precio)}</b> al alias:<br>
+      <span class="alias">${r.pago.alias}</span><button class="copiar" id="btn-copiar">Copiar</button><br>
+      <small>${r.pago.banco} · Titular: ${r.pago.titular}</small>`;
+    $('btn-copiar').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(r.pago.alias); $('btn-copiar').textContent = '¡Copiado!'; };
+    $('btn-comprobante').onclick = () => window.open(r.whatsappComprobante, '_blank');
+    $('form-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    llamar('estado').then(pintarEstado).catch(() => {});
+  } catch (err) {
+    msg.textContent = (err && err.message) || 'No se pudo guardar. Probá de nuevo.'; msg.className = 'msg err';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirmar inscripción';
+  }
+}
+
+function cuentaRegresiva(){
+  const ms = Math.max(0, EVENTO - Date.now());
+  $('c-d').textContent = Math.floor(ms / 864e5);
+  $('c-h').textContent = String(Math.floor(ms / 36e5) % 24).padStart(2, '0');
+  $('c-m').textContent = String(Math.floor(ms / 6e4) % 60).padStart(2, '0');
+}
+
+$('btn-consulta').href = wa(WHATSAPP, 'Hola! Quiero consultar por el evento del Ninja Cannetti en Aldea de Valle.');
+$('btn-espera').href = wa(WHATSAPP, 'Hola! Quiero quedar en lista de espera para el evento del Ninja Cannetti.');
+if (modoDemo) $('demo').classList.remove('oculto');
+cuentaRegresiva(); setInterval(cuentaRegresiva, 30000);
+llamar('estado').then(pintarEstado).catch(() => pintarEstado(conTarifa(CUPO_DEMO)));
+
+// animaciones al hacer scroll + botón flotante en celular
+const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('si'); io.unobserve(x.target); } }), { threshold: .15 });
+document.querySelectorAll('.aparecer').forEach(el => io.observe(el));
+const flot = $('flotante');
+let formVisible = false;
+const pintarFlot = () => flot.classList.toggle('visible', !formVisible && window.scrollY > 400);
+new IntersectionObserver(es => { formVisible = es[0].isIntersecting; pintarFlot(); }).observe($('inscripcion'));
+window.addEventListener('scroll', pintarFlot, { passive:true });
+</script>
+</body>
+</html>
