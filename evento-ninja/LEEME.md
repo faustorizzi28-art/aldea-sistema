@@ -38,7 +38,7 @@ asado con el Ninja.
 
 ## Antes de publicar — completar
 En `Code.gs`, bloque `CONFIG`:
-- `pago`: **alias, banco y titular** de la cuenta del evento.
+- `pago`: alias **theclan.aldea** (ya cargado). Banco y titular son opcionales.
 - `precioEspectador`: confirmar (está en $15.000).
 - `cupoEspectadores`: confirmar (está en 80).
 

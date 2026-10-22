@@ -51,8 +51,8 @@ const CONFIG = {
   precioEspectador: 15000,        // PROVISORIO: confirmar
   asado: { nombre: 'Asado + bebida libre', precio: 22000, hasta: '2026-11-11' },
   maxPersonasAsado: 6,            // contando al inscripto
-  // TODO: completar con el alias de la cuenta del evento
-  pago: { alias: 'COMPLETAR.ALIAS', banco: 'COMPLETAR', titular: 'COMPLETAR' },
+  // banco y titular son opcionales: si quedan vacíos la página muestra solo el alias
+  pago: { alias: 'theclan.aldea', banco: '', titular: '' },
 };
 
 const TZ = 'America/Argentina/Cordoba';

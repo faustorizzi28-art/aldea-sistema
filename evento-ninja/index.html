@@ -49,6 +49,9 @@
   .hero h1{margin:14px 0 0; font-size:clamp(64px,15vw,168px); line-height:.86;}
   .hero h1 .apodo{display:block; color:var(--amarillo);}
   .hero h1 .nombre{display:block; font-size:.42em; letter-spacing:.04em; color:var(--crema); margin-top:.18em;}
+  .hero h1 .ciudad{display:block; font-size:.74em; line-height:.9; color:var(--rojo); margin-top:.26em; text-shadow:0 6px 30px rgba(215,38,30,.35);}
+  @media (max-width:600px){ .hero h1 .ciudad{font-size:.98em;} }
+  .hero h1 .ciudad small{font-size:.38em; color:var(--crema); margin-right:.2em; vertical-align:.9em; letter-spacing:.06em;}
   .hero .bajada{margin:22px 0 0; max-width:560px; font-size:clamp(17px,2.6vw,21px); line-height:1.5; color:var(--crema2); text-wrap:pretty;}
   .hero .bajada b{color:var(--crema);}
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px;}
@@ -228,10 +231,11 @@
   <div class="fondo-txt" aria-hidden="true">NINJA</div>
   <div class="wrap grid">
     <div>
-      <div class="eyebrow">Córdoba · Sábado 14 de noviembre · 16hs</div>
+      <div class="eyebrow">Sábado 14 de noviembre · 16hs · Aldea de Valle</div>
       <h1 class="display">
         <span class="apodo">“Ninja”</span>
         <span class="nombre">Guido Cannetti</span>
+        <span class="ciudad"><small>en</small>Córdoba</span>
       </h1>
       <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Sorteo de guantes y tibiales, y asado con el Ninja. <b>Solo 120 lugares.</b></p>
       <div class="chips">
@@ -472,7 +476,7 @@ function demoInscribir(d){
   const entrada = d.tipo === 'espectador' ? { nombre: 'Espectador', precio: e.precioEspectador } : e.tarifa;
   const asado = { personas: d.personasAsado, total: e.asado.precio * d.personasAsado };
   return { ok:true, codigo:'NC-000', tipo: d.tipo === 'espectador' ? 'Espectador' : 'Seminario', entrada, asado, total: entrada.precio + asado.total,
-    horasParaPagar: e.horasParaPagar, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola Vale! (demo)') };
+    horasParaPagar: e.horasParaPagar, pago:{ alias:'theclan.aldea', banco:'', titular:'' }, whatsappComprobante: wa(WHATSAPP, 'Hola Vale! (demo)') };
 }
 
 const pesos = n => '$' + Math.round(n).toLocaleString('es-AR');
@@ -577,7 +581,7 @@ async function enviar(){
       (r.asado.personas ? '<br>Asado + bebida libre × ' + r.asado.personas + ': ' + pesos(r.asado.total) : '');
     $('pago').innerHTML = `Transferí <b>${pesos(r.total)}</b> al alias:<br>
       <span class="alias">${r.pago.alias}</span><button class="copiar" id="btn-copiar">Copiar</button><br>
-      <small>${r.pago.banco} · Titular: ${r.pago.titular}</small>`;
+      ${[r.pago.banco, r.pago.titular && 'Titular: ' + r.pago.titular].filter(Boolean).map(t => `<small>${t}</small>`).join(' · ')}`;
     $('ok-nota').innerHTML = `Tenés <b>${r.horasParaPagar} horas</b> para mandar el comprobante; después el lugar se libera. Guardá tu código.`;
     $('btn-copiar').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(r.pago.alias); $('btn-copiar').textContent = '¡Copiado!'; };
     $('btn-comprobante').onclick = () => window.open(r.whatsappComprobante, '_blank');
