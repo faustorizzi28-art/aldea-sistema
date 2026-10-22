@@ -16,7 +16,7 @@
 ## ⏳ Pendiente
 - [ ] ⚠️ **Alias, banco y titular** de la cuenta del evento.
 - [ ] ⚠️ **Precio entrada espectador** (en la página está $15.000 provisorio) y cupo de espectadores (80 provisorio).
-- [ ] ⚠️ **Fotos del Ninja con permiso** (pedírselas a él o a The Clan).
+- [ ] Fotos: ya están en la página. Confirmar con el Ninja / The Clan que se pueden usar (las de la UFC y BKFC son de esas organizaciones).
 - [ ] Edad mínima: en la página puse **14 años con autorización firmada** para entrenar; menores de 14 solo como espectadores. Confirmar.
 - [ ] Estacionamiento: ¿precio? ¿se incluye para los del asado?
 - [ ] Sonido y micrófono: averiguar.

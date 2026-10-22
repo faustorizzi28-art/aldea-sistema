@@ -42,8 +42,7 @@ En `Code.gs`, bloque `CONFIG`:
 - `precioEspectador`: confirmar (está en $15.000).
 - `cupoEspectadores`: confirmar (está en 80).
 
-Foto: subir una con permiso a una URL pública y ponerla en el `src` de la
-imagen del inicio (`index.html`). Sin foto se ve el cuadro "10 victorias".
+Fotos: van embebidas dentro de `index.html` (así funcionan en Apps Script sin subir nada aparte). Los originales recortados están en `img/`.
 
 ## Instalación
 1. **script.google.com** → Nuevo proyecto.
