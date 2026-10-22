@@ -140,6 +140,20 @@
   .opciones input:focus-visible + span{outline:2px solid var(--rojo); outline-offset:4px;}
   .check{display:flex; gap:10px; align-items:flex-start; font:500 13.5px/1.45 'Archivo',sans-serif; margin-top:16px; color:#3F3C34;}
   .check input{width:20px; height:20px; flex:0 0 auto; margin-top:1px; accent-color:var(--negro);}
+  .tipos{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .tipos label{margin:0; cursor:pointer; border:1.5px solid #DAD3C1; border-radius:14px; padding:12px 14px; background:#FFFEFA;}
+  .tipos input{position:absolute; opacity:0; pointer-events:none;}
+  .tipos span{display:flex; flex-direction:column; gap:2px;}
+  .tipos b{font:800 16px 'Archivo',sans-serif;}
+  .tipos small{font:500 13px 'Archivo',sans-serif; color:#5B574C;}
+  .tipos label:has(input:checked){background:var(--negro); border-color:var(--negro); color:var(--crema);}
+  .tipos label:has(input:checked) small{color:var(--amarillo);}
+  .tipos label:has(input:disabled){opacity:.45; cursor:default;}
+  .tipos input:focus-visible + span{outline:2px solid var(--rojo); outline-offset:4px;}
+  .extras{margin-top:12px; display:grid; gap:8px;}
+  .extras div{display:flex; justify-content:space-between; align-items:baseline; gap:12px; border:1px solid var(--linea); border-radius:14px; padding:14px 16px; font-size:15px;}
+  .extras small{color:var(--crema2); font-size:12.5px;}
+  .extras b{font-family:'Anton',sans-serif; font-weight:400; font-size:24px;}
   .detalle{margin-top:18px; padding-top:14px; border-top:1.5px dashed #DAD3C1; font-size:14px; color:#5B574C; display:grid; gap:4px;}
   .detalle div{display:flex; justify-content:space-between; gap:12px;}
   .detalle b{color:var(--negro);}
@@ -191,7 +205,7 @@
 
 <div class="top">
   <div class="wrap">
-    <div class="marca"><b>Aldea de Valle</b> × Teclan</div>
+    <div class="marca"><b>Aldea de Valle</b> × The Clan</div>
     <a class="btn btn-amarillo" href="#inscripcion">Inscribirme</a>
   </div>
 </div>
@@ -200,12 +214,12 @@
   <div class="fondo-txt" aria-hidden="true">NINJA</div>
   <div class="wrap grid">
     <div>
-      <div class="eyebrow">Córdoba · Sábado 14 de noviembre</div>
+      <div class="eyebrow">Córdoba · Sábado 14 de noviembre · 16hs</div>
       <h1 class="display">
         <span class="apodo">“Ninja”</span>
         <span class="nombre">Guido Cannetti</span>
       </h1>
-      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Después, asado. <b>Solo 120 lugares.</b></p>
+      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Sorteo de guantes y tibiales, y asado con el Ninja. <b>Solo 120 lugares.</b></p>
       <div class="chips">
         <span class="chip rojo">Ex UFC</span>
         <span class="chip">BKFC · Puño limpio</span>
@@ -217,7 +231,7 @@
       </div>
     </div>
     <div class="foto aparecer">
-      <!-- Para usar una foto real: subí img/ninja-cannetti.jpg (con permiso del peleador / Teclan) -->
+      <!-- Para usar una foto real: subí img/ninja-cannetti.jpg (con permiso del peleador / The Clan) -->
       <img src="../img/ninja-cannetti.jpg" alt="Guido 'Ninja' Cannetti" onerror="this.remove()">
       <div class="sin-foto"><div class="display">10<small>victorias en MMA</small></div></div>
       <div class="sello"><span>14 · NOV</span><span>Aldea de Valle</span></div>
@@ -227,7 +241,7 @@
 
 <div class="franja">
   <div class="wrap">
-    <div><div class="k">Cuándo</div><div class="v" id="txt-fecha">Sáb 14 de noviembre</div></div>
+    <div><div class="k">Cuándo</div><div class="v" id="txt-fecha">Sáb 14 nov · 16hs</div></div>
     <div><div class="k">Dónde</div><div class="v">Aldea de Valle · Córdoba</div></div>
     <div>
       <div class="k">Faltan</div>
@@ -266,14 +280,15 @@
   <div class="wrap">
     <div class="eyebrow">El seminario</div>
     <h2 class="titulo display">Lo que vas a <em>entrenar</em></h2>
-    <p class="texto">Para los que entrenan y para los que miran todas las carteleras. No hace falta experiencia: el Ninja adapta cada bloque al nivel de cada uno.</p>
+    <p class="texto">Técnicas de a dos, <b>frente a frente</b>, sin sparring. No hace falta experiencia: el Ninja adapta cada bloque al nivel de cada uno y los profes de <b>The Clan</b> ayudan a corregir.</p>
     <div class="cards">
       <div class="card aparecer"><div class="ic">🥋</div><h3>MMA</h3><p>Cómo se combinan golpes, derribos y suelo. Lo que funciona de verdad en el octágono.</p></div>
       <div class="card aparecer"><div class="ic">🦵</div><h3>Muay Thai</h3><p>Patadas, rodillas, codos y el clinch tailandés, con los detalles que no se ven por TV.</p></div>
       <div class="card aparecer"><div class="ic">🥊</div><h3>Kickboxing</h3><p>Combinaciones de manos y piernas, distancia y cómo salir de la línea de ataque.</p></div>
       <div class="card aparecer destacada"><div class="ic">✊</div><h3>Tips de puño limpio</h3><p>Lo que aprendió en la BKFC: cómo se cierra la mano sin guante, guardia, cortes y por qué cambia todo.</p></div>
       <div class="card aparecer"><div class="ic">🎤</div><h3>Charla, fotos y firmas</h3><p>Su camino de Argentina a la UFC y al bare knuckle. Después, fotos con él: traé guantes o remera para firmar.</p></div>
-      <div class="card aparecer"><div class="ic">🍖</div><h3>Asado en Aldea</h3><p>Para cerrar: asado en el predio, con opción de bebida libre. Lo sumás al inscribirte.</p></div>
+      <div class="card aparecer"><div class="ic">🎁</div><h3>Sorteo</h3><p>Entre todos los que entrenan se sortean guantes y tibiales. Tu código de inscripción es tu número.</p></div>
+      <div class="card aparecer"><div class="ic">🍖</div><h3>Asado con el Ninja</h3><p>Para cerrar: asado con bebida libre hasta la 1 de la mañana, comiendo con él. Lo sumás al inscribirte.</p></div>
     </div>
   </div>
 </section>
@@ -283,7 +298,7 @@
     <div>
       <div class="eyebrow">Inscripción</div>
       <h2 class="titulo display">Asegurá <em>tu lugar</em></h2>
-      <p class="texto">El cupo es de <b>120 personas</b> y se llena por orden de pago. Cuanto antes te anotás, menos pagás.</p>
+      <p class="texto">El seminario tiene <b>120 lugares</b> y se llena por orden de pago. Cuanto antes te anotás, menos pagás. ¿No entrenás? Hay <b>entrada de espectador</b>.</p>
 
       <div class="cupo">
         <div class="fila">
@@ -291,15 +306,16 @@
           <div class="eyebrow" id="cupo-quedan">Cargando…</div>
         </div>
         <div class="barra"><i id="cupo-barra"></i></div>
-        <div class="nota" id="cupo-nota">lugares ocupados</div>
+        <div class="nota" id="cupo-nota">lugares del seminario ocupados</div>
       </div>
 
       <div class="precios" id="precios"></div>
+      <div class="extras" id="extras"></div>
 
       <div class="pasos">
-        <div class="paso"><div class="num">1</div><div><h4>Completá el formulario</h4><p>Tus datos quedan registrados con un código de inscripción.</p></div></div>
-        <div class="paso"><div class="num">2</div><div><h4>Transferí al alias</h4><p>Te mostramos el alias del evento apenas te inscribís.</p></div></div>
-        <div class="paso"><div class="num">3</div><div><h4>Mandá el comprobante</h4><p>Por WhatsApp, con un botón. Con eso tu lugar queda confirmado.</p></div></div>
+        <div class="paso"><div class="num">1</div><div><h4>Completá el formulario</h4><p>Te damos un código: es tu inscripción y tu número para el sorteo.</p></div></div>
+        <div class="paso"><div class="num">2</div><div><h4>Transferí al alias</h4><p>Tenés <b>48 horas</b>. Pasado ese tiempo, el lugar se libera para otra persona.</p></div></div>
+        <div class="paso"><div class="num">3</div><div><h4>Mandá el comprobante</h4><p>Por WhatsApp a Valeria, con un botón. Con eso tu lugar queda confirmado.</p></div></div>
       </div>
     </div>
 
@@ -307,6 +323,11 @@
       <div id="paso-form">
         <h3>Inscribirme</h3>
         <p class="sub">Tarda menos de un minuto.</p>
+        <label>Entrada</label>
+        <div class="tipos" id="f-tipo">
+          <label><input type="radio" name="tipo" value="seminario" checked><span><b>Entreno</b><small id="tipo-sem-precio">Seminario</small></span></label>
+          <label><input type="radio" name="tipo" value="espectador"><span><b>Solo miro</b><small id="tipo-esp-precio">Espectador</small></span></label>
+        </div>
         <label for="f-nombre">Nombre y apellido</label>
         <input id="f-nombre" type="text" autocomplete="name" placeholder="Ej: Juan Pérez">
         <div class="dos">
@@ -321,21 +342,29 @@
         </div>
         <label for="f-email">Email <small>(opcional)</small></label>
         <input id="f-email" type="email" autocomplete="email" placeholder="tu@mail.com">
-        <label>¿Entrenás algo?</label>
-        <div class="opciones" id="f-exp">
-          <label><input type="radio" name="exp" value="Nada todavía"><span>Nada todavía</span></label>
-          <label><input type="radio" name="exp" value="MMA"><span>MMA</span></label>
-          <label><input type="radio" name="exp" value="Boxeo / Kick"><span>Boxeo / Kick</span></label>
-          <label><input type="radio" name="exp" value="BJJ / Grappling"><span>BJJ / Grappling</span></label>
-          <label><input type="radio" name="exp" value="Otra"><span>Otra</span></label>
+        <div id="bloque-exp">
+          <label>¿Entrenás algo?</label>
+          <div class="opciones" id="f-exp">
+            <label><input type="radio" name="exp" value="Nada todavía"><span>Nada todavía</span></label>
+            <label><input type="radio" name="exp" value="MMA"><span>MMA</span></label>
+            <label><input type="radio" name="exp" value="Muay Thai / Kick"><span>Muay Thai / Kick</span></label>
+            <label><input type="radio" name="exp" value="Boxeo"><span>Boxeo</span></label>
+            <label><input type="radio" name="exp" value="BJJ / Grappling"><span>BJJ / Grappling</span></label>
+            <label><input type="radio" name="exp" value="Otra"><span>Otra</span></label>
+          </div>
         </div>
-        <label>¿Te quedás al asado?</label>
-        <div class="opciones" id="f-asado"></div>
-        <div id="asado-personas" class="oculto">
-          <label for="f-personas">¿Cuántos se quedan? <small>(contándote a vos)</small></label>
-          <select id="f-personas"></select>
+        <div id="bloque-asado">
+          <label>¿Te quedás al asado con el Ninja? <small id="asado-cierre"></small></label>
+          <div class="opciones" id="f-asado">
+            <label><input type="radio" name="asado" value="no" checked><span>No</span></label>
+            <label><input type="radio" name="asado" value="si"><span id="asado-op">Sí, asado + bebida libre</span></label>
+          </div>
+          <div id="asado-personas" class="oculto">
+            <label for="f-personas">¿Cuántos se quedan? <small>(contándote a vos)</small></label>
+            <select id="f-personas"></select>
+          </div>
         </div>
-        <label class="check"><input id="f-acepta" type="checkbox"> <span>Declaro estar en condiciones físicas de hacer actividad y participo bajo mi responsabilidad. Los menores de 18 vienen con autorización de un adulto.</span></label>
+        <label class="check"><input id="f-acepta" type="checkbox"> <span id="txt-acepta"></span></label>
         <div class="detalle" id="detalle"></div>
         <div class="total"><span class="k">Total</span><span class="v" id="total-v">—</span></div>
         <button class="btn btn-negro" id="btn-enviar" onclick="enviar()">Confirmar inscripción</button>
@@ -347,13 +376,13 @@
         <h3>¡Estás adentro!</h3>
         <p class="sub" id="ok-sub"></p>
         <div class="pago" id="pago"></div>
-        <button class="btn btn-wa" id="btn-comprobante">Mandar comprobante por WhatsApp</button>
-        <p class="sub" style="margin-top:12px">Tu lugar queda confirmado cuando recibimos el comprobante. Guardá tu código.</p>
+        <button class="btn btn-wa" id="btn-comprobante">Mandar comprobante a Valeria</button>
+        <p class="sub" style="margin-top:12px" id="ok-nota"></p>
       </div>
 
       <div id="paso-agotado" class="oculto">
         <h3>Cupo completo</h3>
-        <p class="sub">Se llenaron los 120 lugares. Escribinos y te avisamos si se libera alguno.</p>
+        <p class="sub">Se llenaron los lugares online. Escribinos: si se libera alguno te avisamos, y si queda lugar se vende en puerta.</p>
         <a class="btn btn-wa" id="btn-espera" href="#">Lista de espera por WhatsApp</a>
       </div>
       <div class="demo oculto" id="demo">Vista previa: el formulario no guarda datos hasta que la página se publique desde Apps Script.</div>
@@ -365,19 +394,23 @@
   <div class="wrap">
     <div class="eyebrow">Preguntas</div>
     <h2 class="titulo display" style="margin-bottom:20px">Lo que <em>todos preguntan</em></h2>
-    <details><summary>¿Tengo que saber pelear?</summary><p>No. El seminario es para todos los niveles, y si preferís venir solo a la charla y a las fotos también podés.</p></details>
-    <details><summary>¿Qué tengo que llevar?</summary><p>Ropa cómoda para entrenar, agua y, si tenés, vendas y guantes. Si querés que te firme algo, traelo.</p></details>
-    <details><summary>¿Cuándo queda confirmado mi lugar?</summary><p>Cuando mandás el comprobante de transferencia por WhatsApp. Las inscripciones sin pago pueden liberarse para que entre otra persona.</p></details>
-    <details><summary>¿Cómo es lo del asado?</summary><p>Es opcional y se suma al inscribirte: asado $10.000 por persona, o asado con bebida libre $23.000. Podés anotar acompañantes aunque no hagan el seminario.</p></details>
-    <details><summary>¿Pueden ir menores?</summary><p>Sí, con autorización de un adulto responsable.</p></details>
-    <details><summary>¿Hay devolución?</summary><p>Si el evento se suspende, se devuelve el 100%. Si no podés ir, podés pasarle tu lugar a otra persona avisándonos por WhatsApp.</p></details>
+    <details><summary>¿A qué hora y dónde es?</summary><p>Sábado 14 de noviembre a las 16hs en Aldea de Valle. Si somos hasta 80 se hace en el salón; si somos más, en la cancha de pasto sintético.</p></details>
+    <details><summary>¿Tengo que saber pelear?</summary><p>No. Se trabajan técnicas de a dos, frente a frente, sin sparring. Es para todos los niveles, y los profes de The Clan ayudan a corregir.</p></details>
+    <details><summary>¿Qué tengo que llevar?</summary><p>Ropa cómoda, agua, vendas, guantes y tibiales si tenés. Los tatamis los ponemos nosotros. Si querés que el Ninja te firme algo, traelo.</p></details>
+    <details><summary>¿Puedo ir solo a mirar?</summary><p>Sí, con la entrada de espectador. Ves todo el seminario y la charla, y podés sumarte al asado.</p></details>
+    <details><summary>¿Cómo es el sorteo?</summary><p>Todos los que entrenan participan con su código de inscripción. Se sortean guantes y tibiales.</p></details>
+    <details><summary>¿Cómo es lo del asado?</summary><p>Asado con bebida libre (con alcohol) hasta la 1 de la mañana, comiendo con el Ninja, por <span class="asado-precio">$22.000</span> por persona. Podés anotar acompañantes aunque no entrenen. Se anota hasta 3 días antes (<span class="asado-hasta">11 de noviembre</span>) para comprar la carne justa. No hay opción vegetariana ni sin TACC.</p></details>
+    <details><summary>¿Cuándo queda confirmado mi lugar?</summary><p>Cuando le mandás el comprobante a Valeria por WhatsApp. Tenés 48 horas desde que te inscribís; después el lugar se libera.</p></details>
+    <details><summary>¿Pueden ir menores?</summary><p>Para entrenar, desde los 14 años con autorización firmada por madre, padre o tutor. Los más chicos pueden venir como espectadores acompañados de un adulto.</p></details>
+    <details><summary>¿Hay devolución?</summary><p>No. Si no podés ir, podés pasarle tu lugar a otra persona avisándole a Valeria por WhatsApp.</p></details>
+    <details><summary>¿Hay estacionamiento?</summary><p>Sí, en el predio, y se paga aparte. La cantina está abierta toda la tarde.</p></details>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <div><b>Aldea de Valle</b> × <b>Teclan</b> · Córdoba</div>
-    <a class="btn btn-borde" id="btn-consulta" href="#">Consultas por WhatsApp</a>
+    <div><b>Aldea de Valle</b> × <b>The Clan</b> · Córdoba</div>
+    <a class="btn btn-borde" id="btn-consulta" href="#">Consultas a Valeria</a>
   </div>
 </footer>
 
@@ -386,17 +419,14 @@
 <script>
 // Si la página se publica fuera de Apps Script (ej. Netlify), pegá acá la URL /exec.
 const API_URL_FIJA = '';
-const EVENTO = new Date('2026-11-14T16:00:00-03:00'); // ajustar al horario confirmado
-const WHATSAPP = '5493516197928';
-const CUPO_DEMO = { inscriptos: 0, cupoMaximo: 120, objetivo: 100, precios: [
+const EVENTO = new Date('2026-11-14T16:00:00-03:00');
+const WHATSAPP = '5493513855564'; // Valeria
+// Solo para la vista previa (sin Apps Script). Los valores reales salen de CONFIG en Code.gs.
+const DEMO = { inscriptos: 0, espectadores: 0, cupoMaximo: 120, cupoEspectadores: 80, objetivo: 100, precios: [
   { nombre: 'Preventa', precio: 42000, hasta: '2026-10-31' },
   { nombre: 'General', precio: 49000, hasta: '2026-11-13' },
   { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
-], asado: [
-  { id: 'no', nombre: 'Sin asado', precio: 0 },
-  { id: 'asado', nombre: 'Asado', precio: 10000 },
-  { id: 'bebida', nombre: 'Asado + bebida libre', precio: 23000 },
-], maxPersonasAsado: 6 };
+], precioEspectador: 15000, asado: { nombre: 'Asado + bebida libre', precio: 22000, hasta: '2026-11-11' }, maxPersonasAsado: 6, horasParaPagar: 48 };
 
 const enAppsScript = typeof google !== 'undefined' && google.script && google.script.run;
 const modoDemo = !enAppsScript && !API_URL_FIJA;
@@ -410,23 +440,28 @@ function llamar(fn, arg){
       if (!r.ok) throw new Error(r.error); return fn === 'estado' ? r.estado : r;
     });
   }
-  return Promise.resolve(fn === 'estado' ? conTarifa(CUPO_DEMO) : demoInscribir(arg));
+  return Promise.resolve(fn === 'estado' ? estadoDemo() : demoInscribir(arg));
 }
 
 function hoyStr(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Cordoba' }); }
-function conTarifa(e){ return Object.assign({}, e, { tarifa: e.precios.find(p => hoyStr() <= p.hasta) || null }); }
+function estadoDemo(){
+  return Object.assign({}, DEMO, { tarifa: DEMO.precios.find(p => hoyStr() <= p.hasta) || null,
+    asado: Object.assign({ abierto: hoyStr() <= DEMO.asado.hasta }, DEMO.asado) });
+}
 function demoInscribir(d){
-  if (!d.acepta) throw new Error('Completá: aceptar el deslinde');
-  const t = conTarifa(CUPO_DEMO).tarifa;
-  const op = CUPO_DEMO.asado.find(a => a.id === d.asado) || CUPO_DEMO.asado[0];
-  const asado = { nombre: op.nombre, personas: op.precio ? d.personasAsado : 0, total: op.precio * (op.precio ? d.personasAsado : 0) };
-  return { ok:true, codigo:'NC-000', precio:t.precio, tarifa:t.nombre, asado, total: t.precio + asado.total, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola! (demo)') };
+  const e = estadoDemo();
+  const entrada = d.tipo === 'espectador' ? { nombre: 'Espectador', precio: e.precioEspectador } : e.tarifa;
+  const asado = { personas: d.personasAsado, total: e.asado.precio * d.personasAsado };
+  return { ok:true, codigo:'NC-000', tipo: d.tipo === 'espectador' ? 'Espectador' : 'Seminario', entrada, asado, total: entrada.precio + asado.total,
+    horasParaPagar: e.horasParaPagar, pago:{ alias:'COMPLETAR.ALIAS', banco:'—', titular:'—' }, whatsappComprobante: wa(WHATSAPP, 'Hola Vale! (demo)') };
 }
 
 const pesos = n => '$' + Math.round(n).toLocaleString('es-AR');
 const wa = (n, t) => 'https://wa.me/' + n + '?text=' + encodeURIComponent(t);
 const fechaCorta = s => new Date(s + 'T12:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'short' });
+const fechaLarga = s => new Date(s + 'T12:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'long' });
 const $ = id => document.getElementById(id);
+const tipoElegido = () => (document.querySelector('input[name=tipo]:checked') || {}).value || 'seminario';
 
 function pintarEstado(e){
   ESTADO = e;
@@ -434,60 +469,83 @@ function pintarEstado(e){
   $('cupo-txt').innerHTML = '<span>' + n + '</span> / ' + e.cupoMaximo;
   $('cupo-quedan').textContent = quedan > 0 ? 'Quedan ' + quedan : 'Agotado';
   $('cupo-barra').style.width = (n / e.cupoMaximo * 100) + '%';
-  $('cupo-nota').textContent = quedan <= 20 && quedan > 0 ? '¡Últimos lugares!' : 'lugares ocupados';
+  $('cupo-nota').textContent = quedan <= 20 && quedan > 0 ? '¡Últimos lugares del seminario!' : 'lugares del seminario ocupados';
 
+  // los precios cambian solos según la fecha (la tarifa vigente la decide el servidor)
   const hoy = hoyStr();
   $('precios').innerHTML = e.precios.map(p => {
     const vig = e.tarifa && e.tarifa.nombre === p.nombre, pas = hoy > p.hasta;
     return `<div class="precio ${vig ? 'vigente' : ''} ${pas ? 'pasado' : ''}">${vig ? '<span class="badge">Ahora</span>' : ''}
-      <div class="k">${p.nombre}</div><div class="v display">${pesos(p.precio)}</div><div class="h">${pas ? 'Terminó' : 'Hasta el ' + fechaCorta(p.hasta)}</div></div>`;
+      <div class="k">Seminario · ${p.nombre}</div><div class="v display">${pesos(p.precio)}</div><div class="h">${pas ? 'Terminó' : 'Hasta el ' + fechaCorta(p.hasta)}</div></div>`;
   }).join('');
+  $('extras').innerHTML =
+    `<div><span>👀 Entrada espectador</span><b>${pesos(e.precioEspectador)}</b></div>` +
+    `<div><span>🍖 ${e.asado.nombre} <small>${e.asado.abierto ? 'hasta el ' + fechaCorta(e.asado.hasta) : 'cerrado'}</small></span><b>${pesos(e.asado.precio)}</b></div>`;
 
-  if (!$('f-asado').children.length) {
-    $('f-asado').innerHTML = e.asado.map((a, i) => `<label><input type="radio" name="asado" value="${a.id}" ${i ? '' : 'checked'}><span>${a.nombre}${a.precio ? ' · ' + pesos(a.precio) : ''}</span></label>`).join('');
-    $('f-personas').innerHTML = Array.from({ length: e.maxPersonasAsado }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? 'personas' : 'persona (solo yo)'}</option>`).join('');
-    $('f-asado').addEventListener('change', pintarTotal);
-    $('f-personas').addEventListener('change', pintarTotal);
+  if (e.tarifa) {
+    $('tipo-sem-precio').textContent = 'Seminario · ' + pesos(e.tarifa.precio);
+    $('flot-precio').textContent = pesos(e.tarifa.precio);
   }
-  if (e.tarifa) $('flot-precio').textContent = pesos(e.tarifa.precio);
-  pintarTotal();
-  if (quedan <= 0 || !e.tarifa) {
+  $('tipo-esp-precio').textContent = 'Espectador · ' + pesos(e.precioEspectador);
+  $('asado-op').textContent = 'Sí · ' + pesos(e.asado.precio) + ' c/u';
+  $('asado-cierre').textContent = e.asado.abierto ? '(hasta el ' + fechaLarga(e.asado.hasta) + ')' : '';
+  document.querySelectorAll('.asado-precio').forEach(x => x.textContent = pesos(e.asado.precio));
+  document.querySelectorAll('.asado-hasta').forEach(x => x.textContent = fechaLarga(e.asado.hasta));
+  $('bloque-asado').classList.toggle('oculto', !e.asado.abierto);
+  if (!$('f-personas').children.length) {
+    $('f-personas').innerHTML = Array.from({ length: e.maxPersonasAsado }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? 'personas' : 'persona (solo yo)'}</option>`).join('');
+  }
+  const espAgotado = e.espectadores >= e.cupoEspectadores;
+  document.querySelector('input[name=tipo][value=espectador]').disabled = espAgotado;
+  if (espAgotado) $('tipo-esp-precio').textContent = 'Agotado';
+  if (quedan <= 0) {
+    document.querySelector('input[name=tipo][value=seminario]').disabled = true;
+    $('tipo-sem-precio').textContent = 'Agotado';
+    if (!espAgotado) document.querySelector('input[name=tipo][value=espectador]').checked = true;
+  }
+  if ((quedan <= 0 && espAgotado) || !e.tarifa) {
     $('paso-form').classList.add('oculto');
     $('paso-agotado').classList.remove('oculto');
-    if (!e.tarifa) $('paso-agotado').querySelector('p').textContent = 'Las inscripciones online ya cerraron. Escribinos por WhatsApp.';
+    if (!e.tarifa) $('paso-agotado').querySelector('p').textContent = 'Las inscripciones online ya cerraron. Si queda lugar, se vende en puerta.';
   }
+  pintarTotal();
 }
 
 function asadoElegido(){
-  const id = (document.querySelector('input[name=asado]:checked') || {}).value || 'no';
-  const op = ESTADO.asado.find(a => a.id === id) || ESTADO.asado[0];
-  const personas = op.precio ? parseInt($('f-personas').value, 10) || 1 : 0;
-  return { id, nombre: op.nombre, precio: op.precio, personas, total: op.precio * personas };
+  const si = (document.querySelector('input[name=asado]:checked') || {}).value === 'si' && ESTADO.asado.abierto;
+  const personas = si ? parseInt($('f-personas').value, 10) || 1 : 0;
+  return { personas, total: ESTADO.asado.precio * personas };
 }
 
 function pintarTotal(){
   if (!ESTADO || !ESTADO.tarifa) return;
+  const esp = tipoElegido() === 'espectador';
+  const entrada = esp ? { nombre: 'Espectador', precio: ESTADO.precioEspectador } : ESTADO.tarifa;
   const a = asadoElegido();
-  $('asado-personas').classList.toggle('oculto', !a.precio);
-  $('detalle').innerHTML = `<div><span>Entrada · ${ESTADO.tarifa.nombre}</span><b>${pesos(ESTADO.tarifa.precio)}</b></div>` +
-    (a.personas ? `<div><span>${a.nombre} × ${a.personas}</span><b>${pesos(a.total)}</b></div>` : '');
-  $('total-v').textContent = pesos(ESTADO.tarifa.precio + a.total);
+  $('bloque-exp').classList.toggle('oculto', esp);
+  $('asado-personas').classList.toggle('oculto', !a.personas);
+  $('txt-acepta').textContent = esp
+    ? 'Acepto que no hay devolución y que el estacionamiento se paga aparte.'
+    : 'Declaro estar en condiciones físicas de entrenar y participo bajo mi responsabilidad. Acepto que no hay devolución. Si soy menor (desde 14 años), llevo la autorización firmada.';
+  $('detalle').innerHTML = `<div><span>${esp ? 'Entrada espectador' : 'Seminario · ' + entrada.nombre}</span><b>${pesos(entrada.precio)}</b></div>` +
+    (a.personas ? `<div><span>${ESTADO.asado.nombre} × ${a.personas}</span><b>${pesos(a.total)}</b></div>` : '');
+  $('total-v').textContent = pesos(entrada.precio + a.total);
 }
 
 async function enviar(){
   const exp = document.querySelector('input[name=exp]:checked');
+  const tipo = tipoElegido();
   const d = {
-    nombre: $('f-nombre').value.trim(), dni: $('f-dni').value.trim(), tel: $('f-tel').value.trim(),
-    email: $('f-email').value.trim(), experiencia: exp ? exp.value : '', acepta: $('f-acepta').checked,
+    tipo, nombre: $('f-nombre').value.trim(), dni: $('f-dni').value.trim(), tel: $('f-tel').value.trim(),
+    email: $('f-email').value.trim(), experiencia: tipo === 'seminario' && exp ? exp.value : '',
+    acepta: $('f-acepta').checked, personasAsado: asadoElegido().personas,
   };
-  const a = asadoElegido();
-  d.asado = a.id; d.personasAsado = a.personas;
   const msg = $('msg'), btn = $('btn-enviar');
   const faltan = [];
   if (d.nombre.length < 3) faltan.push('nombre y apellido');
   if (d.dni.replace(/\D/g, '').length < 7) faltan.push('DNI');
   if (d.tel.replace(/\D/g, '').length < 8) faltan.push('WhatsApp');
-  if (!d.acepta) faltan.push('aceptar el deslinde');
+  if (!d.acepta) faltan.push('aceptar las condiciones');
   if (faltan.length) { msg.textContent = 'Completá: ' + faltan.join(', ') + '.'; msg.className = 'msg err'; return; }
 
   btn.disabled = true; btn.textContent = 'Guardando…'; msg.textContent = ''; msg.className = 'msg';
@@ -495,11 +553,13 @@ async function enviar(){
     const r = await llamar('inscribir', d);
     $('paso-form').classList.add('oculto');
     $('paso-ok').classList.remove('oculto');
-    $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b> · Entrada ' + r.tarifa + ' ' + pesos(r.precio) +
-      (r.asado && r.asado.personas ? '<br>' + r.asado.nombre + ' × ' + r.asado.personas + ': ' + pesos(r.asado.total) : '');
+    $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b>' + (r.tipo === 'Seminario' ? ' (es tu número para el sorteo)' : '') +
+      '<br>' + (r.tipo === 'Seminario' ? 'Seminario · ' + r.entrada.nombre : 'Espectador') + ': ' + pesos(r.entrada.precio) +
+      (r.asado.personas ? '<br>Asado + bebida libre × ' + r.asado.personas + ': ' + pesos(r.asado.total) : '');
     $('pago').innerHTML = `Transferí <b>${pesos(r.total)}</b> al alias:<br>
       <span class="alias">${r.pago.alias}</span><button class="copiar" id="btn-copiar">Copiar</button><br>
       <small>${r.pago.banco} · Titular: ${r.pago.titular}</small>`;
+    $('ok-nota').innerHTML = `Tenés <b>${r.horasParaPagar} horas</b> para mandar el comprobante; después el lugar se libera. Guardá tu código.`;
     $('btn-copiar').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(r.pago.alias); $('btn-copiar').textContent = '¡Copiado!'; };
     $('btn-comprobante').onclick = () => window.open(r.whatsappComprobante, '_blank');
     $('form-card').scrollIntoView({ behavior:'smooth', block:'start' });
@@ -518,11 +578,14 @@ function cuentaRegresiva(){
   $('c-m').textContent = String(Math.floor(ms / 6e4) % 60).padStart(2, '0');
 }
 
-$('btn-consulta').href = wa(WHATSAPP, 'Hola! Quiero consultar por el evento del Ninja Cannetti en Aldea de Valle.');
-$('btn-espera').href = wa(WHATSAPP, 'Hola! Quiero quedar en lista de espera para el evento del Ninja Cannetti.');
+$('f-tipo').addEventListener('change', pintarTotal);
+$('f-asado').addEventListener('change', pintarTotal);
+$('f-personas').addEventListener('change', pintarTotal);
+$('btn-consulta').href = wa(WHATSAPP, 'Hola Vale! Quiero consultar por el evento del Ninja Cannetti en Aldea de Valle.');
+$('btn-espera').href = wa(WHATSAPP, 'Hola Vale! Quiero quedar en lista de espera para el evento del Ninja Cannetti.');
 if (modoDemo) $('demo').classList.remove('oculto');
 cuentaRegresiva(); setInterval(cuentaRegresiva, 30000);
-llamar('estado').then(pintarEstado).catch(() => pintarEstado(conTarifa(CUPO_DEMO)));
+llamar('estado').then(pintarEstado).catch(() => pintarEstado(estadoDemo()));
 
 // animaciones al hacer scroll + botón flotante en celular
 const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add('si'); io.unobserve(x.target); } }), { threshold: .15 });
