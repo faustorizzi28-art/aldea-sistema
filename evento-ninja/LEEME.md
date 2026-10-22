@@ -42,7 +42,7 @@ En `Code.gs`, bloque `CONFIG`:
 - `precioEspectador`: confirmar (está en $15.000).
 - `cupoEspectadores`: confirmar (está en 80).
 
-Fotos: van embebidas dentro de `index.html` (así funcionan en Apps Script sin subir nada aparte). Los originales recortados están en `img/`.
+Fotos y video del Ninja (sección "Mensaje del Ninja"): van embebidos dentro de `index.html` (así funcionan en Apps Script sin subir nada aparte). Los originales recortados están en `img/`.
 
 ## Instalación
 1. **script.google.com** → Nuevo proyecto.
@@ -74,3 +74,7 @@ carne + bebida libre con alcohol hasta la 1am: calcularlo con el proveedor).
 Falta restar sonido, fotógrafo, sorteo (guantes y tibiales) y la parte de The Clan.
 
 Pendientes de organización: ver `PREGUNTAS.md`.
+
+Nota: con el video embebido `index.html` pesa ~1,2 MB. Si al pegarlo en
+Apps Script el editor anda lento, alternativa: subir el video a YouTube
+(oculto) o Drive y reemplazar el `<video>` por el reproductor embebido.
