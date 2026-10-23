@@ -18,6 +18,7 @@ import glorin from "../guiones/glorin-reel-cumples.json";
 import aldeaPileta from "../guiones/historia-aldea-pileta.json";
 import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
 import teaserDewey from "../guiones/teaser-colonia-dewey.json";
+import { PortadaDewey } from "./Portada";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -150,6 +151,7 @@ export const RemotionRoot: React.FC = () => {
       defaultProps={teaserDewey as GuionTeaser}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionTeaser(props) })}
     />
+    <Composition id="PortadaDewey" component={PortadaDewey} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
     </>
   );
 };
