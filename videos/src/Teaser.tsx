@@ -14,7 +14,7 @@ export type GuionTeaser = {
   titulo: string;
   segundos: number;
   escenas: EscenaTeaser[];
-  revelacion: { desde: number; arriba: string; grande: string; abajo?: string; foto?: string; color?: string };
+  revelacion: { desde: number; arriba: string; grande: string; abajo?: string; foto?: string; color?: string; logo?: string };
   musica: string;
 };
 
@@ -75,13 +75,19 @@ const Revelacion: React.FC<{ r: GuionTeaser["revelacion"] }> = ({ r }) => {
       {r.foto ? (
         <Img src={staticFile(`fotos/${r.foto}`)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})`, filter: "brightness(0.6)" }} />
       ) : (
-        <AbsoluteFill style={{ background: `radial-gradient(80% 60% at 50% 45%, ${r.color ?? "#E8892B"}, #3a1406 75%, #120502)`, transform: `scale(${zoom})` }} />
+        <AbsoluteFill style={{ background: `radial-gradient(80% 60% at 50% 45%, ${r.color ?? "#E8892B"}, #07263d 75%, #020a12)`, transform: `scale(${zoom})` }} />
       )}
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: 28, padding: 70, textAlign: "center" }}>
+        {r.logo && (
+          <Img
+            src={staticFile(`fotos/${r.logo}`)}
+            style={{ width: 900, height: "auto", opacity: v(2), transform: `scale(${0.85 + 0.15 * v(2)}) rotate(${(1 - v(2)) * -4}deg)`, filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.45))" }}
+          />
+        )}
         <div style={{ fontFamily: MONT, fontWeight: 800, fontSize: 46, letterSpacing: "0.3em", color: "#FFE9C7", opacity: v(6) }}>{r.arriba}</div>
-        <div style={{ fontFamily: MONT, fontWeight: 900, fontSize: 150, lineHeight: 0.95, color: "white", whiteSpace: "pre-line", opacity: v(2), transform: `scale(${0.9 + 0.1 * v(2)})`, textShadow: "0 10px 50px rgba(0,0,0,0.5)" }}>
+        {r.grande && <div style={{ fontFamily: MONT, fontWeight: 900, fontSize: 150, lineHeight: 0.95, color: "white", whiteSpace: "pre-line", opacity: v(2), transform: `scale(${0.9 + 0.1 * v(2)})`, textShadow: "0 10px 50px rgba(0,0,0,0.5)" }}>
           {r.grande}
-        </div>
+        </div>}
         {r.abajo && <div style={{ fontFamily: MONT, fontWeight: 600, fontSize: 48, color: "white", opacity: v(40), whiteSpace: "pre-line", marginTop: 20 }}>{r.abajo}</div>}
       </AbsoluteFill>
       <AbsoluteFill style={{ backgroundColor: "white", opacity: flash }} />

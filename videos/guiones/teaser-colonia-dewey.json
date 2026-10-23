@@ -48,9 +48,11 @@
   ],
   "revelacion": {
     "desde": 19.4,
-    "arriba": "COLONIA DE VERANO",
-    "grande": "DEWEY\n2026–27",
-    "abajo": "Próximamente.\nToda la información, muy pronto."
+    "arriba": "VERANO 2026–27",
+    "grande": "",
+    "abajo": "Próximamente.\nToda la información, muy pronto.",
+    "logo": "logo-colonia-dewey.png",
+    "color": "#1B6FA8"
   },
   "musica": "tension-teaser.mp3"
 }
