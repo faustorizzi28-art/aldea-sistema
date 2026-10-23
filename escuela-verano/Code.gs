@@ -1,5 +1,5 @@
 /**
- * Escuela de Verano — Aldea de Valle + Colonia de Güey
+ * Escuela de Verano — Aldea de Valle + Colonia Dewey
  * ------------------------------------------------------------
  * Una sola app web (Google Apps Script pegado en una planilla) con tres puertas:
  *
@@ -41,7 +41,9 @@ const CONFIG = {
   horasTurnoMax: 14,            // entrada sin salida más vieja que esto = olvidada
   avisarRetiroFamilia: false,   // true = mail a la familia cuando el profe registra quién retiró al chico
   aprobarFotos: true,           // true = las fotos de los profes las aprueba el coordinador antes de que las vean las familias
-  minutosTolerancia: 10,        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
+  minutosTolerancia: 10,
+  fotoParaCerrarTurno: ['profe', 'auxiliar'],   // estos roles tienen que subir al menos una foto o video del día para marcar la salida
+  maxVideoMB: 300,        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
   grupos: [
     { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 3,  edadMax: 4 },
     { id: 'exploradores', nombre: 'Exploradores', emoji: '🧭', edadMin: 5,  edadMax: 6 },
@@ -56,70 +58,76 @@ const CONFIG = {
       direccion: 'República de China 1890, Valle Escondido, Córdoba',
       whatsapp: '5493515308489',
       lat: -31.364971, lng: -64.278477, radio: 150,
-      inicio: '2026-12-14', fin: '2027-02-26',
-      feriados: ['2026-12-25', '2027-01-01', '2027-02-15', '2027-02-16'],
-      cupoPorGrupo: 25,
+      inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
+      feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
+      cupoPorGrupo: 30,   // si se pasa, la inscripción entra igual y se avisa para abrir otro grupo
       bajada: 'Naturaleza, deporte y pileta en el predio de Aldea, en Valle Escondido.',
       ficha: [  // misma lista de renglones en las dos sedes: así se arma la comparación
         ['Edades', 'De 3 a 13 años, en grupos por edad'],
-        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 17 h'],
+        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 16 h · Pre hora desde las 8 h'],
         ['Pileta', 'Sí, con guardavidas y clases de natación'],
-        ['Comida', 'Merienda incluida · almuerzo opcional'],
+        ['Comida', 'Merienda incluida · almuerzo opcional ($10.000 por día)'],
         ['Actividades', 'Deportes, artes marciales, juegos en la naturaleza, talleres'],
         ['Traslado', 'Sin traslado (a confirmar)']
       ],
-      pago: { alias: 'faustorizzi', banco: 'Brubank', titular: 'Fausto Rizzi', cbu: '' },
+      pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Aldea: a confirmar (vacío = se pasa por WhatsApp)
       precios: {
-        dia: 28000,
-        semanas: [0, 110000, 205000, 290000, 365000, 440000, 510000, 575000, 640000, 700000, 750000],
-        semanaAdicional: 60000,
+        // ⚠️ PRECIOS DE EJEMPLO: reemplazalos por los reales. 'semanas' = precio por cantidad de semanas (índice = semanas, hasta las 10 de la temporada).
+        etapas: [
+          { id: 'preventa', nombre: 'Preventa',       hasta: '2026-11-15', dia: 25000, semanas: [0, 100000, 190000, 276000, 360000, 440000, 516000, 595000, 672000, 747000, 820000] },
+          { id: 'segunda',  nombre: 'Segunda etapa',  hasta: '2026-12-06', dia: 28000, semanas: [0, 110000, 209000, 304000, 396000, 484000, 568000, 654000, 739000, 822000, 902000] },
+          { id: 'oficial',  nombre: 'Precio oficial',                      dia: 30000, semanas: [0, 120000, 228000, 331000, 432000, 528000, 619000, 714000, 806000, 896000, 984000] }
+        ],
         turnos: [
           { id: 'manana',   nombre: 'Mañana (9 a 13 h)',            factor: 1 },
-          { id: 'completa', nombre: 'Jornada completa (9 a 17 h)',  factor: 1.6 }
+          { id: 'completa', nombre: 'Jornada completa (9 a 16 h)',  factor: 1.5 }
         ],
         extras: [
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 9000, detalle: 'Menú del día, avisá si hay alergias' }
+          { id: 'prehora',  nombre: 'Pre hora (desde las 8 h)', precioDia: 5000, detalle: 'Para dejarlo más temprano' },
+          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, detalle: 'Menú del día, avisá si hay alergias' }
         ],
         descuentoHermanos: 10,     // % a partir del segundo hijo
         descuentoRenovacion: 5,    // % si renueva antes de que termine
-        anticipado: { hasta: '2026-11-30', pct: 10 },  // % por inscribirse temprano (vacío = sin descuento)
         senaPct: 30
       }
     },
     colonia: {
       id: 'colonia',
-      nombre: 'Colonia de Güey',
+      nombre: 'Colonia Dewey',
       color: '#1C5D8C', acento: '#FFB627',
-      direccion: '(poner dirección)',
+      direccion: 'Etruria 7755, Villa Rivera Indarte, Córdoba',
       whatsapp: '5493515308489',
       lat: null, lng: null, radio: 150,   // fijala desde Administración → Ajustes → "Usar mi ubicación"
-      inicio: '2026-12-14', fin: '2027-02-26',
-      feriados: ['2026-12-25', '2027-01-01', '2027-02-15', '2027-02-16'],
-      cupoPorGrupo: 25,
+      inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
+      feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
+      cupoPorGrupo: 30,   // si se pasa, la inscripción entra igual y se avisa para abrir otro grupo
       bajada: 'La colonia de siempre: pileta, juegos y amigos todo el verano.',
       ficha: [
         ['Edades', 'De 3 a 13 años, en grupos por edad'],
-        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 17 h'],
+        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 16 h · Pre hora desde las 8 h'],
         ['Pileta', 'Sí, con guardavidas (a confirmar)'],
-        ['Comida', 'Merienda incluida · almuerzo opcional'],
+        ['Comida', 'Merienda incluida · almuerzo opcional ($10.000 por día)'],
         ['Actividades', 'Juegos, deportes, campamento y talleres (a confirmar)'],
         ['Traslado', 'A confirmar']
       ],
-      pago: { alias: 'faustorizzi', banco: 'Brubank', titular: 'Fausto Rizzi', cbu: '' },
+      pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Colonia Dewey: a confirmar
       precios: {
-        dia: 25000,
-        semanas: [0, 100000, 190000, 270000, 340000, 410000, 475000, 535000, 595000, 650000, 700000],
-        semanaAdicional: 55000,
+        // ⚠️ PRECIOS DE EJEMPLO: reemplazalos por los reales. 'semanas' = precio por cantidad de semanas (índice = semanas, hasta las 10 de la temporada).
+        etapas: [
+          { id: 'preventa', nombre: 'Preventa',       hasta: '2026-11-15', dia: 25000, semanas: [0, 100000, 190000, 276000, 360000, 440000, 516000, 595000, 672000, 747000, 820000] },
+          { id: 'segunda',  nombre: 'Segunda etapa',  hasta: '2026-12-06', dia: 28000, semanas: [0, 110000, 209000, 304000, 396000, 484000, 568000, 654000, 739000, 822000, 902000] },
+          { id: 'oficial',  nombre: 'Precio oficial',                      dia: 30000, semanas: [0, 120000, 228000, 331000, 432000, 528000, 619000, 714000, 806000, 896000, 984000] }
+        ],
         turnos: [
           { id: 'manana',   nombre: 'Mañana (9 a 13 h)',            factor: 1 },
-          { id: 'completa', nombre: 'Jornada completa (9 a 17 h)',  factor: 1.6 }
+          { id: 'completa', nombre: 'Jornada completa (9 a 16 h)',  factor: 1.5 }
         ],
         extras: [
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 9000, detalle: 'Menú del día, avisá si hay alergias' }
+          { id: 'prehora',  nombre: 'Pre hora (desde las 8 h)', precioDia: 5000, detalle: 'Para dejarlo más temprano' },
+          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, detalle: 'Menú del día, avisá si hay alergias' }
         ],
-        descuentoHermanos: 10,
-        descuentoRenovacion: 5,
-        anticipado: { hasta: '2026-11-30', pct: 10 },
+        descuentoHermanos: 10,     // % a partir del segundo hijo
+        descuentoRenovacion: 5,    // % si renueva antes de que termine
         senaPct: 30
       }
     }
@@ -137,10 +145,11 @@ const HOJAS = {
   AvisosFamilia: ['id', 'creado', 'fecha', 'sede', 'grupo', 'chicoId', 'chico', 'familiaId', 'tipo', 'detalle', 'estado'],
   Marcajes:      ['id', 'profeId', 'nombre', 'sede', 'tipo', 'fechaHora', 'lat', 'lng', 'distancia', 'precision', 'origen'],
   Asistencia:    ['id', 'fecha', 'sede', 'grupo', 'chicoId', 'chico', 'estado', 'horaLlegada', 'retiradoPor', 'horaRetiro', 'nota', 'profe', 'actualizado'],
-  Publicaciones: ['id', 'fecha', 'sede', 'grupo', 'profe', 'texto', 'fotos', 'visible'],
+  Publicaciones: ['id', 'fecha', 'sede', 'grupo', 'profe', 'texto', 'fotos', 'visible', 'profeId', 'videos'],
   Tematicas:     ['id', 'sede', 'semana', 'titulo', 'descripcion', 'emoji'],
   Cronograma:    ['id', 'sede', 'semana', 'dia', 'hora', 'grupo', 'actividad', 'lugar', 'profe'],
-  PagosProfes:   ['id', 'fecha', 'profeId', 'nombre', 'sede', 'monto', 'concepto'],
+  PagosProfes:   ['id', 'fecha', 'profeId', 'nombre', 'sede', 'monto', 'concepto', 'periodo'],
+  Grupos:        ['id', 'sede', 'nombre', 'emoji', 'base', 'creado'],
   Interesados:   ['fecha', 'email', 'nombre', 'whatsapp', 'sede', 'origen'],
   Avisos:        ['fecha', 'tipo', 'sede', 'destino', 'referencia', 'detalle'],
   Config:        ['clave', 'valor', 'descripcion']
@@ -153,11 +162,12 @@ const COLS_TEXTO = {
   Turnos: ['dias', 'desde', 'hasta'], AvisosFamilia: ['fecha']
 };
 const ESTADOS = ['Pendiente', 'Señada', 'Pagada', 'Cancelada'];
-const FORMAS_PAGO = { hora: 'Por hora', dia: 'Por día trabajado', semana: 'Por semana trabajada', mensual: 'Fijo por mes' };
+const FORMAS_PAGO = { quincena: 'Fijo por quincena', dia: 'Por día (se pagan los feriados)', hora: 'Por hora' };
 const DIAS_SEM = ['lun', 'mar', 'mie', 'jue', 'vie'];
 // Equipo: todos entran con su mail a ?p=profes. Lo que ve cada uno depende de su rol.
 const ROLES = {
   profe:       { nombre: 'Profe',          emoji: '🧑‍🏫', permisos: ['asistencia', 'fotos'] },
+  auxiliar:    { nombre: 'Auxiliar / ayudante', emoji: '🙋', permisos: ['asistencia', 'fotos'] },
   guardavidas: { nombre: 'Guardavidas',    emoji: '🛟', permisos: ['pileta'] },
   enfermeria:  { nombre: 'Enfermería / acompañante', emoji: '🩺', permisos: ['salud'] },
   coordinador: { nombre: 'Coordinador/a',  emoji: '📋', permisos: ['asistencia', 'asistenciaTodos', 'fotos', 'aprobarFotos', 'equipo', 'cronograma', 'grupos', 'salud', 'pileta'] },
@@ -170,7 +180,7 @@ function doGet(e) {
   const p = String((e && e.parameter && e.parameter.p) || '');
   const titulos = { profes: 'Profes · Escuela de Verano', admin: 'Administración · Escuela de Verano' };
   return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle(titulos[p] || 'Escuela de Verano · Aldea de Valle y Colonia de Güey')
+    .setTitle(titulos[p] || 'Escuela de Verano · Aldea de Valle y Colonia Dewey')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -210,6 +220,9 @@ const ACCIONES = {
   lista:           ['profe', accLista_],
   guardarAsistencia: ['profe', accGuardarAsistencia_],
   publicar:        ['profe', accPublicar_],
+  iniciarSubida:   ['profe', accIniciarSubida_],
+  subirParte:      ['profe', accSubirParte_],
+  coordCrearGrupo: ['profe', staffCon_('grupos', (d, p, ss) => accCrearGrupo_(d, ss))],
   fichas:          ['profe', accFichas_],
   equipoHoy:       ['profe', staffCon_('equipo', (d, p, ss) => equipoHoy_(ss.s, d.sede))],
   guardarTurno:    ['profe', staffCon_('equipo', (d, p, ss) => accGuardarTurno_(d, ss))],
@@ -230,6 +243,7 @@ const ACCIONES = {
   asignarGrupo:    ['admin', accAsignarGrupo_],
   recordar:        ['admin', accRecordar_],
   guardarProfe:    ['admin', accGuardarProfe_],
+  crearGrupo:      ['admin', accCrearGrupo_],
   equipoHoyAdmin:  ['admin', (d, s) => equipoHoy_(s.s, d.sede)],
   guardarTurnoAdmin: ['admin', accGuardarTurno_],
   borrarTurnoAdmin: ['admin', (d, s) => borrarFila_('Turnos', d.id, s)],
@@ -328,7 +342,7 @@ function accPublico_() {
   });
   return {
     marca: CONFIG.marca, temporada: CONFIG.temporada, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
-    grupos: CONFIG.grupos, sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(),
+    grupos: todosGrupos_(), sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(), periodos: periodosTemporada_(), periodoActual: periodoActual_(),
     cotizar: cotizarPuro_.toString(), formasPago: FORMAS_PAGO, estados: ESTADOS
   };
 }
@@ -356,6 +370,9 @@ function semanas_(sedeId) {
  */
 function cotizarPuro_(sede, plan, cantChicos, ctx) {
   var P = sede.precios, hoy = ctx.hoy, errores = [];
+  // Etapa de precio vigente (preventa → segunda etapa → oficial), según el día en que se inscribe
+  var E = P.etapas[P.etapas.length - 1], iE = P.etapas.length - 1;
+  for (var k = 0; k < P.etapas.length; k++) if (!P.etapas[k].hasta || hoy <= P.etapas[k].hasta) { E = P.etapas[k]; iE = k; break; }
   var r100 = function (n) { return Math.round(n / 100) * 100; };
   var buscar = function (lista, id) { for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; };
   var semanaDe = {}, dias = [], semanasSel = [];
@@ -372,14 +389,14 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   dias.sort();
   var base = 0, detalleBase = '';
   if (plan.modalidad === 'semanas') {
-    var n = semanasSel.length, t = P.semanas;
-    base = n < t.length ? t[n] : t[t.length - 1] + (n - (t.length - 1)) * P.semanaAdicional;
+    var n = semanasSel.length, t = E.semanas;
+    base = n < t.length ? t[n] : t[t.length - 1] + (n - (t.length - 1)) * (t[t.length - 1] - t[t.length - 2]);
     detalleBase = n + (n === 1 ? ' semana' : ' semanas');
   } else {
     // días sueltos: nunca más caro que la semana completa
     var porSemana = {};
     dias.forEach(function (d) { porSemana[semanaDe[d]] = (porSemana[semanaDe[d]] || 0) + 1; });
-    Object.keys(porSemana).forEach(function (k) { base += Math.min(porSemana[k] * P.dia, P.semanas[1]); });
+    Object.keys(porSemana).forEach(function (k) { base += Math.min(porSemana[k] * E.dia, E.semanas[1]); });
     detalleBase = dias.length + (dias.length === 1 ? ' día' : ' días');
   }
   var turno = buscar(P.turnos, plan.turno) || P.turnos[0];
@@ -387,13 +404,11 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   var extras = (plan.extras || []).map(function (id) { return buscar(P.extras, id); }).filter(Boolean)
     .map(function (e) { return { id: e.id, nombre: e.nombre, monto: e.precioDia * dias.length }; });
   var extrasTotal = extras.reduce(function (a, e) { return a + e.monto; }, 0);
-  var anticipado = P.anticipado && P.anticipado.hasta && hoy <= P.anticipado.hasta ? P.anticipado.pct : 0;
   var porChico = [], subtotal = 0, descuento = 0;
   for (var i = 0; i < Math.max(1, cantChicos); i++) {
     var sub = base + extrasTotal, pct = 0, motivos = [];
     if (i > 0 && P.descuentoHermanos) { pct += P.descuentoHermanos; motivos.push('hermano ' + P.descuentoHermanos + '%'); }
     if (ctx.renovacion && P.descuentoRenovacion) { pct += P.descuentoRenovacion; motivos.push('renovación ' + P.descuentoRenovacion + '%'); }
-    if (anticipado) { pct += anticipado; motivos.push('inscripción anticipada ' + anticipado + '%'); }
     var desc = r100(sub * pct / 100);
     porChico.push({ subtotal: sub, descuento: desc, total: sub - desc, motivos: motivos });
     subtotal += sub; descuento += desc;
@@ -403,7 +418,8 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   return {
     dias: dias, cantDias: dias.length, semanas: semanasSel, turno: turno, extras: extras, base: base, detalleBase: detalleBase,
     porChico: porChico, subtotal: subtotal, descuento: descuento, total: total,
-    sena: r100(total * P.senaPct / 100), senaPct: P.senaPct, errores: errores
+    sena: r100(total * P.senaPct / 100), senaPct: P.senaPct, errores: errores,
+    etapa: { nombre: E.nombre, hasta: E.hasta || '' }, proxima: P.etapas[iE + 1] ? { nombre: P.etapas[iE + 1].nombre } : null
   };
 }
 
@@ -433,10 +449,10 @@ function accInscribir_(d) {
     // Validar fechas, edades y cupos ANTES de escribir nada en la planilla
     const q = cotizarServidor_(sede.id, d.plan, chicos.length, false);
     if (q.errores.length) throw new Error(q.errores[0]);
-    verificarCupos_(sede.id, chicos.map(c => {
+    asignarGrupos_(sede.id, chicos.map(c => {
       const ex = fam && filas_('Chicos').filter(x => x.familiaId === fam.id && normNombre_(x.nombre) === normNombre_(c.nombre))[0];
       validarChico_(c, sede);
-      return { id: ex ? ex.id : '', nombre: c.nombre, grupo: ex ? ex.grupo : grupoPorEdad_(c.nacimiento, sede.inicio).id };
+      return { id: ex ? ex.id : '', nombre: c.nombre, nacimiento: c.nacimiento, grupo: ex ? ex.grupo : '' };
     }), q.dias);
     const datosFam = {
       email, adulto: limpio_(a.nombre), dni: limpio_(a.dni), whatsapp: limpio_(a.whatsapp), direccion: limpio_(a.direccion),
@@ -453,7 +469,7 @@ function accInscribir_(d) {
     const filasChicos = chicos.map(c => guardarChico_(fam, c, sede.id));
     const res = crearInscripciones_(fam, filasChicos, sede.id, d.plan, 'web', false);
     mailInscripcion_(fam, res, sede);
-    avisarAdmin_(sede.id, '🆕 Nueva inscripción · ' + res.items.map(i => i.chico).join(', '), mailAdminInscripcion_(fam, res, sede));
+    avisarAdmin_(sede.id, (res.sobrecupo.length ? '⚠️ Sobrecupo · ' : '🆕 Nueva inscripción · ') + res.items.map(i => i.chico).join(', '), mailAdminInscripcion_(fam, res, sede));
     return res;
   } finally { lock.releaseLock(); }
 }
@@ -487,9 +503,10 @@ function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
   const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion);
   if (q.errores.length) throw new Error(q.errores[0]);
   const sede = sedeCfg_(sedeId);
-  verificarCupos_(sedeId, chicos, q.dias);
+  const asign = asignarGrupos_(sedeId, chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), grupo: c.grupo })), q.dias);
   const items = chicos.map((c, i) => {
     const p = q.porChico[i];
+    if (asign[i].grupo !== c.grupo) { const fc = filas_('Chicos').filter(x => x.id === c.id)[0]; if (fc) actualizar_('Chicos', fc._fila, { grupo: asign[i].grupo }); c.grupo = asign[i].grupo; }
     const fila = {
       id: 'I' + uid_(), creado: new Date(), familiaId: fam.id, chicoId: c.id, chico: c.nombre, sede: sedeId,
       grupo: c.grupo, modalidad: plan.modalidad === 'semanas' ? 'Semanas' : 'Días sueltos', turno: q.turno.nombre,
@@ -502,22 +519,73 @@ function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
     return fila;
   });
   return {
-    items, total: q.total, sena: q.sena, detalle: q.detalleBase + ' · ' + q.turno.nombre, desde: q.dias[0], hasta: q.dias[q.dias.length - 1],
+    items, total: q.total, sena: q.sena, detalle: q.detalleBase + ' · ' + q.turno.nombre + ' · ' + q.etapa.nombre, sobrecupo: asign.filter(a => a.sobrecupo), desde: q.dias[0], hasta: q.dias[q.dias.length - 1],
     pago: sede.pago, sede: sede.nombre, whatsapp: sede.whatsapp,
     waComprobante: linkWhatsApp_(sede.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano de ' + items.map(i => i.chico).join(' y ') + ' (' + items.map(i => i.id).join(', ') + ').')
   };
 }
 
-/** chicos: [{ id (vacío si es nuevo), nombre, grupo }] */
-function verificarCupos_(sedeId, chicos, dias) {
+/**
+ * Elige el grupo de cada chico: el de su edad o, si está lleno, un grupo extra de la misma edad con lugar.
+ * Si todos están llenos, entra igual (sobrecupo) y la administración recibe el aviso para abrir otro grupo.
+ * chicos: [{ id (vacío si es nuevo), nombre, nacimiento, grupo (actual, si ya tiene) }]
+ */
+function asignarGrupos_(sedeId, chicos, dias) {
   const sede = sedeCfg_(sedeId), ocupados = ocupacion_(sedeId), suma = {};
-  chicos.forEach(c => {
-    const llenos = dias.filter(dia => (ocupados[c.grupo + '|' + dia] || 0) + (suma[c.grupo + '|' + dia] || 0) >= sede.cupoPorGrupo);
-    if (llenos.length) throw new Error('No hay cupo en el grupo de ' + c.nombre + ' para: ' + llenos.map(fechaCorta_).join(', ') + '. Probá con otras fechas o escribinos por WhatsApp.');
+  const gs = gruposSede_(sedeId);
+  return chicos.map(c => {
     const repetidos = c.id ? dias.filter(dia => ocupados['chico|' + c.id + '|' + dia]) : [];
     if (repetidos.length) throw new Error(c.nombre + ' ya está inscripto el ' + repetidos.map(fechaCorta_).join(', ') + '.');
-    dias.forEach(dia => { suma[c.grupo + '|' + dia] = (suma[c.grupo + '|' + dia] || 0) + 1; });
+    const base = grupoPorEdad_(c.nacimiento, sede.inicio).id;
+    const actual = gs.filter(g => g.id === c.grupo)[0];
+    const familia = gs.filter(g => (g.base || g.id) === base);
+    // Si la administración ya lo movió a un grupo, se respeta
+    const candidatos = actual && (actual.base || actual.id) !== base ? [actual] : (actual ? [actual].concat(familia.filter(g => g.id !== actual.id)) : familia);
+    const lleno = g => dias.some(dia => (ocupados[g.id + '|' + dia] || 0) + (suma[g.id + '|' + dia] || 0) >= sede.cupoPorGrupo);
+    const elegido = candidatos.filter(g => !lleno(g))[0] || candidatos[0];
+    const sobrecupo = lleno(elegido);
+    dias.forEach(dia => { suma[elegido.id + '|' + dia] = (suma[elegido.id + '|' + dia] || 0) + 1; });
+    return { grupo: elegido.id, sobrecupo, nombre: c.nombre };
   });
+}
+
+/** Grupos de una sede: los fijos por edad más los que se abrieron por sobrecupo. */
+function gruposSede_(sedeId) {
+  return CONFIG.grupos.concat(filas_('Grupos').filter(g => g.sede === sedeId).map(grupoExtra_));
+}
+function todosGrupos_() { return CONFIG.grupos.concat(filas_('Grupos').map(grupoExtra_)); }
+function grupoExtra_(g) {
+  const b = CONFIG.grupos.filter(x => x.id === g.base)[0] || CONFIG.grupos[0];
+  return { id: g.id, nombre: g.nombre, emoji: g.emoji || b.emoji, edadMin: b.edadMin, edadMax: b.edadMax, base: b.id, sede: g.sede };
+}
+function accCrearGrupo_(d, sesion) {
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  const b = CONFIG.grupos.filter(x => x.id === d.base)[0];
+  if (!b) throw new Error('Elegí de qué edad es el grupo nuevo.');
+  const existentes = filas_('Grupos').filter(g => g.sede === sede && g.base === b.id).length;
+  const letra = 'BCDEFGH'.charAt(existentes);
+  const g = { id: b.id + '-' + sede + '-' + letra.toLowerCase(), sede, nombre: limpio_(d.nombre) || b.nombre + ' ' + letra, emoji: b.emoji, base: b.id, creado: new Date() };
+  agregar_('Grupos', g);
+  return grupoExtra_(g);
+}
+
+/** Días próximos en que algún grupo pasa el cupo. */
+function sobrecupos_(scope) {
+  const hoy = hoy_(), out = {};
+  Object.keys(CONFIG.sedes).filter(id => enSede_(scope, id)).forEach(id => {
+    const oc = ocupacion_(id), cupo = CONFIG.sedes[id].cupoPorGrupo;
+    Object.keys(oc).forEach(k => {
+      if (k.indexOf('chico|') === 0) return;
+      const partes = k.split('|'), g = partes[0], dia = partes[1];
+      if (dia < hoy || oc[k] <= cupo) return;
+      const key = id + '|' + g;
+      out[key] = out[key] || { sede: id, grupo: g, dias: [], max: 0 };
+      out[key].dias.push(dia);
+      out[key].max = Math.max(out[key].max, oc[k]);
+    });
+  });
+  return Object.keys(out).map(k => Object.assign(out[k], { dias: out[k].dias.sort() }));
 }
 
 function ocupacion_(sedeId) {
@@ -687,7 +755,7 @@ function inscPublica_(i) {
 function pubPublica_(p) {
   const f = p.fecha instanceof Date ? p.fecha : new Date(p.fecha);
   return { id: p.id, ts: f.getTime(), fecha: Utilities.formatDate(f, TZ, 'yyyy-MM-dd HH:mm'), sede: p.sede, grupo: p.grupo, profe: p.profe, texto: p.texto,
-    fotos: String(p.fotos || '').split(',').filter(Boolean), visible: esSi_(p.visible), pendiente: p.visible === 'Pendiente' };
+    fotos: String(p.fotos || '').split(',').filter(Boolean), videos: String(p.videos || '').split(',').filter(Boolean), visible: esSi_(p.visible), pendiente: p.visible === 'Pendiente' };
 }
 function cronoPublico_(c) {
   return { id: c.id, sede: c.sede, semana: iso_(c.semana), dia: c.dia, hora: horaTxt_(c.hora), grupo: c.grupo, actividad: c.actividad, lugar: c.lugar, profe: c.profe };
@@ -725,14 +793,14 @@ function accProfeInicio_(d, sesion) {
   const marc = marcajes_().filter(m => m.profeId === p.id);
   const abierto = turnoAbierto_(marc);
   const hoyMarc = marc.filter(m => diaDe_(m.fechaHora) === hoy).map(m => ({ tipo: m.tipo, hora: Utilities.formatDate(m.fechaHora, TZ, 'HH:mm'), sede: m.sede }));
-  const mes = d.mes || hoy.slice(0, 7);
-  const liq = liquidarProfe_(p, mes, marc);
+  const liq = liquidarProfe_(p, d.periodo || periodoActual_(), marc);
   const crono = filas_('Cronograma').filter(c => sedes.indexOf(c.sede) >= 0 && [lunes, sumarDias_(lunes, 7)].indexOf(iso_(c.semana)) >= 0).map(cronoPublico_);
   const pubs = filas_('Publicaciones').filter(x => sedes.indexOf(x.sede) >= 0 && x.profe === p.nombre).map(pubPublica_).sort((a, b) => b.ts - a.ts).slice(0, 20);
   return {
     profe: { id: p.id, nombre: p.nombre, sede: p.sede, sedes, grupos: gruposDe_(p), rol: rolDe_(p), rolNombre: ROLES[rolDe_(p)].nombre,
       emoji: ROLES[rolDe_(p)].emoji, permisos: ROLES[rolDe_(p)].permisos },
     turnosHoy: turnosDePersona_(p.id, hoy),
+    fotoObligatoria: CONFIG.fotoParaCerrarTurno.indexOf(rolDe_(p)) >= 0, subioHoy: subioHoy_(p), maxVideoMB: CONFIG.maxVideoMB,
     pendientesFotos: puede_(p, 'aprobarFotos') ? filas_('Publicaciones').filter(x => x.visible === 'Pendiente' && sedes.indexOf(x.sede) >= 0).length : 0,
     abierto: abierto ? { sede: abierto.sede, desde: Utilities.formatDate(abierto.fechaHora, TZ, 'HH:mm') } : null,
     hoyMarc, liq, cronograma: crono, publicaciones: pubs,
@@ -762,11 +830,20 @@ function accMarcar_(d, sesion) {
     if (mejor.dist > mejor.radio) {
       throw new Error('Estás a ' + formatoDist_(mejor.dist) + ' de ' + CONFIG.sedes[mejor.id].nombre + '. Para marcar tenés que estar a menos de ' + mejor.radio + ' m.');
     }
+    if (tipo === 'SALIDA' && CONFIG.fotoParaCerrarTurno.indexOf(rolDe_(p)) >= 0 && !subioHoy_(p)) {
+      return { faltaFoto: true, mensaje: 'Para cerrar tu turno, primero subí al menos una foto o video de los chicos y las actividades de hoy.' };
+    }
     const sedeMarca = tipo === 'SALIDA' ? abierto.sede : mejor.id;
     agregar_('Marcajes', { id: uid_(), profeId: p.id, nombre: p.nombre, sede: sedeMarca, tipo, fechaHora: new Date(), lat, lng, distancia: mejor.dist,
       precision: Math.round(Number(d.precision) || 0), origen: 'gps' });
     return { tipo, sede: CONFIG.sedes[sedeMarca].nombre, distancia: mejor.dist, hora: Utilities.formatDate(new Date(), TZ, 'HH:mm') };
   } finally { lock.releaseLock(); }
+}
+
+function subioHoy_(p) {
+  const hoy = hoy_();
+  return filas_('Publicaciones').some(x => (x.profeId === p.id || (!x.profeId && x.profe === p.nombre)) && x.fecha instanceof Date && diaDe_(x.fecha) === hoy &&
+    (String(x.fotos || '') !== '' || String(x.videos || '') !== ''));
 }
 
 function marcajes_() {
@@ -792,16 +869,69 @@ function turnos_(marcProfe) {
   });
   return out;
 }
-function liquidarProfe_(p, mes, marcProfe) {
-  const ts = turnos_(marcProfe || marcajes_().filter(m => m.profeId === p.id)).filter(t => t.dia.slice(0, 7) === mes);
+// ---- Quincenas: clave 'AAAA-MM-1' (del 1 al 15) o 'AAAA-MM-2' (del 16 a fin de mes) ----
+function periodo_(clave) {
+  const m = /^(\d{4})-(\d{2})-([12])$/.exec(String(clave || ''));
+  if (!m) return periodo_(periodoActual_());
+  const ultimo = new Date(Number(m[1]), Number(m[2]), 0).getDate();
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  return { clave, desde: m[1] + '-' + m[2] + (m[3] === '1' ? '-01' : '-16'), hasta: m[1] + '-' + m[2] + '-' + (m[3] === '1' ? '15' : String(ultimo)),
+    nombre: (m[3] === '1' ? '1ª' : '2ª') + ' quincena de ' + meses[Number(m[2]) - 1] };
+}
+function claveQuincena_(iso) { return iso.slice(0, 7) + (Number(iso.slice(8, 10)) <= 15 ? '-1' : '-2'); }
+function periodoActual_() {
+  const ini = Object.keys(CONFIG.sedes).map(k => CONFIG.sedes[k].inicio).sort()[0];
+  const hoy = hoy_();
+  return claveQuincena_(hoy < ini ? ini : hoy);
+}
+function periodosTemporada_() {
+  const ids = Object.keys(CONFIG.sedes);
+  const ini = ids.map(k => CONFIG.sedes[k].inicio).sort()[0], fin = ids.map(k => CONFIG.sedes[k].fin).sort().pop();
+  const out = [];
+  let d = ini;
+  while (d <= fin) { const c = claveQuincena_(d); if (out.indexOf(c) < 0) out.push(c); d = sumarDias_(d, 1); }
+  return out.map(c => ({ id: c, nombre: periodo_(c).nombre }));
+}
+/** Días hábiles (lun a vie) de un rango que caen dentro de la temporada de alguna de las sedes. */
+function diasHabiles_(desde, hasta, sedes) {
+  const out = [];
+  for (let d = desde; d <= hasta; d = sumarDias_(d, 1)) {
+    if (!diaSemana_(d)) continue;
+    if (sedes.some(id => d >= CONFIG.sedes[id].inicio && d <= CONFIG.sedes[id].fin)) out.push(d);
+  }
+  return out;
+}
+
+function liquidarProfe_(p, clave, marcProfe) {
+  const per = periodo_(clave), hoy = hoy_();
+  const ts = turnos_(marcProfe || marcajes_().filter(m => m.profeId === p.id)).filter(t => t.dia >= per.desde && t.dia <= per.hasta);
   const horas = ts.reduce((a, t) => a + t.horas, 0);
   const dias = {}; ts.forEach(t => { dias[t.dia] = 1; });
-  const semanas = {}; ts.forEach(t => { semanas[lunes_(t.dia)] = 1; });
+  const sedes = sedesDeProfe_(p);
+  // Días que le tocaba trabajar: los de sus turnos (si no tiene turnos cargados, lunes a viernes)
+  const susDias = {};
+  filas_('Turnos').filter(t => t.personaId === p.id).forEach(t => String(t.dias || '').split(',').forEach(x => { susDias[x] = 1; }));
+  const leToca = d => !Object.keys(susDias).length || susDias[diaSemana_(d)];
+  const feriadosSede = {}; sedes.forEach(id => CONFIG.sedes[id].feriados.forEach(f => { feriadosSede[f] = 1; }));
+  const habiles = diasHabiles_(per.desde, per.hasta, sedes);
+  const feriados = habiles.filter(d => feriadosSede[d] && leToca(d) && !dias[d]);
+  const faltas = habiles.filter(d => d < hoy && !feriadosSede[d] && leToca(d) && !dias[d]);
+  // Quincena con temporada parcial (primera y última): se paga la parte proporcional de días hábiles
+  let habilesQuincena = 0;
+  for (let d = per.desde; d <= per.hasta; d = sumarDias_(d, 1)) if (diaSemana_(d)) habilesQuincena++;
+  const proporcion = habilesQuincena ? habiles.length / habilesQuincena : 0;
   const valor = Number(p.valor) || 0;
-  const devengado = Math.round({ hora: horas * valor, dia: Object.keys(dias).length * valor, semana: Object.keys(semanas).length * valor, mensual: ts.length ? valor : 0 }[p.formaPago] || 0);
-  const pagado = filas_('PagosProfes').filter(x => x.profeId === p.id && iso_(x.fecha).slice(0, 7) === mes).reduce((a, x) => a + (Number(x.monto) || 0), 0);
-  return { mes, horas: Math.round(horas * 100) / 100, dias: Object.keys(dias).length, turnos: ts, devengado, pagado, saldo: devengado - pagado,
-    formaPago: FORMAS_PAGO[p.formaPago] || p.formaPago, valor };
+  const forma = FORMAS_PAGO[p.formaPago] ? p.formaPago : 'quincena';
+  const devengado = Math.round({
+    hora: horas * valor,
+    dia: (Object.keys(dias).length + feriados.length) * valor,
+    quincena: valor * proporcion
+  }[forma] || 0);
+  const pagado = filas_('PagosProfes').filter(x => x.profeId === p.id && (x.periodo ? x.periodo === per.clave : iso_(x.fecha) >= per.desde && iso_(x.fecha) <= per.hasta))
+    .reduce((a, x) => a + (Number(x.monto) || 0), 0);
+  return { periodo: per.clave, nombrePeriodo: per.nombre, horas: Math.round(horas * 100) / 100, dias: Object.keys(dias).length, feriados: feriados.length,
+    faltas: faltas.length, diasFaltas: faltas, proporcion: Math.round(proporcion * 100), turnos: ts, devengado, pagado, saldo: devengado - pagado,
+    formaPago: FORMAS_PAGO[forma], forma, valor };
 }
 
 function accLista_(d, sesion) {
@@ -817,7 +947,7 @@ function accLista_(d, sesion) {
   }
   const r = listaDelDia_(sede, d.fecha || hoy_(), grupo);
   if (!puede_(p, 'plata')) r.chicos.forEach(c => { delete c.saldo; });
-  r.gruposPermitidos = puede_(p, 'asistenciaTodos') || !mios.length ? CONFIG.grupos.map(g => g.id) : mios;
+  r.gruposPermitidos = puede_(p, 'asistenciaTodos') || !mios.length ? gruposSede_(sede).map(g => g.id) : mios;
   return r;
 }
 
@@ -893,8 +1023,9 @@ function accPublicar_(d, sesion) {
   if (!puede_(p, 'fotos')) throw new Error('Tu rol no sube fotos.');
   if (sedesDeProfe_(p).indexOf(d.sede) < 0) throw new Error('No tenés acceso a esa sede.');
   const fotos = (d.fotos || []).slice(0, 10);
-  if (!fotos.length && !limpio_(d.texto)) throw new Error('Escribí algo o sumá una foto.');
-  const carpeta = carpetaFotos_(d.sede);
+  const videos = (d.videos || []).filter(v => /^[\w-]{10,}$/.test(v)).slice(0, 5);
+  if (!fotos.length && !videos.length && !limpio_(d.texto)) throw new Error('Escribí algo o sumá una foto.');
+  const carpeta = carpetaFotos_(d.sede, hoy_());
   const ids = fotos.map((f, i) => {
     const blob = Utilities.newBlob(Utilities.base64Decode(f.b64), f.tipo || 'image/jpeg', Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd_HHmm') + '_' + (i + 1) + '.jpg');
     const file = carpeta.createFile(blob);
@@ -902,11 +1033,50 @@ function accPublicar_(d, sesion) {
     return file.getId();
   });
   agregar_('Publicaciones', { id: 'P' + uid_(), fecha: new Date(), sede: d.sede, grupo: d.grupo || 'todos', profe: p.nombre, texto: limpio_(d.texto), fotos: ids.join(','),
-    visible: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') ? 'Pendiente' : 'Sí' });
-  return { fotos: ids.length, pendiente: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') };
+    visible: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') ? 'Pendiente' : 'Sí', profeId: p.id, videos: videos.join(',') });
+  return { fotos: ids.length, videos: videos.length, pendiente: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') };
 }
 
-function carpetaFotos_(sede) {
+// ---- Videos: subida en partes directo a Drive (subida reanudable), así no hay límite de tamaño del celular ----
+const PARTE_VIDEO = 4 * 1024 * 1024;   // múltiplo de 256 KB, como pide Drive
+function accIniciarSubida_(d, sesion) {
+  const p = profeDe_(sesion);
+  if (!puede_(p, 'fotos')) throw new Error('Tu rol no sube fotos ni videos.');
+  if (sedesDeProfe_(p).indexOf(d.sede) < 0) throw new Error('No tenés acceso a esa sede.');
+  const total = Number(d.tamano) || 0, tipo = String(d.tipo || '');
+  if (!/^video\//.test(tipo)) throw new Error('Ese archivo no es un video.');
+  if (!total || total > CONFIG.maxVideoMB * 1024 * 1024) throw new Error('El video pesa más de ' + CONFIG.maxVideoMB + ' MB. Cortalo o mandalo en partes.');
+  const carpeta = carpetaFotos_(d.sede, hoy_());
+  const ext = (String(d.nombre || '').match(/\.\w{2,4}$/) || ['.mp4'])[0];
+  const nombre = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd_HHmm') + '_' + p.nombre.split(' ')[0] + ext;
+  const r = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true', {
+    method: 'post', contentType: 'application/json; charset=UTF-8', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'X-Upload-Content-Type': tipo, 'X-Upload-Content-Length': String(total) },
+    payload: JSON.stringify({ name: nombre, parents: [carpeta.getId()], mimeType: tipo })
+  });
+  const url = r.getHeaders().Location || r.getHeaders().location;
+  if (r.getResponseCode() !== 200 || !url) throw new Error('Drive no aceptó el video (' + r.getResponseCode() + '). Probá de nuevo.');
+  const id = uid_();
+  CacheService.getScriptCache().put('subida:' + id, JSON.stringify({ url, total, tipo, profeId: p.id }), 21600);
+  return { id, parte: PARTE_VIDEO };
+}
+function accSubirParte_(d, sesion) {
+  const p = profeDe_(sesion);
+  const reg = JSON.parse(CacheService.getScriptCache().get('subida:' + d.id) || 'null');
+  if (!reg || reg.profeId !== p.id) throw new Error('La subida venció. Volvé a elegir el video.');
+  const bytes = Utilities.base64Decode(d.b64), desde = Number(d.desde) || 0, hasta = desde + bytes.length - 1;
+  const r = UrlFetchApp.fetch(reg.url, { method: 'put', contentType: reg.tipo, payload: bytes, muteHttpExceptions: true,
+    headers: { 'Content-Range': 'bytes ' + desde + '-' + hasta + '/' + reg.total } });
+  const code = r.getResponseCode();
+  if (code === 308) return { listo: false, recibido: hasta + 1 };
+  if (code !== 200 && code !== 201) throw new Error('Se cortó la subida del video (' + code + '). Probá de nuevo.');
+  const fileId = JSON.parse(r.getContentText()).id;
+  try { DriveApp.getFileById(fileId).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { /* dominio */ }
+  CacheService.getScriptCache().remove('subida:' + d.id);
+  return { listo: true, id: fileId };
+}
+
+function carpetaFotos_(sede, dia) {
   const props = PropertiesService.getScriptProperties();
   let raizId = props.getProperty('CARPETA_FOTOS'), raiz;
   try { raiz = raizId && DriveApp.getFolderById(raizId); } catch (e) { raiz = null; }
@@ -914,7 +1084,10 @@ function carpetaFotos_(sede) {
   if (!sede) return raiz;
   const nombre = CONFIG.sedes[sede].nombre;
   const it = raiz.getFoldersByName(nombre);
-  return it.hasNext() ? it.next() : raiz.createFolder(nombre);
+  const carpetaSede = it.hasNext() ? it.next() : raiz.createFolder(nombre);
+  if (!dia) return carpetaSede;
+  const itD = carpetaSede.getFoldersByName(dia);   // una carpeta por día: material ordenado para redes
+  return itD.hasNext() ? itD.next() : carpetaSede.createFolder(dia);
 }
 
 // ======== EQUIPO: coordinación, turnos, salud y pileta ========
@@ -1040,7 +1213,7 @@ function accTablero_(d, sesion) {
   filas_('Asistencia').forEach(a => { if (iso_(a.fecha) === hoy && enSede_(sede, a.sede) && (a.estado === 'presente' || a.estado === 'tarde')) hoyPresentes[a.sede] = (hoyPresentes[a.sede] || 0) + 1; });
   const pagos = filas_('Pagos').filter(p => enSede_(sede, p.sede)).map(p => ({ id: p.id, fecha: iso_(p.fecha), chico: p.chico, sede: p.sede, monto: Number(p.monto) || 0, medio: p.medio, nota: p.nota, inscripcionId: p.inscripcionId }))
     .sort((a, b) => a.fecha < b.fecha ? 1 : -1);
-  const mes = d.mes || hoy.slice(0, 7);
+  const mes = d.periodo || periodoActual_();
   const marc = marcajes_();
   const profes = filas_('Profes').filter(p => enSede_(sede, p.sede) || sede === 'todas').map(p => {
     const mp = marc.filter(m => m.profeId === p.id);
@@ -1064,7 +1237,7 @@ function accTablero_(d, sesion) {
       hoyEsperados, hoyPresentes, interesados: filas_('Interesados').filter(x => enSede_(sede, x.sede)).length,
       cuotaMail: MailApp.getRemainingDailyQuota()
     },
-    porGrupo, vencen, deudas, pagos: pagos.slice(0, 300), profes,
+    porGrupo, vencen, deudas, pagos: pagos.slice(0, 300), profes, sobrecupos: sobrecupos_(sede), carpetaFotos: carpetaFotos_().getUrl(),
     inscripciones: insc.sort((a, b) => b.creado - a.creado),
     familias: Object.keys(fams).map(k => fams[k]).filter(f => insc.some(i => i.familiaId === f.id)).map(f => ({ id: f.id, adulto: f.adulto, email: f.email, whatsapp: f.whatsapp,
       emergencia: (f.emergenciaNombre || '') + ' ' + (f.emergenciaTel || ''), autorizados: f.autorizadosRetiro, comoNosConocio: f.comoNosConocio })),
@@ -1134,7 +1307,7 @@ function accCambiarEstado_(d, sesion) {
 }
 
 function accAsignarGrupo_(d, sesion) {
-  if (!CONFIG.grupos.some(g => g.id === d.grupo)) throw new Error('Grupo inválido.');
+  if (!todosGrupos_().some(g => g.id === d.grupo)) throw new Error('Grupo inválido.');
   const c = filas_('Chicos').filter(x => x.id === d.chicoId)[0];
   if (!c) throw new Error('No encuentro al chico.');
   actualizar_('Chicos', c._fila, { grupo: d.grupo });
@@ -1161,7 +1334,7 @@ function accGuardarProfe_(d, sesion) {
   if (!limpio_(d.nombre)) throw new Error('Falta el nombre.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Falta un mail válido: con ese mail entra a la app.');
   const datos = { nombre: limpio_(d.nombre), email, whatsapp: limpio_(d.whatsapp), sede, grupos: Array.isArray(d.grupos) ? d.grupos.join(',') : limpio_(d.grupos),
-    formaPago: FORMAS_PAGO[d.formaPago] ? d.formaPago : 'hora', valor: Math.round(Number(d.valor)) || 0, activo: d.activo === false ? 'No' : 'Sí', notas: limpio_(d.notas),
+    formaPago: FORMAS_PAGO[d.formaPago] ? d.formaPago : (d.rol === 'guardavidas' ? 'hora' : 'quincena'), valor: Math.round(Number(d.valor)) || 0, activo: d.activo === false ? 'No' : 'Sí', notas: limpio_(d.notas),
     rol: ROLES[d.rol] ? d.rol : 'profe' };
   if (datos.rol === 'admin' && sesion.s !== 'todas') throw new Error('Solo la administración general puede dar rol de administración.');
   const todos = filas_('Profes');
@@ -1196,7 +1369,8 @@ function accPagarProfe_(d, sesion) {
   if (!p) throw new Error('No encuentro al profe.');
   const monto = Math.round(Number(d.monto));
   if (!monto) throw new Error('Poné el monto.');
-  agregar_('PagosProfes', { id: uid_(), fecha: d.fecha || hoy_(), profeId: p.id, nombre: p.nombre, sede: sesion.s === 'todas' ? p.sede : sesion.s, monto, concepto: limpio_(d.concepto) });
+  agregar_('PagosProfes', { id: uid_(), fecha: d.fecha || hoy_(), profeId: p.id, nombre: p.nombre, sede: sesion.s === 'todas' ? p.sede : sesion.s, monto, concepto: limpio_(d.concepto),
+    periodo: periodo_(d.periodo).clave });
   return { ok: true };
 }
 
@@ -1429,7 +1603,8 @@ function mailInscripcion_(fam, res, sede) {
     boton_(urlCuenta_(), 'Entrar a mi cuenta', sede.color), sede.id);
 }
 function mailAdminInscripcion_(fam, res, sede) {
-  return '<p><b>' + esc_(fam.adulto) + '</b> · ' + esc_(fam.whatsapp) + ' · ' + esc_(fam.email) + '</p>' +
+  return (res.sobrecupo && res.sobrecupo.length ? '<p style="background:#FFF0CC;padding:10px;border-radius:8px">⚠️ <b>' + res.sobrecupo.map(a => esc_(a.nombre) + ' (' + esc_(nombreGrupo_(a.grupo)) + ')').join(', ') +
+    '</b> entró con el grupo lleno (más de ' + sede.cupoPorGrupo + ' chicos). Abrí otro grupo desde Administración → Inicio.</p>' : '') + '<p><b>' + esc_(fam.adulto) + '</b> · ' + esc_(fam.whatsapp) + ' · ' + esc_(fam.email) + '</p>' +
     '<p>' + res.items.map(i => esc_(i.chico) + ' (' + esc_(nombreGrupo_(i.grupo)) + ') · ' + pesos_(i.total)).join('<br>') + '</p>' +
     '<p>' + esc_(res.detalle) + ' · ' + fechaCorta_(res.desde) + ' al ' + fechaCorta_(res.hasta) + '<br>Total ' + pesos_(res.total) + ' · Seña ' + pesos_(res.sena) + '</p>' +
     boton_(linkWhatsApp_(fam.whatsapp, '¡Hola ' + primerNombre_(fam.adulto) + '! Recibimos la inscripción de ' + res.items.map(i => i.chico).join(' y ') +
@@ -1474,11 +1649,12 @@ function boton_(url, texto, color) {
 }
 function datosPagoTexto_(sedeId) {
   const p = CONFIG.sedes[sedeId].pago;
+  if (!p.alias && !p.cbu) return 'Te pasamos los datos para transferir por WhatsApp.';
   return ['Alias: ' + p.alias, p.cbu ? 'CBU/CVU: ' + p.cbu : '', 'Banco: ' + p.banco, 'Titular: ' + p.titular].filter(Boolean).join('\n');
 }
 function urlCuenta_() { return ScriptApp.getService().getUrl() + '?p=cuenta'; }
 function colorSede_(s) { return CONFIG.sedes[s] ? CONFIG.sedes[s].color : '#2F4A38'; }
-function nombreGrupo_(id) { const g = CONFIG.grupos.filter(x => x.id === id)[0]; return g ? g.emoji + ' ' + g.nombre : id; }
+function nombreGrupo_(id) { const g = todosGrupos_().filter(x => x.id === id)[0]; return g ? g.emoji + ' ' + g.nombre : id; }
 
 // ======== PLANILLA ========
 const MEMO_ = {};

@@ -1,4 +1,4 @@
-# Escuela de Verano · Aldea de Valle + Colonia de Güey
+# Escuela de Verano · Aldea de Valle + Colonia Dewey
 
 Una sola app web para las dos escuelas de verano. Funciona igual que GLORIN y el Marcaje: una planilla de Google con Apps Script, sin costo y dentro de tu cuenta de Google.
 
@@ -13,9 +13,9 @@ Tiene **tres puertas** con el mismo link:
 ## Qué hace
 
 ### Familias
-- Al entrar eligen **Aldea de Valle** o **Colonia de Güey**. Hay una tabla de **“¿Qué diferencia hay?”** con horarios, pileta, comida, actividades y precios de cada sede.
+- Al entrar eligen **Aldea de Valle** o **Colonia Dewey**. Hay una tabla de **“¿Qué diferencia hay?”** con horarios, pileta, comida, actividades y precios de cada sede.
 - Por cada sede ven cómo funciona, los grupos por edad, la **temática de cada semana**, los precios y los descuentos.
-- **Presupuesto al instante:** eligen semanas o días sueltos, mañana o jornada completa y si suman almuerzo. El precio aparece en vivo y ya incluye los descuentos por hermanos, por inscripción anticipada y por renovación.
+- **Presupuesto al instante:** eligen semanas o días sueltos, mañana o jornada completa, pre hora y almuerzo. El precio aparece en vivo según la etapa (preventa, segunda etapa u oficial) y ya incluye los descuentos por hermanos y por renovación.
 - **Inscripción en 4 pasos:** cuándo, quién (con ficha de salud: alergias, medicación, si sabe nadar y si autoriza fotos), datos del adulto (contacto de emergencia y quiénes pueden retirar) y reglamento. Si cierran la página, al volver sigue lo que habían cargado.
 - Al terminar ven los datos para la seña (con botón para copiar el alias y para mandar el comprobante por WhatsApp) y les llega un mail con todo.
 - **Mi cuenta:**
@@ -28,12 +28,31 @@ Tiene **tres puertas** con el mismo link:
   - **renovar** o sumar días en un minuto
 - Formulario para “quiero recibir novedades”, para las familias que todavía no se deciden.
 
+### Datos de la temporada 2026-27 (definidos por Fausto, 23/10/2026)
+- **Fechas:** del lunes 14/12 al viernes 19/2, 10 semanas de lunes a viernes. No hay escuela el 25/12, el 1/1 ni en Carnaval (8 y 9/2).
+- **Horarios para las familias:**
+  - Mañana, de 9 a 13 h.
+  - Jornada completa, de 9 a 16 h.
+  - Pre hora desde las 8 h, que se cobra como extra.
+  - Almuerzo, a **$10.000 por día**.
+- **Precio en 3 etapas:** **preventa**, después **segunda etapa** y después **precio oficial**. La familia paga el precio de la etapa del día en que se inscribe, y la web muestra hasta cuándo vale. ⚠️ Los montos cargados son **de ejemplo**: se cambian en `CONFIG → precios → etapas` de cada sede.
+- **Grupos de 30 chicos.** Si un grupo se llena, la inscripción **entra igual** y la administración recibe un aviso: con un botón se abre otro grupo de la misma edad (Aventureros B, por ejemplo) y las siguientes inscripciones van solas ahí.
+- **Colonia Dewey:** Etruria 7755, Villa Rivera Indarte. El **alias de cada sede está a confirmar**. Mientras esté vacío, la web le dice a la familia que le pasamos los datos por WhatsApp.
+- **Equipo:**
+  - Horario de 9 a 13 h, con pre hora desde las 8 para algunos, y turno tarde de 13 a 16 h, de lunes a viernes.
+  - Se **paga por quincena**, del 1 al 15 y del 16 a fin de mes. **Los guardavidas cobran solo por hora.**
+  - Profes y auxiliares pueden cobrar **fijo por quincena** o **por día**. Por día, **se pagan los feriados no trabajados** en los que les tocaba trabajar.
+  - En la primera y la última quincena, que la temporada no cubre entera, el fijo se paga proporcional a los días hábiles.
+  - Los pagos se cargan a la quincena que corresponde aunque se hagan después.
+- **Fotos y videos obligatorios:** un profe o auxiliar **no puede marcar la salida** si ese día no subió al menos una foto o un video de los chicos y las actividades. Los videos se suben en partes directo a Drive (hasta 300 MB). Todo queda ordenado en `Escuela de Verano — Fotos / <sede> / <día>`, para tener material actualizado para redes.
+
 ### Roles del equipo
 Cada persona se carga una vez en **Administración → Equipo** con su mail, sede y **rol**. Cuando entra a la app, ve solo lo que le corresponde:
 
 | Rol | Qué ve y qué hace |
 |---|---|
 | 🧑‍🏫 **Profe** | Marca entrada y salida, toma asistencia **solo de sus grupos**, sube fotos (quedan pendientes hasta que las aprueba el coordinador), ve el cronograma y sus horas. |
+| 🙋 **Auxiliar / ayudante** | Igual que el profe: asistencia de sus grupos y fotos (obligatorias para cerrar el turno). Cobra por quincena. |
 | 🛟 **Guardavidas** | Marca entrada y salida y ve la **lista de pileta** del día, por grupo: quién no sabe nadar, quién nada un poco y quién no tiene el dato cargado. |
 | 🩺 **Enfermería / acompañante** | Marca entrada y salida y ve las **fichas de salud** de los chicos del día: alergias, medicación, condiciones, obra social y contacto de emergencia. |
 | 📋 **Coordinador/a** | Todo lo del profe, pero con **todos los grupos**. Además ve el **equipo de hoy** (quién marcó, quién no, quién llegó tarde) y arma los **turnos** de cada uno. Corrige marcajes olvidados, **aprueba las fotos** antes de que las vean las familias, arma el cronograma y las temáticas y ve salud y pileta. **No ve la plata.** |
@@ -111,13 +130,14 @@ Cada administración entra con su PIN y **solo ve y toca lo de su sede**. El PIN
 7. Abrí `…/exec?p=admin` con el PIN general **2026**. En **Ajustes**:
    - Cambiá los PIN. Los de cada sede también están en la hoja `Config`.
    - Poné el mail de cada administración.
-   - Parado en Colonia de Güey, tocá **Usar mi ubicación**. La de Aldea ya está cargada.
+   - Parado en Colonia Dewey, tocá **Usar mi ubicación**. La de Aldea ya está cargada.
 8. En **Equipo**, sumá a cada persona con su mail y su rol. Después, el coordinador carga los turnos.
 9. Compartí los links: el de familias en Instagram y en la web de Aldea, y el de profes en el grupo de WhatsApp.
 
 Si cambiás el código: **Implementar → Administrar implementaciones → Editar → Nueva versión**. Así el link no cambia.
 
 ## Cosas para tener en cuenta
+- **Videos:** la subida en partes necesita que la app pueda conectarse con Drive. La primera vez, Google pide un permiso más (“conectarse a un servicio externo”): aceptalo.
 - **Límite de mails de Google:** con una cuenta de Gmail común se pueden mandar unos **100 mails por día** (con Google Workspace, 1.500). La app muestra cuántos quedan y no deja pasarse en un envío masivo.
 - **Aprobación de fotos:** está activada (`aprobarFotos: true`). Si preferís que las fotos de los profes salgan directo, cambialo a `false` en `CONFIG`.
 - Las **fotos** se guardan en Drive, en la carpeta “Escuela de Verano — Fotos”, y quedan visibles solo para quien tenga el link. Los chicos sin autorización de fotos aparecen marcados con 📵 para los profes.
@@ -131,7 +151,7 @@ Si cambiás el código: **Implementar → Administrar implementaciones → Edita
 - **Qué piden las familias** (apps como “Mi Jardín” y los sistemas de campamentos de EE. UU.: CampMinder, UltraCamp): fotos del día, asistencia, avisos y ficha médica en un solo lugar, y saber quién retiró al chico. Por eso la app tiene ficha de salud obligatoria, autorizados a retirar, permiso de fotos y fotos por grupo.
 - **Lo que más vende:**
   - descuento por hermanos
-  - descuento por inscripción anticipada (para llenar cupos antes de diciembre)
+  - precio de preventa (para llenar cupos antes de diciembre)
   - aviso de renovación unos días antes de que termine, con la temática de la semana siguiente como gancho
   - cupos limitados visibles
 - **Lo que más complica a la administración:** cobrar saldos y saber quién se va. Por eso hay recordatorios automáticos y un resumen diario con WhatsApp listo para mandar.

@@ -109,6 +109,11 @@
   .marcar small{font:500 14px 'Archivo';opacity:.85}
   .fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:10px}
   .fotos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--linea);cursor:zoom-in}
+  .vid{position:relative;aspect-ratio:1;border-radius:10px;background:#1F2A22;cursor:pointer;overflow:hidden}
+  .vid img{width:100%;height:100%;object-fit:cover;opacity:.75}
+  .vid span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .prog{height:10px;border-radius:9px;background:var(--linea);overflow:hidden;margin-top:8px}
+  .prog i{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
   .post{background:#fff;border-radius:var(--r);padding:14px;margin:12px 0;box-shadow:0 1px 0 var(--linea)}
   .banner{border-radius:14px;padding:14px;background:var(--c2);color:var(--c1);margin:10px 0}
   .modal{position:fixed;inset:0;z-index:50;background:rgba(20,28,22,.55);display:flex;align-items:flex-end;justify-content:center}
@@ -162,9 +167,11 @@ const nGrupo = id => id === 'todos' ? 'Todos los grupos' : (grupo(id).emoji + ' 
 const foto = id => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1200';
 const wa = (tel, txt) => 'https://wa.me/' + String(tel || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(txt || '');
 function edadEn(nac, ref) { let e = +ref.slice(0, 4) - +nac.slice(0, 4); if (ref.slice(5) < nac.slice(5)) e--; return e; }
+const gruposBase = () => PUB.grupos.filter(g => !g.base);
+const gruposDe = sedeId => PUB.grupos.filter(g => !g.sede || !sedeId || sedeId === 'todas' || g.sede === sedeId);
 function grupoPorEdad(nac, ref) {
-  const e = edadEn(nac, ref);
-  return PUB.grupos.find(g => e >= g.edadMin && e <= g.edadMax) || (e < PUB.grupos[0].edadMin ? PUB.grupos[0] : PUB.grupos[PUB.grupos.length - 1]);
+  const e = edadEn(nac, ref), G = gruposBase();
+  return G.find(g => e >= g.edadMin && e <= g.edadMax) || (e < G[0].edadMin ? G[0] : G[G.length - 1]);
 }
 
 function api(accion, datos, rol) {
@@ -215,7 +222,8 @@ function arrancar() {
 }
 
 /* ================= FAMILIAS · público ================= */
-function precioDesde(s) { return s.precios.semanas[1]; }
+function etapaActual(s) { const E = s.precios.etapas; return E.find(e => !e.hasta || PUB.hoy <= e.hasta) || E[E.length - 1]; }
+function precioDesde(s) { return etapaActual(s).semanas[1]; }
 
 function vInicio() {
   tema(null);
@@ -234,7 +242,7 @@ function vInicio() {
         <div class="cuerpo">
           <ul>${x.ficha.slice(0, 4).map(f => `<li><b>${esc(f[0])}</b>${esc(f[1])}</li>`).join('')}</ul>
           <div class="muted chico">Del ${fLarga(x.inicio)} al ${fLarga(x.fin)}</div>
-          <div><span class="muted">Semana desde</span> <b style="font-size:20px">${pesos(precioDesde(x))}</b></div>
+          <div><span class="muted">Semana desde</span> <b style="font-size:20px">${pesos(precioDesde(x))}</b>${etapaActual(x).hasta ? ` <span class="chip aviso">${esc(etapaActual(x).nombre)} hasta el ${fCorta(etapaActual(x).hasta)}</span>` : ''}</div>
           <div class="fila" style="margin-top:auto">
             <button class="btn" style="background:${x.color}" onclick="vSede('${x.id}')">Ver todo</button>
             <button class="btn acento" style="background:${x.acento};color:${x.color}" onclick="empezar('${x.id}')">Inscribir</button>
@@ -248,9 +256,10 @@ function vInicio() {
       <div class="scroll-x"><table class="t">
         <tr><th></th>${s.map(x => `<th style="color:${x.color}">${esc(x.nombre)}</th>`).join('')}</tr>
         ${etiquetas.map((e, i) => `<tr><td><b>${esc(e)}</b></td>${s.map(x => `<td>${esc((x.ficha[i] || [])[1] || '—')}</td>`).join('')}</tr>`).join('')}
-        <tr><td><b>Día suelto</b></td>${s.map(x => `<td>${pesos(x.precios.dia)}</td>`).join('')}</tr>
-        <tr><td><b>1 semana</b></td>${s.map(x => `<td>${pesos(x.precios.semanas[1])}</td>`).join('')}</tr>
-        <tr><td><b>4 semanas</b></td>${s.map(x => `<td>${pesos(x.precios.semanas[4])}</td>`).join('')}</tr>
+        <tr><td><b>Día suelto</b></td>${s.map(x => `<td>${pesos(etapaActual(x).dia)}</td>`).join('')}</tr>
+        <tr><td><b>1 semana</b></td>${s.map(x => `<td>${pesos(etapaActual(x).semanas[1])}</td>`).join('')}</tr>
+        <tr><td><b>Temporada completa</b></td>${s.map(x => `<td>${pesos(etapaActual(x).semanas[x.semanas.length] || etapaActual(x).semanas.slice(-1)[0])}</td>`).join('')}</tr>
+        <tr><td><b>Precio</b></td>${s.map(x => `<td>${esc(etapaActual(x).nombre)}${etapaActual(x).hasta ? ' hasta el ' + fCorta(etapaActual(x).hasta) : ''}</td>`).join('')}</tr>
         <tr><td><b>Dirección</b></td>${s.map(x => `<td>${esc(x.direccion)}</td>`).join('')}</tr>
       </table></div>
     </div>
@@ -285,7 +294,7 @@ function vSede(id) {
       <table class="t">${s.ficha.map(f => `<tr><td style="width:120px"><b>${esc(f[0])}</b></td><td>${esc(f[1])}</td></tr>`).join('')}</table>
     </div>
     <div class="card"><h3>Grupos por edad</h3>
-      <div class="fila">${PUB.grupos.map(g => `<span class="chip">${g.emoji} ${esc(g.nombre)} · ${g.edadMin} a ${g.edadMax} años</span>`).join('')}</div>
+      <div class="fila">${gruposBase().map(g => `<span class="chip">${g.emoji} ${esc(g.nombre)} · ${g.edadMin} a ${g.edadMax} años</span>`).join('')}</div>
       <p class="muted chico" style="margin-bottom:0">Cupo de ${s.cupoPorGrupo} chicos por grupo y por día. La edad se cuenta al empezar la temporada.</p>
     </div>
     <div class="card"><h3>Temáticas de cada semana</h3>
@@ -296,17 +305,18 @@ function vSede(id) {
         ${w.hasta < hoy ? '<span class="chip">Terminó</span>' : ''}</div>`).join('')}
     </div>
     <div class="card"><h3>Precios</h3>
-      <table class="t">
-        <tr><td>Día suelto</td><td class="derecha"><b>${pesos(P.dia)}</b></td></tr>
-        ${P.semanas.slice(1, 6).map((p, i) => `<tr><td>${i + 1} ${i ? 'semanas' : 'semana'}</td><td class="derecha"><b>${pesos(p)}</b>${i ? ` <span class="muted chico">(${pesos(p / (i + 1))} c/u)</span>` : ''}</td></tr>`).join('')}
-        <tr><td>Más semanas</td><td class="derecha muted">calculalo en el presupuesto</td></tr>
+      ${(() => { const EA = etapaActual(s), vis = P.etapas.filter(e => !e.hasta || e.hasta >= hoy), nS = s.semanas.length;
+        const fila = (t, f) => `<tr><td>${t}</td>${vis.map(e => `<td class="derecha" style="${e === EA ? 'font-weight:700' : 'color:var(--gris)'}">${pesos(f(e))}</td>`).join('')}</tr>`;
+        return `<div class="scroll-x"><table class="t"><tr><th>Turno mañana</th>${vis.map(e => `<th class="derecha" style="${e === EA ? 'color:var(--c1)' : ''}">${esc(e.nombre)}${e.hasta ? '<br>hasta ' + fCorta(e.hasta) : ''}${e === EA ? '<br>✅ ahora' : ''}</th>`).join('')}</tr>
+          ${fila('Día suelto', e => e.dia)}${[1, 2, 4].map(n => fila(n + (n > 1 ? ' semanas' : ' semana'), e => e.semanas[n])).join('')}${fila('Temporada (' + nS + ' semanas)', e => e.semanas[nS] || e.semanas[e.semanas.length - 1])}</table></div>`; })()}
+      <table class="t" style="margin-top:10px">
         ${P.turnos.filter(t => t.factor !== 1).map(t => `<tr><td>${esc(t.nombre)}</td><td class="derecha">+${Math.round((t.factor - 1) * 100)}%</td></tr>`).join('')}
         ${P.extras.map(e => `<tr><td>${esc(e.nombre)} <span class="muted chico">${esc(e.detalle || '')}</span></td><td class="derecha">${pesos(e.precioDia)} por día</td></tr>`).join('')}
       </table>
       <div class="fila" style="margin-top:12px">
         ${P.descuentoHermanos ? `<span class="chip ok">👫 Hermanos ${P.descuentoHermanos}% off</span>` : ''}
         ${P.descuentoRenovacion ? `<span class="chip ok">🔁 Renovando ${P.descuentoRenovacion}% off</span>` : ''}
-        ${P.anticipado && P.anticipado.hasta >= hoy ? `<span class="chip aviso">⏰ ${P.anticipado.pct}% off inscribiéndote hasta el ${fCorta(P.anticipado.hasta)}</span>` : ''}
+        ${etapaActual(s).hasta ? `<span class="chip aviso">⏰ ${esc(etapaActual(s).nombre)}: este precio vale hasta el ${fCorta(etapaActual(s).hasta)}</span>` : ''}
       </div>
       <p class="muted chico">Los días sueltos nunca cuestan más que la semana completa. Se reserva el lugar con una seña del ${P.senaPct}%.</p>
       <button class="btn full" onclick="empezar('${id}')">Calcular mi presupuesto</button>
@@ -363,6 +373,7 @@ function detallePresu(q, nombres) {
     <td class="derecha">${c.descuento ? `<s class="muted">${pesos(c.subtotal)}</s><br>` : ''}<b>${pesos(c.total)}</b></td></tr>`).join('')}
     <tr><td><b>Total</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
     <tr><td>Seña para reservar (${q.senaPct}%)</td><td class="derecha"><b>${pesos(q.sena)}</b></td></tr></table>
+    ${q.etapa && q.etapa.hasta ? `<p class="chip aviso" style="margin:8px 0 0">⏰ ${esc(q.etapa.nombre)}: este precio vale si te inscribís hasta el ${fCorta(q.etapa.hasta)}${q.proxima ? ', después pasa a ' + esc(q.proxima.nombre.toLowerCase()) : ''}</p>` : ''}
     <p class="muted chico">Del ${fLarga(q.dias[0] || '')} al ${fLarga(q.dias[q.dias.length - 1] || '')} · ${q.cantDias} días</p>`;
 }
 
@@ -486,8 +497,9 @@ function vListo(r) {
     </div>
     <div class="card"><h3>Para reservar el lugar: seña de ${pesos(r.sena)}</h3>
       <p class="muted chico">Total ${pesos(r.total)}. El saldo lo pagás antes del primer día.</p>
-      <div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
-      <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>
+      ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
+      <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>`
+      : `<div class="banner">Te pasamos los datos para transferir por WhatsApp.</div><a class="btn wa full" href="${esc(r.waComprobante.replace(/Te%20mando%20el%20comprobante/, 'Me%20pasás%20los%20datos%20para%20la%20seña'))}" target="_blank">💬 Pedir datos de pago</a>`}
     </div>
     <div class="card"><h3>¿Y ahora?</h3>
       <p>Entrá a <b>Mi cuenta</b> con tu mail para ver las fotos del día, la asistencia, el cronograma de la semana y el saldo.</p>
@@ -604,15 +616,17 @@ function anularAviso(id) { if (confirm('¿Anular este aviso?')) api('anularAviso
 function verPago() {
   const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
   const s = sede(i ? i.sede : C.chicos[0].sede), p = s.pago;
-  modal(`<h3>Cómo pagar</h3><div class="banner"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:24px">${esc(p.alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
-    <div class="fila"><button class="btn claro" onclick="copiar('${esc(p.alias)}')">Copiar alias</button>
+  modal(`<h3>Cómo pagar</h3>${p.alias ? `<div class="banner"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:24px">${esc(p.alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>` : '<div class="banner">Escribinos y te pasamos los datos para transferir.</div>'}
+    <div class="fila">${p.alias ? `<button class="btn claro" onclick="copiar('${esc(p.alias)}')">Copiar alias</button>` : ''}
     <a class="btn wa crece" target="_blank" href="${wa(s.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano (' + C.familia.adulto + ').')}">💬 Mandar comprobante</a></div>`);
 }
 function htmlPost(p) {
   return `<div class="post"><div class="fila"><div class="crece"><b>${esc(nGrupo(p.grupo))}</b> <span class="muted chico">· ${esc(p.profe)}</span></div><span class="muted chico">${fCorta(p.fecha.slice(0, 10))} ${esc(p.fecha.slice(11))}</span></div>
     ${p.texto ? `<p style="margin:8px 0 0;white-space:pre-wrap">${esc(p.texto)}</p>` : ''}
-    ${p.fotos.length ? `<div class="fotos">${p.fotos.map(f => `<img loading="lazy" src="${foto(f)}" onclick="verFoto('${esc(f)}')" alt="">`).join('')}</div>` : ''}</div>`;
+    ${p.fotos.length || (p.videos || []).length ? `<div class="fotos">${p.fotos.map(f => `<img loading="lazy" src="${foto(f)}" onclick="verFoto('${esc(f)}')" alt="">`).join('')}
+      ${(p.videos || []).map(v => `<div class="vid" onclick="verVideo('${esc(v)}')"><img loading="lazy" src="${foto(v)}" alt="" onerror="this.remove()"><span>▶</span></div>`).join('')}</div>` : ''}</div>`;
 }
+function verVideo(id) { modal('<div style="position:relative;padding-top:177%;margin-top:10px"><iframe src="https://drive.google.com/file/d/' + encodeURIComponent(id) + '/preview" allow="autoplay" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:14px"></iframe></div>'); }
 function cFotos() {
   return `<h2 class="serif" style="font-size:32px;margin-top:16px">Fotos y novedades</h2>
     ${C.publicaciones.length ? C.publicaciones.map(htmlPost).join('') : '<div class="vacio">📸 Cuando los profes suban fotos del día, las vas a ver acá.</div>'}`;
@@ -744,7 +758,9 @@ function pHoy() {
   $('#prCuerpo').innerHTML = `
     <p class="muted" style="margin-top:16px">${fLarga(PR.hoy)} · ${PR.profe.sedes.map(s => esc(sede(s).nombre)).join(' / ')}</p>
     ${PR.turnosHoy.length ? `<div class="banner">🕘 <b>Tu turno hoy:</b> ${PR.turnosHoy.map(t => esc(t.desde) + ' a ' + esc(t.hasta) + (t.tarea ? ' · ' + esc(t.tarea) : '') + (PR.profe.sedes.length > 1 ? ' · ' + esc(sede(t.sede).nombre) : '')).join(' / ')}</div>` : ''}
-    <button class="marcar" id="btnMarcar" style="background:${ab ? 'var(--mal)' : 'var(--ok)'}" onclick="marcar(this)">${ab ? 'Marcar SALIDA' : 'Marcar ENTRADA'}<small>${ab ? 'Entraste a las ' + esc(ab.desde) + ' en ' + esc(sede(ab.sede).nombre) : 'Tocá cuando llegás'}</small></button>
+    ${ab && PR.fotoObligatoria && !PR.subioHoy ? `<div class="banner" style="background:#FFF0CC;color:#8A5A00">📸 <b>Antes de irte</b>, subí al menos una foto o video de los chicos y las actividades de hoy. Sin eso no se puede cerrar el turno.
+      <div style="margin-top:8px"><button class="btn sm" onclick="vProfe('subir')">Subir fotos o videos</button></div></div>` : ''}
+    <button class="marcar" id="btnMarcar" style="background:${ab ? 'var(--mal)' : 'var(--ok)'}" onclick="${ab && PR.fotoObligatoria && !PR.subioHoy ? "toast('Primero subí una foto o video del día 📸', true);vProfe('subir')" : 'marcar(this)'}">${ab ? 'Marcar SALIDA' : 'Marcar ENTRADA'}<small>${ab ? 'Entraste a las ' + esc(ab.desde) + ' en ' + esc(sede(ab.sede).nombre) : 'Tocá cuando llegás'}</small></button>
     <p class="muted chico" id="gpsInfo">${sinUbic ? '⚠️ La administración todavía no cargó la ubicación de la sede.' : 'Se usa el GPS del celular: tenés que estar en la sede para marcar.'}</p>
     ${PR.hoyMarc.length ? `<div class="card"><h3>Hoy</h3>${PR.hoyMarc.map(m => `<div class="lista-item"><span class="chip ${m.tipo === 'ENTRADA' ? 'ok' : 'mal'}">${m.tipo}</span><b class="crece">${esc(m.hora)}</b><span class="muted chico">${esc(sede(m.sede) ? sede(m.sede).nombre : m.sede)}</span></div>`).join('')}</div>` : ''}
     <div class="fila">${puede('asistencia') ? `<button class="btn claro crece" onclick="vProfe('asis')">✅ Asistencia</button>` : ''}
@@ -761,7 +777,7 @@ function marcar(btn) {
     if (fin) return; fin = true; navigator.geolocation.clearWatch(wid);
     if (!mejor) { btn.disabled = false; btn.innerHTML = txt; return toast('No pudimos leer tu ubicación. Activá el GPS (ubicación precisa) y probá de nuevo.', true); }
     api('marcar', { lat: mejor.latitude, lng: mejor.longitude, precision: mejor.accuracy, esperado: PR.abierto ? 'SALIDA' : 'ENTRADA' }, 'profe')
-      .then(r => { if (r.refrescar) toast(r.mensaje, true); else toast((r.tipo === 'ENTRADA' ? '¡Buen día! Entrada ' : '¡Gracias! Salida ') + r.hora + ' · ' + r.sede); profeCargar('hoy'); })
+      .then(r => { if (r.faltaFoto) { toast(r.mensaje, true); return vProfe('subir'); } if (r.refrescar) toast(r.mensaje, true); else toast((r.tipo === 'ENTRADA' ? '¡Buen día! Entrada ' : '¡Gracias! Salida ') + r.hora + ' · ' + r.sede); profeCargar('hoy'); })
       .catch(e => { toast(e.message, true); btn.disabled = false; btn.innerHTML = txt; });
   };
   const wid = navigator.geolocation.watchPosition(p => { if (!mejor || p.coords.accuracy < mejor.accuracy) mejor = p.coords; if (mejor.accuracy <= 25) terminar(); },
@@ -772,11 +788,11 @@ function marcar(btn) {
 let AS = { sede: '', fecha: '', grupo: 'todos', cambios: {} };
 function pAsis() {
   if (!AS.sede) { AS.sede = PR.profe.sedes[0]; AS.fecha = PR.hoy; AS.grupo = puede('asistenciaTodos') ? 'todos' : (PR.profe.grupos.length === 1 ? PR.profe.grupos[0] : 'todos'); }
-  const gruposOk = puede('asistenciaTodos') || !PR.profe.grupos.length ? PUB.grupos : PUB.grupos.filter(g => PR.profe.grupos.includes(g.id));
+  const gruposOk = puede('asistenciaTodos') || !PR.profe.grupos.length ? gruposDe(AS.sede) : PUB.grupos.filter(g => PR.profe.grupos.includes(g.id));
   $('#prCuerpo').innerHTML = `
     ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === AS.sede ? 'on' : ''}" onclick="AS.sede='${s}';AS.cambios={};pAsis()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
     <div class="grid2"><div><label>Día</label><input type="date" value="${AS.fecha}" onchange="AS.fecha=this.value;AS.cambios={};pAsis()"></div>
-    <div><label>Grupo</label><select onchange="AS.grupo=this.value;AS.cambios={};pAsis()"><option value="todos">${gruposOk.length < PUB.grupos.length ? 'Mis grupos' : 'Todos'}</option>${gruposOk.map(g => `<option value="${g.id}" ${g.id === AS.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
+    <div><label>Grupo</label><select onchange="AS.grupo=this.value;AS.cambios={};pAsis()"><option value="todos">${gruposOk.length < gruposDe(AS.sede).length ? 'Mis grupos' : 'Todos'}</option>${gruposOk.map(g => `<option value="${g.id}" ${g.id === AS.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
     <div id="asisLista"><div class="vacio"><span class="spin"></span></div></div>`;
   api('lista', { sede: AS.sede, fecha: AS.fecha, grupo: AS.grupo }, 'profe').then(r => { LISTA = r; pintarLista(); }).catch(e => $('#asisLista').innerHTML = '<div class="vacio">' + esc(e.message) + '</div>');
 }
@@ -851,14 +867,16 @@ function pSubir() {
   $('#prCuerpo').innerHTML = `${puede('aprobarFotos') ? '<div id="pendFotos"></div>' : ''}<h2 class="serif" style="font-size:30px;margin-top:16px">Contá cómo fue el día</h2>
     <p class="muted chico">Lo ven las familias del grupo en su cuenta${puede('aprobarFotos') ? '' : ', cuando lo aprueba el coordinador'}.</p>
     ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === SUB.sede ? 'on' : ''}" onclick="SUB.sede='${s}';pSubir()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
-    <label>Para</label><select onchange="SUB.grupo=this.value;avisoFotos()"><option value="todos">Todos los grupos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === SUB.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
+    <label>Para</label><select onchange="SUB.grupo=this.value;avisoFotos()"><option value="todos">Todos los grupos</option>${gruposDe(SUB.sede).map(g => `<option value="${g.id}" ${g.id === SUB.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div id="avisoFotos"></div>
     <label>Texto</label><textarea id="pubTxt" placeholder="Hoy hicimos la búsqueda del tesoro 🏴‍☠️…"></textarea>
-    <label>Fotos <small>(hasta 10)</small></label><input type="file" accept="image/*" multiple onchange="elegirFotos(this.files)">
-    <div class="fotos" id="prevFotos">${FOTOS.map(f => `<img src="data:image/jpeg;base64,${f.b64}" alt="">`).join('')}</div>
+    <label>Fotos y videos <small>(hasta 10 fotos y 5 videos de ${PR.maxVideoMB} MB)</small></label><input type="file" accept="image/*,video/*" multiple onchange="elegirFotos(this.files)">
+    <div class="fotos" id="prevFotos"></div>
+    <div id="progVideo"></div>
     <button class="btn full" style="margin-top:16px" onclick="publicar(this)">Publicar</button>
+    <p class="muted chico">Todo queda guardado en Drive, en una carpeta por sede y por día.</p>
     ${PR.publicaciones.length ? '<h3 style="margin-top:24px">Lo que subiste</h3>' + PR.publicaciones.map(p => (p.pendiente ? '<span class="chip aviso">⏳ Esperando aprobación</span>' : !p.visible ? '<span class="chip mal">No aprobada</span>' : '') + htmlPost(p)).join('') : ''}`;
-  avisoFotos();
+  avisoFotos(); pintarPrevias();
   if (puede('aprobarFotos')) cargarPendientes();
 }
 function cargarPendientes() {
@@ -876,10 +894,31 @@ function avisoFotos() {
     const el = $('#avisoFotos'); if (el) el.innerHTML = no.length ? `<div class="banner" style="background:#FBE1DE;color:#9B2B20">📵 No pueden salir en fotos: <b>${no.map(c => esc(c.nombre)).join(', ')}</b></div>` : '';
   }).catch(() => {});
 }
+let VIDEOS = [];
 async function elegirFotos(files) {
-  const lista = [...files].slice(0, 10 - FOTOS.length);
-  for (const f of lista) FOTOS.push({ b64: await achicar(f), tipo: 'image/jpeg' });
-  $('#prevFotos').innerHTML = FOTOS.map((f, i) => `<img src="data:image/jpeg;base64,${f.b64}" onclick="FOTOS.splice(${i},1);this.remove()" alt="" title="Tocá para quitar">`).join('');
+  for (const f of [...files]) {
+    if (/^video\//.test(f.type)) {
+      if (f.size > PR.maxVideoMB * 1048576) { toast(f.name + ' pesa más de ' + PR.maxVideoMB + ' MB', true); continue; }
+      if (VIDEOS.length < 5) VIDEOS.push(f);
+    } else if (FOTOS.length < 10) FOTOS.push({ b64: await achicar(f), tipo: 'image/jpeg' });
+  }
+  pintarPrevias();
+}
+function pintarPrevias() {
+  const el = $('#prevFotos'); if (!el) return;
+  el.innerHTML = FOTOS.map((f, i) => `<img src="data:image/jpeg;base64,${f.b64}" onclick="FOTOS.splice(${i},1);pintarPrevias()" alt="" title="Tocá para quitar">`).join('') +
+    VIDEOS.map((v, i) => `<div class="vid" onclick="VIDEOS.splice(${i},1);pintarPrevias()" title="Tocá para quitar"><span style="font-size:14px;flex-direction:column">▶<br>${(v.size / 1048576).toFixed(0)} MB</span></div>`).join('');
+}
+const b64De = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(blob); });
+async function subirVideo(file, n, total) {
+  const ini = await api('iniciarSubida', { sede: SUB.sede, nombre: file.name, tipo: file.type || 'video/mp4', tamano: file.size }, 'profe');
+  const box = $('#progVideo');
+  for (let desde = 0; desde < file.size; desde += ini.parte) {
+    if (box) box.innerHTML = `<p class="chico" style="margin:10px 0 0">Subiendo video ${n} de ${total}: ${Math.round(100 * desde / file.size)}% · no cierres la app</p><div class="prog"><i style="width:${Math.round(100 * desde / file.size)}%"></i></div>`;
+    const r = await api('subirParte', { id: ini.id, desde, b64: await b64De(file.slice(desde, desde + ini.parte)) }, 'profe');
+    if (r.listo) { if (box) box.innerHTML = ''; return r.id; }
+  }
+  throw new Error('El video no terminó de subir. Probá de nuevo.');
 }
 function achicar(file) {
   return new Promise((res, rej) => {
@@ -892,7 +931,10 @@ function achicar(file) {
   });
 }
 function publicar(btn) {
-  conBoton(btn, async () => { const r = await api('publicar', { sede: SUB.sede, grupo: SUB.grupo, texto: val('pubTxt'), fotos: FOTOS }, 'profe'); FOTOS = []; toast(r.pendiente ? 'Enviado: lo ven las familias cuando lo apruebe el coordinador ✓' : '¡Publicado! ' + r.fotos + ' fotos'); profeCargar('subir'); });
+  conBoton(btn, async () => {
+    const videos = [];
+    for (let i = 0; i < VIDEOS.length; i++) videos.push(await subirVideo(VIDEOS[i], i + 1, VIDEOS.length));
+    const r = await api('publicar', { sede: SUB.sede, grupo: SUB.grupo, texto: val('pubTxt'), fotos: FOTOS, videos }, 'profe'); FOTOS = []; VIDEOS = []; toast(r.pendiente ? 'Enviado: lo ven las familias cuando lo apruebe el coordinador ✓' : '¡Publicado! ' + r.fotos + ' fotos'); profeCargar('subir'); });
 }
 function pEquipo() { $('#prCuerpo').innerHTML = '<div id="eqCuerpo"><div class="vacio"><span class="spin"></span></div></div>'; EQ = { rol: 'profe' }; eqCargar(); }
 let FI_FICHA = { sede: '' };
@@ -907,7 +949,7 @@ function pFichas(tipo) {
       const orden = { 'No': 0, 'Un poco': 1, '': 2, 'Sí': 3 };
       html = `<h2 class="serif" style="font-size:30px;margin-top:16px">🛟 Pileta de hoy</h2>
         <div class="kpis"><div class="kpi"><span>No saben nadar</span><b style="color:var(--mal)">${vienen.filter(c => c.sabeNadar === 'No').length}</b></div><div class="kpi"><span>Un poco</span><b style="color:var(--aviso)">${vienen.filter(c => c.sabeNadar === 'Un poco').length}</b></div><div class="kpi"><span>Sin dato</span><b>${vienen.filter(c => !c.sabeNadar).length}</b></div><div class="kpi"><span>Chicos hoy</span><b>${vienen.length}</b></div></div>` +
-        PUB.grupos.map(g => { const L = vienen.filter(c => c.grupo === g.id).sort((a, b) => orden[a.sabeNadar || ''] - orden[b.sabeNadar || ''] || a.nombre.localeCompare(b.nombre));
+        gruposDe(FI_FICHA.sede).map(g => { const L = vienen.filter(c => c.grupo === g.id).sort((a, b) => orden[a.sabeNadar || ''] - orden[b.sabeNadar || ''] || a.nombre.localeCompare(b.nombre));
           return L.length ? `<div class="card"><h3>${g.emoji} ${esc(g.nombre)} <span class="muted chico">${L.length}</span></h3>${L.map(c => `<div class="lista-item"><b class="crece">${esc(c.nombre)}<div class="muted chico">${c.edad} años${c.condiciones ? ' · ❗ ' + esc(c.condiciones) : ''}</div></b>
             <span class="chip ${c.sabeNadar === 'No' ? 'mal' : c.sabeNadar === 'Un poco' ? 'aviso' : c.sabeNadar === 'Sí' ? 'ok' : ''}">${c.sabeNadar === 'No' ? '🚫 No nada' : c.sabeNadar === 'Un poco' ? 'Nada un poco' : c.sabeNadar === 'Sí' ? 'Nada' : 'Sin dato'}</span></div>`).join('')}</div>` : ''; }).join('');
     } else {
@@ -937,12 +979,16 @@ function pSemana() {
 }
 function pHoras() {
   const L = PR.liq;
-  $('#prCuerpo').innerHTML = `<label>Mes</label><input type="month" value="${L.mes}" onchange="api('profeInicio',{mes:this.value},'profe').then(r=>{PR=r;pHoras()})">
-    <div class="kpis"><div class="kpi"><span>Horas</span><b>${String(L.horas).replace('.', ',')}</b></div><div class="kpi"><span>Días</span><b>${L.dias}</b></div>
-    <div class="kpi"><span>A cobrar</span><b>${pesos(L.devengado)}</b></div><div class="kpi"><span>Cobrado</span><b>${pesos(L.pagado)}</b></div></div>
-    <p class="muted chico">${esc(L.formaPago)} · ${pesos(L.valor)}. ${L.saldo > 0 ? 'Te queda por cobrar <b>' + pesos(L.saldo) + '</b>.' : ''}</p>
-    <div class="card">${L.turnos.length ? L.turnos.slice().reverse().map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(t.entrada)} a ${esc(t.salida)}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') : '<p class="muted">Sin turnos este mes.</p>'}</div>
+  $('#prCuerpo').innerHTML = `<label>Quincena</label>${selPeriodo(L.periodo, "api('profeInicio',{periodo:this.value},'profe').then(r=>{PR=r;pHoras()})")}
+    <div class="kpis"><div class="kpi"><span>Días trabajados</span><b>${L.dias}</b></div><div class="kpi"><span>Horas</span><b>${String(L.horas).replace('.', ',')}</b></div>
+    <div class="kpi"><span>Feriados pagos</span><b>${L.feriados}</b></div><div class="kpi"><span>A cobrar</span><b>${pesos(L.devengado)}</b></div><div class="kpi"><span>Cobrado</span><b>${pesos(L.pagado)}</b></div></div>
+    <p class="muted chico">${esc(L.formaPago)} · ${pesos(L.valor)}${L.forma === 'quincena' && L.proporcion < 100 ? ' (esta quincena es parte de la temporada: ' + L.proporcion + '%)' : ''}. ${L.saldo > 0 ? 'Te queda por cobrar <b>' + pesos(L.saldo) + '</b>.' : ''}</p>
+    <div class="card">${L.turnos.length ? L.turnos.slice().reverse().map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(t.entrada)} a ${esc(t.salida)}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') : '<p class="muted">Sin turnos en esta quincena.</p>'}</div>
     <button class="btn claro full" onclick="salir('profe')">Cerrar sesión</button>`;
+}
+function selPeriodo(actual, onchange) {
+  const ps = PUB.periodos.some(x => x.id === actual) ? PUB.periodos : PUB.periodos.concat([{ id: actual, nombre: actual }]);
+  return `<select onchange="${onchange}">${ps.map(x => `<option value="${x.id}" ${x.id === actual ? 'selected' : ''}>${esc(x.nombre)}${x.id === PUB.periodoActual ? ' (actual)' : ''}</option>`).join('')}</select>`;
 }
 
 /* ================= ADMINISTRACIÓN ================= */
@@ -957,7 +1003,7 @@ function vAdminLogin() {
 }
 async function adminCargar(tab) {
   if (!A) pintar('<div class="cargando">☀️ Cargando…</div>');
-  try { A = await api('tablero', { sede: aSede, mes: aMes }, 'admin'); } catch (e) { return pintar('<div class="cargando">' + esc(e.message) + '</div>'); }
+  try { A = await api('tablero', { sede: aSede, periodo: aMes }, 'admin'); } catch (e) { return pintar('<div class="cargando">' + esc(e.message) + '</div>'); }
   aSede = A.sede; aMes = A.mes;
   tema(A.sede === 'todas' ? null : A.sede);
   vAdmin(tab || aTab);
@@ -977,12 +1023,15 @@ function aInicio() {
   const K = A.kpis;
   const ocup = sedesVis().map(s => `<div class="card"><h3>${esc(s.nombre)} · esta semana</h3>
     <p class="muted chico">Hoy: ${K.hoyPresentes[s.id] || 0} presentes de ${K.hoyEsperados[s.id] || 0} inscriptos</p>
-    ${PUB.grupos.map(g => { const n = A.porGrupo[s.id + '|' + g.id] || 0; return `<div style="margin:8px 0"><div class="fila"><span class="crece">${g.emoji} ${esc(g.nombre)}</span><b>${n}</b><span class="muted chico">/ ${s.cupoPorGrupo} por día</span></div><div class="barra"><i style="width:${Math.min(100, 100 * n / s.cupoPorGrupo)}%"></i></div></div>`; }).join('')}
+    ${gruposDe(s.id).map(g => { const n = A.porGrupo[s.id + '|' + g.id] || 0; return `<div style="margin:8px 0"><div class="fila"><span class="crece">${g.emoji} ${esc(g.nombre)}</span><b>${n}</b><span class="muted chico">/ ${s.cupoPorGrupo} por día</span></div><div class="barra"><i style="width:${Math.min(100, 100 * n / s.cupoPorGrupo)}%"></i></div></div>`; }).join('')}
     <p class="muted chico" style="margin-bottom:0">Chicos distintos con al menos un día esta semana.</p></div>`).join('');
   $('#adCuerpo').innerHTML = `
     <div class="kpis"><div class="kpi"><span>Chicos</span><b>${K.chicos}</b></div><div class="kpi"><span>Facturado</span><b>${pesos(K.facturado)}</b></div>
     <div class="kpi"><span>Cobrado</span><b style="color:var(--ok)">${pesos(K.cobrado)}</b></div><div class="kpi"><span>Por cobrar</span><b style="color:var(--mal)">${pesos(K.pendiente)}</b></div>
     <div class="kpi"><span>Avisos de familias hoy</span><b>${A.avisosHoy}</b></div><div class="kpi"><span>Interesados</span><b>${K.interesados}</b></div><div class="kpi"><span>Mails disponibles hoy</span><b>${K.cuotaMail}</b></div></div>
+    ${A.sobrecupos.map(o => `<div class="card" style="border-left:5px solid var(--aviso)"><h3>⚠️ ${esc(nGrupo(o.grupo))} pasó los ${sede(o.sede).cupoPorGrupo} chicos</h3>
+      <p class="muted chico">${esc(nomSede(o.sede))} · hasta ${o.max} chicos · ${o.dias.length} día${o.dias.length > 1 ? 's' : ''} (desde el ${fCorta(o.dias[0])}). Las inscripciones nuevas de esa edad van solas al grupo nuevo; a los que ya están los movés desde Inscriptos.</p>
+      <button class="btn sm" onclick="crearGrupo(this,'${o.sede}','${esc(grupo(o.grupo).base || o.grupo)}')">+ Abrir otro grupo de ${esc(grupo(grupo(o.grupo).base || o.grupo).nombre)}</button></div>`).join('')}
     <div class="card"><h3>🔁 Se les termina y no renovaron (${A.vencen.length})</h3>${A.vencen.length ? A.vencen.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">Último día ${fLarga(i.hasta)} · ${esc(nomSede(i.sede))}</div></div>
       <a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WhatsApp</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','renovacion')">Mail</button></div>`).join('') : '<p class="muted">Nadie por ahora. 🎉</p>'}
       <p class="muted chico" style="margin-bottom:0">A estas familias les llega solo un mail para renovar, con descuento, unos días antes de terminar.</p></div>
@@ -990,6 +1039,9 @@ function aInicio() {
     ${ocup}
     <div class="card"><h3>👥 Equipo ahora</h3>${A.profes.filter(p => p.adentro).map(p => `<div class="lista-item"><span class="chip ok">Adentro</span><b class="crece">${esc(p.nombre)} <span class="muted chico">${esc(rolTxt(p.rol))}</span></b><span class="muted chico">${esc(p.adentro)}</span></div>`).join('') || '<p class="muted">Nadie marcó entrada.</p>'}
       <button class="btn claro full" style="margin-top:8px" onclick="vAdmin('profes')">Ver quién falta y los turnos</button></div>`;
+}
+function crearGrupo(btn, sedeId, base) {
+  conBoton(btn, async () => { const g = await api('crearGrupo', { sede: sedeId, base }, 'admin'); PUB = Object.assign(PUB, { grupos: (await api('publico')).grupos }); toast('Grupo ' + g.nombre + ' creado ✓'); adminCargar(); });
 }
 function htmlDeuda(i) {
   return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
@@ -1034,7 +1086,7 @@ function fichaAdmin(id) {
     <table class="t">${r('Total', pesos(i.total))}${r('Pagado', pesos(i.pagado))}${r('Saldo', pesos(i.saldo))}${r('Estado', i.estado)}${r('Notas', i.notas)}
     ${r('Nacimiento', fLarga(c.nacimiento || ''))}${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Obra social', c.obraSocial)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos)}
     ${r('Adulto', f.adulto)}${r('Mail', f.email)}${r('WhatsApp', f.whatsapp)}${r('Emergencia', f.emergencia)}${r('Retiran', f.autorizados)}${r('Nos conoció por', f.comoNosConocio)}</table>
-    <label>Grupo</label><select id="fgGrupo">${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === i.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
+    <label>Grupo</label><select id="fgGrupo">${gruposDe(i.sede).map(g => `<option value="${g.id}" ${g.id === i.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div class="grid2"><div><label>Total (corregir precio)</label><input type="number" id="fgTotal" value="${i.total}"></div><div><label>Notas</label><input type="text" id="fgNotas" value="${esc(i.notas || '')}"></div></div>
     <div class="fila" style="margin-top:14px">
       <button class="btn" onclick="guardarFicha(this,'${id}')">Guardar</button>
@@ -1075,28 +1127,28 @@ function aProfes() {
   const tot = lista.reduce((a, p) => (a.d += p.liq.devengado, a.p += p.liq.pagado, a), { d: 0, p: 0 });
   $('#adCuerpo').innerHTML = `<div class="card"><h3>Hoy</h3><div id="eqCuerpo"><div class="vacio"><span class="spin"></span></div></div></div>
     <h2 class="serif" style="font-size:30px;margin-top:22px">Personas y pagos</h2>
-    <div class="fila"><div class="crece"><label>Mes</label><input type="month" value="${A.mes}" onchange="aMes=this.value;adminCargar('profes')"></div>
+    <div class="fila"><div class="crece"><label>Quincena</label>${selPeriodo(A.mes, "aMes=this.value;adminCargar('profes')")}</div>
     <div class="crece"><label>Rol</label><select onchange="FROL=this.value;aProfes()"><option value="">Todos</option>${A.roles.map(r => `<option value="${r.id}" ${r.id === FROL ? 'selected' : ''}>${r.emoji} ${esc(r.nombre)}</option>`).join('')}</select></div>
     <button class="btn" style="margin-top:28px" onclick="formProfe()">+ Persona</button></div>
-    <div class="kpis"><div class="kpi"><span>A pagar en el mes</span><b>${pesos(tot.d)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(tot.p)}</b></div><div class="kpi"><span>Debemos</span><b style="color:var(--mal)">${pesos(tot.d - tot.p)}</b></div></div>
+    <div class="kpis"><div class="kpi"><span>A pagar en la quincena</span><b>${pesos(tot.d)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(tot.p)}</b></div><div class="kpi"><span>Debemos</span><b style="color:var(--mal)">${pesos(tot.d - tot.p)}</b></div></div>
     ${lista.map(p => `<div class="card" style="${p.activo ? '' : 'opacity:.55'}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(p.nombre)} ${p.adentro ? '<span class="chip ok">Adentro</span>' : ''}</h3>
       <div class="muted chico"><b>${esc(rolTxt(p.rol))}</b> · ${esc(nomSede(p.sede))} · ${esc(String(p.grupos || '').split(',').filter(Boolean).map(nGrupo).join(', ') || 'sin grupo')} · ${esc(PUB.formasPago[p.formaPago] || p.formaPago)} ${pesos(p.valor)}</div></div>
       <button class="btn xs claro" onclick="formProfe('${p.id}')">Editar</button></div>
-      <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span>Horas</span><b>${String(p.liq.horas).replace('.', ',')}</b></div><div class="kpi"><span>Días</span><b>${p.liq.dias}</b></div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
+      <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span>${p.liq.forma === 'hora' ? 'Horas' : 'Días'}</span><b>${p.liq.forma === 'hora' ? String(p.liq.horas).replace('.', ',') : p.liq.dias}</b>${p.liq.feriados ? `<span style="text-transform:none">+${p.liq.feriados} feriado</span>` : ''}${p.liq.faltas ? `<span style="text-transform:none;color:var(--mal)">${p.liq.faltas} falta${p.liq.faltas > 1 ? 's' : ''}</span>` : ''}</div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(p.liq.pagado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
       <div class="fila"><button class="btn xs" onclick="formPagoProfe('${p.id}')">Registrar pago</button><button class="btn xs claro" onclick="verTurnos('${p.id}')">Horas del mes</button><button class="btn xs claro" onclick="formMarcaje('${p.id}')">Marcaje a mano</button>
       ${p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + '!')}">WhatsApp</a>` : ''}</div></div>`).join('') || '<div class="vacio">Sumá a cada persona del equipo con su mail: entran a la app con ese mail.</div>'}`;
   EQ = { rol: 'admin' }; eqCargar();
 }
 function formProfe(id) {
-  const p = A.profes.find(x => x.id === id) || { activo: true, formaPago: 'hora', grupos: '', rol: 'profe' };
+  const p = A.profes.find(x => x.id === id) || { activo: true, formaPago: 'quincena', grupos: '', rol: 'profe' };
   const gs = String(p.grupos || '').split(',');
   modal(`<h3>${id ? 'Editar' : 'Sumar al equipo'}</h3>
     <label>Nombre</label><input type="text" id="pfNom" value="${esc(p.nombre || '')}">
-    <label>Rol</label><select id="pfRol">${A.roles.filter(r => r.id !== 'admin' || A.sesionSede === 'todas').map(r => `<option value="${r.id}" ${r.id === p.rol ? 'selected' : ''}>${r.emoji} ${esc(r.nombre)}</option>`).join('')}</select>
-    <p class="muted chico" style="margin:4px 0 0">Profe: asistencia de sus grupos y fotos · Guardavidas: lista de pileta · Enfermería: fichas de salud · Coordinador/a: todos los grupos, equipo y turnos, aprueba fotos, cronograma · Administración: todo, plata incluida.</p>
+    <label>Rol</label><select id="pfRol" onchange="document.getElementById('pfForma').value=this.value==='guardavidas'?'hora':'quincena'">${A.roles.filter(r => r.id !== 'admin' || A.sesionSede === 'todas').map(r => `<option value="${r.id}" ${r.id === p.rol ? 'selected' : ''}>${r.emoji} ${esc(r.nombre)}</option>`).join('')}</select>
+    <p class="muted chico" style="margin:4px 0 0">Profe y auxiliar: asistencia de sus grupos y fotos (obligatoria para cerrar el turno) · Guardavidas: lista de pileta · Enfermería: fichas de salud · Coordinador/a: todos los grupos, equipo y turnos, aprueba fotos, cronograma · Administración: todo, plata incluida.</p>
     <div class="grid2"><div><label>Mail <small>(entra con este)</small></label><input type="email" id="pfMail" value="${esc(p.email || '')}"></div><div><label>WhatsApp</label><input type="tel" id="pfWa" value="${esc(p.whatsapp || '')}"></div></div>
     ${A.sesionSede === 'todas' ? `<label>Sede</label><select id="pfSede"><option value="ambas">Ambas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === p.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
-    <label>Grupos a cargo <small>(profes)</small></label>${PUB.grupos.map(g => `<label class="opcion" style="margin:4px 0"><input type="checkbox" class="pfG" value="${g.id}" ${gs.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}</span></label>`).join('')}
+    <label>Grupos a cargo <small>(profes y auxiliares)</small></label>${PUB.grupos.map(g => `<label class="opcion" style="margin:4px 0"><input type="checkbox" class="pfG" value="${g.id}" ${gs.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}${g.sede ? ' · ' + esc(nomSede(g.sede)) : ''}</span></label>`).join('')}
     <div class="grid2"><div><label>Forma de pago</label><select id="pfForma">${Object.keys(PUB.formasPago).map(k => `<option value="${k}" ${k === p.formaPago ? 'selected' : ''}>${PUB.formasPago[k]}</option>`).join('')}</select></div><div><label>Valor</label><input type="number" id="pfValor" value="${p.valor || ''}"></div></div>
     <label>Notas</label><input type="text" id="pfNotas" value="${esc(p.notas || '')}">
     <label class="opcion ${p.activo ? 'on' : ''}"><input type="checkbox" id="pfAct" ${p.activo ? 'checked' : ''}><span>Activo (puede entrar a la app)</span></label>
@@ -1104,14 +1156,14 @@ function formProfe(id) {
 }
 function formPagoProfe(id) {
   const p = A.profes.find(x => x.id === id);
-  modal(`<h3>Pago a ${esc(p.nombre)}</h3><p class="muted chico">${A.mes}: le toca ${pesos(p.liq.devengado)}, ya cobró ${pesos(p.liq.pagado)}.</p>
+  modal(`<h3>Pago a ${esc(p.nombre)}</h3><p class="muted chico">${esc(p.liq.nombrePeriodo)}: le toca ${pesos(p.liq.devengado)}, ya cobró ${pesos(p.liq.pagado)}.${p.liq.feriados ? ' Incluye ' + p.liq.feriados + ' feriado(s) pago(s).' : ''}${p.liq.faltas ? ' Faltó: ' + p.liq.diasFaltas.map(fCorta).join(', ') + '.' : ''}</p>
     <div class="grid2"><div><label>Monto</label><input type="number" id="ppM" value="${Math.max(0, p.liq.saldo)}"></div><div><label>Fecha</label><input type="date" id="ppF" value="${A.hoy}"></div></div>
-    <label>Concepto</label><input type="text" id="ppC" value="Horas ${A.mes}">
-    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('pagarProfe',{profeId:'${id}',monto:val('ppM'),fecha:val('ppF'),concepto:val('ppC')},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar('profes')})">Guardar</button>`);
+    <label>Concepto</label><input type="text" id="ppC" value="${esc(p.liq.nombrePeriodo)}">
+    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('pagarProfe',{profeId:'${id}',periodo:'${A.mes}',monto:val('ppM'),fecha:val('ppF'),concepto:val('ppC')},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar('profes')})">Guardar</button>`);
 }
 function verTurnos(id) {
   const p = A.profes.find(x => x.id === id);
-  modal(`<h3>${esc(p.nombre)} · ${A.mes}</h3>${p.liq.turnos.map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(nomSede(t.sede))} · ${t.entrada} a ${t.salida}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') || '<p class="muted">Sin turnos.</p>'}`);
+  modal(`<h3>${esc(p.nombre)} · ${esc(p.liq.nombrePeriodo)}</h3>${p.liq.turnos.map(t => `<div class="lista-item"><b class="crece">${fLarga(t.dia)}</b><span class="muted chico">${esc(nomSede(t.sede))} · ${t.entrada} a ${t.salida}</span><b>${String(Math.round(t.horas * 100) / 100).replace('.', ',')} h</b></div>`).join('') || '<p class="muted">Sin turnos.</p>'}`);
 }
 function formMarcaje(id) {
   const p = A.profes.find(x => x.id === id);
@@ -1150,7 +1202,7 @@ function ccPintar() {
       <div class="grid2"><div><label>Día</label><select id="crD"><option value="todos">Todos los días</option><option value="lun">Lunes</option><option value="mar">Martes</option><option value="mie">Miércoles</option><option value="jue">Jueves</option><option value="vie">Viernes</option></select></div>
       <div><label>Hora</label><input type="time" id="crH" value="09:00"></div></div>
       <label>Actividad</label><input type="text" id="crA" placeholder="Natación, búsqueda del tesoro…">
-      <div class="grid2"><div><label>Grupo</label><select id="crG"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div><div><label>Lugar</label><input type="text" id="crL" placeholder="Pileta, cancha 1…"></div></div>
+      <div class="grid2"><div><label>Grupo</label><select id="crG"><option value="todos">Todos</option>${gruposDe(CT.sede).map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div><div><label>Lugar</label><input type="text" id="crL" placeholder="Pileta, cancha 1…"></div></div>
       <label>A cargo de</label><input type="text" id="crP">
       <div class="fila" style="margin-top:12px"><button class="btn" onclick="conBoton(this, async()=>{await api(CC.act.crono,{sede:'${CT.sede}',semana:'${CT.semana}',dia:val('crD'),hora:val('crH'),actividad:val('crA'),grupo:val('crG'),lugar:val('crL'),profe:val('crP')},CC.rol);toast('Agregado ✓');CC.recargar()})">Agregar</button>
       ${s.semanas[idxSem + 1] ? `<button class="btn claro" onclick="conBoton(this, async()=>{const r=await api(CC.act.copiar,{sede:'${CT.sede}',desde:'${CT.semana}',hasta:'${s.semanas[idxSem + 1].id}'},CC.rol);toast(r.copiados+' actividades copiadas a la semana siguiente');CT.semana='${s.semanas[idxSem + 1].id}';CC.recargar()})">Copiar a la semana siguiente</button>` : ''}</div>
@@ -1160,6 +1212,7 @@ function ccPintar() {
         <div class="crece"><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}</div><input type="text" id="tt${w.id}" value="${esc(t.titulo || '')}" placeholder="Título"><input type="text" id="td${w.id}" value="${esc(t.descripcion || '')}" placeholder="Descripción corta" style="margin-top:4px"></div>
         <button class="btn xs" onclick="conBoton(this, async()=>{await api(CC.act.tem,{sede:'${CT.sede}',semana:'${w.id}',emoji:val('te${w.id}'),titulo:val('tt${w.id}'),descripcion:val('td${w.id}')},CC.rol);toast('Guardado ✓')})">✓</button></div>`; }).join('')}
     </div>
+    ${CC.rol === 'admin' && A.carpetaFotos ? `<a class="btn claro full" target="_blank" href="${A.carpetaFotos}" style="margin:6px 0 4px">📁 Abrir en Drive todas las fotos y videos (una carpeta por sede y por día)</a>` : ''}
     ${pubs ? `<div class="card"><h3>Fotos y publicaciones del equipo</h3>${pubs.map(p => (p.pendiente ? '<span class="chip aviso">⏳ Por aprobar</span>' : '') + htmlPost(p) + `<div class="derecha" style="margin:-6px 0 10px">${p.pendiente || !p.visible ? `<button class="btn xs" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:true},'admin');adminCargar('contenido')})">✓ Mostrar a las familias</button>` : ''}
       ${p.pendiente || p.visible ? `<button class="btn xs claro" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:false},'admin');adminCargar('contenido')})">🙈 Ocultar</button>` : ''}</div>`).join('') || '<p class="muted">Todavía no subieron nada.</p>'}</div>` : ''}`;
 }
@@ -1246,7 +1299,7 @@ function aAjustes() {
       ${[['Familias (Instagram, WhatsApp)', A.url], ['Familias · mi cuenta', A.url + '?p=cuenta'], ['Profes', A.url + '?p=profes'], ['Administración', A.url + '?p=admin']].map(([t, u]) => `<div class="lista-item"><div class="crece"><b>${t}</b><div class="muted chico" style="word-break:break-all">${esc(u)}</div></div><button class="btn xs claro" onclick="copiar('${esc(u)}')">Copiar</button></div>`).join('')}
       <a class="btn claro sm" style="margin-top:10px" target="_blank" href="${A.planilla}">Abrir la planilla</a></div>
     <div class="card"><h3>🔐 PIN y mails de la administración</h3>
-      ${Object.keys(aj).sort().map(k => `<label>${esc(k.replace('pin_', 'PIN · ').replace('email_', 'Mail de aviso · ').replace('pinGeneral', 'PIN general').replace('emailGeneral', 'Mail general').replace('aldea', 'Aldea de Valle').replace('colonia', 'Colonia de Güey'))}</label><input type="text" class="ajuste" data-k="${k}" value="${esc(aj[k])}">`).join('')}
+      ${Object.keys(aj).sort().map(k => `<label>${esc(k.replace('pin_', 'PIN · ').replace('email_', 'Mail de aviso · ').replace('pinGeneral', 'PIN general').replace('emailGeneral', 'Mail general').replace('aldea', 'Aldea de Valle').replace('colonia', 'Colonia Dewey'))}</label><input type="text" class="ajuste" data-k="${k}" value="${esc(aj[k])}">`).join('')}
       <button class="btn" style="margin-top:12px" onclick="conBoton(this, async()=>{const v={};document.querySelectorAll('.ajuste').forEach(x=>v[x.dataset.k]=x.value);await api('guardarAjustes',{valores:v},'admin');toast('Guardado ✓')})">Guardar</button></div>
     <button class="btn claro full" onclick="salir('admin')">Cerrar sesión</button>`;
 }
