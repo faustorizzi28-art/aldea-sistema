@@ -75,7 +75,7 @@ const Revelacion: React.FC<{ r: GuionTeaser["revelacion"] }> = ({ r }) => {
       {r.foto ? (
         <Img src={staticFile(`fotos/${r.foto}`)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})`, filter: "brightness(0.6)" }} />
       ) : (
-        <AbsoluteFill style={{ background: `radial-gradient(80% 60% at 50% 45%, ${r.color ?? "#E8892B"}, #07263d 75%, #020a12)`, transform: `scale(${zoom})` }} />
+        <AbsoluteFill style={{ background: `radial-gradient(80% 60% at 50% 45%, ${r.color ?? "#E8892B"}, #062a33 75%, #020c10)`, transform: `scale(${zoom})` }} />
       )}
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: 28, padding: 70, textAlign: "center" }}>
         {r.logo && (

@@ -1,0 +1,16 @@
+{
+  "titulo": "Teaser Escuela de Verano Aldea",
+  "segundos": 24,
+  "escenas": [
+    { "desde": 0.5, "hasta": 2.9, "texto": "Shhh…", "chico": true, "video": "pileta-4221.mp4", "videoDesde": 0 },
+    { "desde": 3.1, "hasta": 5.4, "texto": "El agua ya se está preparando.", "chico": true, "video": "pileta-4220.mp4", "videoDesde": 1 },
+    { "desde": 5.6, "hasta": 7.7, "texto": "El verde nos espera.", "video": "aldea-recorrido.mp4", "videoDesde": 5 },
+    { "desde": 7.9, "hasta": 10.1, "texto": "Juegos.\nMisiones.\nAmigos.", "foto": "escuela-verano.jpg" },
+    { "desde": 10.3, "hasta": 12.3, "texto": "Lo vas a vivir\npor primera vez…", "chico": true, "foto": "pileta-verano.jpg" },
+    { "desde": 12.5, "hasta": 14.6, "texto": "…o vas a volver\npor más.", "chico": true, "video": "pileta-4219.mp4" },
+    { "desde": 14.8, "hasta": 16.3, "texto": "Falta poco." },
+    { "desde": 16.5, "hasta": 18.7, "texto": "Muy poco." }
+  ],
+  "revelacion": { "desde": 19.4, "logo": "logo-aldea.png", "arriba": "ESCUELA DE VERANO 2026–27", "grande": "", "color": "#0E5A6B", "abajo": "Se viene el verano más divertido del Valle.\nMuy pronto: preventa." },
+  "musica": "tension-teaser.mp3"
+}
