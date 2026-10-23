@@ -16,6 +16,8 @@ import { Historia, GuionHistoria, duracionHistoria } from "./Historia";
 import historia from "../guiones/historia-lunes-2026-10-19.json";
 import glorin from "../guiones/glorin-reel-cumples.json";
 import aldeaPileta from "../guiones/historia-aldea-pileta.json";
+import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
+import teaserDewey from "../guiones/teaser-colonia-dewey.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
 export const RemotionRoot: React.FC = () => {
@@ -137,6 +139,16 @@ export const RemotionRoot: React.FC = () => {
       durationInFrames={duracionHistoria(aldeaPileta as GuionHistoria)}
       defaultProps={aldeaPileta as GuionHistoria}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
+    />
+    <Composition
+      id="Teaser"
+      component={Teaser}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionTeaser(teaserDewey as GuionTeaser)}
+      defaultProps={teaserDewey as GuionTeaser}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionTeaser(props) })}
     />
     </>
   );
