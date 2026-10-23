@@ -6,34 +6,40 @@
       "desde": 0.5,
       "hasta": 2.9,
       "texto": "Este verano…",
-      "chico": true
+      "chico": true,
+      "foto": "dewey-carpas-luna.jpg"
     },
     {
       "desde": 3.1,
       "hasta": 5.4,
-      "texto": "Las risas vuelven."
+      "texto": "Las risas vuelven.",
+      "foto": "dewey-humo-baile.jpg"
     },
     {
       "desde": 5.6,
       "hasta": 7.7,
-      "texto": "El agua vuelve."
+      "texto": "Los colores vuelven.",
+      "foto": "dewey-humo-verde.jpg"
     },
     {
       "desde": 7.9,
       "hasta": 10.1,
-      "texto": "Los amigos\nde todo el verano."
+      "texto": "Los amigos\nde todo el verano.",
+      "foto": "dewey-baile.jpg"
     },
     {
       "desde": 10.3,
       "hasta": 12.3,
       "texto": "Una historia que\nya conocés…",
-      "chico": true
+      "chico": true,
+      "foto": "dewey-fogon.jpg"
     },
     {
       "desde": 12.5,
       "hasta": 14.6,
       "texto": "…pero que todavía\nno viviste.",
-      "chico": true
+      "chico": true,
+      "foto": "dewey-carpas-luna.jpg"
     },
     {
       "desde": 14.8,
