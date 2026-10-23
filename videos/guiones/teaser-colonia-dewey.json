@@ -2,15 +2,55 @@
   "titulo": "Teaser Colonia de Verano Dewey",
   "segundos": 24,
   "escenas": [
-    { "desde": 0.5, "hasta": 2.9, "texto": "¿Te acordás?" },
-    { "desde": 3.1, "hasta": 5.4, "texto": "Las risas." },
-    { "desde": 5.6, "hasta": 7.7, "texto": "El agua." },
-    { "desde": 7.9, "hasta": 10.1, "texto": "Los amigos\nde todo el verano." },
-    { "desde": 10.3, "hasta": 12.3, "texto": "Ese último abrazo\nantes de volver a casa." , "chico": true},
-    { "desde": 12.5, "hasta": 14.6, "texto": "Algo está por volver." },
-    { "desde": 14.8, "hasta": 16.3, "texto": "Falta poco." },
-    { "desde": 16.5, "hasta": 18.7, "texto": "Muy poco." }
+    {
+      "desde": 0.5,
+      "hasta": 2.9,
+      "texto": "Este verano…",
+      "chico": true
+    },
+    {
+      "desde": 3.1,
+      "hasta": 5.4,
+      "texto": "Las risas vuelven."
+    },
+    {
+      "desde": 5.6,
+      "hasta": 7.7,
+      "texto": "El agua vuelve."
+    },
+    {
+      "desde": 7.9,
+      "hasta": 10.1,
+      "texto": "Los amigos\nde todo el verano."
+    },
+    {
+      "desde": 10.3,
+      "hasta": 12.3,
+      "texto": "Una historia que\nya conocés…",
+      "chico": true
+    },
+    {
+      "desde": 12.5,
+      "hasta": 14.6,
+      "texto": "…pero que todavía\nno viviste.",
+      "chico": true
+    },
+    {
+      "desde": 14.8,
+      "hasta": 16.3,
+      "texto": "Falta poco."
+    },
+    {
+      "desde": 16.5,
+      "hasta": 18.7,
+      "texto": "Muy poco."
+    }
   ],
-  "revelacion": { "desde": 19.4, "arriba": "COLONIA DE VERANO", "grande": "DEWEY\n2026–27", "abajo": "Muy pronto, toda la información.\nPreparate." },
+  "revelacion": {
+    "desde": 19.4,
+    "arriba": "COLONIA DE VERANO",
+    "grande": "DEWEY\n2026–27",
+    "abajo": "Próximamente.\nToda la información, muy pronto."
+  },
   "musica": "tension-teaser.mp3"
 }

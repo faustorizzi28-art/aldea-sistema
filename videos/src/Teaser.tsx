@@ -118,6 +118,17 @@ export const Teaser: React.FC<GuionTeaser> = (g) => {
       </Sequence>
       <AbsoluteFill style={{ background: "radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.75) 100%)" }} />
       <Grano />
+      {/* franjas negras de cine (formato panorámico), se abren en la revelación */}
+      {(() => {
+        const frame = useCurrentFrame();
+        const h = interpolate(frame, [f(g.revelacion.desde) - 2, f(g.revelacion.desde) + 20], [330, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+        return (
+          <>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: h, backgroundColor: "black" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: h, backgroundColor: "black" }} />
+          </>
+        );
+      })()}
       <Audio src={staticFile(`musica/${g.musica}`)} />
     </AbsoluteFill>
   );
