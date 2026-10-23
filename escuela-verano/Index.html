@@ -502,11 +502,11 @@ function vLogin(rol) {
   tema(rol === 'familia' ? LS.get('sede', null) : null);
   const esProfe = rol === 'profe';
   pintar(`
-  <header class="top"><div class="marca">☀️ ${esProfe ? 'Profes' : 'Mi cuenta'} <small>${esc(PUB.marca)}</small></div>${esProfe ? '' : '<button onclick="location.href=PUB.url">Inicio</button>'}</header>
+  <header class="top"><div class="marca">☀️ ${esProfe ? 'Equipo' : 'Mi cuenta'} <small>${esc(PUB.marca)}</small></div>${esProfe ? '' : '<button onclick="location.href=PUB.url">Inicio</button>'}</header>
   <div class="wrap" style="max-width:460px">
     <div class="card" style="margin-top:28px">
-      <h2 class="serif" style="font-size:32px">${esProfe ? '¡Hola, profe!' : '¡Hola!'}</h2>
-      <p class="muted">${esProfe ? 'Entrá con el mail que te cargó la administración.' : 'Entrá con el mail que usaste en la inscripción.'} Te mandamos un código de 6 números, sin contraseñas.</p>
+      <h2 class="serif" style="font-size:32px">${esProfe ? '¡Hola, equipo!' : '¡Hola!'}</h2>
+      <p class="muted">${esProfe ? 'Profes, coordinación, guardavidas, enfermería y administración: entrá con el mail que te cargaron.' : 'Entrá con el mail que usaste en la inscripción.'} Te mandamos un código de 6 números, sin contraseñas.</p>
       <div id="paso1"><label>Tu mail</label><input type="email" id="lgMail" inputmode="email" autocomplete="email" value="${esc(LS.get('email', ''))}">
         <button class="btn full" style="margin-top:14px" onclick="pedirCodigo(this,'${rol}')">Mandame el código</button></div>
       <div id="paso2" hidden><label>Código que te llegó al mail</label><input type="tel" id="lgCod" class="codigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code" oninput="if(this.value.length===6)verificar(document.getElementById('btnVer'),'${rol}')">
@@ -529,6 +529,7 @@ function verificar(btn, rol) {
   conBoton(btn, async () => {
     const r = await api('verificarCodigo', { email: LS.get('email', ''), rol, codigo: val('lgCod') });
     LS.set('tok_' + rol, r.token);
+    if (r.tokenAdmin) LS.set('tok_admin', r.tokenAdmin);
     rol === 'profe' ? profeCargar() : cuentaCargar();
   });
 }
@@ -572,6 +573,8 @@ function cInicio() {
         <div class="barra"><i style="width:${Math.min(100, Math.round(100 * (1 - restantes / Math.max(1, vigentes.reduce((a, i) => a + i.dias.length, 0)))))}%"></i></div>` : `<p class="muted">No tiene días por delante.</p>`}
       ${(vigentes.length && restantes <= 3) || (!vigentes.length && ins.length) ? `<div class="banner"><b>${vigentes.length ? '⏳ Se le termina pronto' : '☀️ ¿Vuelve?'}</b><br>${pct && vigentes.length ? 'Renovando antes de que termine tenés <b>' + pct + '% off</b>. ' : ''}Sumá semanas o días en un minuto.
         <div style="margin-top:8px"><button class="btn sm" onclick="vRenovar('${c.id}')">🔁 Renovar</button></div></div>` : ''}
+      ${vigentes.length ? `<div class="fila" style="margin-top:10px">${(C.avisos || []).filter(a => a.chicoId === c.id).map(a => `<span class="chip info">🏠 ${fCorta(a.fecha)} · ${esc(a.tipo)}${a.detalle ? ' ' + esc(a.detalle) : ''} <a href="#" onclick="anularAviso('${a.id}');return false" title="Anular">✕</a></span>`).join('')}
+        <button class="btn xs claro" onclick="avisarModal('${c.id}')">🏠 Avisar (no va, llega tarde…)</button></div>` : ''}
       ${vigentes.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.modalidad)}</b> · ${fCorta(i.desde)} al ${fCorta(i.hasta)}<div class="muted chico">${esc(i.turno)}${i.extras ? ' · ' + esc(i.extras) : ''}</div></div>
         <div class="derecha">${i.saldo > 0 ? `<span class="chip aviso">Debe ${pesos(i.saldo)}</span>` : '<span class="chip ok">Pago ✓</span>'}</div></div>`).join('')}
     </div>`;
@@ -581,6 +584,23 @@ function cInicio() {
     <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
     ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}`;
 }
+function avisarModal(chicoId) {
+  const c = C.chicos.find(x => x.id === chicoId);
+  const dias = [...new Set(inscDeChico(chicoId).flatMap(i => i.dias))].filter(d => d >= C.hoy).sort().slice(0, 10);
+  if (!dias.length) return toast('No tiene días por delante.', true);
+  modal(`<h3>Avisar sobre ${esc(c.nombre.split(' ')[0])}</h3><p class="muted chico">Le llega al profe y al coordinador en la lista del día.</p>
+    <label>Día</label><select id="avDia">${dias.map(d => `<option value="${d}">${d === C.hoy ? 'Hoy, ' : d === sumarDias(C.hoy, 1) ? 'Mañana, ' : ''}${fLarga(d)}</option>`).join('')}</select>
+    <label>¿Qué pasa?</label>${C.tiposAviso.map((t, i) => `<label class="opcion" style="margin:6px 0"><input type="radio" name="avTipo" value="${esc(t)}" ${i ? '' : 'checked'} onchange="avCambio()"><span>${{ 'No va': '🏠 No va', 'Llega tarde': '⏰ Llega tarde', 'Se va temprano': '🚪 Se va temprano', 'Lo retira otra persona': '👤 Lo retira otra persona' }[t] || esc(t)}</span></label>`).join('')}
+    <div id="avDet" hidden><label id="avDetLab">Detalle</label><input type="text" id="avDetalle"></div>
+    <button class="btn full" style="margin-top:14px" onclick="conBoton(this, async()=>{await api('avisar',{chicoId:'${chicoId}',fecha:val('avDia'),tipo:document.querySelector('[name=avTipo]:checked').value,detalle:val('avDetalle')},'familia');cerrarModal();toast('Avisado ✓ Gracias');cuentaCargar()})">Enviar aviso</button>`);
+}
+function avCambio() {
+  const t = document.querySelector('[name=avTipo]:checked').value;
+  $('#avDet').hidden = t === 'No va';
+  $('#avDetLab').textContent = t === 'Lo retira otra persona' ? 'Nombre y DNI de quien lo retira' : t === 'Llega tarde' ? '¿A qué hora llega?' : '¿A qué hora lo retiran?';
+  $('#avDetalle').type = t === 'Lo retira otra persona' ? 'text' : 'time';
+}
+function anularAviso(id) { if (confirm('¿Anular este aviso?')) api('anularAviso', { id }, 'familia').then(() => { toast('Aviso anulado'); cuentaCargar(); }).catch(e => toast(e.message, true)); }
 function verPago() {
   const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
   const s = sede(i ? i.sede : C.chicos[0].sede), p = s.pago;
@@ -684,23 +704,54 @@ async function profeCargar(tab) {
   tema(PR.profe.sedes.length === 1 ? PR.profe.sedes[0] : null);
   vProfe(tab || prTab);
 }
+const puede = permiso => PR && PR.profe.permisos.includes(permiso);
+function tabsEquipo() {
+  const t = [['hoy', '📍', 'Marcar']];
+  if (puede('asistencia')) t.push(['asis', '✅', 'Asistencia']);
+  if (puede('equipo')) t.push(['equipo', '👥', 'Equipo']);
+  if (puede('pileta') && !puede('asistencia')) t.push(['pileta', '🛟', 'Pileta']);
+  if (puede('salud') && !puede('asistencia')) t.push(['salud', '🩺', 'Salud']);
+  if (puede('fotos')) t.push(['subir', '📸', PR.pendientesFotos ? 'Fotos (' + PR.pendientesFotos + ')' : 'Fotos']);
+  if (t.length <= 3) t.push(['semana', '📅', 'Semana'], ['horas', '💰', 'Mis horas']);
+  else t.push(['mas', '☰', 'Más']);
+  return t;
+}
 function vProfe(tab) {
+  const tabs = tabsEquipo();
+  const extra = ['semana', 'horas', 'pileta', 'salud', 'contenido'];
+  if (!tabs.some(t => t[0] === tab) && !extra.includes(tab)) tab = 'hoy';
   prTab = tab;
-  const tabs = [['hoy', '📍', 'Marcar'], ['asis', '✅', 'Asistencia'], ['subir', '📸', 'Subir'], ['semana', '📅', 'Semana'], ['horas', '💰', 'Mis horas']];
-  pintar(`<header class="top"><div class="marca">☀️ ${esc(PR.profe.nombre.split(' ')[0])} <small>profe</small></div><button onclick="profeCargar()">↻</button></header>
+  const activa = tabs.some(t => t[0] === tab) ? tab : 'mas';
+  pintar(`<header class="top"><div class="marca">☀️ ${esc(PR.profe.nombre.split(' ')[0])} <small>${PR.profe.emoji} ${esc(PR.profe.rolNombre)}</small></div>
+    ${LS.get('tok_admin') && puede('plata') ? `<button onclick="location.href=PUB.url+'?p=admin'">Admin</button>` : ''}<button onclick="profeCargar()">↻</button></header>
   <div class="wrap" id="prCuerpo"></div>
-  <nav class="nav">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vProfe('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
-  ({ hoy: pHoy, asis: pAsis, subir: pSubir, semana: pSemana, horas: pHoras })[tab]();
+  <nav class="nav">${tabs.map(t => `<button class="${t[0] === activa ? 'on' : ''}" onclick="vProfe('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
+  ({ hoy: pHoy, asis: pAsis, subir: pSubir, semana: pSemana, horas: pHoras, equipo: pEquipo, pileta: () => pFichas('pileta'), salud: () => pFichas('salud'), mas: pMas, contenido: pContenido })[tab]();
+}
+function pMas() {
+  const item = (tab, ic, t, d) => `<button class="opcion" style="width:100%;text-align:left" onclick="vProfe('${tab}');scrollTo(0,0)"><span style="font-size:26px">${ic}</span><div><b>${t}</b><div class="muted chico">${d}</div></div></button>`;
+  $('#prCuerpo').innerHTML = `<h2 class="serif" style="font-size:30px;margin-top:16px">Más</h2>
+    ${item('semana', '📅', 'Cronograma de la semana', 'Lo que viene esta semana y la próxima')}
+    ${puede('cronograma') ? item('contenido', '✏️', 'Armar cronograma y temáticas', 'Lo ven las familias en su cuenta') : ''}
+    ${puede('salud') ? item('salud', '🩺', 'Fichas de salud del día', 'Alergias, medicación y contacto de emergencia') : ''}
+    ${puede('pileta') ? item('pileta', '🛟', 'Lista de pileta', 'Quién sabe nadar, por grupo') : ''}
+    ${item('horas', '💰', 'Mis horas', 'Lo que trabajaste y lo que te toca cobrar')}
+    ${LS.get('tok_admin') && puede('plata') ? `<a class="btn full" href="${PUB.url}?p=admin" style="margin-top:12px">🗂️ Ir a Administración</a>` : ''}`;
 }
 function pHoy() {
   const ab = PR.abierto;
   const sinUbic = PR.ubicaciones.every(u => !u.lat);
   $('#prCuerpo').innerHTML = `
     <p class="muted" style="margin-top:16px">${fLarga(PR.hoy)} · ${PR.profe.sedes.map(s => esc(sede(s).nombre)).join(' / ')}</p>
+    ${PR.turnosHoy.length ? `<div class="banner">🕘 <b>Tu turno hoy:</b> ${PR.turnosHoy.map(t => esc(t.desde) + ' a ' + esc(t.hasta) + (t.tarea ? ' · ' + esc(t.tarea) : '') + (PR.profe.sedes.length > 1 ? ' · ' + esc(sede(t.sede).nombre) : '')).join(' / ')}</div>` : ''}
     <button class="marcar" id="btnMarcar" style="background:${ab ? 'var(--mal)' : 'var(--ok)'}" onclick="marcar(this)">${ab ? 'Marcar SALIDA' : 'Marcar ENTRADA'}<small>${ab ? 'Entraste a las ' + esc(ab.desde) + ' en ' + esc(sede(ab.sede).nombre) : 'Tocá cuando llegás'}</small></button>
     <p class="muted chico" id="gpsInfo">${sinUbic ? '⚠️ La administración todavía no cargó la ubicación de la sede.' : 'Se usa el GPS del celular: tenés que estar en la sede para marcar.'}</p>
     ${PR.hoyMarc.length ? `<div class="card"><h3>Hoy</h3>${PR.hoyMarc.map(m => `<div class="lista-item"><span class="chip ${m.tipo === 'ENTRADA' ? 'ok' : 'mal'}">${m.tipo}</span><b class="crece">${esc(m.hora)}</b><span class="muted chico">${esc(sede(m.sede) ? sede(m.sede).nombre : m.sede)}</span></div>`).join('')}</div>` : ''}
-    <div class="fila"><button class="btn claro crece" onclick="vProfe('asis')">✅ Tomar asistencia</button><button class="btn claro crece" onclick="vProfe('subir')">📸 Subir fotos</button></div>`;
+    <div class="fila">${puede('asistencia') ? `<button class="btn claro crece" onclick="vProfe('asis')">✅ Asistencia</button>` : ''}
+      ${puede('equipo') ? `<button class="btn claro crece" onclick="vProfe('equipo')">👥 Equipo de hoy</button>` : ''}
+      ${puede('pileta') ? `<button class="btn claro crece" onclick="vProfe('pileta')">🛟 Lista de pileta</button>` : ''}
+      ${puede('salud') ? `<button class="btn claro crece" onclick="vProfe('salud')">🩺 Fichas de salud</button>` : ''}
+      ${puede('fotos') ? `<button class="btn claro crece" onclick="vProfe('subir')">📸 Fotos${PR.pendientesFotos ? ' (' + PR.pendientesFotos + ' por aprobar)' : ''}</button>` : ''}</div>`;
 }
 function marcar(btn) {
   if (!navigator.geolocation) return toast('Este celular no tiene GPS disponible.', true);
@@ -720,11 +771,12 @@ function marcar(btn) {
 }
 let AS = { sede: '', fecha: '', grupo: 'todos', cambios: {} };
 function pAsis() {
-  if (!AS.sede) { AS.sede = PR.profe.sedes[0]; AS.fecha = PR.hoy; AS.grupo = PR.profe.grupos[0] || 'todos'; }
+  if (!AS.sede) { AS.sede = PR.profe.sedes[0]; AS.fecha = PR.hoy; AS.grupo = puede('asistenciaTodos') ? 'todos' : (PR.profe.grupos.length === 1 ? PR.profe.grupos[0] : 'todos'); }
+  const gruposOk = puede('asistenciaTodos') || !PR.profe.grupos.length ? PUB.grupos : PUB.grupos.filter(g => PR.profe.grupos.includes(g.id));
   $('#prCuerpo').innerHTML = `
     ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === AS.sede ? 'on' : ''}" onclick="AS.sede='${s}';AS.cambios={};pAsis()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
     <div class="grid2"><div><label>Día</label><input type="date" value="${AS.fecha}" onchange="AS.fecha=this.value;AS.cambios={};pAsis()"></div>
-    <div><label>Grupo</label><select onchange="AS.grupo=this.value;AS.cambios={};pAsis()"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === AS.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
+    <div><label>Grupo</label><select onchange="AS.grupo=this.value;AS.cambios={};pAsis()"><option value="todos">${gruposOk.length < PUB.grupos.length ? 'Mis grupos' : 'Todos'}</option>${gruposOk.map(g => `<option value="${g.id}" ${g.id === AS.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div></div>
     <div id="asisLista"><div class="vacio"><span class="spin"></span></div></div>`;
   api('lista', { sede: AS.sede, fecha: AS.fecha, grupo: AS.grupo }, 'profe').then(r => { LISTA = r; pintarLista(); }).catch(e => $('#asisLista').innerHTML = '<div class="vacio">' + esc(e.message) + '</div>');
 }
@@ -734,14 +786,20 @@ function pintarLista() {
   if (!L.length) return $('#asisLista').innerHTML = '<div class="vacio">No hay chicos inscriptos ese día en este grupo.</div>';
   const pres = L.filter(c => ['presente', 'tarde'].includes(itemAs(c).estado)).length;
   const pend = Object.keys(AS.cambios).length;
+  const noVan = L.filter(c => avisoNoVa(c) && !itemAs(c).estado);
+  const faltan = AS.fecha === PR.hoy ? L.filter(c => !itemAs(c).estado && !avisoNoVa(c)) : [];
   $('#asisLista').innerHTML = `<div class="fila" style="margin:14px 0 4px"><b class="crece">${pres} de ${L.length} presentes</b><button class="btn xs claro" onclick="todosPresentes()">Todos presentes</button></div>
+    ${noVan.length ? `<div class="banner" style="background:#E2ECF7;color:#1C4C7A">🏠 <b>Avisaron que no vienen:</b> ${noVan.map(c => esc(c.nombre)).join(', ')} <button class="btn xs claro" style="margin-left:6px" onclick="confirmarAusentes()">Marcarlos ausentes</button></div>` : ''}
+    ${faltan.length && pres ? `<details class="card" style="padding:10px 14px"><summary><b>⏳ Faltan llegar ${faltan.length}</b> <span class="muted chico">(sin aviso de la familia)</span></summary>
+      ${faltan.map(c => `<div class="lista-item"><span class="crece">${esc(c.nombre)} <span class="muted chico">${esc(nGrupo(c.grupo))}</span></span><a class="btn xs wa" target="_blank" href="${wa(c.whatsapp, 'Hola ' + (c.adulto || '').split(' ')[0] + ', te escribimos de la escuela de verano. ¿' + c.nombre.split(' ')[0] + ' viene hoy?')}">Preguntar</a></div>`).join('')}</details>` : ''}
     <div class="card" style="padding:4px 14px">${L.map(c => { const it = itemAs(c);
       const badges = [c.alergias && !/^ningun/i.test(c.alergias) ? '⚠️' : '', c.medicacion && !/^ningun/i.test(c.medicacion) ? '💊' : '', c.condiciones ? '❗' : '', c.sabeNadar === 'No' ? '🚫🏊' : c.sabeNadar === 'Un poco' ? '🏊?' : '', c.autorizaFotos === 'No' ? '📵' : '', c.saldo > 0 ? '💸' : ''].filter(Boolean).join(' ');
+      const avs = (c.avisos || []).map(a => `<span class="chip ${a.tipo === 'No va' ? 'info' : 'aviso'}" style="margin-top:4px">🏠 ${esc(a.tipo)}${a.detalle ? ': ' + esc(a.detalle) : ''}</span>`).join(' ');
       return `<div class="lista-item"><div class="crece" onclick="fichaChico('${c.chicoId}')" style="cursor:pointer"><b>${esc(c.nombre)}</b> <span class="chico">${badges}</span>
-        <div class="muted chico">${c.edad} años · ${esc(c.turno)}${it.llegada ? ' · llegó ' + esc(it.llegada) : ''}${it.retiradoPor ? ' · 👋 ' + esc(it.retiradoPor) + ' ' + esc(it.retiro) : ''}</div></div>
+        <div class="muted chico">${c.edad} años · ${esc(c.turno)}${it.llegada ? ' · llegó ' + esc(it.llegada) : ''}${it.retiradoPor ? ' · 👋 ' + esc(it.retiradoPor) + ' ' + esc(it.retiro) : ''}</div>${avs}</div>
         <div class="asis">${[['p', 'presente', 'P'], ['t', 'tarde', 'T'], ['a', 'ausente', 'A']].map(([cl, e, l]) => `<button class="${cl} ${it.estado === e ? 'on' : ''}" onclick="marcarAs('${c.chicoId}','${e}')">${l}</button>`).join('')}
         <button title="Retiro" onclick="retiro('${c.chicoId}')">👋</button></div></div>`; }).join('')}</div>
-    <p class="muted chico">⚠️ alergia · 💊 medicación · ❗ a tener en cuenta · 🚫🏊 no sabe nadar · 📵 sin fotos · 💸 saldo pendiente. Tocá el nombre para ver la ficha.</p>
+    <p class="muted chico">⚠️ alergia · 💊 medicación · ❗ a tener en cuenta · 🚫🏊 no sabe nadar · 📵 sin fotos${puede('plata') ? ' · 💸 saldo pendiente' : ''} · 🏠 aviso de la familia. Tocá el nombre para ver la ficha.</p>
     <div style="height:10px"></div>
     <div class="presu"><div class="crece"><small>${pend ? pend + ' cambios sin guardar' : 'Todo guardado'}</small><div class="monto">${pres}/${L.length}</div></div><button class="btn acento" ${pend ? '' : 'disabled'} onclick="guardarAs(this)">Guardar</button></div>`;
 }
@@ -751,7 +809,9 @@ function marcarAs(id, estado) {
   AS.cambios[id] = Object.assign({}, AS.cambios[id], { estado: nuevo, llegada: nuevo && nuevo !== 'ausente' ? (it.llegada || ahoraHora()) : '' });
   pintarLista();
 }
-function todosPresentes() { LISTA.chicos.forEach(c => { const it = itemAs(c); if (!it.estado) AS.cambios[c.chicoId] = Object.assign({}, AS.cambios[c.chicoId], { estado: 'presente', llegada: it.llegada || ahoraHora() }); }); pintarLista(); }
+function avisoNoVa(c) { return (c.avisos || []).some(a => a.tipo === 'No va'); }
+function confirmarAusentes() { LISTA.chicos.forEach(c => { if (avisoNoVa(c) && !itemAs(c).estado) AS.cambios[c.chicoId] = Object.assign({}, AS.cambios[c.chicoId], { estado: 'ausente', llegada: '', nota: itemAs(c).nota || 'Avisó la familia' }); }); pintarLista(); }
+function todosPresentes() { LISTA.chicos.forEach(c => { const it = itemAs(c); if (!it.estado && !avisoNoVa(c)) AS.cambios[c.chicoId] = Object.assign({}, AS.cambios[c.chicoId], { estado: 'presente', llegada: it.llegada || ahoraHora() }); }); pintarLista(); }
 function retiro(id) {
   const c = LISTA.chicos.find(x => x.chicoId === id);
   const auts = String(c.autorizados || '').split(/\n|;|,(?![^(]*\))/).map(s => s.trim()).filter(Boolean);
@@ -774,6 +834,7 @@ function fichaChico(id) {
   const c = LISTA.chicos.find(x => x.chicoId === id);
   const r = (k, v) => v ? `<tr><td class="muted" style="width:120px">${k}</td><td>${esc(v)}</td></tr>` : '';
   modal(`<h3>${esc(c.nombre)}</h3><p class="muted chico">${c.edad} años · ${esc(nGrupo(c.grupo))} · ${esc(c.turno)}${c.extras ? ' · ' + esc(c.extras) : ''}</p>
+    ${(c.avisos || []).map(a => `<div class="banner" style="background:#E2ECF7;color:#1C4C7A">🏠 La familia avisó: <b>${esc(a.tipo)}</b>${a.detalle ? ' · ' + esc(a.detalle) : ''}</div>`).join('')}
     <table class="t">${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos === 'No' ? 'NO autoriza fotos' : 'Sí')}${r('Obra social', c.obraSocial)}
     ${r('Adulto', c.adulto)}${r('Emergencia', c.emergencia)}${r('Retiran', c.autorizados)}</table>
     <label>Nota del día</label><input type="text" id="notaDia" value="${esc(itemAs(c).nota || '')}">
@@ -787,8 +848,8 @@ function guardarAs(btn) {
 let SUB = { sede: '', grupo: '' };
 function pSubir() {
   if (!SUB.sede) { SUB.sede = PR.profe.sedes[0]; SUB.grupo = PR.profe.grupos[0] || 'todos'; }
-  $('#prCuerpo').innerHTML = `<h2 class="serif" style="font-size:30px;margin-top:16px">Contá cómo fue el día</h2>
-    <p class="muted chico">Lo ven las familias del grupo en su cuenta.</p>
+  $('#prCuerpo').innerHTML = `${puede('aprobarFotos') ? '<div id="pendFotos"></div>' : ''}<h2 class="serif" style="font-size:30px;margin-top:16px">Contá cómo fue el día</h2>
+    <p class="muted chico">Lo ven las familias del grupo en su cuenta${puede('aprobarFotos') ? '' : ', cuando lo aprueba el coordinador'}.</p>
     ${PR.profe.sedes.length > 1 ? `<label>Sede</label><div class="seg">${PR.profe.sedes.map(s => `<button class="${s === SUB.sede ? 'on' : ''}" onclick="SUB.sede='${s}';pSubir()">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
     <label>Para</label><select onchange="SUB.grupo=this.value;avisoFotos()"><option value="todos">Todos los grupos</option>${PUB.grupos.map(g => `<option value="${g.id}" ${g.id === SUB.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div id="avisoFotos"></div>
@@ -796,9 +857,19 @@ function pSubir() {
     <label>Fotos <small>(hasta 10)</small></label><input type="file" accept="image/*" multiple onchange="elegirFotos(this.files)">
     <div class="fotos" id="prevFotos">${FOTOS.map(f => `<img src="data:image/jpeg;base64,${f.b64}" alt="">`).join('')}</div>
     <button class="btn full" style="margin-top:16px" onclick="publicar(this)">Publicar</button>
-    ${PR.publicaciones.length ? '<h3 style="margin-top:24px">Lo que subiste</h3>' + PR.publicaciones.map(htmlPost).join('') : ''}`;
+    ${PR.publicaciones.length ? '<h3 style="margin-top:24px">Lo que subiste</h3>' + PR.publicaciones.map(p => (p.pendiente ? '<span class="chip aviso">⏳ Esperando aprobación</span>' : !p.visible ? '<span class="chip mal">No aprobada</span>' : '') + htmlPost(p)).join('') : ''}`;
   avisoFotos();
+  if (puede('aprobarFotos')) cargarPendientes();
 }
+function cargarPendientes() {
+  api('fotosPendientes', {}, 'profe').then(L => {
+    const el = $('#pendFotos'); if (!el) return;
+    PR.pendientesFotos = L.length;
+    el.innerHTML = L.length ? `<h2 class="serif" style="font-size:30px;margin-top:16px">Por aprobar (${L.length})</h2><p class="muted chico">Revisá que no salgan chicos sin permiso de fotos antes de que lo vean las familias.</p>` +
+      L.map(p => htmlPost(p) + `<div class="fila" style="margin:-4px 0 14px;justify-content:flex-end"><button class="btn sm mal" onclick="aprobar(this,'${p.id}',false)">Rechazar</button><button class="btn sm" onclick="aprobar(this,'${p.id}',true)">✓ Aprobar</button></div>`).join('') : '';
+  }).catch(e => toast(e.message, true));
+}
+function aprobar(btn, id, ok) { conBoton(btn, async () => { await api('aprobarFoto', { id, visible: ok }, 'profe'); toast(ok ? 'Aprobada: ya la ven las familias ✓' : 'Rechazada'); cargarPendientes(); }); }
 function avisoFotos() {
   api('lista', { sede: SUB.sede, fecha: PR.hoy, grupo: SUB.grupo }, 'profe').then(r => {
     const no = r.chicos.filter(c => c.autorizaFotos === 'No');
@@ -821,7 +892,42 @@ function achicar(file) {
   });
 }
 function publicar(btn) {
-  conBoton(btn, async () => { const r = await api('publicar', { sede: SUB.sede, grupo: SUB.grupo, texto: val('pubTxt'), fotos: FOTOS }, 'profe'); FOTOS = []; toast('¡Publicado! ' + r.fotos + ' fotos'); profeCargar('subir'); });
+  conBoton(btn, async () => { const r = await api('publicar', { sede: SUB.sede, grupo: SUB.grupo, texto: val('pubTxt'), fotos: FOTOS }, 'profe'); FOTOS = []; toast(r.pendiente ? 'Enviado: lo ven las familias cuando lo apruebe el coordinador ✓' : '¡Publicado! ' + r.fotos + ' fotos'); profeCargar('subir'); });
+}
+function pEquipo() { $('#prCuerpo').innerHTML = '<div id="eqCuerpo"><div class="vacio"><span class="spin"></span></div></div>'; EQ = { rol: 'profe' }; eqCargar(); }
+let FI_FICHA = { sede: '' };
+function pFichas(tipo) {
+  if (!FI_FICHA.sede) FI_FICHA.sede = PR.profe.sedes[0];
+  $('#prCuerpo').innerHTML = `${PR.profe.sedes.length > 1 ? `<div class="seg" style="margin-top:12px">${PR.profe.sedes.map(s => `<button class="${s === FI_FICHA.sede ? 'on' : ''}" onclick="FI_FICHA.sede='${s}';pFichas('${tipo}')">${esc(sede(s).nombre)}</button>`).join('')}</div>` : ''}
+    <div id="fichas"><div class="vacio"><span class="spin"></span></div></div>`;
+  api('fichas', { sede: FI_FICHA.sede }, 'profe').then(r => {
+    const vienen = r.chicos.filter(c => !(c.avisos || []).some(a => a.tipo === 'No va') && c.estado !== 'ausente');
+    let html = '';
+    if (tipo === 'pileta') {
+      const orden = { 'No': 0, 'Un poco': 1, '': 2, 'Sí': 3 };
+      html = `<h2 class="serif" style="font-size:30px;margin-top:16px">🛟 Pileta de hoy</h2>
+        <div class="kpis"><div class="kpi"><span>No saben nadar</span><b style="color:var(--mal)">${vienen.filter(c => c.sabeNadar === 'No').length}</b></div><div class="kpi"><span>Un poco</span><b style="color:var(--aviso)">${vienen.filter(c => c.sabeNadar === 'Un poco').length}</b></div><div class="kpi"><span>Sin dato</span><b>${vienen.filter(c => !c.sabeNadar).length}</b></div><div class="kpi"><span>Chicos hoy</span><b>${vienen.length}</b></div></div>` +
+        PUB.grupos.map(g => { const L = vienen.filter(c => c.grupo === g.id).sort((a, b) => orden[a.sabeNadar || ''] - orden[b.sabeNadar || ''] || a.nombre.localeCompare(b.nombre));
+          return L.length ? `<div class="card"><h3>${g.emoji} ${esc(g.nombre)} <span class="muted chico">${L.length}</span></h3>${L.map(c => `<div class="lista-item"><b class="crece">${esc(c.nombre)}<div class="muted chico">${c.edad} años${c.condiciones ? ' · ❗ ' + esc(c.condiciones) : ''}</div></b>
+            <span class="chip ${c.sabeNadar === 'No' ? 'mal' : c.sabeNadar === 'Un poco' ? 'aviso' : c.sabeNadar === 'Sí' ? 'ok' : ''}">${c.sabeNadar === 'No' ? '🚫 No nada' : c.sabeNadar === 'Un poco' ? 'Nada un poco' : c.sabeNadar === 'Sí' ? 'Nada' : 'Sin dato'}</span></div>`).join('')}</div>` : ''; }).join('');
+    } else {
+      const conAlgo = vienen.filter(c => [c.alergias, c.medicacion, c.condiciones].some(x => x && !/^ningun/i.test(x)));
+      html = `<h2 class="serif" style="font-size:30px;margin-top:16px">🩺 Salud · hoy</h2><p class="muted chico">${vienen.length} chicos hoy · ${conAlgo.length} con algo a tener en cuenta</p>
+        <input type="text" placeholder="Buscar chico…" oninput="document.querySelectorAll('.fsal').forEach(x=>x.hidden=!x.dataset.n.includes(this.value.toLowerCase()))" style="margin-bottom:6px">` +
+        vienen.sort((a, b) => (conAlgo.includes(b) - conAlgo.includes(a)) || a.nombre.localeCompare(b.nombre)).map(c => `<div class="card fsal" data-n="${esc(c.nombre.toLowerCase())}" style="${conAlgo.includes(c) ? 'border-left:5px solid var(--mal)' : ''}">
+          <div class="fila"><h3 class="crece" style="margin:0">${esc(c.nombre)}</h3><span class="chip">${esc(nGrupo(c.grupo))}</span></div>
+          <table class="t" style="margin-top:6px">${[['Alergias', c.alergias], ['Medicación', c.medicacion], ['A tener en cuenta', c.condiciones], ['Obra social', c.obraSocial], ['Emergencia', c.emergencia], ['Adulto', c.adulto]].filter(x => x[1] && String(x[1]).trim()).map(x => `<tr><td class="muted" style="width:120px">${x[0]}</td><td>${esc(x[1])}</td></tr>`).join('')}</table>
+          ${c.whatsapp ? `<a class="btn xs wa" style="margin-top:8px" target="_blank" href="${wa(c.whatsapp, 'Hola, te escribimos de la escuela de verano por ' + c.nombre + '.')}">💬 Familia</a>` : ''}</div>`).join('');
+    }
+    $('#fichas').innerHTML = html || '<div class="vacio">No hay chicos hoy.</div>';
+  }).catch(e => $('#fichas').innerHTML = '<div class="vacio">' + esc(e.message) + '</div>');
+}
+function pContenido() {
+  $('#prCuerpo').innerHTML = '<div id="ccCuerpo"><div class="vacio"><span class="spin"></span></div></div>';
+  CC = { rol: 'profe', sedes: PUB.sedes.filter(s => PR.profe.sedes.includes(s.id)), hoy: PR.hoy, datos: null, publicaciones: null,
+    act: { tem: 'coordTematica', crono: 'coordCrono', borrar: 'coordBorrarCrono', copiar: 'coordCopiarCrono' },
+    recargar: () => api('coordContenido', {}, 'profe').then(d => { CC.datos = d; ccPintar(); }) };
+  CC.recargar().catch(e => toast(e.message, true));
 }
 function pSemana() {
   const l = lunes(PR.hoy);
@@ -858,7 +964,7 @@ async function adminCargar(tab) {
 }
 function vAdmin(tab) {
   aTab = tab;
-  const tabs = [['inicio', 'Inicio'], ['insc', 'Inscriptos'], ['cobros', 'Cobros'], ['profes', 'Profes'], ['contenido', 'Contenido'], ['mails', 'Mails'], ['ajustes', 'Ajustes']];
+  const tabs = [['inicio', 'Inicio'], ['insc', 'Inscriptos'], ['cobros', 'Cobros'], ['profes', 'Equipo'], ['contenido', 'Contenido'], ['mails', 'Mails'], ['ajustes', 'Ajustes']];
   pintar(`<header class="top"><div class="marca">☀️ Admin <small>${A.sede === 'todas' ? 'las dos sedes' : esc(sede(A.sede).nombre)}</small></div>
     ${A.sesionSede === 'todas' ? `<select onchange="aSede=this.value;adminCargar()"><option value="todas">Todas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === A.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
     <button onclick="adminCargar()">↻</button></header>
@@ -876,13 +982,14 @@ function aInicio() {
   $('#adCuerpo').innerHTML = `
     <div class="kpis"><div class="kpi"><span>Chicos</span><b>${K.chicos}</b></div><div class="kpi"><span>Facturado</span><b>${pesos(K.facturado)}</b></div>
     <div class="kpi"><span>Cobrado</span><b style="color:var(--ok)">${pesos(K.cobrado)}</b></div><div class="kpi"><span>Por cobrar</span><b style="color:var(--mal)">${pesos(K.pendiente)}</b></div>
-    <div class="kpi"><span>Interesados</span><b>${K.interesados}</b></div><div class="kpi"><span>Mails disponibles hoy</span><b>${K.cuotaMail}</b></div></div>
+    <div class="kpi"><span>Avisos de familias hoy</span><b>${A.avisosHoy}</b></div><div class="kpi"><span>Interesados</span><b>${K.interesados}</b></div><div class="kpi"><span>Mails disponibles hoy</span><b>${K.cuotaMail}</b></div></div>
     <div class="card"><h3>🔁 Se les termina y no renovaron (${A.vencen.length})</h3>${A.vencen.length ? A.vencen.map(i => `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">Último día ${fLarga(i.hasta)} · ${esc(nomSede(i.sede))}</div></div>
       <a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WhatsApp</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','renovacion')">Mail</button></div>`).join('') : '<p class="muted">Nadie por ahora. 🎉</p>'}
       <p class="muted chico" style="margin-bottom:0">A estas familias les llega solo un mail para renovar, con descuento, unos días antes de terminar.</p></div>
     <div class="card"><h3>💸 Deben (${A.deudas.length})</h3>${A.deudas.slice(0, 12).map(htmlDeuda).join('') || '<p class="muted">Todo al día.</p>'}${A.deudas.length > 12 ? `<button class="btn claro full" onclick="vAdmin('cobros')">Ver todas</button>` : ''}</div>
     ${ocup}
-    <div class="card"><h3>👩‍🏫 Profes ahora</h3>${A.profes.filter(p => p.adentro).map(p => `<div class="lista-item"><span class="chip ok">Adentro</span><b class="crece">${esc(p.nombre)}</b><span class="muted chico">${esc(p.adentro)}</span></div>`).join('') || '<p class="muted">Nadie marcó entrada.</p>'}</div>`;
+    <div class="card"><h3>👥 Equipo ahora</h3>${A.profes.filter(p => p.adentro).map(p => `<div class="lista-item"><span class="chip ok">Adentro</span><b class="crece">${esc(p.nombre)} <span class="muted chico">${esc(rolTxt(p.rol))}</span></b><span class="muted chico">${esc(p.adentro)}</span></div>`).join('') || '<p class="muted">Nadie marcó entrada.</p>'}
+      <button class="btn claro full" style="margin-top:8px" onclick="vAdmin('profes')">Ver quién falta y los turnos</button></div>`;
 }
 function htmlDeuda(i) {
   return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
@@ -961,29 +1068,39 @@ function aCobros() {
     <div class="card"><h3>Deben (${A.deudas.length})</h3><p class="muted chico">A los que ya empezaron o empiezan en 3 días les llega un recordatorio automático cada 3 días.</p>${A.deudas.map(htmlDeuda).join('') || '<p class="muted">Todo al día. 🎉</p>'}</div>
     <div class="card"><h3>Últimos pagos</h3>${A.pagos.slice(0, 60).map(p => `<div class="lista-item"><div class="crece"><b>${esc(p.chico)}</b><div class="muted chico">${fLarga(p.fecha)} · ${esc(p.medio)}${p.nota ? ' · ' + esc(p.nota) : ''}${A.sede === 'todas' ? ' · ' + esc(nomSede(p.sede)) : ''}</div></div><b>${pesos(p.monto)}</b></div>`).join('') || '<p class="muted">Todavía no hay pagos.</p>'}</div>`;
 }
+const rolTxt = id => { const r = (A ? A.roles : []).find(x => x.id === id); return r ? r.emoji + ' ' + r.nombre : id; };
+let FROL = '';
 function aProfes() {
-  const tot = A.profes.reduce((a, p) => (a.d += p.liq.devengado, a.p += p.liq.pagado, a), { d: 0, p: 0 });
-  $('#adCuerpo').innerHTML = `<div class="fila"><div class="crece"><label>Mes</label><input type="month" value="${A.mes}" onchange="aMes=this.value;adminCargar('profes')"></div><button class="btn" style="margin-top:28px" onclick="formProfe()">+ Profe</button></div>
+  const lista = A.profes.filter(p => !FROL || p.rol === FROL);
+  const tot = lista.reduce((a, p) => (a.d += p.liq.devengado, a.p += p.liq.pagado, a), { d: 0, p: 0 });
+  $('#adCuerpo').innerHTML = `<div class="card"><h3>Hoy</h3><div id="eqCuerpo"><div class="vacio"><span class="spin"></span></div></div></div>
+    <h2 class="serif" style="font-size:30px;margin-top:22px">Personas y pagos</h2>
+    <div class="fila"><div class="crece"><label>Mes</label><input type="month" value="${A.mes}" onchange="aMes=this.value;adminCargar('profes')"></div>
+    <div class="crece"><label>Rol</label><select onchange="FROL=this.value;aProfes()"><option value="">Todos</option>${A.roles.map(r => `<option value="${r.id}" ${r.id === FROL ? 'selected' : ''}>${r.emoji} ${esc(r.nombre)}</option>`).join('')}</select></div>
+    <button class="btn" style="margin-top:28px" onclick="formProfe()">+ Persona</button></div>
     <div class="kpis"><div class="kpi"><span>A pagar en el mes</span><b>${pesos(tot.d)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(tot.p)}</b></div><div class="kpi"><span>Debemos</span><b style="color:var(--mal)">${pesos(tot.d - tot.p)}</b></div></div>
-    ${A.profes.map(p => `<div class="card" style="${p.activo ? '' : 'opacity:.55'}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(p.nombre)} ${p.adentro ? '<span class="chip ok">Adentro</span>' : ''}</h3>
-      <div class="muted chico">${esc(nomSede(p.sede))} · ${esc(String(p.grupos || '').split(',').filter(Boolean).map(nGrupo).join(', ') || 'sin grupo')} · ${esc(PUB.formasPago[p.formaPago] || p.formaPago)} ${pesos(p.valor)}</div></div>
+    ${lista.map(p => `<div class="card" style="${p.activo ? '' : 'opacity:.55'}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(p.nombre)} ${p.adentro ? '<span class="chip ok">Adentro</span>' : ''}</h3>
+      <div class="muted chico"><b>${esc(rolTxt(p.rol))}</b> · ${esc(nomSede(p.sede))} · ${esc(String(p.grupos || '').split(',').filter(Boolean).map(nGrupo).join(', ') || 'sin grupo')} · ${esc(PUB.formasPago[p.formaPago] || p.formaPago)} ${pesos(p.valor)}</div></div>
       <button class="btn xs claro" onclick="formProfe('${p.id}')">Editar</button></div>
       <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span>Horas</span><b>${String(p.liq.horas).replace('.', ',')}</b></div><div class="kpi"><span>Días</span><b>${p.liq.dias}</b></div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
-      <div class="fila"><button class="btn xs" onclick="formPagoProfe('${p.id}')">Registrar pago</button><button class="btn xs claro" onclick="verTurnos('${p.id}')">Ver turnos</button><button class="btn xs claro" onclick="formMarcaje('${p.id}')">Marcaje a mano</button>
-      ${p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + '!')}">WhatsApp</a>` : ''}</div></div>`).join('') || '<div class="vacio">Sumá a los profes con su mail: entran a la app con ese mail.</div>'}`;
+      <div class="fila"><button class="btn xs" onclick="formPagoProfe('${p.id}')">Registrar pago</button><button class="btn xs claro" onclick="verTurnos('${p.id}')">Horas del mes</button><button class="btn xs claro" onclick="formMarcaje('${p.id}')">Marcaje a mano</button>
+      ${p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + '!')}">WhatsApp</a>` : ''}</div></div>`).join('') || '<div class="vacio">Sumá a cada persona del equipo con su mail: entran a la app con ese mail.</div>'}`;
+  EQ = { rol: 'admin' }; eqCargar();
 }
 function formProfe(id) {
-  const p = A.profes.find(x => x.id === id) || { activo: true, formaPago: 'hora', grupos: '' };
+  const p = A.profes.find(x => x.id === id) || { activo: true, formaPago: 'hora', grupos: '', rol: 'profe' };
   const gs = String(p.grupos || '').split(',');
-  modal(`<h3>${id ? 'Editar profe' : 'Nuevo profe'}</h3>
+  modal(`<h3>${id ? 'Editar' : 'Sumar al equipo'}</h3>
     <label>Nombre</label><input type="text" id="pfNom" value="${esc(p.nombre || '')}">
+    <label>Rol</label><select id="pfRol">${A.roles.filter(r => r.id !== 'admin' || A.sesionSede === 'todas').map(r => `<option value="${r.id}" ${r.id === p.rol ? 'selected' : ''}>${r.emoji} ${esc(r.nombre)}</option>`).join('')}</select>
+    <p class="muted chico" style="margin:4px 0 0">Profe: asistencia de sus grupos y fotos · Guardavidas: lista de pileta · Enfermería: fichas de salud · Coordinador/a: todos los grupos, equipo y turnos, aprueba fotos, cronograma · Administración: todo, plata incluida.</p>
     <div class="grid2"><div><label>Mail <small>(entra con este)</small></label><input type="email" id="pfMail" value="${esc(p.email || '')}"></div><div><label>WhatsApp</label><input type="tel" id="pfWa" value="${esc(p.whatsapp || '')}"></div></div>
     ${A.sesionSede === 'todas' ? `<label>Sede</label><select id="pfSede"><option value="ambas">Ambas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === p.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
-    <label>Grupos a cargo</label>${PUB.grupos.map(g => `<label class="opcion" style="margin:4px 0"><input type="checkbox" class="pfG" value="${g.id}" ${gs.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}</span></label>`).join('')}
+    <label>Grupos a cargo <small>(profes)</small></label>${PUB.grupos.map(g => `<label class="opcion" style="margin:4px 0"><input type="checkbox" class="pfG" value="${g.id}" ${gs.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}</span></label>`).join('')}
     <div class="grid2"><div><label>Forma de pago</label><select id="pfForma">${Object.keys(PUB.formasPago).map(k => `<option value="${k}" ${k === p.formaPago ? 'selected' : ''}>${PUB.formasPago[k]}</option>`).join('')}</select></div><div><label>Valor</label><input type="number" id="pfValor" value="${p.valor || ''}"></div></div>
     <label>Notas</label><input type="text" id="pfNotas" value="${esc(p.notas || '')}">
     <label class="opcion ${p.activo ? 'on' : ''}"><input type="checkbox" id="pfAct" ${p.activo ? 'checked' : ''}><span>Activo (puede entrar a la app)</span></label>
-    <button class="btn full" onclick="conBoton(this, async()=>{await api('guardarProfe',{id:'${id || ''}',nombre:val('pfNom'),email:val('pfMail'),whatsapp:val('pfWa'),sede:val('pfSede'),grupos:[...document.querySelectorAll('.pfG:checked')].map(x=>x.value),formaPago:val('pfForma'),valor:val('pfValor'),notas:val('pfNotas'),activo:document.getElementById('pfAct').checked},'admin');cerrarModal();toast('${id ? 'Guardado' : 'Profe sumado: le mandamos el link por mail'} ✓');adminCargar('profes')})">Guardar</button>`);
+    <button class="btn full" onclick="conBoton(this, async()=>{await api('guardarProfe',{id:'${id || ''}',rol:val('pfRol'),nombre:val('pfNom'),email:val('pfMail'),whatsapp:val('pfWa'),sede:val('pfSede'),grupos:[...document.querySelectorAll('.pfG:checked')].map(x=>x.value),formaPago:val('pfForma'),valor:val('pfValor'),notas:val('pfNotas'),activo:document.getElementById('pfAct').checked},'admin');cerrarModal();toast('${id ? 'Guardado' : 'Listo: le mandamos el link por mail'} ✓');adminCargar('profes')})">Guardar</button>`);
 }
 function formPagoProfe(id) {
   const p = A.profes.find(x => x.id === id);
@@ -1003,38 +1120,93 @@ function formMarcaje(id) {
     <div class="grid2"><div><label>Tipo</label><select id="mmT"><option>ENTRADA</option><option>SALIDA</option></select></div><div><label>Sede</label><select id="mmS">${sedesVis().map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('')}</select></div></div>
     <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('marcajeManual',{profeId:'${id}',fecha:val('mmF'),hora:val('mmH'),tipo:val('mmT'),sede:val('mmS')},'admin');toast('Cargado ✓');adminCargar('profes').then(()=>formMarcaje('${id}'))})">Cargar</button>`);
 }
-let CT = { sede: '', semana: '' };
+let CT = { sede: '', semana: '' }, CC = null;
 function aContenido() {
-  const ss = sedesVis();
-  if (!CT.sede || !ss.find(s => s.id === CT.sede)) CT.sede = ss[0].id;
+  $('#adCuerpo').innerHTML = '<div id="ccCuerpo"></div>';
+  CC = { rol: 'admin', sedes: sedesVis(), hoy: A.hoy, datos: { tematicas: A.tematicas, cronograma: A.cronograma }, publicaciones: A.publicaciones,
+    act: { tem: 'guardarTematica', crono: 'guardarCrono', borrar: 'borrarCrono', copiar: 'copiarCrono' },
+    recargar: () => adminCargar('contenido') };
+  ccPintar();
+}
+function ccPintar() {
+  const ss = CC.sedes;
+  if (!CT.sede || !ss.find(s => s.id === CT.sede)) { CT.sede = ss[0].id; CT.semana = ''; }
   const s = sede(CT.sede);
-  if (!CT.semana) CT.semana = (s.semanas.find(w => w.hasta >= A.hoy) || s.semanas[0]).id;
-  const tem = A.tematicas.filter(t => t.sede === CT.sede);
-  const crono = A.cronograma.filter(c => c.sede === CT.sede);
+  if (!CT.semana) CT.semana = (s.semanas.find(w => w.hasta >= CC.hoy) || s.semanas[0]).id;
+  const tem = CC.datos.tematicas.filter(t => t.sede === CT.sede);
+  const crono = CC.datos.cronograma.filter(c => c.sede === CT.sede);
   const idxSem = s.semanas.findIndex(w => w.id === CT.semana);
-  $('#adCuerpo').innerHTML = `${ss.length > 1 ? `<div class="seg" style="margin:8px 0">${ss.map(x => `<button class="${x.id === CT.sede ? 'on' : ''}" onclick="CT.sede='${x.id}';CT.semana='';aContenido()">${esc(x.nombre)}</button>`).join('')}</div>` : ''}
-    <div class="card"><h3>Temáticas por semana</h3><p class="muted chico">Las ven las familias al inscribirse, y el domingo les llega la de la semana siguiente.</p>
-      ${s.semanas.map((w, i) => { const t = tem.find(x => x.semana === w.id) || {}; return `<div class="lista-item"><input type="text" id="te${w.id}" value="${esc(t.emoji || '')}" style="width:56px;text-align:center" maxlength="4">
-        <div class="crece"><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}</div><input type="text" id="tt${w.id}" value="${esc(t.titulo || '')}" placeholder="Título"><input type="text" id="td${w.id}" value="${esc(t.descripcion || '')}" placeholder="Descripción corta" style="margin-top:4px"></div>
-        <button class="btn xs" onclick="conBoton(this, async()=>{await api('guardarTematica',{sede:'${CT.sede}',semana:'${w.id}',emoji:val('te${w.id}'),titulo:val('tt${w.id}'),descripcion:val('td${w.id}')},'admin');toast('Guardado ✓')})">✓</button></div>`; }).join('')}
-    </div>
+  const ordDia = ['todos', 'lun', 'mar', 'mie', 'jue', 'vie'];
+  const pubs = CC.publicaciones ? CC.publicaciones.filter(p => p.sede === CT.sede) : null;
+  $('#ccCuerpo').innerHTML = `${ss.length > 1 ? `<div class="seg" style="margin:8px 0">${ss.map(x => `<button class="${x.id === CT.sede ? 'on' : ''}" onclick="CT.sede='${x.id}';CT.semana='';ccPintar()">${esc(x.nombre)}</button>`).join('')}</div>` : ''}
     <div class="card"><h3>Cronograma semanal</h3>
-      <div class="fila"><button class="btn xs claro" ${idxSem <= 0 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem - 1] || {}).id}';aContenido()">←</button>
+      <div class="fila"><button class="btn xs claro" ${idxSem <= 0 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem - 1] || {}).id}';ccPintar()">←</button>
       <b class="crece" style="text-align:center">Semana ${idxSem + 1} · ${fCorta(CT.semana)}</b>
-      <button class="btn xs claro" ${idxSem >= s.semanas.length - 1 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem + 1] || {}).id}';aContenido()">→</button></div>
-      ${crono.filter(c => c.semana === CT.semana).sort((a, b) => (['todos'].concat(['lun', 'mar', 'mie', 'jue', 'vie']).indexOf(a.dia) - ['todos', 'lun', 'mar', 'mie', 'jue', 'vie'].indexOf(b.dia)) || ((a.hora || '') < (b.hora || '') ? -1 : 1))
+      <button class="btn xs claro" ${idxSem >= s.semanas.length - 1 ? 'disabled' : ''} onclick="CT.semana='${(s.semanas[idxSem + 1] || {}).id}';ccPintar()">→</button></div>
+      ${crono.filter(c => c.semana === CT.semana).sort((a, b) => (ordDia.indexOf(a.dia) - ordDia.indexOf(b.dia)) || ((a.hora || '') < (b.hora || '') ? -1 : 1))
         .map(c => `<div class="lista-item"><span class="chip">${c.dia}</span><b>${esc(c.hora)}</b><div class="crece">${esc(c.actividad)}<div class="muted chico">${esc(nGrupo(c.grupo))}${c.lugar ? ' · ' + esc(c.lugar) : ''}${c.profe ? ' · ' + esc(c.profe) : ''}</div></div>
-        <button class="btn xs claro" onclick="if(confirm('¿Borrar?'))conBoton(this, async()=>{await api('borrarCrono',{id:'${c.id}'},'admin');adminCargar('contenido')})">✕</button></div>`).join('') || '<p class="muted">Vacío.</p>'}
+        <button class="btn xs claro" onclick="if(confirm('¿Borrar?'))conBoton(this, async()=>{await api(CC.act.borrar,{id:'${c.id}'},CC.rol);CC.recargar()})">✕</button></div>`).join('') || '<p class="muted">Vacío.</p>'}
       <div class="sep"></div><b>Agregar actividad</b>
       <div class="grid2"><div><label>Día</label><select id="crD"><option value="todos">Todos los días</option><option value="lun">Lunes</option><option value="mar">Martes</option><option value="mie">Miércoles</option><option value="jue">Jueves</option><option value="vie">Viernes</option></select></div>
       <div><label>Hora</label><input type="time" id="crH" value="09:00"></div></div>
       <label>Actividad</label><input type="text" id="crA" placeholder="Natación, búsqueda del tesoro…">
       <div class="grid2"><div><label>Grupo</label><select id="crG"><option value="todos">Todos</option>${PUB.grupos.map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select></div><div><label>Lugar</label><input type="text" id="crL" placeholder="Pileta, cancha 1…"></div></div>
-      <label>Profe</label><input type="text" id="crP">
-      <div class="fila" style="margin-top:12px"><button class="btn" onclick="conBoton(this, async()=>{await api('guardarCrono',{sede:'${CT.sede}',semana:'${CT.semana}',dia:val('crD'),hora:val('crH'),actividad:val('crA'),grupo:val('crG'),lugar:val('crL'),profe:val('crP')},'admin');toast('Agregado ✓');adminCargar('contenido')})">Agregar</button>
-      ${s.semanas[idxSem + 1] ? `<button class="btn claro" onclick="conBoton(this, async()=>{const r=await api('copiarCrono',{sede:'${CT.sede}',desde:'${CT.semana}',hasta:'${s.semanas[idxSem + 1].id}'},'admin');toast(r.copiados+' actividades copiadas a la semana siguiente');CT.semana='${s.semanas[idxSem + 1].id}';adminCargar('contenido')})">Copiar esta semana a la siguiente</button>` : ''}</div>
+      <label>A cargo de</label><input type="text" id="crP">
+      <div class="fila" style="margin-top:12px"><button class="btn" onclick="conBoton(this, async()=>{await api(CC.act.crono,{sede:'${CT.sede}',semana:'${CT.semana}',dia:val('crD'),hora:val('crH'),actividad:val('crA'),grupo:val('crG'),lugar:val('crL'),profe:val('crP')},CC.rol);toast('Agregado ✓');CC.recargar()})">Agregar</button>
+      ${s.semanas[idxSem + 1] ? `<button class="btn claro" onclick="conBoton(this, async()=>{const r=await api(CC.act.copiar,{sede:'${CT.sede}',desde:'${CT.semana}',hasta:'${s.semanas[idxSem + 1].id}'},CC.rol);toast(r.copiados+' actividades copiadas a la semana siguiente');CT.semana='${s.semanas[idxSem + 1].id}';CC.recargar()})">Copiar a la semana siguiente</button>` : ''}</div>
     </div>
-    <div class="card"><h3>Publicaciones de los profes</h3>${A.publicaciones.filter(p => p.sede === CT.sede).map(p => htmlPost(p) + `<div class="derecha" style="margin:-6px 0 10px"><button class="btn xs claro" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:${!p.visible}},'admin');adminCargar('contenido')})">${p.visible ? '🙈 Ocultar a las familias' : '👁 Volver a mostrar'}</button></div>`).join('') || '<p class="muted">Todavía no subieron nada.</p>'}</div>`;
+    <div class="card"><h3>Temáticas por semana</h3><p class="muted chico">Las ven las familias al inscribirse, y el domingo les llega la de la semana siguiente.</p>
+      ${s.semanas.map((w, i) => { const t = tem.find(x => x.semana === w.id) || {}; return `<div class="lista-item"><input type="text" id="te${w.id}" value="${esc(t.emoji || '')}" style="width:56px;text-align:center" maxlength="4">
+        <div class="crece"><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}</div><input type="text" id="tt${w.id}" value="${esc(t.titulo || '')}" placeholder="Título"><input type="text" id="td${w.id}" value="${esc(t.descripcion || '')}" placeholder="Descripción corta" style="margin-top:4px"></div>
+        <button class="btn xs" onclick="conBoton(this, async()=>{await api(CC.act.tem,{sede:'${CT.sede}',semana:'${w.id}',emoji:val('te${w.id}'),titulo:val('tt${w.id}'),descripcion:val('td${w.id}')},CC.rol);toast('Guardado ✓')})">✓</button></div>`; }).join('')}
+    </div>
+    ${pubs ? `<div class="card"><h3>Fotos y publicaciones del equipo</h3>${pubs.map(p => (p.pendiente ? '<span class="chip aviso">⏳ Por aprobar</span>' : '') + htmlPost(p) + `<div class="derecha" style="margin:-6px 0 10px">${p.pendiente || !p.visible ? `<button class="btn xs" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:true},'admin');adminCargar('contenido')})">✓ Mostrar a las familias</button>` : ''}
+      ${p.pendiente || p.visible ? `<button class="btn xs claro" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:false},'admin');adminCargar('contenido')})">🙈 Ocultar</button>` : ''}</div>`).join('') || '<p class="muted">Todavía no subieron nada.</p>'}</div>` : ''}`;
+}
+
+/* ---------- Equipo de hoy y turnos (coordinación y administración) ---------- */
+let EQ = { rol: 'profe' };
+const EQ_EST = { falta: ['mal', '⏰ No marcó'], adentro: ['ok', '✅ Adentro'], 'mas tarde': ['info', '🕒 Entra más tarde'], salio: ['', '👋 Ya salió'], libre: ['', 'Sin turno hoy'] };
+function eqCargar() {
+  api(EQ.rol === 'admin' ? 'equipoHoyAdmin' : 'equipoHoy', { sede: EQ.rol === 'admin' && aSede !== 'todas' ? aSede : '' }, EQ.rol).then(d => { EQ.d = d; eqPintar(); })
+    .catch(e => { const el = $('#eqCuerpo'); if (el) el.innerHTML = '<div class="vacio">' + esc(e.message) + '</div>'; });
+}
+function eqPintar() {
+  const d = EQ.d, el = $('#eqCuerpo'); if (!el) return;
+  const cuenta = k => d.personas.filter(p => p.estado === k).length;
+  el.innerHTML = `${EQ.rol === 'profe' ? `<h2 class="serif" style="font-size:30px;margin-top:16px">Equipo de hoy</h2>` : ''}
+    <div class="kpis"><div class="kpi"><span>Adentro</span><b style="color:var(--ok)">${cuenta('adentro')}</b></div><div class="kpi"><span>No marcaron</span><b style="color:var(--mal)">${cuenta('falta')}</b></div>
+    <div class="kpi"><span>Entran más tarde</span><b>${cuenta('mas tarde')}</b></div><div class="kpi"><span>Ya salieron</span><b>${cuenta('salio')}</b></div></div>
+    <p class="muted chico">Son las ${esc(d.ahora)}. “No marcó” = pasaron ${'10'} minutos del inicio de su turno sin entrada.</p>
+    ${d.personas.map(p => { const e = EQ_EST[p.estado] || ['', p.estado];
+      return `<div class="lista-item"><div class="crece"><b>${esc(p.nombre)}</b> <span class="muted chico">${p.emoji} ${esc(p.rolNombre)}</span>
+        <div class="muted chico">${p.turnos.length ? 'Turno ' + p.turnos.map(t => t.desde + '–' + t.hasta + (t.tarea ? ' ' + esc(t.tarea) : '')).join(', ') : 'Sin turno cargado hoy'}${p.marcajes.length ? ' · ' + p.marcajes.map(m => (m.tipo === 'ENTRADA' ? '↘ ' : '↗ ') + m.hora + (/manual/.test(m.origen) ? '✍️' : '')).join(' ') : ''}</div>
+        <div class="fila" style="gap:4px;margin-top:4px"><span class="chip ${e[0]}">${e[1]}${p.estado === 'adentro' ? ' ' + esc(p.desde) : ''}</span>${p.tarde ? '<span class="chip aviso">Llegó tarde</span>' : ''}</div></div>
+        <div class="fila" style="gap:4px;flex-direction:column;align-items:stretch">
+          ${p.estado === 'falta' && p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + ', ¿todo bien? Tu turno arrancaba a las ' + (p.turnos[0] || {}).desde + ' y no figura tu entrada.')}">WhatsApp</a>` : ''}
+          <button class="btn xs claro" onclick="eqTurnos('${p.id}')">Turnos</button><button class="btn xs claro" onclick="eqMarcaje('${p.id}')">Marcar a mano</button></div></div>`; }).join('') || '<p class="muted">No hay personas cargadas en esta sede.</p>'}`;
+}
+function eqTurnos(id) {
+  const p = EQ.d.personas.find(x => x.id === id);
+  const sedesOk = PUB.sedes.filter(s => EQ.d.sedes.includes(s.id) && (p.sede === 'ambas' || !p.sede || p.sede === s.id));
+  const nd = { lun: 'Lun', mar: 'Mar', mie: 'Mié', jue: 'Jue', vie: 'Vie' };
+  modal(`<h3>Turnos de ${esc(p.nombre)}</h3><p class="muted chico">Horario habitual de cada semana. Con esto la app sabe quién falta.</p>
+    ${p.turnosSemana.map(t => `<div class="lista-item"><div class="crece"><b>${t.dias.map(x => nd[x]).join(' ')}</b> · ${esc(t.desde)} a ${esc(t.hasta)}<div class="muted chico">${esc(t.tarea || '')}${sedesOk.length > 1 ? ' · ' + esc(sede(t.sede).nombre) : ''}</div></div>
+      <button class="btn xs claro" onclick="conBoton(this, async()=>{await api('${EQ.rol === 'admin' ? 'borrarTurnoAdmin' : 'borrarTurno'}',{id:'${t.id}'},EQ.rol);toast('Borrado');cerrarModal();eqCargar()})">✕</button></div>`).join('') || '<p class="muted">Sin turnos cargados.</p>'}
+    <div class="sep"></div><b>Agregar turno</b>
+    <div class="fila" style="margin-top:8px">${Object.keys(nd).map(k => `<label class="opcion" style="margin:0;padding:8px 10px"><input type="checkbox" class="tuD" value="${k}" checked><span>${nd[k]}</span></label>`).join('')}</div>
+    <div class="grid2"><div><label>Desde</label><input type="time" id="tuDesde" value="09:00"></div><div><label>Hasta</label><input type="time" id="tuHasta" value="13:00"></div></div>
+    ${sedesOk.length > 1 ? `<label>Sede</label><select id="tuSede">${sedesOk.map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('')}</select>` : `<input type="hidden" id="tuSede" value="${sedesOk[0] ? sedesOk[0].id : ''}">`}
+    <label>Tarea <small>(opcional)</small></label><input type="text" id="tuTarea" placeholder="Grupo Aventureros, pileta, recepción…">
+    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('${EQ.rol === 'admin' ? 'guardarTurnoAdmin' : 'guardarTurno'}',{personaId:'${id}',sede:val('tuSede'),dias:[...document.querySelectorAll('.tuD:checked')].map(x=>x.value),desde:val('tuDesde'),hasta:val('tuHasta'),tarea:val('tuTarea')},EQ.rol);toast('Turno guardado ✓');cerrarModal();eqCargar()})">Guardar turno</button>`);
+}
+function eqMarcaje(id) {
+  const p = EQ.d.personas.find(x => x.id === id);
+  const sedesOk = PUB.sedes.filter(s => EQ.d.sedes.includes(s.id));
+  modal(`<h3>Marcar a mano · ${esc(p.nombre)}</h3><p class="muted chico">Para cuando se olvidó de marcar o no tenía señal. Queda registrado quién lo cargó.</p>
+    <div class="grid2"><div><label>Día</label><input type="date" id="mmF" value="${EQ.d.hoy}"></div><div><label>Hora</label><input type="time" id="mmH" value="${(p.turnos[0] || {}).desde || '09:00'}"></div></div>
+    <div class="grid2"><div><label>Tipo</label><select id="mmT"><option>ENTRADA</option><option>SALIDA</option></select></div><div><label>Sede</label><select id="mmS">${sedesOk.map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('')}</select></div></div>
+    <button class="btn full" style="margin-top:12px" onclick="conBoton(this, async()=>{await api('${EQ.rol === 'admin' ? 'marcajeManual' : 'marcajeEquipo'}',{profeId:'${id}',fecha:val('mmF'),hora:val('mmH'),tipo:val('mmT'),sede:val('mmS')},EQ.rol);toast('Cargado ✓');cerrarModal();eqCargar()})">Cargar</button>`);
 }
 const PLANTILLAS = {
   abiertas: ['☀️ ¡Abrimos las inscripciones a la escuela de verano!', 'Ya podés inscribir a tus hijos a la escuela de verano. Elegí semanas o días sueltos, mirá las temáticas de cada semana y armá el presupuesto desde el celular.\n\nInscribiéndote antes del fin de noviembre tenés descuento. ¡Los cupos son limitados!'],

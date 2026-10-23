@@ -40,6 +40,8 @@ const CONFIG = {
   diasEntreRecordatoriosDeuda: 3,
   horasTurnoMax: 14,            // entrada sin salida más vieja que esto = olvidada
   avisarRetiroFamilia: false,   // true = mail a la familia cuando el profe registra quién retiró al chico
+  aprobarFotos: true,           // true = las fotos de los profes las aprueba el coordinador antes de que las vean las familias
+  minutosTolerancia: 10,        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
   grupos: [
     { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 3,  edadMax: 4 },
     { id: 'exploradores', nombre: 'Exploradores', emoji: '🧭', edadMin: 5,  edadMax: 6 },
@@ -130,7 +132,9 @@ const HOJAS = {
   Inscripciones: ['id', 'creado', 'familiaId', 'chicoId', 'chico', 'sede', 'grupo', 'modalidad', 'turno', 'extras', 'dias', 'cantDias', 'fechaInicio', 'fechaFin',
                   'subtotal', 'descuento', 'total', 'pagado', 'saldo', 'estado', 'avisoRenovacion', 'avisoDeuda', 'origen', 'notas'],
   Pagos:         ['id', 'fecha', 'inscripcionId', 'familiaId', 'chico', 'sede', 'monto', 'medio', 'nota', 'cargadoPor'],
-  Profes:        ['id', 'nombre', 'email', 'whatsapp', 'sede', 'grupos', 'formaPago', 'valor', 'activo', 'notas', 'creado'],
+  Profes:        ['id', 'nombre', 'email', 'whatsapp', 'sede', 'grupos', 'formaPago', 'valor', 'activo', 'notas', 'creado', 'rol'],
+  Turnos:        ['id', 'sede', 'personaId', 'nombre', 'dias', 'desde', 'hasta', 'tarea'],
+  AvisosFamilia: ['id', 'creado', 'fecha', 'sede', 'grupo', 'chicoId', 'chico', 'familiaId', 'tipo', 'detalle', 'estado'],
   Marcajes:      ['id', 'profeId', 'nombre', 'sede', 'tipo', 'fechaHora', 'lat', 'lng', 'distancia', 'precision', 'origen'],
   Asistencia:    ['id', 'fecha', 'sede', 'grupo', 'chicoId', 'chico', 'estado', 'horaLlegada', 'retiradoPor', 'horaRetiro', 'nota', 'profe', 'actualizado'],
   Publicaciones: ['id', 'fecha', 'sede', 'grupo', 'profe', 'texto', 'fotos', 'visible'],
@@ -145,11 +149,21 @@ const HOJAS = {
 const COLS_TEXTO = {
   Familias: ['dni', 'whatsapp', 'emergenciaTel'], Chicos: ['nacimiento', 'dni'], Profes: ['whatsapp'],
   Inscripciones: ['dias', 'fechaInicio', 'fechaFin'], Asistencia: ['fecha', 'horaLlegada', 'horaRetiro'],
-  Publicaciones: ['fecha'], Tematicas: ['semana'], Cronograma: ['semana', 'hora'], Config: ['valor']
+  Publicaciones: ['fecha'], Tematicas: ['semana'], Cronograma: ['semana', 'hora'], Config: ['valor'],
+  Turnos: ['dias', 'desde', 'hasta'], AvisosFamilia: ['fecha']
 };
 const ESTADOS = ['Pendiente', 'Señada', 'Pagada', 'Cancelada'];
 const FORMAS_PAGO = { hora: 'Por hora', dia: 'Por día trabajado', semana: 'Por semana trabajada', mensual: 'Fijo por mes' };
 const DIAS_SEM = ['lun', 'mar', 'mie', 'jue', 'vie'];
+// Equipo: todos entran con su mail a ?p=profes. Lo que ve cada uno depende de su rol.
+const ROLES = {
+  profe:       { nombre: 'Profe',          emoji: '🧑‍🏫', permisos: ['asistencia', 'fotos'] },
+  guardavidas: { nombre: 'Guardavidas',    emoji: '🛟', permisos: ['pileta'] },
+  enfermeria:  { nombre: 'Enfermería / acompañante', emoji: '🩺', permisos: ['salud'] },
+  coordinador: { nombre: 'Coordinador/a',  emoji: '📋', permisos: ['asistencia', 'asistenciaTodos', 'fotos', 'aprobarFotos', 'equipo', 'cronograma', 'grupos', 'salud', 'pileta'] },
+  admin:       { nombre: 'Administración', emoji: '🗂️', permisos: ['asistencia', 'asistenciaTodos', 'fotos', 'aprobarFotos', 'equipo', 'cronograma', 'grupos', 'salud', 'pileta', 'plata'] }
+};
+const TIPOS_AVISO = ['No va', 'Llega tarde', 'Se va temprano', 'Lo retira otra persona'];
 
 // ======== SERVIR LA PÁGINA ========
 function doGet(e) {
@@ -188,12 +202,27 @@ const ACCIONES = {
   miCuenta:        ['familia', accMiCuenta_],
   renovar:         ['familia', accRenovar_],
   guardarChico:    ['familia', accGuardarChicoFamilia_],
+  avisar:          ['familia', accAvisar_],
+  anularAviso:     ['familia', accAnularAviso_],
   // profes
   profeInicio:     ['profe', accProfeInicio_],
   marcar:          ['profe', accMarcar_],
   lista:           ['profe', accLista_],
   guardarAsistencia: ['profe', accGuardarAsistencia_],
   publicar:        ['profe', accPublicar_],
+  fichas:          ['profe', accFichas_],
+  equipoHoy:       ['profe', staffCon_('equipo', (d, p, ss) => equipoHoy_(ss.s, d.sede))],
+  guardarTurno:    ['profe', staffCon_('equipo', (d, p, ss) => accGuardarTurno_(d, ss))],
+  borrarTurno:     ['profe', staffCon_('equipo', (d, p, ss) => borrarFila_('Turnos', d.id, ss))],
+  marcajeEquipo:   ['profe', staffCon_('equipo', (d, p, ss) => accMarcajeManual_(d, ss))],
+  fotosPendientes: ['profe', staffCon_('aprobarFotos', (d, p, ss) => fotosPendientes_(ss.s))],
+  aprobarFoto:     ['profe', staffCon_('aprobarFotos', (d, p, ss) => accOcultarPublicacion_(d, ss))],
+  coordTematica:   ['profe', staffCon_('cronograma', (d, p, ss) => accGuardarTematica_(d, ss))],
+  coordCrono:      ['profe', staffCon_('cronograma', (d, p, ss) => accGuardarCrono_(d, ss))],
+  coordBorrarCrono: ['profe', staffCon_('cronograma', (d, p, ss) => borrarFila_('Cronograma', d.id, ss))],
+  coordCopiarCrono: ['profe', staffCon_('cronograma', (d, p, ss) => accCopiarCrono_(d, ss))],
+  coordContenido:  ['profe', staffCon_('cronograma', (d, p, ss) => contenidoSede_(ss.s))],
+  coordGrupo:      ['profe', staffCon_('grupos', (d, p, ss) => accAsignarGrupo_(d, ss))],
   // administración
   tablero:         ['admin', accTablero_],
   registrarPago:   ['admin', accRegistrarPago_],
@@ -201,6 +230,9 @@ const ACCIONES = {
   asignarGrupo:    ['admin', accAsignarGrupo_],
   recordar:        ['admin', accRecordar_],
   guardarProfe:    ['admin', accGuardarProfe_],
+  equipoHoyAdmin:  ['admin', (d, s) => equipoHoy_(s.s, d.sede)],
+  guardarTurnoAdmin: ['admin', accGuardarTurno_],
+  borrarTurnoAdmin: ['admin', (d, s) => borrarFila_('Turnos', d.id, s)],
   pagarProfe:      ['admin', accPagarProfe_],
   marcajeManual:   ['admin', accMarcajeManual_],
   guardarTematica: ['admin', accGuardarTematica_],
@@ -543,7 +575,12 @@ function accVerificarCodigo_(d) {
     throw new Error('Código incorrecto. Revisá el último mail que te llegó.');
   }
   cache.remove(clave);
-  return { token: firmar_({ r: rol, e: email, x: Date.now() + 150 * 86400000 }), rol, email };
+  const out = { token: firmar_({ r: rol, e: email, x: Date.now() + 150 * 86400000 }), rol, email };
+  if (rol === 'profe') {
+    const p = filas_('Profes').filter(x => normEmail_(x.email) === email && esSi_(x.activo))[0];
+    if (p && rolDe_(p) === 'admin') out.tokenAdmin = firmar_({ r: 'admin', s: p.sede === 'ambas' || !p.sede ? 'todas' : p.sede, x: Date.now() + 14 * 3600000 });
+  }
+  return out;
 }
 
 function accAdminLogin_(d) {
@@ -601,7 +638,9 @@ function accMiCuenta_(d, sesion) {
     familia: { adulto: fam.adulto, email: fam.email, whatsapp: fam.whatsapp, autorizadosRetiro: fam.autorizadosRetiro, emergenciaNombre: fam.emergenciaNombre, emergenciaTel: fam.emergenciaTel },
     chicos: chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), sede: c.sede, grupo: c.grupo, obraSocial: c.obraSocial,
       alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos })),
-    inscripciones: insc, publicaciones: pubs, asistencia: asis, cronograma: crono, pagos, hoy
+    inscripciones: insc, publicaciones: pubs, asistencia: asis, cronograma: crono, pagos, hoy, tiposAviso: TIPOS_AVISO,
+    avisos: filas_('AvisosFamilia').filter(a => a.familiaId === fam.id && a.estado !== 'anulado' && iso_(a.fecha) >= hoy)
+      .map(a => ({ id: a.id, fecha: iso_(a.fecha), chicoId: a.chicoId, chico: a.chico, tipo: a.tipo, detalle: a.detalle })).sort((a, b) => a.fecha < b.fecha ? -1 : 1)
   };
 }
 
@@ -648,7 +687,7 @@ function inscPublica_(i) {
 function pubPublica_(p) {
   const f = p.fecha instanceof Date ? p.fecha : new Date(p.fecha);
   return { id: p.id, ts: f.getTime(), fecha: Utilities.formatDate(f, TZ, 'yyyy-MM-dd HH:mm'), sede: p.sede, grupo: p.grupo, profe: p.profe, texto: p.texto,
-    fotos: String(p.fotos || '').split(',').filter(Boolean), visible: esSi_(p.visible) };
+    fotos: String(p.fotos || '').split(',').filter(Boolean), visible: esSi_(p.visible), pendiente: p.visible === 'Pendiente' };
 }
 function cronoPublico_(c) {
   return { id: c.id, sede: c.sede, semana: iso_(c.semana), dia: c.dia, hora: horaTxt_(c.hora), grupo: c.grupo, actividad: c.actividad, lugar: c.lugar, profe: c.profe };
@@ -657,10 +696,28 @@ function cronoPublico_(c) {
 // ======== PROFES ========
 function profeDe_(sesion) {
   const p = filas_('Profes').filter(x => normEmail_(x.email) === sesion.e && esSi_(x.activo))[0];
-  if (!p) throw new Error('Tu usuario de profe no está activo. Hablá con la administración.');
+  if (!p) throw new Error('Tu usuario no está activo. Hablá con la administración.');
   return p;
 }
 function sedesDeProfe_(p) { return p.sede === 'ambas' || !p.sede ? Object.keys(CONFIG.sedes) : [p.sede]; }
+function rolDe_(p) { return ROLES[p.rol] ? p.rol : 'profe'; }
+function puede_(p, permiso) { return ROLES[rolDe_(p)].permisos.indexOf(permiso) >= 0; }
+function gruposDe_(p) { return String(p.grupos || '').split(',').map(x => x.trim()).filter(Boolean); }
+/** Envuelve una acción del equipo: verifica el permiso y le pasa una "sesión" con la sede de esa persona. */
+function staffCon_(permiso, fn) {
+  return (d, sesion) => {
+    const p = profeDe_(sesion);
+    if (permiso && !puede_(p, permiso)) throw new Error('Tu rol no tiene acceso a esto.');
+    return fn(d, p, { s: p.sede === 'ambas' || !p.sede ? 'todas' : p.sede, quien: p.nombre });
+  };
+}
+function diaSemana_(iso) { const dow = fechaDe_(iso).getDay(); return dow >= 1 && dow <= 5 ? DIAS_SEM[dow - 1] : ''; }
+function turnosDePersona_(personaId, iso) {
+  const dia = diaSemana_(iso);
+  return filas_('Turnos').filter(t => t.personaId === personaId && String(t.dias || '').split(',').indexOf(dia) >= 0)
+    .map(t => ({ id: t.id, sede: t.sede, desde: horaTxt_(t.desde), hasta: horaTxt_(t.hasta), tarea: t.tarea }))
+    .sort((a, b) => a.desde < b.desde ? -1 : 1);
+}
 
 function accProfeInicio_(d, sesion) {
   const p = profeDe_(sesion), hoy = hoy_(), lunes = lunes_(hoy);
@@ -673,7 +730,10 @@ function accProfeInicio_(d, sesion) {
   const crono = filas_('Cronograma').filter(c => sedes.indexOf(c.sede) >= 0 && [lunes, sumarDias_(lunes, 7)].indexOf(iso_(c.semana)) >= 0).map(cronoPublico_);
   const pubs = filas_('Publicaciones').filter(x => sedes.indexOf(x.sede) >= 0 && x.profe === p.nombre).map(pubPublica_).sort((a, b) => b.ts - a.ts).slice(0, 20);
   return {
-    profe: { id: p.id, nombre: p.nombre, sede: p.sede, sedes, grupos: String(p.grupos || '').split(',').map(s => s.trim()).filter(Boolean) },
+    profe: { id: p.id, nombre: p.nombre, sede: p.sede, sedes, grupos: gruposDe_(p), rol: rolDe_(p), rolNombre: ROLES[rolDe_(p)].nombre,
+      emoji: ROLES[rolDe_(p)].emoji, permisos: ROLES[rolDe_(p)].permisos },
+    turnosHoy: turnosDePersona_(p.id, hoy),
+    pendientesFotos: puede_(p, 'aprobarFotos') ? filas_('Publicaciones').filter(x => x.visible === 'Pendiente' && sedes.indexOf(x.sede) >= 0).length : 0,
     abierto: abierto ? { sede: abierto.sede, desde: Utilities.formatDate(abierto.fechaHora, TZ, 'HH:mm') } : null,
     hoyMarc, liq, cronograma: crono, publicaciones: pubs,
     ubicaciones: sedes.map(id => Object.assign({ id, nombre: CONFIG.sedes[id].nombre }, geo_(id))), hoy
@@ -746,12 +806,32 @@ function liquidarProfe_(p, mes, marcProfe) {
 
 function accLista_(d, sesion) {
   const p = profeDe_(sesion);
+  if (!puede_(p, 'asistencia') && !puede_(p, 'fotos')) throw new Error('Tu rol no toma asistencia.');
   const sede = d.sede || sedesDeProfe_(p)[0];
   if (sedesDeProfe_(p).indexOf(sede) < 0) throw new Error('No tenés acceso a esa sede.');
-  return listaDelDia_(sede, d.fecha || hoy_(), d.grupo || 'todos');
+  let grupo = d.grupo || 'todos';
+  const mios = gruposDe_(p);
+  if (!puede_(p, 'asistenciaTodos') && mios.length) {
+    if (grupo === 'todos') grupo = mios;
+    else if (mios.indexOf(grupo) < 0) throw new Error('Ese grupo no está a tu cargo. El coordinador ve todos.');
+  }
+  const r = listaDelDia_(sede, d.fecha || hoy_(), grupo);
+  if (!puede_(p, 'plata')) r.chicos.forEach(c => { delete c.saldo; });
+  r.gruposPermitidos = puede_(p, 'asistenciaTodos') || !mios.length ? CONFIG.grupos.map(g => g.id) : mios;
+  return r;
+}
+
+function avisosDelDia_(sede, fecha) {
+  const out = {};
+  filas_('AvisosFamilia').forEach(a => {
+    if (a.estado === 'anulado' || iso_(a.fecha) !== fecha || (sede && a.sede !== sede)) return;
+    (out[a.chicoId] = out[a.chicoId] || []).push({ id: a.id, tipo: a.tipo, detalle: a.detalle });
+  });
+  return out;
 }
 
 function listaDelDia_(sede, fecha, grupo) {
+  const avisos = avisosDelDia_(sede, fecha);
   const chicos = {}; filas_('Chicos').forEach(c => { chicos[c.id] = c; });
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   const asis = {}; filas_('Asistencia').forEach(a => { if (iso_(a.fecha) === fecha && a.sede === sede) asis[a.chicoId] = a; });
@@ -759,7 +839,7 @@ function listaDelDia_(sede, fecha, grupo) {
   filas_('Inscripciones').forEach(i => {
     if (i.sede !== sede || i.estado === 'Cancelada' || vistos[i.chicoId]) return;
     if (String(i.dias || '').split(',').indexOf(fecha) < 0) return;
-    if (grupo !== 'todos' && i.grupo !== grupo) return;
+    if (grupo !== 'todos' && (Array.isArray(grupo) ? grupo.indexOf(i.grupo) < 0 : i.grupo !== grupo)) return;
     vistos[i.chicoId] = 1;
     const c = chicos[i.chicoId] || {}, f = fams[i.familiaId] || {}, a = asis[i.chicoId] || {};
     out.push({
@@ -767,11 +847,12 @@ function listaDelDia_(sede, fecha, grupo) {
       alergias: c.alergias || '', medicacion: c.medicacion || '', condiciones: c.condiciones || '', sabeNadar: c.sabeNadar || '', autorizaFotos: c.autorizaFotos || 'Sí',
       obraSocial: c.obraSocial || '', adulto: f.adulto || '', whatsapp: f.whatsapp || '', autorizados: f.autorizadosRetiro || '',
       emergencia: (f.emergenciaNombre || '') + ' ' + (f.emergenciaTel || ''), saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
-      estado: a.estado || '', llegada: horaTxt_(a.horaLlegada), retiradoPor: a.retiradoPor || '', retiro: horaTxt_(a.horaRetiro), nota: a.nota || ''
+      estado: a.estado || '', llegada: horaTxt_(a.horaLlegada), retiradoPor: a.retiradoPor || '', retiro: horaTxt_(a.horaRetiro), nota: a.nota || '',
+      avisos: avisos[i.chicoId] || []
     });
   });
   out.sort((a, b) => a.nombre.localeCompare(b.nombre));
-  return { sede, fecha, grupo, chicos: out };
+  return { sede, fecha, grupo: Array.isArray(grupo) ? 'todos' : grupo, chicos: out };
 }
 
 function accGuardarAsistencia_(d, sesion) {
@@ -779,6 +860,7 @@ function accGuardarAsistencia_(d, sesion) {
   lock.waitLock(20000);
   try {
     const p = profeDe_(sesion);
+    if (!puede_(p, 'asistencia')) throw new Error('Tu rol no toma asistencia.');
     if (sedesDeProfe_(p).indexOf(d.sede) < 0) throw new Error('No tenés acceso a esa sede.');
     const fecha = d.fecha || hoy_();
     const previos = {}; filas_('Asistencia').forEach(a => { if (iso_(a.fecha) === fecha && a.sede === d.sede) previos[a.chicoId] = a; });
@@ -808,6 +890,7 @@ function avisarRetiro_(chicoId, a) {
 
 function accPublicar_(d, sesion) {
   const p = profeDe_(sesion);
+  if (!puede_(p, 'fotos')) throw new Error('Tu rol no sube fotos.');
   if (sedesDeProfe_(p).indexOf(d.sede) < 0) throw new Error('No tenés acceso a esa sede.');
   const fotos = (d.fotos || []).slice(0, 10);
   if (!fotos.length && !limpio_(d.texto)) throw new Error('Escribí algo o sumá una foto.');
@@ -818,8 +901,9 @@ function accPublicar_(d, sesion) {
     try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { /* cuentas de dominio pueden no permitirlo */ }
     return file.getId();
   });
-  agregar_('Publicaciones', { id: 'P' + uid_(), fecha: new Date(), sede: d.sede, grupo: d.grupo || 'todos', profe: p.nombre, texto: limpio_(d.texto), fotos: ids.join(','), visible: 'Sí' });
-  return { fotos: ids.length };
+  agregar_('Publicaciones', { id: 'P' + uid_(), fecha: new Date(), sede: d.sede, grupo: d.grupo || 'todos', profe: p.nombre, texto: limpio_(d.texto), fotos: ids.join(','),
+    visible: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') ? 'Pendiente' : 'Sí' });
+  return { fotos: ids.length, pendiente: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') };
 }
 
 function carpetaFotos_(sede) {
@@ -831,6 +915,99 @@ function carpetaFotos_(sede) {
   const nombre = CONFIG.sedes[sede].nombre;
   const it = raiz.getFoldersByName(nombre);
   return it.hasNext() ? it.next() : raiz.createFolder(nombre);
+}
+
+// ======== EQUIPO: coordinación, turnos, salud y pileta ========
+function accFichas_(d, sesion) {
+  const p = profeDe_(sesion);
+  const salud = puede_(p, 'salud'), pileta = puede_(p, 'pileta');
+  if (!salud && !pileta) throw new Error('Tu rol no ve las fichas.');
+  const sede = d.sede || sedesDeProfe_(p)[0];
+  if (sedesDeProfe_(p).indexOf(sede) < 0) throw new Error('No tenés acceso a esa sede.');
+  const l = listaDelDia_(sede, d.fecha || hoy_(), 'todos');
+  return { sede, fecha: l.fecha, completa: salud, chicos: l.chicos.map(c => salud
+    ? { chicoId: c.chicoId, nombre: c.nombre, grupo: c.grupo, edad: c.edad, turno: c.turno, alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones,
+        obraSocial: c.obraSocial, sabeNadar: c.sabeNadar, adulto: c.adulto, whatsapp: c.whatsapp, emergencia: c.emergencia, estado: c.estado, avisos: c.avisos }
+    : { chicoId: c.chicoId, nombre: c.nombre, grupo: c.grupo, edad: c.edad, turno: c.turno, sabeNadar: c.sabeNadar, condiciones: c.condiciones, estado: c.estado, avisos: c.avisos }) };
+}
+
+/** Quién del equipo tenía que venir hoy, quién marcó y quién no. scope = sede de quien pregunta o 'todas'. */
+function equipoHoy_(scope, filtro) {
+  const hoy = hoy_(), ahora = Utilities.formatDate(new Date(), TZ, 'HH:mm');
+  const sedes = scope === 'todas' ? (filtro && CONFIG.sedes[filtro] ? [filtro] : Object.keys(CONFIG.sedes)) : [scope];
+  const tol = CONFIG.minutosTolerancia;
+  const masMin = (h, m) => { const x = String(h || '00:00').split(':').map(Number); const t = x[0] * 60 + x[1] + m; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+  const marc = marcajes_();
+  const turnosTodos = filas_('Turnos').filter(t => sedes.indexOf(t.sede) >= 0);
+  const personas = filas_('Profes').filter(p => esSi_(p.activo) && (p.sede === 'ambas' || !p.sede || sedes.indexOf(p.sede) >= 0)).map(p => {
+    const mp = marc.filter(m => m.profeId === p.id);
+    const ab = turnoAbierto_(mp);
+    const hoyM = mp.filter(m => diaDe_(m.fechaHora) === hoy).map(m => ({ tipo: m.tipo, hora: Utilities.formatDate(m.fechaHora, TZ, 'HH:mm'), sede: m.sede, origen: m.origen }));
+    const turnos = turnosDePersona_(p.id, hoy).filter(t => sedes.indexOf(t.sede) >= 0);
+    const entrada = hoyM.filter(m => m.tipo === 'ENTRADA')[0];
+    let estado = 'libre';
+    if (ab) estado = 'adentro';
+    else if (hoyM.length) estado = 'salio';
+    else if (turnos.length) estado = masMin(turnos[0].desde, tol) < ahora ? 'falta' : 'mas tarde';
+    const tarde = !!(entrada && turnos.length && entrada.hora > masMin(turnos[0].desde, tol));
+    return { id: p.id, nombre: p.nombre, rol: rolDe_(p), rolNombre: ROLES[rolDe_(p)].nombre, emoji: ROLES[rolDe_(p)].emoji, whatsapp: p.whatsapp, sede: p.sede,
+      grupos: gruposDe_(p), estado, tarde, desde: ab ? Utilities.formatDate(ab.fechaHora, TZ, 'HH:mm') : '', marcajes: hoyM, turnos,
+      turnosSemana: turnosTodos.filter(t => t.personaId === p.id).map(t => ({ id: t.id, sede: t.sede, dias: String(t.dias || '').split(',').filter(Boolean), desde: horaTxt_(t.desde), hasta: horaTxt_(t.hasta), tarea: t.tarea })) };
+  });
+  const orden = { falta: 0, adentro: 1, 'mas tarde': 2, salio: 3, libre: 4 };
+  personas.sort((a, b) => (orden[a.estado] - orden[b.estado]) || a.nombre.localeCompare(b.nombre));
+  return { hoy, ahora, sedes, personas, roles: Object.keys(ROLES).map(k => ({ id: k, nombre: ROLES[k].nombre, emoji: ROLES[k].emoji })) };
+}
+
+function accGuardarTurno_(d, sesion) {
+  const p = filas_('Profes').filter(x => x.id === d.personaId)[0];
+  if (!p) throw new Error('No encuentro a esa persona.');
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  if (p.sede !== 'ambas' && p.sede && p.sede !== sede) throw new Error(p.nombre + ' es de la otra sede.');
+  const dias = (d.dias || []).filter(x => DIAS_SEM.indexOf(x) >= 0);
+  if (!dias.length) throw new Error('Elegí al menos un día.');
+  if (!/^\d{2}:\d{2}$/.test(d.desde || '') || !/^\d{2}:\d{2}$/.test(d.hasta || '') || d.hasta <= d.desde) throw new Error('Revisá el horario.');
+  const datos = { sede, personaId: p.id, nombre: p.nombre, dias: dias.join(','), desde: d.desde, hasta: d.hasta, tarea: limpio_(d.tarea) };
+  const ex = d.id && filas_('Turnos').filter(t => t.id === d.id)[0];
+  if (ex) actualizar_('Turnos', ex._fila, datos); else agregar_('Turnos', Object.assign({ id: uid_() }, datos));
+  return { ok: true };
+}
+
+function fotosPendientes_(scope) {
+  return filas_('Publicaciones').filter(x => x.visible === 'Pendiente' && enSede_(scope, x.sede)).map(pubPublica_).sort((a, b) => b.ts - a.ts);
+}
+
+function contenidoSede_(scope) {
+  return {
+    tematicas: filas_('Tematicas').filter(t => enSede_(scope, t.sede)).map(t => ({ id: t.id, sede: t.sede, semana: iso_(t.semana), titulo: t.titulo, descripcion: t.descripcion, emoji: t.emoji })),
+    cronograma: filas_('Cronograma').filter(c => enSede_(scope, c.sede)).map(cronoPublico_)
+  };
+}
+
+// ======== FAMILIAS: avisos ("hoy no va", "llega tarde"…) ========
+function accAvisar_(d, sesion) {
+  const fam = familiaDe_(sesion), hoy = hoy_();
+  const c = filas_('Chicos').filter(x => x.id === d.chicoId && x.familiaId === fam.id)[0];
+  if (!c) throw new Error('No encontramos a ese chico.');
+  if (TIPOS_AVISO.indexOf(d.tipo) < 0) throw new Error('Elegí qué querés avisar.');
+  const fecha = iso_(d.fecha);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || fecha < hoy) throw new Error('Elegí un día de hoy en adelante.');
+  const insc = filas_('Inscripciones').filter(i => i.chicoId === c.id && i.estado !== 'Cancelada' && String(i.dias || '').split(',').indexOf(fecha) >= 0)[0];
+  if (!insc) throw new Error(c.nombre + ' no tiene escuela ese día.');
+  if (d.tipo !== 'No va' && !limpio_(d.detalle)) throw new Error(d.tipo === 'Lo retira otra persona' ? 'Escribí nombre y DNI de quien lo retira.' : 'Escribí la hora.');
+  const datos = { creado: new Date(), fecha, sede: insc.sede, grupo: insc.grupo, chicoId: c.id, chico: c.nombre, familiaId: fam.id, tipo: d.tipo, detalle: limpio_(d.detalle), estado: 'activo' };
+  const ex = filas_('AvisosFamilia').filter(a => a.chicoId === c.id && iso_(a.fecha) === fecha && a.tipo === d.tipo && a.estado !== 'anulado')[0];
+  if (ex) actualizar_('AvisosFamilia', ex._fila, datos); else agregar_('AvisosFamilia', Object.assign({ id: uid_() }, datos));
+  return { ok: true };
+}
+
+function accAnularAviso_(d, sesion) {
+  const fam = familiaDe_(sesion);
+  const a = filas_('AvisosFamilia').filter(x => x.id === d.id && x.familiaId === fam.id)[0];
+  if (!a) throw new Error('No encontramos ese aviso.');
+  actualizar_('AvisosFamilia', a._fila, { estado: 'anulado' });
+  return { ok: true };
 }
 
 // ======== ADMINISTRACIÓN ========
@@ -868,7 +1045,7 @@ function accTablero_(d, sesion) {
   const profes = filas_('Profes').filter(p => enSede_(sede, p.sede) || sede === 'todas').map(p => {
     const mp = marc.filter(m => m.profeId === p.id);
     const ab = turnoAbierto_(mp);
-    return { id: p.id, nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, sede: p.sede, grupos: p.grupos, formaPago: p.formaPago, valor: Number(p.valor) || 0,
+    return { id: p.id, nombre: p.nombre, email: p.email, whatsapp: p.whatsapp, sede: p.sede, grupos: p.grupos, rol: rolDe_(p), formaPago: p.formaPago, valor: Number(p.valor) || 0,
       activo: esSi_(p.activo), notas: p.notas, adentro: ab ? CONFIG.sedes[ab.sede] ? CONFIG.sedes[ab.sede].nombre + ' desde ' + Utilities.formatDate(ab.fechaHora, TZ, 'HH:mm') : 'sí' : '',
       liq: liquidarProfe_(p, mes, mp) };
   });
@@ -898,6 +1075,8 @@ function accTablero_(d, sesion) {
     publicaciones: filas_('Publicaciones').filter(p => enSede_(sede, p.sede)).map(pubPublica_).sort((a, b) => b.ts - a.ts).slice(0, 40),
     ubicaciones: Object.keys(CONFIG.sedes).filter(id => enSede_(sede, id)).map(id => Object.assign({ id, nombre: CONFIG.sedes[id].nombre }, geo_(id))),
     ajustes: ajustesPublicos_(sesion.s),
+    roles: Object.keys(ROLES).map(k => ({ id: k, nombre: ROLES[k].nombre, emoji: ROLES[k].emoji })),
+    avisosHoy: filas_('AvisosFamilia').filter(a => a.estado !== 'anulado' && iso_(a.fecha) === hoy && enSede_(sede, a.sede)).length,
     url: ScriptApp.getService().getUrl(), planilla: SpreadsheetApp.getActiveSpreadsheet().getUrl()
   };
 }
@@ -981,10 +1160,12 @@ function accGuardarProfe_(d, sesion) {
   const email = normEmail_(d.email);
   if (!limpio_(d.nombre)) throw new Error('Falta el nombre.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Falta un mail válido: con ese mail entra a la app.');
-  const datos = { nombre: limpio_(d.nombre), email, whatsapp: limpio_(d.whatsapp), sede, grupos: (d.grupos || []).join ? d.grupos.join(',') : limpio_(d.grupos),
-    formaPago: FORMAS_PAGO[d.formaPago] ? d.formaPago : 'hora', valor: Math.round(Number(d.valor)) || 0, activo: d.activo === false ? 'No' : 'Sí', notas: limpio_(d.notas) };
+  const datos = { nombre: limpio_(d.nombre), email, whatsapp: limpio_(d.whatsapp), sede, grupos: Array.isArray(d.grupos) ? d.grupos.join(',') : limpio_(d.grupos),
+    formaPago: FORMAS_PAGO[d.formaPago] ? d.formaPago : 'hora', valor: Math.round(Number(d.valor)) || 0, activo: d.activo === false ? 'No' : 'Sí', notas: limpio_(d.notas),
+    rol: ROLES[d.rol] ? d.rol : 'profe' };
+  if (datos.rol === 'admin' && sesion.s !== 'todas') throw new Error('Solo la administración general puede dar rol de administración.');
   const todos = filas_('Profes');
-  if (todos.some(p => normEmail_(p.email) === email && p.id !== d.id)) throw new Error('Ya hay un profe con ese mail.');
+  if (todos.some(p => normEmail_(p.email) === email && p.id !== d.id)) throw new Error('Ya hay alguien del equipo con ese mail.');
   const ex = d.id && todos.filter(p => p.id === d.id)[0];
   if (ex) {
     if (sesion.s !== 'todas' && ex.sede !== sesion.s) throw new Error('Ese profe es de la otra sede.');
@@ -994,10 +1175,17 @@ function accGuardarProfe_(d, sesion) {
   const id = 'T' + uid_();
   agregar_('Profes', Object.assign({ id, creado: new Date() }, datos));
   if (d.invitar !== false) {
-    MailApp.sendEmail({ to: email, name: CONFIG.marca, subject: '☀️ Tu acceso de profe · ' + CONFIG.marca,
-      htmlBody: marcoMail_(sede === 'ambas' ? '' : sede, '<p>¡Hola ' + esc_(primerNombre_(datos.nombre)) + '! Ya tenés tu acceso a la app de profes de la escuela de verano.</p>' +
-        '<p>Entrás con este mail (te llega un código). Desde ahí marcás entrada y salida, tomás asistencia, subís fotos y ves el cronograma.</p>' +
-        boton_(ScriptApp.getService().getUrl() + '?p=profes', 'Abrir la app de profes', '#2F4A38') +
+    const queHace = {
+      profe: 'marcás entrada y salida, tomás asistencia de tus grupos, subís fotos y ves el cronograma',
+      guardavidas: 'marcás entrada y salida y ves la lista de la pileta (quién sabe nadar)',
+      enfermeria: 'marcás entrada y salida y ves las fichas de salud de los chicos del día',
+      coordinador: 'marcás entrada y salida, controlás la asistencia de todos los grupos, al equipo y sus turnos, aprobás las fotos y armás el cronograma',
+      admin: 'tenés todo lo del coordinador y además el panel de administración'
+    }[datos.rol];
+    MailApp.sendEmail({ to: email, name: CONFIG.marca, subject: '☀️ Tu acceso al equipo · ' + CONFIG.marca,
+      htmlBody: marcoMail_(sede === 'ambas' ? '' : sede, '<p>¡Hola ' + esc_(primerNombre_(datos.nombre)) + '! Ya tenés tu acceso como <b>' + esc_(ROLES[datos.rol].nombre) + '</b> en la app de la escuela de verano.</p>' +
+        '<p>Entrás con este mail (te llega un código). Desde ahí ' + queHace + '.</p>' +
+        boton_(ScriptApp.getService().getUrl() + '?p=profes', 'Abrir la app del equipo', '#2F4A38') +
         '<p style="color:#777">Tip: abrilo en el celular y agregalo a la pantalla de inicio.</p>') });
   }
   return { id };
@@ -1014,10 +1202,13 @@ function accPagarProfe_(d, sesion) {
 
 function accMarcajeManual_(d, sesion) {
   const p = filas_('Profes').filter(x => x.id === d.profeId)[0];
-  if (!p) throw new Error('No encuentro al profe.');
+  if (!p) throw new Error('No encuentro a esa persona.');
+  if (sesion.s !== 'todas' && p.sede && p.sede !== 'ambas' && p.sede !== sesion.s) throw new Error(p.nombre + ' es de la otra sede.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha || '') || !/^\d{2}:\d{2}$/.test(d.hora || '')) throw new Error('Revisá día y hora.');
   const f = parseLocal_(d.fecha, d.hora);
-  agregar_('Marcajes', { id: uid_(), profeId: p.id, nombre: p.nombre, sede: d.sede || (p.sede === 'ambas' ? 'aldea' : p.sede), tipo: d.tipo === 'SALIDA' ? 'SALIDA' : 'ENTRADA',
-    fechaHora: f, lat: '', lng: '', distancia: '', precision: '', origen: 'manual (' + sesion.s + ')' });
+  const sedeM = sesion.s !== 'todas' ? sesion.s : (CONFIG.sedes[d.sede] ? d.sede : (p.sede === 'ambas' || !p.sede ? Object.keys(CONFIG.sedes)[0] : p.sede));
+  agregar_('Marcajes', { id: uid_(), profeId: p.id, nombre: p.nombre, sede: sedeM, tipo: d.tipo === 'SALIDA' ? 'SALIDA' : 'ENTRADA',
+    fechaHora: f, lat: '', lng: '', distancia: '', precision: '', origen: 'manual (' + (sesion.quien || sesion.s) + ')' });
   return { ok: true };
 }
 

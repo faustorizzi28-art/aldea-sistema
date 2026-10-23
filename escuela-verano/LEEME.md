@@ -7,7 +7,7 @@ Tiene **tres puertas** con el mismo link:
 | Quién | Link | Cómo entra |
 |---|---|---|
 | Familias | `…/exec` | Sin cuenta para inscribirse. Después entran con su mail y les llega un código de 6 números (no hay contraseñas). |
-| Profes | `…/exec?p=profes` | Con su mail y un código. La administración los da de alta. |
+| Equipo (profes, guardavidas, enfermería, coordinación, administración) | `…/exec?p=profes` | Con su mail y un código. La administración los da de alta con su rol. |
 | Administración | `…/exec?p=admin` | Con PIN. Cada sede tiene el suyo y hay un PIN general que ve las dos. |
 
 ## Qué hace
@@ -27,6 +27,34 @@ Tiene **tres puertas** con el mismo link:
   - editar la ficha de salud
   - **renovar** o sumar días en un minuto
 - Formulario para “quiero recibir novedades”, para las familias que todavía no se deciden.
+
+### Roles del equipo
+Cada persona se carga una vez en **Administración → Equipo** con su mail, sede y **rol**. Cuando entra a la app, ve solo lo que le corresponde:
+
+| Rol | Qué ve y qué hace |
+|---|---|
+| 🧑‍🏫 **Profe** | Marca entrada y salida, toma asistencia **solo de sus grupos**, sube fotos (quedan pendientes hasta que las aprueba el coordinador), ve el cronograma y sus horas. |
+| 🛟 **Guardavidas** | Marca entrada y salida y ve la **lista de pileta** del día, por grupo: quién no sabe nadar, quién nada un poco y quién no tiene el dato cargado. |
+| 🩺 **Enfermería / acompañante** | Marca entrada y salida y ve las **fichas de salud** de los chicos del día: alergias, medicación, condiciones, obra social y contacto de emergencia. |
+| 📋 **Coordinador/a** | Todo lo del profe, pero con **todos los grupos**. Además ve el **equipo de hoy** (quién marcó, quién no, quién llegó tarde) y arma los **turnos** de cada uno. Corrige marcajes olvidados, **aprueba las fotos** antes de que las vean las familias, arma el cronograma y las temáticas y ve salud y pileta. **No ve la plata.** |
+| 🗂️ **Administración** | Todo lo del coordinador y además el panel de administración de su sede (cobros, deudas, pagos al equipo). Entra con su mail, sin PIN. Solo la administración general puede dar este rol. |
+| 👑 **Dueño** | El PIN general: ve y maneja las dos sedes. |
+
+### Turnos y control del equipo
+- El coordinador (o la administración) carga el **horario habitual** de cada persona: días, desde, hasta y tarea. Por ejemplo: lunes a viernes de 9 a 13, grupo Aventureros.
+- Cada persona ve “**Tu turno hoy**” al abrir la app.
+- En **Equipo de hoy** se ve quién está adentro, quién **no marcó** (pasados 10 minutos del inicio del turno), quién entra más tarde y quién ya salió. Si alguien llegó tarde, aparece marcado.
+- Hay un botón de WhatsApp para escribirle a quien no marcó y otro para **marcar a mano**, que deja registrado quién lo cargó.
+- Las horas de los marcajes se usan para la liquidación de pagos al equipo.
+
+### Asistencia vinculada a la inscripción
+- La lista de cada día sale **sola de las inscripciones** que hacen los padres en la web: solo aparecen los chicos que tienen ese día pago o reservado, en su grupo.
+- Los **padres avisan** desde su cuenta: 🏠 no va, ⏰ llega tarde (con hora), 🚪 se va temprano o 👤 lo retira otra persona (con nombre y DNI). Lo pueden hacer para hoy o cualquier día que tengan inscripto.
+- El profe ve el aviso en la lista y **confirma**:
+  - Al que llega le toca P y queda la hora.
+  - A los que avisaron que no vienen los marca ausentes con un toque.
+  - Los que **faltan llegar sin aviso** aparecen aparte, con un botón de WhatsApp para preguntarle a la familia.
+- La familia ve en su cuenta si su hijo llegó, a qué hora y quién lo retiró.
 
 ### Profes (desde el celular)
 - **Marcan entrada y salida con GPS.** La app detecta en qué sede están y no deja marcar si están a más de 150 m.
@@ -53,7 +81,11 @@ Tiene **tres puertas** con el mismo link:
   - cancelar, que libera el cupo
   - exportar a CSV
 - **Cobros:** registrar pagos (opcionalmente le llega a la familia el mail de “recibimos tu pago”), ver las deudas y los últimos pagos por medio de pago.
-- **Profes:** alta (le llega un mail con su link), sede, grupos, forma de pago (por hora, por día, por semana o fijo mensual) y liquidación del mes. También se registran pagos, se ven los turnos y se carga un marcaje a mano si alguien se olvidó.
+- **Equipo:**
+  - el **equipo de hoy** y los turnos (lo mismo que ve el coordinador)
+  - alta de cada persona con su **rol** (le llega un mail con su link), sede y grupos
+  - forma de pago (por hora, por día, por semana o fijo mensual) y liquidación del mes
+  - registro de pagos y marcajes a mano
 - **Contenido:** temáticas de cada semana, cronograma semanal (con botón para copiar una semana a la siguiente) y ocultar fotos.
 - **Mails:** mail masivo a familias activas, a todas, a las que deben o a los interesados, filtrando por grupo. Trae plantillas listas: inscripciones abiertas, qué traer, últimos cupos y lluvia.
 - **Ajustes:** ubicación de cada sede (parate en el lugar y tocá **“Usar mi ubicación”**), PIN, mails de aviso y links para compartir.
@@ -80,13 +112,14 @@ Cada administración entra con su PIN y **solo ve y toca lo de su sede**. El PIN
    - Cambiá los PIN. Los de cada sede también están en la hoja `Config`.
    - Poné el mail de cada administración.
    - Parado en Colonia de Güey, tocá **Usar mi ubicación**. La de Aldea ya está cargada.
-8. En **Profes**, sumá a cada profe con su mail.
+8. En **Equipo**, sumá a cada persona con su mail y su rol. Después, el coordinador carga los turnos.
 9. Compartí los links: el de familias en Instagram y en la web de Aldea, y el de profes en el grupo de WhatsApp.
 
 Si cambiás el código: **Implementar → Administrar implementaciones → Editar → Nueva versión**. Así el link no cambia.
 
 ## Cosas para tener en cuenta
 - **Límite de mails de Google:** con una cuenta de Gmail común se pueden mandar unos **100 mails por día** (con Google Workspace, 1.500). La app muestra cuántos quedan y no deja pasarse en un envío masivo.
+- **Aprobación de fotos:** está activada (`aprobarFotos: true`). Si preferís que las fotos de los profes salgan directo, cambialo a `false` en `CONFIG`.
 - Las **fotos** se guardan en Drive, en la carpeta “Escuela de Verano — Fotos”, y quedan visibles solo para quien tenga el link. Los chicos sin autorización de fotos aparecen marcados con 📵 para los profes.
 - **Precios:** los días sueltos nunca cuestan más que la semana completa. Si una semana tiene feriado, se cobra igual que una semana normal. Si preferís otra regla, se cambia en `cotizarPuro_`.
 - La **edad** que define el grupo se cuenta a la fecha de inicio de la temporada. La administración puede mover a un chico de grupo.
