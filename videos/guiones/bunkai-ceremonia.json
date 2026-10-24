@@ -1,0 +1,25 @@
+{
+  "titulo": "Bunkai Dojo – Ceremonia (video para familias)",
+  "letra": "bebas",
+  "acento": "#D7263D",
+  "musica": "emocion-dojo.mp3",
+  "volumenMusica": 0.8,
+  "tomas": [
+    { "foto": "bunkai-cer-abrazo.jpg", "segundos": 2.8, "texto": "Hay momentos\nque no se olvidan" },
+    { "foto": "bunkai-cer-saludo-grupo.jpg", "segundos": 2.6, "texto": "Respeto" },
+    { "foto": "bunkai-cer-entrega.jpg", "segundos": 2.6, "texto": "Esfuerzo" },
+    { "foto": "bunkai-cer-saludo-ella.jpg", "segundos": 2.6, "texto": "Emoción" },
+    { "foto": "bunkai-cer-placa.jpg", "segundos": 2.8, "texto": "Años de camino" },
+    { "foto": "bunkai-cer-saludo-bn.jpg", "segundos": 2.4, "texto": "en un solo saludo" },
+    { "foto": "bunkai-cer-emocion.jpg", "segundos": 2.8, "texto": "Esto es karate-do" },
+    { "foto": "bunkai-cer-grupo.jpg", "segundos": 3.2, "texto": "Esto es\nBunkai Dojo" }
+  ],
+  "cierre": {
+    "logo": "logo-bunkai.jpg",
+    "texto": "Sé parte\nde la familia",
+    "color": "#111111",
+    "boton": "Consultá por WhatsApp",
+    "abajo": "3512 77-8769 · @bunkaidojo",
+    "segundos": 4.2
+  }
+}
