@@ -1,0 +1,21 @@
+{
+  "titulo": "Aldea de Valle – Eventos (historia premium)",
+  "letra": "serif",
+  "acento": "#E9D9B4",
+  "musica": "lounge-eventos.mp3",
+  "volumenMusica": 0.7,
+  "tomas": [
+    { "video": "aldea-evento-mesa.mp4", "desde": 0.3, "segundos": 4.6, "texto": "Tu evento,\nen otro nivel." },
+    { "video": "aldea-evento-detalle.mp4", "desde": 0.5, "segundos": 4.2, "texto": "Cada detalle,\npensado." },
+    { "video": "aldea-evento-jardin.mp4", "desde": 0.2, "segundos": 4.0, "texto": "Un entorno natural\ny exclusivo." }
+  ],
+  "cierre": {
+    "logo": "logo-aldea.png",
+    "arriba": "EVENTOS PRIVADOS",
+    "texto": "Bodas · Cumpleaños\nEmpresas",
+    "color": "#1E3226",
+    "boton": "Consultá fechas disponibles",
+    "abajo": "WhatsApp 351 530 8489 · @aldeadevalle",
+    "segundos": 4.2
+  }
+}

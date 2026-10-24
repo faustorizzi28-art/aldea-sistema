@@ -16,6 +16,7 @@ import { Historia, GuionHistoria, duracionHistoria } from "./Historia";
 import historia from "../guiones/historia-lunes-2026-10-19.json";
 import glorin from "../guiones/glorin-reel-cumples.json";
 import aldeaPileta from "../guiones/historia-aldea-pileta.json";
+import aldeaEventos from "../guiones/historia-aldea-eventos.json";
 import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
 import teaserDewey from "../guiones/teaser-colonia-dewey.json";
 import { PortadaDewey, PortadaAldeaVerano } from "./Portada";
@@ -140,6 +141,16 @@ export const RemotionRoot: React.FC = () => {
       fps={FPS}
       durationInFrames={duracionHistoria(aldeaPileta as GuionHistoria)}
       defaultProps={aldeaPileta as GuionHistoria}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
+    />
+    <Composition
+      id="AldeaEventos"
+      component={Historia}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHistoria(aldeaEventos as GuionHistoria)}
+      defaultProps={aldeaEventos as GuionHistoria}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
     />
     <Composition

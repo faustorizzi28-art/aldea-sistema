@@ -28,7 +28,7 @@ export type GuionHistoria = {
   titulo: string;
   tomas: TomaHistoria[];
   cierre: { arriba?: string; texto: string; color?: string; segundos: number; logo?: string; boton?: string; abajo?: string };
-  letra?: "montserrat" | "bebas"; // tipografía de los textos grandes
+  letra?: "montserrat" | "bebas" | "serif"; // tipografía de los textos grandes ("serif": look elegante de Aldea)
   acento?: string;
   musica?: string | null;
   volumenMusica?: number;
@@ -38,6 +38,17 @@ export const duracionHistoria = (g: GuionHistoria) =>
   Math.round((g.tomas.reduce((t, x) => t + x.segundos, 0) + g.cierre.segundos) * FPS);
 
 const BEBAS = "'Bebas Neue', sans-serif";
+// (Instrument Serif y Archivo se cargan en Espacios.tsx, que Root importa.)
+const SERIF = "'Instrument Serif', serif";
+const SANS = "'Archivo', sans-serif";
+
+// Estilo de los textos grandes según la tipografía elegida.
+const letraGrande = (letra: string | undefined, tam: { bebas: number; mont: number; serif: number }): React.CSSProperties =>
+  letra === "bebas"
+    ? { fontFamily: BEBAS, fontWeight: 400, fontSize: tam.bebas, letterSpacing: "0.01em", lineHeight: 0.95 }
+    : letra === "serif"
+      ? { fontFamily: SERIF, fontWeight: 400, fontSize: tam.serif, lineHeight: 1.02, letterSpacing: "-0.01em" }
+      : { fontFamily: MONT, fontWeight: 900, fontStyle: "italic", fontSize: tam.mont, lineHeight: 1 };
 
 const Toma: React.FC<{ t: TomaHistoria; primera: boolean; letra?: string; acento?: string }> = ({ t, primera, letra, acento }) => {
   const frame = useCurrentFrame();
@@ -89,12 +100,7 @@ const Toma: React.FC<{ t: TomaHistoria; primera: boolean; letra?: string; acento
         <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 300 }}>
           <div
             style={{
-              fontFamily: letra === "bebas" ? BEBAS : MONT,
-              fontWeight: letra === "bebas" ? 400 : 900,
-              fontStyle: letra === "bebas" ? "normal" : "italic",
-              fontSize: letra === "bebas" ? 140 : 96,
-              letterSpacing: letra === "bebas" ? "0.01em" : undefined,
-              lineHeight: letra === "bebas" ? 0.95 : 1,
+              ...letraGrande(letra, { bebas: 140, mont: 96, serif: 118 }),
               color: "white",
               textShadow: SOMBRA,
               textAlign: "center",
@@ -121,18 +127,15 @@ const Cierre: React.FC<{ c: GuionHistoria["cierre"]; letra?: string; acento?: st
     <AbsoluteFill style={{ backgroundColor: c.color ?? MARCA.rojo, opacity: op, alignItems: "center", paddingTop: c.logo ? 300 : 420, gap: 30 }}>
       {c.logo && <Img src={staticFile(`fotos/${c.logo}`)} style={{ maxWidth: 760, maxHeight: 380, width: "auto", height: "auto", ...sube(6) }} />}
       {c.arriba && (
-        <div style={{ fontFamily: MONT, fontWeight: 800, fontSize: 44, letterSpacing: "0.18em", color: acento ?? MARCA.amarillo, ...sube(8) }}>{c.arriba}</div>
+        <div style={{ fontFamily: letra === "serif" ? SANS : MONT, fontWeight: letra === "serif" ? 500 : 800, fontSize: letra === "serif" ? 34 : 44, letterSpacing: letra === "serif" ? "0.32em" : "0.18em", color: acento ?? MARCA.amarillo, ...sube(8) }}>{c.arriba}</div>
       )}
       <div
         style={{
-          fontFamily: letra === "bebas" ? BEBAS : MONT,
-          fontWeight: letra === "bebas" ? 400 : 900,
-          fontStyle: letra === "bebas" ? "normal" : "italic",
-          fontSize: letra === "bebas" ? 150 : 104,
-          lineHeight: letra === "bebas" ? 0.95 : 1.02,
+          ...letraGrande(letra, { bebas: 150, mont: 104, serif: 124 }),
           color: "white",
           textAlign: "center",
           maxWidth: 900,
+          whiteSpace: "pre-line",
           ...sube(16),
         }}
       >
@@ -141,11 +144,13 @@ const Cierre: React.FC<{ c: GuionHistoria["cierre"]; letra?: string; acento?: st
       {c.boton && (
         <div
           style={{
-            fontFamily: MONT,
-            fontWeight: 800,
-            fontSize: 50,
-            color: c.color ?? MARCA.rojo,
-            backgroundColor: "white",
+            fontFamily: letra === "serif" ? SANS : MONT,
+            fontWeight: letra === "serif" ? 500 : 800,
+            fontSize: letra === "serif" ? 40 : 50,
+            letterSpacing: letra === "serif" ? "0.08em" : undefined,
+            color: letra === "serif" ? acento ?? "white" : c.color ?? MARCA.rojo,
+            backgroundColor: letra === "serif" ? "transparent" : "white",
+            border: letra === "serif" ? `2px solid ${acento ?? "white"}` : undefined,
             padding: "22px 46px",
             borderRadius: 999,
             ...sube(26),
@@ -154,7 +159,7 @@ const Cierre: React.FC<{ c: GuionHistoria["cierre"]; letra?: string; acento?: st
           {c.boton}
         </div>
       )}
-      {c.abajo && <div style={{ fontFamily: MONT, fontWeight: 600, fontSize: 38, color: "white", ...sube(34) }}>{c.abajo}</div>}
+      {c.abajo && <div style={{ fontFamily: letra === "serif" ? SANS : MONT, fontWeight: letra === "serif" ? 500 : 600, fontSize: letra === "serif" ? 34 : 38, letterSpacing: letra === "serif" ? "0.06em" : undefined, color: "white", ...sube(34) }}>{c.abajo}</div>}
     </AbsoluteFill>
   );
 };
