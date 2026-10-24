@@ -4,6 +4,7 @@ Uso:  python3 herramientas/generar-emocion.py
 Crea:
   public/musica/emocion-dojo.mp3   ~26 s, 76 bpm. Piano solo al principio, entran cuerdas y bajo,
                                    golpe grave tipo taiko en el segundo ~18.4 (momento de la foto grupal / cierre).
+  public/musica/emocion-dojo-homenaje.mp3  ~29 s, golpe en el segundo ~20.9 (versión homenaje).
 Reutiliza las funciones de herramientas/generar-lounge.py.
 """
 import importlib.util
@@ -80,3 +81,5 @@ def emocion():
 
 if __name__ == "__main__":
     guardar(emocion(), os.path.join(L.PUBLIC, "musica", "emocion-dojo.mp3"))
+    LARGO, GOLPE = 29.0, 20.9
+    guardar(emocion(), os.path.join(L.PUBLIC, "musica", "emocion-dojo-homenaje.mp3"))
