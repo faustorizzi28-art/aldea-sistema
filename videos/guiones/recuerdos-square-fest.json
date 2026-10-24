@@ -1,0 +1,24 @@
+{
+  "salida": "out/recuerdos-square-fest.mp4",
+  "musica": "public/musica/fiesta-recuerdos.mp3",
+  "bpm": 128,
+  "fotos": "public/fotos/recuerdos",
+  "tomas": [
+    { "foto": "14.png", "tiempos": 4 },
+    { "foto": "01.png", "tiempos": 4 },
+    { "foto": "03.png", "tiempos": 4 },
+    { "foto": "12.png", "tiempos": 4 },
+    { "foto": "11.png", "tiempos": 2, "flash": true },
+    { "foto": "10.png", "tiempos": 2, "flash": true },
+    { "foto": "07.png", "tiempos": 2, "flash": true },
+    { "foto": "02.png", "tiempos": 2, "flash": true },
+    { "foto": "04.png", "tiempos": 4, "flash": true, "pulso": true },
+    { "foto": "05.png", "tiempos": 4, "flash": true, "pulso": true },
+    { "foto": "08.png", "tiempos": 4, "flash": true, "pulso": true },
+    { "foto": "09.png", "tiempos": 4, "flash": true, "pulso": true },
+    { "foto": "13.png", "tiempos": 2, "flash": true, "pulso": true },
+    { "foto": "16.png", "tiempos": 2, "flash": true, "pulso": true },
+    { "foto": "15.png", "tiempos": 4, "flash": true, "pulso": true },
+    { "foto": "03.png", "tiempos": 3, "flash": true }
+  ]
+}
