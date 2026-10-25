@@ -15,7 +15,7 @@ const HORAS_MAX_TURNO = 16;     // una entrada sin salida más vieja que esto se
 const PIN_ADMIN_INICIAL = '2026';
 
 const HOJAS = {
-  Empleados: ['id', 'nombre', 'pin', 'area', 'formaPago', 'valor', 'horasSemana', 'telefono', 'activo', 'notas', 'creado'],
+  Empleados: ['id', 'nombre', 'pin', 'area', 'formaPago', 'valor', 'horasSemana', 'telefono', 'activo', 'notas', 'creado', 'valorEvento'],
   Marcajes:  ['id', 'empleadoId', 'nombre', 'tipo', 'fechaHora', 'lat', 'lng', 'distancia', 'precision', 'origen', 'nota'],
   Config:    ['clave', 'valor', 'descripcion'],
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
@@ -233,7 +233,7 @@ function accAdminDatos_(d) {
     marcajes: delMes,
     liquidacion,
     adentro,
-    config: { centroLat: cfg.centroLat, centroLng: cfg.centroLng, radio: Number(cfg.radio) || 100, direccion: cfg.direccion, nombreLugar: cfg.nombreLugar },
+    config: { centroLat: cfg.centroLat, centroLng: cfg.centroLng, radio: Number(cfg.radio) || 100, direccion: cfg.direccion, nombreLugar: cfg.nombreLugar, diasEvento: Array.from(diasEvento_()) },
     liquidacionGuardada: !!guardada,
     formasPago: FORMAS_PAGO,
   };
@@ -251,6 +251,8 @@ function accGuardarEmpleado_(d) {
     if (!FORMAS_PAGO[x.formaPago]) return { ok: false, error: 'Forma de pago inválida.' };
     const valor = Number(x.valor);
     if (!(valor >= 0)) return { ok: false, error: 'El valor tiene que ser un número.' };
+    const valorEvento = x.formaPago === 'hora' && x.valorEvento !== '' && x.valorEvento != null ? Number(x.valorEvento) : '';
+    if (valorEvento !== '' && !(valorEvento >= 0)) return { ok: false, error: 'El valor por hora en eventos tiene que ser un número.' };
     const emps = empleados_();
     if (emps.some(e => e.id !== x.id && e.activo && e.nombre.toLowerCase() === nombre.toLowerCase())) {
       return { ok: false, error: 'Ya hay otra persona activa con ese nombre. Agregale el apellido.' };
@@ -275,6 +277,9 @@ function accGuardarEmpleado_(d) {
       fila.push(new Date());
       sh.appendRow(fila);
     }
+    const colEv = columna_(sh, 'valorEvento');
+    const filaN = idx >= 0 ? emps[idx]._fila : sh.getLastRow();
+    sh.getRange(filaN, colEv).setValue(valorEvento);
     return { ok: true, id: fila[0] };
   } finally {
     lock.releaseLock();
@@ -323,6 +328,10 @@ function accGuardarConfig_(d) {
     cambios.radio = Math.round(r);
   }
   if ('nombreLugar' in c) cambios.nombreLugar = String(c.nombreLugar).trim() || 'Aldea de Valle';
+  if ('diasEvento' in c) {
+    const lista = (Array.isArray(c.diasEvento) ? c.diasEvento : []).map(String).filter(f => /^\d{4}-\d{2}-\d{2}$/.test(f));
+    cambios.diasEvento = Array.from(new Set(lista)).sort().join(',');
+  }
   if ('pinAdminNuevo' in c) {
     if (!/^\d{4,8}$/.test(String(c.pinAdminNuevo))) return { ok: false, error: 'El PIN de administrador tiene que ser de 4 a 8 números.' };
     cambios.pinAdmin = String(c.pinAdminNuevo);
@@ -332,7 +341,7 @@ function accGuardarConfig_(d) {
   Object.keys(cambios).forEach(k => {
     const i = vals.findIndex(r => r[0] === k);
     if (i >= 1) sh.getRange(i + 1, 2).setValue(String(cambios[k]));
-    else sh.appendRow([k, String(cambios[k]), '']);
+    else sh.appendRow([k, String(cambios[k]), k === 'diasEvento' ? 'Días de evento además de sábados y domingos (AAAA-MM-DD separados por coma).' : '']);
   });
   return { ok: true };
 }
@@ -346,13 +355,13 @@ function accGuardarLiquidacion_(d) {
   const nombre = 'Liquidación ' + mes;
   let sh = ss.getSheetByName(nombre);
   if (sh) sh.clear(); else sh = ss.insertSheet(nombre);
-  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes'];
+  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes', 'Horas de evento', 'Valor hora evento', 'Cálculo'];
   const filas = liq.map(l => [l.nombre, l.area, l.formaPagoTexto, l.valor, l.horas, l.dias, l.eventos, l.calculado, l.totalAjustes, l.total, l.sinSalida,
-    l.ajustes.map(a => `${a.concepto}: ${a.monto}`).join(' · ')]);
+    l.ajustes.map(a => `${a.concepto}: ${a.monto}`).join(' · '), l.horasEvento || '', l.valorEvento || '', l.explicacion]);
   const total = liq.reduce((a, l) => a + l.total, 0);
   sh.appendRow(enc);
   if (filas.length) sh.getRange(2, 1, filas.length, enc.length).setValues(filas);
-  sh.appendRow(['TOTAL', '', '', '', '', '', '', '', '', total, '', '']);
+  sh.appendRow(['TOTAL', '', '', '', '', '', '', '', '', total, '', '', '', '', '']);
   sh.appendRow(['Guardado el ' + Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy HH:mm')]);
   sh.getRange(1, 1, 1, enc.length).setFontWeight('bold').setBackground('#E3EDE4');
   sh.getRange(filas.length + 2, 1, 1, enc.length).setFontWeight('bold');
@@ -396,11 +405,15 @@ function turnoAbierto_(marcajes, empleadoId) {
 
 function liquidarEmpleado_(e, mes, marcajes, ajustes) {
   const turnos = turnos_(marcajes, e.id).filter(t => mesDe_((t.entrada || t.salida).fechaHora) === mes);
-  let horas = 0, eventos = 0, sinSalida = 0;
+  let horas = 0, horasEvento = 0, eventos = 0, sinSalida = 0;
   const dias = {};
+  const tarifaEvento = e.formaPago === 'hora' && Number(e.valorEvento) > 0;
   const detalle = turnos.map(t => {
     const h = t.entrada && t.salida ? (t.salida.fechaHora - t.entrada.fechaHora) / 3600000 : 0;
+    // Turno de evento: empezó un sábado, domingo o un día marcado como evento. Va entero a la tarifa de evento.
+    const esEvento = tarifaEvento && !!t.entrada && esDiaEvento_(t.entrada.fechaHora);
     horas += h;
+    if (esEvento) horasEvento += h;
     if (t.entrada && !t.enCurso) eventos++;
     if (t.entrada) dias[diaDe_(t.entrada.fechaHora)] = true;
     const problema = t.enCurso ? 'en curso' : !t.salida ? 'sin salida' : !t.entrada ? 'sin entrada' : '';
@@ -410,15 +423,23 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
       salida: t.salida ? t.salida.fechaHora.toISOString() : null,
       horas: redondear_(h, 2),
       problema,
+      evento: esEvento,
     };
   });
   horas = redondear_(horas, 2);
+  horasEvento = redondear_(horasEvento, 2);
   const valor = Number(e.valor) || 0;
   let calculado = 0, explicacion = '';
   switch (e.formaPago) {
     case 'hora':
-      calculado = horas * valor;
-      explicacion = `${fmtHoras_(horas)} × ${fmtPesos_(valor)} la hora`;
+      if (tarifaEvento && horasEvento > 0) {
+        const comunes = redondear_(horas - horasEvento, 2), ve = Number(e.valorEvento);
+        calculado = comunes * valor + horasEvento * ve;
+        explicacion = `${fmtHoras_(comunes)} comunes × ${fmtPesos_(valor)} + ${fmtHoras_(horasEvento)} de evento × ${fmtPesos_(ve)}`;
+      } else {
+        calculado = horas * valor;
+        explicacion = `${fmtHoras_(horas)} × ${fmtPesos_(valor)} la hora`;
+      }
       break;
     case 'mensual':
       if (e.creado && mes < mesDe_(e.creado) && !turnos.length) {
@@ -451,6 +472,7 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
   return {
     empleadoId: e.id, nombre: e.nombre, area: e.area, activo: e.activo, telefono: e.telefono,
     formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor, horasSemana: e.horasSemana,
+    valorEvento: tarifaEvento ? Number(e.valorEvento) : '', horasEvento,
     horas, dias: Object.keys(dias).length, eventos, sinSalida,
     calculado, explicacion, ajustes: ajs, totalAjustes, total: calculado + totalAjustes,
     turnos: detalle.reverse(),
@@ -482,6 +504,7 @@ function empleados_() {
     horasSemana: e.horasSemana === '' ? '' : Number(e.horasSemana), telefono: String(e.telefono || ''),
     activo: e.activo === true || String(e.activo).toUpperCase() === 'TRUE' || String(e.activo).toUpperCase() === 'SI',
     notas: String(e.notas || ''), creado: e.creado instanceof Date ? e.creado : null,
+    valorEvento: e.valorEvento === '' || e.valorEvento == null ? '' : Number(e.valorEvento),
   }));
 }
 
@@ -523,6 +546,25 @@ function borrarPorId_(nombreHoja, id) {
 }
 
 /* ───────────────────────── Utilidades ───────────────────────── */
+
+/* Días de evento: sábados y domingos siempre, más los días que marca el administrador (Config → diasEvento). */
+let _diasEvento = null;
+function diasEvento_() {
+  if (!_diasEvento) _diasEvento = new Set(String(config_().diasEvento || '').split(',').map(x => x.trim()).filter(Boolean));
+  return _diasEvento;
+}
+function esDiaEvento_(fecha) {
+  const dow = Number(Utilities.formatDate(fecha, TZ, 'u'));   // 1 = lunes … 7 = domingo
+  return dow >= 6 || diasEvento_().has(diaDe_(fecha));
+}
+
+/* Número de columna de un encabezado; si no existe, lo agrega al final. */
+function columna_(sh, nombre) {
+  const enc = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  let i = enc.indexOf(nombre);
+  if (i < 0) { i = enc.length; sh.getRange(1, i + 1).setValue(nombre).setFontWeight('bold').setBackground('#E3EDE4'); }
+  return i + 1;
+}
 
 function uid_() { return Utilities.getUuid().slice(0, 8); }
 

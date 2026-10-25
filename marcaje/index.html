@@ -321,6 +321,17 @@
       </div>
 
       <div class="card">
+        <h2>Días de evento</h2>
+        <p class="sub" style="margin-bottom:12px;">Los <b>sábados y domingos</b> ya cuentan como evento solos. Agregá acá los <b>viernes</b> (u otro día) en que hubo evento: los turnos que empiecen ese día se pagan con el valor de evento.</p>
+        <div style="display:flex;gap:8px;">
+          <div class="field" style="flex:1;margin:0;"><input id="cf-dia-ev" type="date"/></div>
+          <button class="btn" onclick="agregarDiaEvento()">Agregar</button>
+        </div>
+        <div id="cf-dias-ev" style="margin-top:10px;"></div>
+        <div class="msg" id="cf-ev-msg"></div>
+      </div>
+
+      <div class="card">
         <h2>Datos del recibo</h2>
         <div class="field"><label>Nombre del lugar</label><input id="cf-lugar"/></div>
         <button class="btn ghost full" onclick="guardarLugar()">Guardar</button>
@@ -382,6 +393,8 @@
       </div>
       <div class="field"><label id="me-valor-lbl">Valor por hora ($)</label><input id="me-valor" type="number" inputmode="numeric" min="0"/></div>
     </div>
+    <div class="field" id="me-ev-box"><label>Valor por hora en eventos ($)</label><input id="me-ev" type="number" inputmode="numeric" min="0" placeholder="Vacío = mismo valor"/>
+      <div class="ayuda">Se usa para los turnos que empiezan un sábado, un domingo o un día marcado como evento en Ajustes.</div></div>
     <div class="field" id="me-hs-box"><label>Horas por semana</label><input id="me-hs" type="number" inputmode="decimal" min="1"/>
       <div class="ayuda">Se paga proporcional a las horas marcadas: valor semanal ÷ horas por semana = valor de la hora.</div></div>
     <div class="ayuda" id="me-forma-ayuda" style="margin:-4px 0 12px;"></div>
@@ -641,8 +654,8 @@ function pintarMesEmp(j){
 function filaTurno(t){
   const ref = t.entrada || t.salida;
   const rango = `${t.entrada?hora(t.entrada):'??'} → ${t.salida?hora(t.salida):(t.problema==='en curso'?'ahora':'??')}`;
-  const tag = t.problema==='en curso' ? '<span class="tag ok">en curso</span>'
-    : t.problema ? `<span class="tag warn">${t.problema}</span>` : `<span class="h">${fmtH(t.horas)}</span>`;
+  const tag = (t.evento ? '<span class="tag manual">evento</span> ' : '') + (t.problema==='en curso' ? '<span class="tag ok">en curso</span>'
+    : t.problema ? `<span class="tag warn">${t.problema}</span>` : `<span class="h">${fmtH(t.horas)}</span>`);
   return `<div class="turno"><div><b style="text-transform:capitalize;">${diaCorto(ref)}</b><div class="sub mono">${rango}</div></div>${tag}</div>`;
 }
 
@@ -838,7 +851,7 @@ function pintarEquipo(){
     <div class="emp ${e.activo?'':'inactivo'}">
       <div class="top">
         <div><div class="nom">${esc(e.nombre)} ${e.activo?'':'<span class="tag">inactivo</span>'}</div>
-          <div class="sub">${esc(e.area||'Sin área')} · ${esc(adm.formasPago[e.formaPago]||e.formaPago)}: <b>${fmt(e.valor)}</b>${e.formaPago==='hora'?'/h':e.formaPago==='semanal'?`/semana (${e.horasSemana||'?'} h)`:e.formaPago==='evento'?'/evento':'/mes'}</div>
+          <div class="sub">${esc(e.area||'Sin área')} · ${esc(adm.formasPago[e.formaPago]||e.formaPago)}: <b>${fmt(e.valor)}</b>${e.formaPago==='hora'?'/h'+(e.valorEvento?` · eventos <b>${fmt(e.valorEvento)}</b>/h`:''):e.formaPago==='semanal'?`/semana (${e.horasSemana||'?'} h)`:e.formaPago==='evento'?'/evento':'/mes'}</div>
           ${e.notas?`<div class="sub" style="margin-top:2px;">${esc(e.notas)}</div>`:''}</div>
         <div class="mono" style="font-size:13px;color:var(--gris);" title="PIN">PIN ${esc(e.pin)}</div>
       </div>
@@ -854,6 +867,7 @@ function pintarAjustes(){
   $('cf-lat').value = c.centroLat || ''; $('cf-lng').value = c.centroLng || '';
   $('cf-radio').value = c.radio || 100;
   $('cf-lugar').value = c.nombreLugar || 'Aldea de Valle';
+  pintarDiasEvento();
   actualizarLinkMapa();
   $('cf-link').value = location.origin + location.pathname;
 }
@@ -863,6 +877,7 @@ function actualizarFormaPago(){
   const f = $('me-forma').value;
   $('me-valor-lbl').textContent = {hora:'Valor por hora ($)', mensual:'Sueldo por mes ($)', semanal:'Valor por semana ($)', evento:'Valor por evento ($)'}[f];
   $('me-hs-box').classList.toggle('oculto', f!=='semanal');
+  $('me-ev-box').classList.toggle('oculto', f!=='hora');
   $('me-forma-ayuda').textContent = {
     hora:'Se paga cada hora marcada.',
     mensual:'Cobra lo mismo todos los meses. Marca igual para que quede el registro.',
@@ -892,6 +907,7 @@ function abrirEmpleado(id){
   $('me-forma').value = e ? e.formaPago : 'hora';
   $('me-valor').value = e ? e.valor : '';
   $('me-hs').value = e && e.horasSemana ? e.horasSemana : '';
+  $('me-ev').value = e && e.valorEvento ? e.valorEvento : '';
   $('me-tel').value = e ? e.telefono : '';
   $('me-notas').value = e ? e.notas : '';
   $('me-activo').checked = e ? e.activo : true;
@@ -902,7 +918,7 @@ function abrirEmpleado(id){
 async function guardarEmpleado(){
   const empleado = {
     id: $('me-id').value || undefined, nombre: $('me-nombre').value, area: $('me-area').value, pin: $('me-pin').value,
-    formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value,
+    formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value, valorEvento: $('me-ev').value,
     telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked,
   };
   if(empleado.valor===''){ msg('me-msg','Falta el valor.','err'); return; }
@@ -1094,6 +1110,30 @@ async function probarDistancia(){
     const r = Number($('cf-radio').value)||100;
     msg('cf-msg', `Estás a ${d} m del centro (±${Math.round(c.accuracy)} m). ${d<=r?'✅ Desde acá se puede marcar.':'❌ Desde acá NO se puede marcar.'}${d>r && c.accuracy>300 ? ' '+ayudaUbicacionAproximada() : ''}`, d<=r?'ok':'err');
   }catch(e){ msg('cf-msg', e.message, 'err'); }
+}
+function pintarDiasEvento(){
+  const dias = (adm.config.diasEvento || []).slice().sort().reverse();
+  $('cf-dias-ev').innerHTML = dias.length
+    ? dias.map(d => `<div class="marc"><span>🎉 ${cap(new Date(d+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}))}</span><button class="x" title="Quitar" onclick="quitarDiaEvento('${d}')">🗑</button></div>`).join('')
+    : '<div class="sub">Todavía no marcaste ningún día extra.</div>';
+}
+async function guardarDiasEvento(dias, texto){
+  msg('cf-ev-msg','Guardando…','info');
+  try{ await apiAdm('guardarConfig', {config:{diasEvento: dias}}); await cargarAdmin(); msg('cf-ev-msg', texto, 'ok'); }
+  catch(e){ msg('cf-ev-msg', e.message, 'err'); }
+}
+function agregarDiaEvento(){
+  const d = $('cf-dia-ev').value;
+  if(!d){ msg('cf-ev-msg','Elegí la fecha.','err'); return; }
+  const dow = new Date(d+'T12:00:00').getDay();
+  if(dow===0 || dow===6){ msg('cf-ev-msg','Los sábados y domingos ya cuentan como evento solos.','info'); return; }
+  const dias = new Set(adm.config.diasEvento || []); dias.add(d);
+  $('cf-dia-ev').value = '';
+  guardarDiasEvento([...dias], '✅ Día de evento agregado. Los turnos de ese día ya se recalcularon.');
+}
+function quitarDiaEvento(d){
+  if(!confirm('¿Quitar este día de evento? Esos turnos vuelven a pagarse como jornada común.')) return;
+  guardarDiasEvento((adm.config.diasEvento || []).filter(x => x!==d), '✅ Día quitado.');
 }
 async function guardarLugar(){
   try{ await apiAdm('guardarConfig', {config:{nombreLugar:$('cf-lugar').value}}); await cargarAdmin(); msg('cf-lugar-msg','✅ Guardado','ok'); }
