@@ -552,15 +552,18 @@ function borrarPorId_(nombreHoja, id) {
 
 /* ───────────────────────── Utilidades ───────────────────────── */
 
-/* Días de evento: sábados y domingos siempre, más los días que marca el administrador (Config → diasEvento). */
+/* Días de evento: sábados y domingos siempre, más los días que marca el administrador (Config → diasEvento),
+   en los que solo cuentan los turnos que empiezan a la noche. */
 let _diasEvento = null;
 function diasEvento_() {
   if (!_diasEvento) _diasEvento = new Set(String(config_().diasEvento || '').split(',').map(x => x.trim()).filter(Boolean));
   return _diasEvento;
 }
+const HORA_EVENTO_NOCHE = 16;   // en los días marcados (viernes), solo cuentan los turnos que empiezan desde esta hora
 function esDiaEvento_(fecha) {
   const dow = Number(Utilities.formatDate(fecha, TZ, 'u'));   // 1 = lunes … 7 = domingo
-  return dow >= 6 || diasEvento_().has(diaDe_(fecha));
+  if (dow >= 6) return true;
+  return diasEvento_().has(diaDe_(fecha)) && Number(Utilities.formatDate(fecha, TZ, 'H')) >= HORA_EVENTO_NOCHE;
 }
 
 /* Número de columna de un encabezado; si no existe, lo agrega al final. */
