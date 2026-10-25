@@ -20,6 +20,7 @@ const HOJAS = {
   Config:    ['clave', 'valor', 'descripcion'],
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
   Pagos:     ['id', 'mes', 'fecha', 'empleadoId', 'nombre', 'tipo', 'monto', 'nota', 'creado'],
+  Tareas:    ['id', 'fecha', 'empleadoId', 'nombre', 'hechas', 'pendientes', 'creado'],
   Desafios:  ['id', 'titulo', 'detalle', 'premio', 'para', 'vence', 'estado', 'empleadoId', 'nombre', 'tomado', 'hecho', 'foto', 'mes', 'creado'],
 };
 
@@ -84,6 +85,7 @@ function autorizarFotos() {
   DriveApp.getRootFolder();
   hojaOCrear_('Desafios');
   hojaOCrear_('Pagos');
+  hojaOCrear_('Tareas');
   SpreadsheetApp.getActive().toast('Listo: permisos dados y hojas creadas.', 'Aldea — Marcaje', 6);
 }
 
@@ -178,7 +180,7 @@ function accEstado_(d) {
   const liq = liquidarEmpleado_(e, mes, marcajes, ajustes_());
   return {
     ok: true,
-    empleado: { id: e.id, nombre: e.nombre, area: e.area, formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor: e.valor, horasSemana: e.horasSemana },
+    empleado: { id: e.id, nombre: e.nombre, area: e.area, formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor: e.valor, horasSemana: e.horasSemana, tareas: e.tareas },
     adentro: !!abierto,
     desde: abierto ? abierto.fechaHora.toISOString() : null,
     ahora: new Date().toISOString(),
@@ -217,6 +219,12 @@ function accMarcar_(d) {
     }
     const ahora = new Date();
     hoja_('Marcajes').appendRow([uid_(), e.id, e.nombre, tipo, ahora, lat, lng, dist, Math.round(Number(d.precision) || 0), 'gps', '']);
+    // Lista de tareas del día: se registra al marcar la salida.
+    if (tipo === 'SALIDA' && e.tareas.length && d.tareas) {
+      const hechas = (d.tareas.hechas || []).map(String).filter(t => e.tareas.includes(t));
+      const pendientes = e.tareas.filter(t => !hechas.includes(t));
+      hojaOCrear_('Tareas').appendRow([uid_(), "'" + diaDe_(abierto.fechaHora), e.id, e.nombre, hechas.join(' | '), pendientes.join(' | '), ahora]);
+    }
     const resp = accEstado_(d);
     resp.marcado = tipo;
     resp.distancia = dist;
@@ -310,6 +318,8 @@ function accGuardarEmpleado_(d) {
     const salida = /^\d{2}:\d{2}$/.test(x.horarioSalida || '') ? x.horarioSalida : '';
     const antes = idx >= 0 ? emps[idx] : {};
     const cambio = dias !== (antes.horarioDias || '') || entrada !== (antes.horarioEntrada || '');
+    const tareas = String(x.tareas || '').split('\n').map(t => t.trim()).filter(Boolean).slice(0, 15).join('\n');
+    sh.getRange(filaN, columna_(sh, 'tareas')).setNumberFormat('@').setValue(tareas);
     const valores = { horarioDias: dias, horarioEntrada: entrada, horarioSalida: salida,
       horarioDesde: !dias || !entrada ? '' : cambio ? diaDe_(new Date()) : (antes.horarioDesde || diaDe_(new Date())) };
     Object.keys(valores).forEach(k => sh.getRange(filaN, columna_(sh, k)).setNumberFormat('@').setValue(valores[k]));
@@ -545,6 +555,7 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
     calculado, explicacion, ajustes: ajs, totalAjustes, total,
     pagos, pagado, saldo: total - pagado,
     desafios: desafiosGanados, totalDesafios, presentismo,
+    tareas: resumenTareas_(e, mes),
     asistencia: asistencia_(e, mes, marcajes),
     turnos: detalle.reverse(),
   };
@@ -578,6 +589,7 @@ function empleados_() {
     valorEvento: e.valorEvento === '' || e.valorEvento == null ? '' : Number(e.valorEvento),
     horarioDias: String(e.horarioDias || ''), horarioEntrada: hhmm_(e.horarioEntrada), horarioSalida: hhmm_(e.horarioSalida),
     horarioDesde: e.horarioDesde instanceof Date ? diaDe_(e.horarioDesde) : String(e.horarioDesde || ''),
+    tareas: String(e.tareas || '').split('\n').map(t => t.trim()).filter(Boolean),
   }));
 }
 
@@ -684,6 +696,28 @@ function asistencia_(e, mes, marcajes) {
   const nombres = { L: 'lun', M: 'mar', X: 'mié', J: 'jue', V: 'vie', S: 'sáb', D: 'dom' };
   const txtDias = e.horarioDias === 'L,M,X,J,V' ? 'lunes a viernes' : ctx.dias.map(dd => nombres[dd]).join(', ');
   return { faltas, tardes, hoyNoLlego, horario: `entra ${txtDias} a las ${e.horarioEntrada}` };
+}
+
+/* ───────────────────────── Lista de tareas diarias ───────────────────────── */
+let _tareas = null;
+function registrosTareas_() {
+  if (_tareas) return _tareas;
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Tareas');
+  if (!sh) return (_tareas = []);
+  const lista = v => String(v || '').split(' | ').map(t => t.trim()).filter(Boolean);
+  _tareas = filas_('Tareas').map(t => ({ fecha: t.fecha instanceof Date ? diaDe_(t.fecha) : String(t.fecha),
+    empleadoId: String(t.empleadoId), hechas: lista(t.hechas), pendientes: lista(t.pendientes) }));
+  return _tareas;
+}
+
+function resumenTareas_(e, mes) {
+  if (!e.tareas || !e.tareas.length) return null;
+  const regs = registrosTareas_().filter(t => t.empleadoId === e.id && t.fecha.slice(0, 7) === mes)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  return {
+    lista: e.tareas, dias: regs.length, completos: regs.filter(t => !t.pendientes.length).length,
+    incompletos: regs.filter(t => t.pendientes.length).slice(0, 10).map(t => ({ fecha: t.fecha, pendientes: t.pendientes })),
+  };
 }
 
 /* ───────────────────────── Premio presentismo (semanal) ───────────────────────── */

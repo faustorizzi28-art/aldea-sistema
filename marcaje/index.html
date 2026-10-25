@@ -149,6 +149,8 @@
   .foto-mini{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--borde);flex-shrink:0;}
   .ideas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
   .ideas button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:6px 9px;font-size:12px;font-weight:600;text-align:left;}
+  .ck{display:flex;align-items:center;gap:12px;padding:12px;border:1.5px solid var(--borde);border-radius:12px;margin-bottom:8px;background:#fff;font-size:14.5px;font-weight:600;}
+  .ck input{width:24px;height:24px;flex-shrink:0;accent-color:var(--ok);}
   .dias-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
   .dias-sel button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--borde);background:#fff;font-weight:800;font-size:14px;color:var(--gris);}
   .dias-sel button.on{background:var(--marca);border-color:var(--marca);color:#fff;}
@@ -228,6 +230,12 @@
       <div class="sub" id="emp-timer-sub"></div>
       <button class="marcar" id="btn-marcar" onclick="marcar()">…</button>
       <div class="msg" id="marcar-msg"></div>
+    </div>
+
+    <div class="card oculto" id="emp-tareas-card">
+      <h2>📝 Tus tareas de hoy</h2>
+      <div class="sub" style="margin-bottom:8px;">Las vas a tildar al marcar la salida.</div>
+      <div id="emp-tareas"></div>
     </div>
 
     <div class="card oculto" id="emp-desafios-card">
@@ -474,6 +482,9 @@
         <div><div class="ayuda" style="margin:0 0 4px;">Sale</div><input id="me-hsal" type="time"/></div>
       </div>
       <div class="ayuda">Dejalo vacío si no tiene horario fijo (profes, eventos). Se avisa si llega más de 10 min tarde.</div></div>
+    <div class="field"><label>Tareas diarias (una por línea, las tilda al marcar la salida)</label>
+      <div class="presets" style="margin-bottom:6px;"><button type="button" onclick="presetRecorrida()">🧹 Recorrida del predio</button></div>
+      <textarea id="me-tareas" rows="4" placeholder="Juntar sillas y mesas que quedaron afuera"></textarea></div>
     <div class="field"><label>Notas</label><textarea id="me-notas" rows="2"></textarea></div>
     <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:14px;"><input type="checkbox" id="me-activo" style="width:20px;height:20px;"/> Activo (aparece en la lista para marcar)</label>
     <div class="grid2">
@@ -521,6 +532,18 @@
       <button class="btn" onclick="guardarAjuste()">Guardar</button>
     </div>
     <div class="msg" id="ma-msg"></div>
+  </div>
+</div>
+
+<div class="modal oculto" id="m-checklist">
+  <div class="caja">
+    <h3>📝 Antes de irte: ¿qué hiciste hoy?</h3>
+    <p class="sub" style="margin-bottom:12px;">Tildá lo que hiciste. Si algo no pudiste, dejalo sin tildar.</p>
+    <div id="ck-lista"></div>
+    <div class="grid2" style="margin-top:14px;">
+      <button class="btn ghost" onclick="cerrarModal('m-checklist')">Volver</button>
+      <button class="btn" style="background:var(--naranja);" onclick="confirmarChecklist()">Marcar SALIDA</button>
+    </div>
   </div>
 </div>
 
@@ -746,7 +769,7 @@ function mostrarEmpleado(j, ses){
   chip.classList.toggle('dentro', j.adentro);
   $('emp-chip-txt').textContent = j.adentro ? 'Trabajando' : 'Fuera de turno';
   const b = $('btn-marcar');
-  b.disabled = false; b.onclick = marcar;
+  b.disabled = false; b.onclick = () => marcar();
   b.classList.toggle('salida', j.adentro);
   b.innerHTML = j.adentro ? 'Marcar SALIDA<small>Terminar mi turno</small>' : 'Marcar ENTRADA<small>Empezar mi turno</small>';
   if(j.adentro){
@@ -758,6 +781,7 @@ function mostrarEmpleado(j, ses){
   tick();
   pintarMesEmp(j);
   pintarDesafiosEmp(j.desafios || []);
+  pintarTareasEmp(j);
 }
 
 function pintarMesEmp(j){
@@ -841,10 +865,12 @@ function ayudaUbicacionAproximada(){
 }
 
 let marcando = false;
-async function marcar(){
+async function marcar(tareasHechas){
   if(marcando || !estadoEmp) return;
   const esperado = estadoEmp.adentro ? 'SALIDA' : 'ENTRADA';
-  if(esperado==='SALIDA' && !confirm('¿Marcar la SALIDA y terminar tu turno?')) return;
+  const tareas = (estadoEmp.empleado && estadoEmp.empleado.tareas) || [];
+  if(esperado==='SALIDA' && tareas.length && tareasHechas===undefined){ abrirChecklist(tareas); return; }
+  if(esperado==='SALIDA' && !tareas.length && !confirm('¿Marcar la SALIDA y terminar tu turno?')) return;
   marcando = true;
   const b = $('btn-marcar'); b.disabled = true; b.innerHTML = '📍 Buscando tu ubicación…';
   msg('marcar-msg','');
@@ -852,7 +878,7 @@ async function marcar(){
   try{
     c = await obtenerUbicacion(prec => { b.innerHTML = `📍 Afinando el GPS… ±${Math.round(prec)} m`; });
     b.innerHTML = 'Marcando…';
-    const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c.latitude, lng:c.longitude, precision:c.accuracy, esperado, mes: mesHoy() }));
+    const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c.latitude, lng:c.longitude, precision:c.accuracy, esperado, mes: mesHoy(), tareas: tareasHechas ? {hechas: tareasHechas} : undefined }));
     vibrar([40,60,40]);
     mesEmp = mesHoy();
     mostrarEmpleado(j, sesionEmp);
@@ -957,6 +983,7 @@ function pintarResumen(){
       ${l.totalDesafios ? `<div class="sub" style="margin-top:2px;">🎯 Desafíos: <b>+${fmt(l.totalDesafios)}</b> (${l.desafios.length})</div>` : ''}
       ${l.presentismo ? `<div class="sub" style="margin-top:2px;">⭐ Presentismo: ${l.presentismo.ganadas} de ${l.presentismo.semanas.length} semana${l.presentismo.semanas.length===1?'':'s'}${l.presentismo.monto?` · <b>+${fmt(l.presentismo.monto)}</b>`:''}${l.presentismo.semanas.filter(w=>!w.gana).map(w=>` · perdió ${new Date(w.desde+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'numeric'})} (${w.motivo})`).join('')}</div>` : ''}
       ${l.asistencia && (l.asistencia.faltas.length || l.asistencia.tardes.length) ? `<div class="sub" style="margin-top:2px;color:#123F6B;">🕐 ${l.asistencia.faltas.length} falta${l.asistencia.faltas.length===1?'':'s'} · ${l.asistencia.tardes.length} llegada${l.asistencia.tardes.length===1?'':'s'} tarde</div>` : ''}
+      ${l.tareas ? `<div class="sub" style="margin-top:2px;">📝 Tareas: <b>${l.tareas.completos} de ${l.tareas.dias}</b> día${l.tareas.dias===1?'':'s'} completas${l.tareas.incompletos.length?` · última sin hacer (${new Date(l.tareas.incompletos[0].fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'numeric'})}): ${esc(l.tareas.incompletos[0].pendientes.join(', '))}`:''}</div>` : ''}
       ${l.pagado ? `<div class="pagado"><span>💵 Ya pagado <b>${fmt(l.pagado)}</b></span><span>Falta pagar <b>${fmt(l.saldo)}</b></span></div>` : ''}
       <div class="acc">
         <button class="btn chico ghost" onclick="recibo('${l.empleadoId}')">🧾 Recibo</button>
@@ -1047,6 +1074,9 @@ let diasSel = new Set();
 function pintarDiasSel(){
   $('me-dias').innerHTML = DIAS_LETRA.map(d => `<button type="button" class="${diasSel.has(d)?'on':''}" onclick="toggleDia('${d}')">${d}</button>`).join('');
 }
+function presetRecorrida(){
+  $('me-tareas').value = ['Juntar sillas y mesas que quedaron afuera','Levantar basura y botellas de canchas, patio y estacionamiento','Vaciar los tachos de afuera y cambiar bolsas','Revisar baños de afuera y vestuarios','Limpiar asadores (sacar ceniza)','Avisar con foto si algo está roto'].join('\n');
+}
 function toggleDia(d){ diasSel.has(d) ? diasSel.delete(d) : diasSel.add(d); pintarDiasSel(); }
 function abrirEmpleado(id){
   const e = id ? adm.empleados.find(x=>x.id===id) : null;
@@ -1062,6 +1092,7 @@ function abrirEmpleado(id){
   $('me-ev').value = e && e.valorEvento ? e.valorEvento : '';
   $('me-tel').value = e ? e.telefono : '';
   $('me-notas').value = e ? e.notas : '';
+  $('me-tareas').value = e && e.tareas ? e.tareas.join('\n') : '';
   diasSel = new Set(e && e.horarioDias ? e.horarioDias.split(',') : []);
   pintarDiasSel();
   $('me-hent').value = e && e.horarioEntrada ? e.horarioEntrada : '';
@@ -1076,6 +1107,7 @@ async function guardarEmpleado(){
     id: $('me-id').value || undefined, nombre: $('me-nombre').value, area: $('me-area').value, pin: $('me-pin').value,
     formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value, valorEvento: $('me-ev').value,
     telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked,
+    tareas: $('me-tareas').value,
     horarioDias: DIAS_LETRA.filter(d => diasSel.has(d)).join(','), horarioEntrada: $('me-hent').value, horarioSalida: $('me-hsal').value,
   };
   if(empleado.valor===''){ msg('me-msg','Falta el valor.','err'); return; }
@@ -1169,6 +1201,24 @@ async function borrarAjuste(id){
   if(!confirm('¿Borrar este extra/descuento?')) return;
   try{ const empId = $('ma-emp').value; await apiAdm('borrarAjuste', {id}); await cargarAdmin(); abrirAjuste(empId); }
   catch(e){ msg('ma-msg', e.message, 'err'); }
+}
+
+/* ───── Tareas diarias (empleado) ───── */
+function abrirChecklist(tareas){
+  $('ck-lista').innerHTML = tareas.map((t,i) => `<label class="ck"><input type="checkbox" data-t="${esc(t)}"/> ${esc(t)}</label>`).join('');
+  $('m-checklist').classList.remove('oculto');
+}
+function confirmarChecklist(){
+  const hechas = [...document.querySelectorAll('#ck-lista input:checked')].map(i => i.dataset.t);
+  const total = document.querySelectorAll('#ck-lista input').length;
+  if(hechas.length < total && !confirm(`Te ${total-hechas.length===1?'quedó 1 tarea':'quedaron '+(total-hechas.length)+' tareas'} sin tildar. ¿Marcar la salida igual?`)) return;
+  cerrarModal('m-checklist');
+  marcar(hechas);
+}
+function pintarTareasEmp(j){
+  const tareas = (j.empleado && j.empleado.tareas) || [];
+  $('emp-tareas-card').classList.toggle('oculto', !(tareas.length && j.adentro));
+  $('emp-tareas').innerHTML = tareas.map(t => `<div class="turno"><span>☐ ${esc(t)}</span></div>`).join('');
 }
 
 /* ───── Desafíos (empleado) ───── */
