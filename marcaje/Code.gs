@@ -180,7 +180,7 @@ function accEstado_(d) {
   const liq = liquidarEmpleado_(e, mes, marcajes, ajustes_());
   return {
     ok: true,
-    empleado: { id: e.id, nombre: e.nombre, area: e.area, formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor: e.valor, horasSemana: e.horasSemana, tareas: e.tareas },
+    empleado: { id: e.id, nombre: e.nombre, area: e.area, formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor: e.valor, horasSemana: e.horasSemana, tareas: e.tareas, marcaFuera: e.marcaFuera },
     adentro: !!abierto,
     desde: abierto ? abierto.fechaHora.toISOString() : null,
     ahora: new Date().toISOString(),
@@ -201,14 +201,18 @@ function accMarcar_(d) {
     if (cfg.centroLat === '' || cfg.centroLng === '') {
       return { ok: false, error: 'Todavía no se fijó la ubicación de Aldea. Avisale al administrador.' };
     }
+    // Trabajo fuera del predio (desde casa, traslados, compras): solo para quien lo tenga habilitado.
+    const motivoFuera = e.marcaFuera && d.fuera ? String(d.motivo || '').trim() : '';
+    if (e.marcaFuera && d.fuera && !motivoFuera) return { ok: false, error: 'Contá qué trabajo hiciste fuera de Aldea.' };
     const lat = Number(d.lat), lng = Number(d.lng);
-    if (!isFinite(lat) || !isFinite(lng) || (lat === 0 && lng === 0)) {
+    const hayGps = isFinite(lat) && isFinite(lng) && !(lat === 0 && lng === 0) && d.lat != null;
+    if (!hayGps && !motivoFuera) {
       return { ok: false, error: 'No llegó tu ubicación. Activá el GPS y probá de nuevo.' };
     }
     const radio = Number(cfg.radio) || 100;
-    const dist = Math.round(distanciaM_(lat, lng, Number(cfg.centroLat), Number(cfg.centroLng)));
-    if (dist > radio) {
-      return { ok: false, fuera: true, distancia: dist, radio,
+    const dist = hayGps ? Math.round(distanciaM_(lat, lng, Number(cfg.centroLat), Number(cfg.centroLng))) : '';
+    if (!motivoFuera && dist > radio) {
+      return { ok: false, fuera: true, distancia: dist, radio, puedeFuera: !!e.marcaFuera,
         error: `Estás a ${formatoDist_(dist)} de Aldea. Para marcar tenés que estar a menos de ${radio} m.` };
     }
     const abierto = turnoAbierto_(marcajes_(), e.id);
@@ -218,7 +222,8 @@ function accMarcar_(d) {
       return { ok: false, refrescar: true, error: tipo === 'SALIDA' ? 'Ya tenías la entrada marcada. Revisá y marcá la salida.' : 'Ya tenías la salida marcada. Revisá y marcá la entrada.' };
     }
     const ahora = new Date();
-    hoja_('Marcajes').appendRow([uid_(), e.id, e.nombre, tipo, ahora, lat, lng, dist, Math.round(Number(d.precision) || 0), 'gps', '']);
+    hoja_('Marcajes').appendRow([uid_(), e.id, e.nombre, tipo, ahora, hayGps ? lat : '', hayGps ? lng : '', dist,
+      hayGps ? Math.round(Number(d.precision) || 0) : '', motivoFuera ? 'fuera' : 'gps', motivoFuera]);
     // Lista de tareas del día: se registra al marcar la salida.
     if (tipo === 'SALIDA' && e.tareas.length && d.tareas) {
       const hechas = (d.tareas.hechas || []).map(String).filter(t => e.tareas.includes(t));
@@ -320,6 +325,7 @@ function accGuardarEmpleado_(d) {
     const cambio = dias !== (antes.horarioDias || '') || entrada !== (antes.horarioEntrada || '');
     const tareas = String(x.tareas || '').split('\n').map(t => t.trim()).filter(Boolean).slice(0, 15).join('\n');
     sh.getRange(filaN, columna_(sh, 'tareas')).setNumberFormat('@').setValue(tareas);
+    sh.getRange(filaN, columna_(sh, 'marcaFuera')).setValue(x.marcaFuera === true);
     const valores = { horarioDias: dias, horarioEntrada: entrada, horarioSalida: salida,
       horarioDesde: !dias || !entrada ? '' : cambio ? diaDe_(new Date()) : (antes.horarioDesde || diaDe_(new Date())) };
     Object.keys(valores).forEach(k => sh.getRange(filaN, columna_(sh, k)).setNumberFormat('@').setValue(valores[k]));
@@ -590,6 +596,7 @@ function empleados_() {
     horarioDias: String(e.horarioDias || ''), horarioEntrada: hhmm_(e.horarioEntrada), horarioSalida: hhmm_(e.horarioSalida),
     horarioDesde: e.horarioDesde instanceof Date ? diaDe_(e.horarioDesde) : String(e.horarioDesde || ''),
     tareas: String(e.tareas || '').split('\n').map(t => t.trim()).filter(Boolean),
+    marcaFuera: e.marcaFuera === true || String(e.marcaFuera).toUpperCase() === 'TRUE',
   }));
 }
 

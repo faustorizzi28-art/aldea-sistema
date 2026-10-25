@@ -230,6 +230,7 @@
       <div class="sub" id="emp-timer-sub"></div>
       <button class="marcar" id="btn-marcar" onclick="marcar()">…</button>
       <div class="msg" id="marcar-msg"></div>
+      <button class="btn ghost full oculto" id="btn-fuera" style="margin-top:10px;" onclick="marcarFuera()">🚗 Estoy trabajando fuera de Aldea</button>
     </div>
 
     <div class="card oculto" id="emp-tareas-card">
@@ -486,7 +487,8 @@
       <div class="presets" style="margin-bottom:6px;"><button type="button" onclick="presetRecorrida()">🧹 Recorrida del predio</button></div>
       <textarea id="me-tareas" rows="4" placeholder="Juntar sillas y mesas que quedaron afuera"></textarea></div>
     <div class="field"><label>Notas</label><textarea id="me-notas" rows="2"></textarea></div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:14px;"><input type="checkbox" id="me-activo" style="width:20px;height:20px;"/> Activo (aparece en la lista para marcar)</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:8px;"><input type="checkbox" id="me-activo" style="width:20px;height:20px;"/> Activo (aparece en la lista para marcar)</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:14px;"><input type="checkbox" id="me-fuera" style="width:20px;height:20px;"/> Puede marcar trabajo fuera de Aldea (desde casa, traslados, compras)</label>
     <div class="grid2">
       <button class="btn ghost" onclick="cerrarModal('m-empleado')">Cancelar</button>
       <button class="btn" onclick="guardarEmpleado()">Guardar</button>
@@ -782,6 +784,8 @@ function mostrarEmpleado(j, ses){
   pintarMesEmp(j);
   pintarDesafiosEmp(j.desafios || []);
   pintarTareasEmp(j);
+  $('btn-fuera').classList.toggle('oculto', !(j.empleado && j.empleado.marcaFuera));
+  $('btn-fuera').textContent = j.adentro ? '🚗 Marcar salida (trabajo fuera de Aldea)' : '🚗 Estoy trabajando fuera de Aldea';
 }
 
 function pintarMesEmp(j){
@@ -865,20 +869,23 @@ function ayudaUbicacionAproximada(){
 }
 
 let marcando = false;
-async function marcar(tareasHechas){
+async function marcar(tareasHechas, motivoFuera){
   if(marcando || !estadoEmp) return;
   const esperado = estadoEmp.adentro ? 'SALIDA' : 'ENTRADA';
   const tareas = (estadoEmp.empleado && estadoEmp.empleado.tareas) || [];
-  if(esperado==='SALIDA' && tareas.length && tareasHechas===undefined){ abrirChecklist(tareas); return; }
-  if(esperado==='SALIDA' && !tareas.length && !confirm('¿Marcar la SALIDA y terminar tu turno?')) return;
+  if(esperado==='SALIDA' && tareas.length && tareasHechas===undefined && !motivoFuera){ abrirChecklist(tareas); return; }
+  if(esperado==='SALIDA' && !tareas.length && !motivoFuera && !confirm('¿Marcar la SALIDA y terminar tu turno?')) return;
   marcando = true;
   const b = $('btn-marcar'); b.disabled = true; b.innerHTML = '📍 Buscando tu ubicación…';
   msg('marcar-msg','');
   let c = null;
   try{
-    c = await obtenerUbicacion(prec => { b.innerHTML = `📍 Afinando el GPS… ±${Math.round(prec)} m`; });
+    // Fuera de Aldea la ubicación es opcional: si el GPS no responde, se marca igual con el motivo.
+    if(motivoFuera){ try{ c = await obtenerUbicacion(); }catch(_){ c = null; } }
+    else c = await obtenerUbicacion(prec => { b.innerHTML = `📍 Afinando el GPS… ±${Math.round(prec)} m`; });
     b.innerHTML = 'Marcando…';
-    const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c.latitude, lng:c.longitude, precision:c.accuracy, esperado, mes: mesHoy(), tareas: tareasHechas ? {hechas: tareasHechas} : undefined }));
+    const j = await api('marcar', Object.assign({}, sesionEmp, { lat:c?c.latitude:null, lng:c?c.longitude:null, precision:c?c.accuracy:null, esperado, mes: mesHoy(),
+      tareas: tareasHechas ? {hechas: tareasHechas} : undefined, fuera: !!motivoFuera, motivo: motivoFuera || '' }));
     vibrar([40,60,40]);
     mesEmp = mesHoy();
     mostrarEmpleado(j, sesionEmp);
@@ -1007,7 +1014,7 @@ function pintarMarcajes(){
   lista.forEach(m => {
     const d = new Date(m.fechaHora).toDateString();
     if(d!==diaPrev){ html += `<div class="dia-tit">${diaLargo(m.fechaHora)}</div>`; diaPrev = d; }
-    const extra = m.origen==='manual' ? `<span class="tag manual" title="${esc(m.nota)}">manual</span>` : (m.distancia!=='' && m.distancia!=null ? `<span class="tag">${m.distancia} m</span>` : '');
+    const extra = m.origen==='fuera' ? `<span class="tag warn">🚗 fuera: ${esc(m.nota)}</span>` : m.origen==='manual' ? `<span class="tag manual" title="${esc(m.nota)}">manual</span>` : (m.distancia!=='' && m.distancia!=null ? `<span class="tag">${m.distancia} m</span>` : '');
     html += `<div class="marc">
       <div><span class="mono" style="font-weight:600;">${hora(m.fechaHora)}</span> · <b>${esc(m.nombre)}</b>
         <div><span class="tag ${m.tipo==='ENTRADA'?'ok':'warn'}">${m.tipo==='ENTRADA'?'Entrada':'Salida'}</span> ${extra}${m.nota && m.origen==='manual' ? ` <span class="sub">${esc(m.nota)}</span>`:''}</div></div>
@@ -1098,6 +1105,7 @@ function abrirEmpleado(id){
   $('me-hent').value = e && e.horarioEntrada ? e.horarioEntrada : '';
   $('me-hsal').value = e && e.horarioSalida ? e.horarioSalida : '';
   $('me-activo').checked = e ? e.activo : true;
+  $('me-fuera').checked = !!(e && e.marcaFuera);
   if(!e) pinAzar();
   actualizarFormaPago(); msg('me-msg','');
   $('m-empleado').classList.remove('oculto');
@@ -1106,7 +1114,7 @@ async function guardarEmpleado(){
   const empleado = {
     id: $('me-id').value || undefined, nombre: $('me-nombre').value, area: $('me-area').value, pin: $('me-pin').value,
     formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value, valorEvento: $('me-ev').value,
-    telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked,
+    telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked, marcaFuera: $('me-fuera').checked,
     tareas: $('me-tareas').value,
     horarioDias: DIAS_LETRA.filter(d => diasSel.has(d)).join(','), horarioEntrada: $('me-hent').value, horarioSalida: $('me-hsal').value,
   };
@@ -1214,6 +1222,15 @@ function confirmarChecklist(){
   if(hechas.length < total && !confirm(`Te ${total-hechas.length===1?'quedó 1 tarea':'quedaron '+(total-hechas.length)+' tareas'} sin tildar. ¿Marcar la salida igual?`)) return;
   cerrarModal('m-checklist');
   marcar(hechas);
+}
+function marcarFuera(){
+  const esperado = estadoEmp.adentro ? 'SALIDA' : 'ENTRADA';
+  const motivo = prompt(esperado==='ENTRADA'
+    ? '¿Qué trabajo vas a hacer fuera de Aldea?\n(ej: compras para la cantina, traslado de mercadería, trabajo desde casa: redes / sistema)'
+    : '¿Qué trabajo hiciste fuera de Aldea? (queda anotado con la salida)', estadoEmp.ultimoMotivo || '');
+  if(!motivo || !motivo.trim()) return;
+  estadoEmp.ultimoMotivo = motivo.trim();
+  marcar(undefined, motivo.trim());
 }
 function pintarTareasEmp(j){
   const tareas = (j.empleado && j.empleado.tareas) || [];
