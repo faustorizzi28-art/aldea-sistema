@@ -251,7 +251,7 @@ function accGuardarEmpleado_(d) {
     if (!FORMAS_PAGO[x.formaPago]) return { ok: false, error: 'Forma de pago inválida.' };
     const valor = Number(x.valor);
     if (!(valor >= 0)) return { ok: false, error: 'El valor tiene que ser un número.' };
-    const valorEvento = x.formaPago === 'hora' && x.valorEvento !== '' && x.valorEvento != null ? Number(x.valorEvento) : '';
+    const valorEvento = (x.formaPago === 'hora' || x.formaPago === 'mensual') && x.valorEvento !== '' && x.valorEvento != null ? Number(x.valorEvento) : '';
     if (valorEvento !== '' && !(valorEvento >= 0)) return { ok: false, error: 'El valor por hora en eventos tiene que ser un número.' };
     const emps = empleados_();
     if (emps.some(e => e.id !== x.id && e.activo && e.nombre.toLowerCase() === nombre.toLowerCase())) {
@@ -407,7 +407,8 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
   const turnos = turnos_(marcajes, e.id).filter(t => mesDe_((t.entrada || t.salida).fechaHora) === mes);
   let horas = 0, horasEvento = 0, eventos = 0, sinSalida = 0;
   const dias = {};
-  const tarifaEvento = e.formaPago === 'hora' && Number(e.valorEvento) > 0;
+  // Por hora: las horas de evento se pagan a otro valor. Mensual: se pagan aparte, además del sueldo fijo.
+  const tarifaEvento = (e.formaPago === 'hora' || e.formaPago === 'mensual') && Number(e.valorEvento) > 0;
   const detalle = turnos.map(t => {
     const h = t.entrada && t.salida ? (t.salida.fechaHora - t.entrada.fechaHora) / 3600000 : 0;
     // Turno de evento: empezó un sábado, domingo o un día marcado como evento. Va entero a la tarifa de evento.
@@ -444,6 +445,10 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
     case 'mensual':
       if (e.creado && mes < mesDe_(e.creado) && !turnos.length) {
         explicacion = 'Todavía no estaba en el equipo';
+      } else if (tarifaEvento && horasEvento > 0) {
+        const ve = Number(e.valorEvento);
+        calculado = valor + horasEvento * ve;
+        explicacion = `Sueldo fijo ${fmtPesos_(valor)} + ${fmtHoras_(horasEvento)} de fin de semana/evento × ${fmtPesos_(ve)}`;
       } else {
         calculado = valor;
         explicacion = `Sueldo fijo mensual (${fmtHoras_(horas)} registradas)`;

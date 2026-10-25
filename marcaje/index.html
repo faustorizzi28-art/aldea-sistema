@@ -851,7 +851,7 @@ function pintarEquipo(){
     <div class="emp ${e.activo?'':'inactivo'}">
       <div class="top">
         <div><div class="nom">${esc(e.nombre)} ${e.activo?'':'<span class="tag">inactivo</span>'}</div>
-          <div class="sub">${esc(e.area||'Sin área')} · ${esc(adm.formasPago[e.formaPago]||e.formaPago)}: <b>${fmt(e.valor)}</b>${e.formaPago==='hora'?'/h'+(e.valorEvento?` · eventos <b>${fmt(e.valorEvento)}</b>/h`:''):e.formaPago==='semanal'?`/semana (${e.horasSemana||'?'} h)`:e.formaPago==='evento'?'/evento':'/mes'}</div>
+          <div class="sub">${esc(e.area||'Sin área')} · ${esc(adm.formasPago[e.formaPago]||e.formaPago)}: <b>${fmt(e.valor)}</b>${e.formaPago==='hora'?'/h'+(e.valorEvento?` · eventos <b>${fmt(e.valorEvento)}</b>/h`:''):e.formaPago==='mensual'&&e.valorEvento?`/mes + <b>${fmt(e.valorEvento)}</b>/h en fines de semana`:e.formaPago==='semanal'?`/semana (${e.horasSemana||'?'} h)`:e.formaPago==='evento'?'/evento':'/mes'}</div>
           ${e.notas?`<div class="sub" style="margin-top:2px;">${esc(e.notas)}</div>`:''}</div>
         <div class="mono" style="font-size:13px;color:var(--gris);" title="PIN">PIN ${esc(e.pin)}</div>
       </div>
@@ -877,7 +877,8 @@ function actualizarFormaPago(){
   const f = $('me-forma').value;
   $('me-valor-lbl').textContent = {hora:'Valor por hora ($)', mensual:'Sueldo por mes ($)', semanal:'Valor por semana ($)', evento:'Valor por evento ($)'}[f];
   $('me-hs-box').classList.toggle('oculto', f!=='semanal');
-  $('me-ev-box').classList.toggle('oculto', f!=='hora');
+  $('me-ev-box').classList.toggle('oculto', f!=='hora' && f!=='mensual');
+  $('me-ev-box').querySelector('label').textContent = f==='mensual' ? 'Extra por hora en fines de semana / eventos ($)' : 'Valor por hora en eventos ($)';
   $('me-forma-ayuda').textContent = {
     hora:'Se paga cada hora marcada.',
     mensual:'Cobra lo mismo todos los meses. Marca igual para que quede el registro.',
