@@ -20,6 +20,7 @@ const HOJAS = {
   Config:    ['clave', 'valor', 'descripcion'],
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
   Pagos:     ['id', 'mes', 'fecha', 'empleadoId', 'nombre', 'tipo', 'monto', 'nota', 'creado'],
+  Desafios:  ['id', 'titulo', 'detalle', 'premio', 'para', 'vence', 'estado', 'empleadoId', 'nombre', 'tomado', 'hecho', 'foto', 'mes', 'creado'],
 };
 
 const FORMAS_PAGO = {
@@ -78,6 +79,14 @@ function setup() {
   ss.toast('Listo. Los PIN de cada empleado están en la hoja Empleados.', 'Aldea — Marcaje', 8);
 }
 
+/** Ejecutar UNA vez desde el editor después de actualizar: pide permiso para guardar las fotos de los desafíos en Drive. */
+function autorizarFotos() {
+  DriveApp.getRootFolder();
+  hojaOCrear_('Desafios');
+  hojaOCrear_('Pagos');
+  SpreadsheetApp.getActive().toast('Listo: permisos dados y hojas creadas.', 'Aldea — Marcaje', 6);
+}
+
 /* ───────────────────────── Entrada HTTP ───────────────────────── */
 
 function doGet(e) {
@@ -112,6 +121,12 @@ function manejar_(d) {
       borrarMarcaje: conAdmin_(accBorrarMarcaje_),
       guardarAjuste: conAdmin_(accGuardarAjuste_),
       borrarAjuste: conAdmin_(accBorrarAjuste_),
+      tomarDesafio: accTomarDesafio_,
+      soltarDesafio: accSoltarDesafio_,
+      terminarDesafio: accTerminarDesafio_,
+      guardarDesafio: conAdmin_(accGuardarDesafio_),
+      borrarDesafio: conAdmin_(accBorrarDesafio_),
+      revisarDesafio: conAdmin_(accRevisarDesafio_),
       guardarPago: conAdmin_(accGuardarPago_),
       borrarPago: conAdmin_(accBorrarPago_),
       guardarConfig: conAdmin_(accGuardarConfig_),
@@ -169,6 +184,7 @@ function accEstado_(d) {
     ahora: new Date().toISOString(),
     mes,
     liquidacion: liq,
+    desafios: desafiosDe_(e),
     ubicacionLista: cfg.centroLat !== '' && cfg.centroLng !== '',
     radio: Number(cfg.radio) || 100,
   };
@@ -239,6 +255,11 @@ function accAdminDatos_(d) {
     config: { centroLat: cfg.centroLat, centroLng: cfg.centroLng, radio: Number(cfg.radio) || 100, direccion: cfg.direccion, nombreLugar: cfg.nombreLugar, diasEvento: Array.from(diasEvento_()), diasLibres: listaConfig_('diasLibres') },
     liquidacionGuardada: !!guardada,
     formasPago: FORMAS_PAGO,
+    desafios: desafios_().filter(x => x.estado === 'abierto' || x.estado === 'tomado' || x.estado === 'hecho' || x.mes === mes)
+      .map(x => Object.assign({}, x, { _fila: undefined })),
+    topeDesafios: topeDesafios_(),
+    usadoDesafios: desafios_().filter(x => x.estado === 'aprobado' && x.mes === mes).reduce((a, x) => a + x.premio, 0),
+    premioPresentismo: premioPresentismo_(),
   };
 }
 
@@ -355,6 +376,8 @@ function accGuardarConfig_(d) {
     cambios.radio = Math.round(r);
   }
   if ('nombreLugar' in c) cambios.nombreLugar = String(c.nombreLugar).trim() || 'Aldea de Valle';
+  if ('topeDesafios' in c) cambios.topeDesafios = Math.max(0, Math.round(Number(c.topeDesafios) || 0));
+  if ('premioPresentismo' in c) cambios.premioPresentismo = Math.max(0, Math.round(Number(c.premioPresentismo) || 0));
   ['diasEvento', 'diasLibres'].forEach(k => {
     if (!(k in c)) return;
     const lista = (Array.isArray(c[k]) ? c[k] : []).map(String).filter(f => /^\d{4}-\d{2}-\d{2}$/.test(f));
@@ -383,15 +406,16 @@ function accGuardarLiquidacion_(d) {
   const nombre = 'Liquidación ' + mes;
   let sh = ss.getSheetByName(nombre);
   if (sh) sh.clear(); else sh = ss.insertSheet(nombre);
-  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes', 'Horas de evento', 'Valor hora evento', 'Cálculo', 'Ya pagado', 'Saldo a pagar', 'Faltas', 'Llegadas tarde'];
+  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes', 'Horas de evento', 'Valor hora evento', 'Cálculo', 'Ya pagado', 'Saldo a pagar', 'Faltas', 'Llegadas tarde', 'Desafíos', 'Presentismo'];
   const filas = liq.map(l => [l.nombre, l.area, l.formaPagoTexto, l.valor, l.horas, l.dias, l.eventos, l.calculado, l.totalAjustes, l.total, l.sinSalida,
     l.ajustes.map(a => `${a.concepto}: ${a.monto}`).join(' · '), l.horasEvento || '', l.valorEvento || '', l.explicacion, l.pagado, l.saldo,
-    l.asistencia ? l.asistencia.faltas.length : '', l.asistencia ? l.asistencia.tardes.length : '']);
+    l.asistencia ? l.asistencia.faltas.length : '', l.asistencia ? l.asistencia.tardes.length : '',
+    l.totalDesafios || '', l.presentismo ? l.presentismo.monto : '']);
   const total = liq.reduce((a, l) => a + l.total, 0);
   sh.appendRow(enc);
   if (filas.length) sh.getRange(2, 1, filas.length, enc.length).setValues(filas);
   sh.appendRow(['TOTAL', '', '', '', '', '', '', '', '', total, '', '', '', '', '',
-    liq.reduce((a, l) => a + l.pagado, 0), liq.reduce((a, l) => a + l.saldo, 0), '', '']);
+    liq.reduce((a, l) => a + l.pagado, 0), liq.reduce((a, l) => a + l.saldo, 0), '', '', '', '']);
   sh.appendRow(['Guardado el ' + Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy HH:mm')]);
   sh.getRange(1, 1, 1, enc.length).setFontWeight('bold').setBackground('#E3EDE4');
   sh.getRange(filas.length + 2, 1, 1, enc.length).setFontWeight('bold');
@@ -508,7 +532,11 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
   const pagos = pagos_().filter(p => p.empleadoId === e.id && p.mes === mes)
     .sort((a, b) => a.fecha.localeCompare(b.fecha)).map(p => ({ id: p.id, fecha: p.fecha, tipo: p.tipo, monto: p.monto, nota: p.nota }));
   const pagado = pagos.reduce((a, p) => a + p.monto, 0);
-  const total = calculado + totalAjustes;
+  const desafiosGanados = desafios_().filter(x => x.estado === 'aprobado' && x.empleadoId === e.id && x.mes === mes)
+    .map(x => ({ titulo: x.titulo, premio: x.premio, fecha: x.hecho }));
+  const totalDesafios = desafiosGanados.reduce((a, x) => a + x.premio, 0);
+  const presentismo = presentismo_(e, mes, marcajes);
+  const total = calculado + totalAjustes + totalDesafios + (presentismo ? presentismo.monto : 0);
   return {
     empleadoId: e.id, nombre: e.nombre, area: e.area, activo: e.activo, telefono: e.telefono,
     formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor, horasSemana: e.horasSemana,
@@ -516,6 +544,7 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
     horas, dias: Object.keys(dias).length, eventos, sinSalida,
     calculado, explicacion, ajustes: ajs, totalAjustes, total,
     pagos, pagado, saldo: total - pagado,
+    desafios: desafiosGanados, totalDesafios, presentismo,
     asistencia: asistencia_(e, mes, marcajes),
     turnos: detalle.reverse(),
   };
@@ -605,44 +634,237 @@ function hhmm_(v) {
 /* ───────────────────────── Asistencia (faltas y llegadas tarde) ───────────────────────── */
 const DIAS_LETRA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];   // lunes … domingo
 
-/** Compara el horario esperado de un empleado con sus entradas del mes. */
-function asistencia_(e, mes, marcajes) {
-  if (!e.horarioDias || !e.horarioEntrada) return null;
-  const dias = e.horarioDias.split(',');
-  const tolerancia = Number(config_().toleranciaMin) || 10;
-  const libres = listaConfig_('diasLibres');
+/** Datos para comparar el horario esperado de un empleado con lo que marcó. */
+function contextoAsistencia_(e, marcajes) {
   const [hE, mE] = e.horarioEntrada.split(':').map(Number);
-  const esperado = hE * 60 + mE;
-  const hoy = diaDe_(new Date());
-  const ahoraMin = Number(Utilities.formatDate(new Date(), TZ, 'H')) * 60 + Number(Utilities.formatDate(new Date(), TZ, 'm'));
   const primeras = {};
   marcajes.filter(m => m.empleadoId === e.id && m.tipo === 'ENTRADA').forEach(m => {
     const d = diaDe_(m.fechaHora);
     if (!primeras[d] || m.fechaHora < primeras[d]) primeras[d] = m.fechaHora;
   });
+  return { dias: e.horarioDias.split(','), esperado: hE * 60 + mE, primeras,
+    tolerancia: Number(config_().toleranciaMin) || 10, libres: listaConfig_('diasLibres'), desde: e.horarioDesde || '' };
+}
+
+/** null = ese día no le tocaba trabajar; si no { ok | falta | tarde, minutos, hora }. */
+function evaluarDia_(ctx, f) {
+  if (ctx.desde && f < ctx.desde) return null;
+  if (ctx.libres.includes(f)) return null;
+  const [y, m, d] = f.split('-').map(Number);
+  const dow = new Date(Date.UTC(y, m - 1, d, 15)).getUTCDay();          // 0 = domingo
+  if (!ctx.dias.includes(DIAS_LETRA[(dow + 6) % 7])) return null;
+  const ent = ctx.primeras[f];
+  if (!ent) return { estado: 'falta' };
+  const real = Number(Utilities.formatDate(ent, TZ, 'H')) * 60 + Number(Utilities.formatDate(ent, TZ, 'm'));
+  const minutos = real - ctx.esperado;
+  return minutos > ctx.tolerancia ? { estado: 'tarde', minutos, hora: Utilities.formatDate(ent, TZ, 'HH:mm') } : { estado: 'ok' };
+}
+
+function sumarDias_(f, n) {
+  const [y, m, d] = f.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n, 15)).toISOString().slice(0, 10);
+}
+
+/** Compara el horario esperado de un empleado con sus entradas del mes. */
+function asistencia_(e, mes, marcajes) {
+  if (!e.horarioDias || !e.horarioEntrada) return null;
+  const ctx = contextoAsistencia_(e, marcajes);
+  const hoy = diaDe_(new Date());
+  const ahoraMin = Number(Utilities.formatDate(new Date(), TZ, 'H')) * 60 + Number(Utilities.formatDate(new Date(), TZ, 'm'));
   const faltas = [], tardes = [];
   let hoyNoLlego = false;
-  const [y, mm] = mes.split('-').map(Number);
-  const ultimo = new Date(Date.UTC(y, mm, 0)).getUTCDate();
-  for (let dia = 1; dia <= ultimo; dia++) {
-    const f = `${mes}-${String(dia).padStart(2, '0')}`;
-    if (f > hoy) break;
-    if (e.horarioDesde && f < e.horarioDesde) continue;
-    if (libres.includes(f)) continue;
-    const dow = new Date(Date.UTC(y, mm - 1, dia, 15)).getUTCDay();          // 0 = domingo
-    if (!dias.includes(DIAS_LETRA[(dow + 6) % 7])) continue;
-    const ent = primeras[f];
-    if (!ent) {
+  for (let f = mes + '-01'; f.slice(0, 7) === mes && f <= hoy; f = sumarDias_(f, 1)) {
+    const r = evaluarDia_(ctx, f);
+    if (!r) continue;
+    if (r.estado === 'falta') {
       if (f < hoy) faltas.push(f);
-      else if (ahoraMin > esperado + tolerancia) hoyNoLlego = true;
-      continue;
-    }
-    const real = Number(Utilities.formatDate(ent, TZ, 'H')) * 60 + Number(Utilities.formatDate(ent, TZ, 'm'));
-    if (real - esperado > tolerancia) tardes.push({ fecha: f, minutos: real - esperado, hora: Utilities.formatDate(ent, TZ, 'HH:mm') });
+      else if (ahoraMin > ctx.esperado + ctx.tolerancia) hoyNoLlego = true;
+    } else if (r.estado === 'tarde') tardes.push({ fecha: f, minutos: r.minutos, hora: r.hora });
   }
   const nombres = { L: 'lun', M: 'mar', X: 'mié', J: 'jue', V: 'vie', S: 'sáb', D: 'dom' };
-  const txtDias = e.horarioDias === 'L,M,X,J,V' ? 'lunes a viernes' : dias.map(dd => nombres[dd]).join(', ');
+  const txtDias = e.horarioDias === 'L,M,X,J,V' ? 'lunes a viernes' : ctx.dias.map(dd => nombres[dd]).join(', ');
   return { faltas, tardes, hoyNoLlego, horario: `entra ${txtDias} a las ${e.horarioEntrada}` };
+}
+
+/* ───────────────────────── Premio presentismo (semanal) ───────────────────────── */
+function premioPresentismo_() {
+  const v = config_().premioPresentismo;
+  return v === '' || v == null ? 6000 : Number(v) || 0;
+}
+
+/**
+ * Por cada semana (lunes a domingo) que terminó dentro del mes: si le tocaba trabajar algún día,
+ * no faltó, no llegó tarde, no dejó turnos sin salida ni necesitó correcciones a mano → gana el premio.
+ */
+function presentismo_(e, mes, marcajes) {
+  const premio = premioPresentismo_();
+  if (!premio || !e.horarioDias || !e.horarioEntrada) return null;
+  const ctx = contextoAsistencia_(e, marcajes);
+  const hoy = diaDe_(new Date());
+  const propios = marcajes.filter(m => m.empleadoId === e.id);
+  const turnos = turnos_(marcajes, e.id);
+  const semanas = [];
+  for (let f = mes + '-01'; f.slice(0, 7) === mes; f = sumarDias_(f, 1)) {
+    const [y, m, d] = f.split('-').map(Number);
+    if (new Date(Date.UTC(y, m - 1, d, 15)).getUTCDay() !== 0) continue;   // domingos que cierran la semana
+    if (f >= hoy) break;
+    const lunes = sumarDias_(f, -6);
+    let tocaba = 0, ok = true, motivo = '';
+    for (let x = lunes; x <= f; x = sumarDias_(x, 1)) {
+      const r = evaluarDia_(ctx, x);
+      if (!r) continue;
+      tocaba++;
+      if (r.estado !== 'ok') { ok = false; motivo = r.estado === 'falta' ? 'faltó' : 'llegó tarde'; }
+    }
+    if (!tocaba) continue;
+    const enSemana = fh => { const dd = diaDe_(fh); return dd >= lunes && dd <= f; };
+    if (ok && propios.some(mm => mm.origen === 'manual' && enSemana(mm.fechaHora))) { ok = false; motivo = 'se olvidó de marcar'; }
+    if (ok && turnos.some(t => (!t.salida || !t.entrada) && !t.enCurso && enSemana((t.entrada || t.salida).fechaHora))) { ok = false; motivo = 'turno sin salida'; }
+    semanas.push({ desde: lunes, hasta: f, gana: ok, motivo });
+  }
+  if (!semanas.length) return null;
+  const ganadas = semanas.filter(x => x.gana).length;
+  return { semanas, ganadas, premio, monto: ganadas * premio };
+}
+
+/* ───────────────────────── Desafíos ───────────────────────── */
+let _desafios = null;
+function desafios_() {
+  if (_desafios) return _desafios;
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Desafios');
+  if (!sh) return (_desafios = []);
+  const fecha = v => v instanceof Date ? diaDe_(v) : String(v || '');
+  _desafios = filas_('Desafios').map(x => ({
+    _fila: x._fila, id: String(x.id), titulo: String(x.titulo || ''), detalle: String(x.detalle || ''), premio: Number(x.premio) || 0,
+    para: String(x.para || 'todos'), vence: fecha(x.vence), estado: String(x.estado || 'abierto'),
+    empleadoId: String(x.empleadoId || ''), nombre: String(x.nombre || ''),
+    tomado: x.tomado instanceof Date ? x.tomado.toISOString() : String(x.tomado || ''),
+    hecho: x.hecho instanceof Date ? x.hecho.toISOString() : String(x.hecho || ''),
+    foto: String(x.foto || ''), mes: x.mes instanceof Date ? Utilities.formatDate(x.mes, TZ, 'yyyy-MM') : String(x.mes || ''),
+  }));
+  return _desafios;
+}
+
+function topeDesafios_() {
+  const v = config_().topeDesafios;
+  return v === '' || v == null ? 100000 : Number(v) || 0;
+}
+
+function paraEmpleado_(x, e) {
+  return x.para === 'todos' || x.para === 'area:' + e.area || x.para === 'emp:' + e.id;
+}
+
+/** Lo que ve el empleado: los abiertos que le corresponden y los que tomó él. */
+function desafiosDe_(e) {
+  const hoy = diaDe_(new Date());
+  const mes = mesActual_();
+  return desafios_().filter(x =>
+    (x.estado === 'abierto' && paraEmpleado_(x, e) && (!x.vence || x.vence >= hoy)) ||
+    (x.empleadoId === e.id && (x.estado === 'tomado' || x.estado === 'hecho' || (x.mes === mes && (x.estado === 'aprobado' || x.estado === 'rechazado')))))
+    .map(x => ({ id: x.id, titulo: x.titulo, detalle: x.detalle, premio: x.premio, vence: x.vence, estado: x.estado, mio: x.empleadoId === e.id }));
+}
+
+function escribirDesafio_(x, cambios) {
+  const sh = hoja_('Desafios');
+  const enc = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  Object.keys(cambios).forEach(k => {
+    const col = enc.indexOf(k) + 1;
+    const v = cambios[k];
+    const celda = sh.getRange(x._fila, col);
+    if (k === 'mes') celda.setNumberFormat('@');
+    celda.setValue(v);
+  });
+}
+
+function conDesafio_(d, fn) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    _desafios = null;
+    const x = desafios_().find(y => y.id === String(d.id));
+    if (!x) return { ok: false, error: 'Ese desafío ya no existe.' };
+    return fn(x);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function accTomarDesafio_(d) {
+  const e = validarEmpleado_(d);
+  return conDesafio_(d, x => {
+    if (x.estado !== 'abierto') return { ok: false, error: 'Uy, otro ya lo tomó.', refrescar: true };
+    if (!paraEmpleado_(x, e)) return { ok: false, error: 'Este desafío no es para vos.' };
+    if (x.vence && x.vence < diaDe_(new Date())) return { ok: false, error: 'Este desafío ya venció.' };
+    escribirDesafio_(x, { estado: 'tomado', empleadoId: e.id, nombre: e.nombre, tomado: new Date() });
+    return { ok: true };
+  });
+}
+
+function accSoltarDesafio_(d) {
+  const e = validarEmpleado_(d);
+  return conDesafio_(d, x => {
+    if (x.empleadoId !== e.id || x.estado !== 'tomado') return { ok: false, error: 'No podés soltar este desafío.' };
+    escribirDesafio_(x, { estado: 'abierto', empleadoId: '', nombre: '', tomado: '' });
+    return { ok: true };
+  });
+}
+
+function accTerminarDesafio_(d) {
+  const e = validarEmpleado_(d);
+  return conDesafio_(d, x => {
+    if (x.empleadoId !== e.id || x.estado !== 'tomado') return { ok: false, error: 'Primero tomá el desafío.' };
+    let foto = '';
+    if (d.foto) {
+      try { foto = guardarFoto_(d.foto, `${diaDe_(new Date())} ${e.nombre} - ${x.titulo}.jpg`); }
+      catch (err) { foto = ''; }
+    }
+    escribirDesafio_(x, { estado: 'hecho', hecho: new Date(), foto });
+    return { ok: true, conFoto: !!foto };
+  });
+}
+
+/** Guarda la foto (base64 JPEG) en la carpeta "Aldea — Fotos de desafíos" del Drive y devuelve el link. */
+function guardarFoto_(base64, nombre) {
+  const datos = String(base64).replace(/^data:image\/\w+;base64,/, '');
+  const blob = Utilities.newBlob(Utilities.base64Decode(datos), 'image/jpeg', nombre);
+  const carpetas = DriveApp.getFoldersByName('Aldea — Fotos de desafíos');
+  const carpeta = carpetas.hasNext() ? carpetas.next() : DriveApp.createFolder('Aldea — Fotos de desafíos');
+  const archivo = carpeta.createFile(blob);
+  archivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/thumbnail?sz=w800&id=' + archivo.getId();
+}
+
+function accGuardarDesafio_(d) {
+  const x = d.desafio || {};
+  const titulo = String(x.titulo || '').trim();
+  if (!titulo) return { ok: false, error: 'Poné qué hay que hacer.' };
+  const premio = Math.round(Number(x.premio));
+  if (!(premio > 0)) return { ok: false, error: 'Poné el premio.' };
+  const para = /^(todos|area:.+|emp:.+)$/.test(String(x.para || '')) ? String(x.para) : 'todos';
+  const vence = /^\d{4}-\d{2}-\d{2}$/.test(x.vence || '') ? x.vence : '';
+  const sh = hojaOCrear_('Desafios');
+  const veces = Math.min(Math.max(Number(x.veces) || 1, 1), 10);   // el mismo desafío para varias personas
+  for (let i = 0; i < veces; i++) {
+    sh.appendRow([uid_(), titulo, String(x.detalle || '').trim(), premio, para, vence ? "'" + vence : '', 'abierto', '', '', '', '', '', '', new Date()]);
+  }
+  return { ok: true };
+}
+
+function accBorrarDesafio_(d) { return borrarPorId_('Desafios', d.id); }
+
+function accRevisarDesafio_(d) {
+  return conDesafio_(d, x => {
+    if (x.estado !== 'hecho') return { ok: false, error: 'Ese desafío no está esperando aprobación.' };
+    if (!d.aprobar) { escribirDesafio_(x, { estado: 'rechazado', mes: mesActual_() }); return { ok: true }; }
+    const mes = mesActual_();
+    const usado = desafios_().filter(y => y.estado === 'aprobado' && y.mes === mes).reduce((a, y) => a + y.premio, 0);
+    const tope = topeDesafios_();
+    if (tope && usado + x.premio > tope && !d.forzar) {
+      return { ok: false, superaTope: true, error: `Con este premio te pasás del tope del mes (${fmtPesos_(usado)} de ${fmtPesos_(tope)} usados).` };
+    }
+    escribirDesafio_(x, { estado: 'aprobado', mes });
+    return { ok: true };
+  });
 }
 
 function config_() {

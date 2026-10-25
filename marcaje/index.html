@@ -136,6 +136,19 @@
   .presets button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;}
   .inactivo{opacity:.55;}
 
+  .tabs button{font-size:12px;padding:9px 2px;}
+  .desafio{background:linear-gradient(135deg,#FFF6D6,#FDEBE0);border:1.5px solid #F2D48A;border-radius:16px;padding:14px;margin-bottom:10px;}
+  .desafio .dt{font-weight:800;font-size:15px;}
+  .desafio .dp{font-size:22px;font-weight:800;color:var(--ok);}
+  .desafio .dd{font-size:12.5px;color:var(--gris);margin-top:3px;}
+  .desafio .acc{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .desafio.mio{background:linear-gradient(135deg,var(--marca-suave),#F2F7F2);border-color:#BCD6C1;}
+  .barra{height:10px;background:var(--gris-claro);border-radius:6px;overflow:hidden;margin:8px 0 4px;}
+  .barra i{display:block;height:100%;background:var(--ok);border-radius:6px;}
+  .barra i.lleno{background:var(--naranja);}
+  .foto-mini{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--borde);flex-shrink:0;}
+  .ideas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .ideas button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:6px 9px;font-size:12px;font-weight:600;text-align:left;}
   .dias-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
   .dias-sel button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--borde);background:#fff;font-weight:800;font-size:14px;color:var(--gris);}
   .dias-sel button.on{background:var(--marca);border-color:var(--marca);color:#fff;}
@@ -217,6 +230,12 @@
       <div class="msg" id="marcar-msg"></div>
     </div>
 
+    <div class="card oculto" id="emp-desafios-card">
+      <h2>🎯 Desafíos para ganar más</h2>
+      <div id="emp-desafios"></div>
+      <input type="file" id="foto-desafio" accept="image/*" capture="environment" class="oculto" onchange="fotoElegida(this)"/>
+    </div>
+
     <div class="card">
       <div class="mesnav">
         <button onclick="cambiarMesEmp(-1)">‹</button>
@@ -251,6 +270,7 @@
       <button data-t="resumen" class="on" onclick="tab('resumen')">Resumen</button>
       <button data-t="marcajes" onclick="tab('marcajes')">Marcajes</button>
       <button data-t="equipo" onclick="tab('equipo')">Equipo</button>
+      <button data-t="desafios" onclick="tab('desafios')">Desafíos</button>
       <button data-t="ajustes" onclick="tab('ajustes')">Ajustes</button>
     </div>
 
@@ -307,6 +327,24 @@
     </div>
 
     <!-- Ajustes -->
+    <div id="t-desafios" class="oculto">
+      <div class="card">
+        <h2>Premios de este mes</h2>
+        <div class="fila"><span class="sub">Desafíos aprobados</span><b id="ds-usado">$0</b></div>
+        <div class="barra"><i id="ds-barra" style="width:0%"></i></div>
+        <div class="sub" id="ds-tope"></div>
+      </div>
+      <div id="ds-revisar"></div>
+      <div class="card">
+        <div class="fila"><h2 style="margin:0;">Desafíos activos</h2><button class="btn chico" onclick="abrirNuevoDesafio()">+ Nuevo desafío</button></div>
+        <div id="ds-activos" style="margin-top:10px;"></div>
+      </div>
+      <div class="card">
+        <h2>Historial del mes</h2>
+        <div id="ds-historial"></div>
+      </div>
+    </div>
+
     <div id="t-ajustes" class="oculto">
       <div class="card">
         <h2>Ubicación de Aldea</h2>
@@ -336,6 +374,17 @@
         </div>
         <div id="cf-dias-ev" style="margin-top:10px;"></div>
         <div class="msg" id="cf-ev-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Premios</h2>
+        <div class="grid2">
+          <div class="field"><label>Tope de desafíos por mes ($)</label><input id="cf-tope" type="number" inputmode="numeric" min="0"/></div>
+          <div class="field"><label>Premio presentismo por semana ($)</label><input id="cf-presentismo" type="number" inputmode="numeric" min="0"/></div>
+        </div>
+        <div class="ayuda" style="margin:-4px 0 12px;">El presentismo lo gana solo quien tiene horario cargado y en la semana no faltó, no llegó tarde y no se olvidó de marcar. Poné 0 para desactivarlo.</div>
+        <button class="btn ghost full" onclick="guardarPremios()">Guardar</button>
+        <div class="msg" id="cf-premios-msg"></div>
       </div>
 
       <div class="card">
@@ -472,6 +521,34 @@
       <button class="btn" onclick="guardarAjuste()">Guardar</button>
     </div>
     <div class="msg" id="ma-msg"></div>
+  </div>
+</div>
+
+ <div class="modal oculto" id="m-desafio" onclick="if(event.target===this)cerrarModal('m-desafio')">
+  <div class="caja">
+    <h3>Nuevo desafío</h3>
+    <div class="sub" style="margin-bottom:6px;">Ideas (tocá una para usarla):</div>
+    <div class="ideas" id="nd-ideas"></div>
+    <div class="field"><label>¿Qué hay que hacer?</label><input id="nd-titulo" placeholder="Limpiar a fondo la heladera de bebidas"/></div>
+    <div class="field"><label>Detalle (opcional)</label><input id="nd-detalle" placeholder="Sacar todo, limpiar estantes y volver a acomodar por tipo"/></div>
+    <div class="field"><label>Premio ($)</label>
+      <div class="presets" style="margin-bottom:6px;">
+        <button onclick="$('nd-premio').value=3000">½ hora · $3.000</button>
+        <button onclick="$('nd-premio').value=6000">1 hora · $6.000</button>
+        <button onclick="$('nd-premio').value=12000">2 horas · $12.000</button>
+      </div>
+      <input id="nd-premio" type="number" inputmode="numeric" min="0"/></div>
+    <div class="grid2">
+      <div class="field"><label>¿Para quién?</label><select id="nd-para"></select></div>
+      <div class="field"><label>Vale hasta</label><input id="nd-vence" type="date"/></div>
+    </div>
+    <div class="field"><label>¿Cuántas personas lo pueden hacer?</label><input id="nd-veces" type="number" min="1" max="10" value="1"/>
+      <div class="ayuda">1 = lo hace el primero que lo toma. Si ponés 2, lo pueden hacer dos personas y cada una cobra el premio.</div></div>
+    <div class="grid2">
+      <button class="btn ghost" onclick="cerrarModal('m-desafio')">Cancelar</button>
+      <button class="btn" onclick="guardarDesafio()">Publicar</button>
+    </div>
+    <div class="msg" id="nd-msg"></div>
   </div>
 </div>
 
@@ -680,6 +757,7 @@ function mostrarEmpleado(j, ses){
   }
   tick();
   pintarMesEmp(j);
+  pintarDesafiosEmp(j.desafios || []);
 }
 
 function pintarMesEmp(j){
@@ -694,6 +772,8 @@ function pintarMesEmp(j){
   if(l.pagado) $('emp-kpis').innerHTML += `<div class="kpi" style="grid-column:1/-1;display:flex;justify-content:space-between;"><div><div class="v">${fmt(l.pagado)}</div><div class="l">Ya cobraste (adelantos y pagos)</div></div><div style="text-align:right;"><div class="v">${fmt(l.saldo)}</div><div class="l">Te falta cobrar</div></div></div>`;
   let ex = l.explicacion;
   if(l.ajustes.length) ex += ' · ' + l.ajustes.map(a => `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}`).join(' · ');
+  if(l.totalDesafios) ex += ` · 🎯 Desafíos: +${fmt(l.totalDesafios)}`;
+  if(l.presentismo) ex += ` · ⭐ Presentismo: ${l.presentismo.ganadas} de ${l.presentismo.semanas.length} semanas` + (l.presentismo.monto ? ` (+${fmt(l.presentismo.monto)})` : '');
   if(l.sinSalida) ex += ' · ⚠️ Hay turnos sin salida: avisale al administrador para que los corrija.';
   $('emp-explica').textContent = ex;
   $('emp-turnos').innerHTML = l.turnos.length ? l.turnos.map(filaTurno).join('') : '<div class="sub">Todavía no hay turnos este mes.</div>';
@@ -826,13 +906,13 @@ function cambiarMesAdm(d){ const n = mesMas(mesAdm, d); if(n > mesHoy()) return;
 function tab(t){
   tabActual = t;
   [...$('tabs').children].forEach(b => b.classList.toggle('on', b.dataset.t===t));
-  ['resumen','marcajes','equipo','ajustes'].forEach(x => $('t-'+x).classList.toggle('oculto', x!==t));
-  $('adm-mesnav').classList.toggle('oculto', t==='equipo' || t==='ajustes');
+  ['resumen','marcajes','equipo','desafios','ajustes'].forEach(x => $('t-'+x).classList.toggle('oculto', x!==t));
+  $('adm-mesnav').classList.toggle('oculto', t==='equipo' || t==='ajustes' || t==='desafios');
 }
 
 function pintarAdmin(){
   $('adm-mes').textContent = mesTexto(adm.mes);
-  pintarResumen(); pintarMarcajes(); pintarEquipo(); pintarAjustes();
+  pintarResumen(); pintarMarcajes(); pintarEquipo(); pintarAjustes(); pintarDesafiosAdm();
 }
 
 function pintarResumen(){
@@ -874,6 +954,8 @@ function pintarResumen(){
       </div>
       <div class="sub" style="margin-top:4px;">${esc(l.explicacion)}${l.formaPago!=='evento'?'':` · ${fmtH(l.horas)}`} · ${l.dias} día${l.dias===1?'':'s'}</div>
       ${l.ajustes.length ? `<div class="sub" style="margin-top:2px;">${l.ajustes.map(a=>`${esc(a.concepto)}: <b>${a.monto>0?'+':''}${fmt(a.monto)}</b>`).join(' · ')}</div>` : ''}
+      ${l.totalDesafios ? `<div class="sub" style="margin-top:2px;">🎯 Desafíos: <b>+${fmt(l.totalDesafios)}</b> (${l.desafios.length})</div>` : ''}
+      ${l.presentismo ? `<div class="sub" style="margin-top:2px;">⭐ Presentismo: ${l.presentismo.ganadas} de ${l.presentismo.semanas.length} semana${l.presentismo.semanas.length===1?'':'s'}${l.presentismo.monto?` · <b>+${fmt(l.presentismo.monto)}</b>`:''}${l.presentismo.semanas.filter(w=>!w.gana).map(w=>` · perdió ${new Date(w.desde+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'numeric'})} (${w.motivo})`).join('')}</div>` : ''}
       ${l.asistencia && (l.asistencia.faltas.length || l.asistencia.tardes.length) ? `<div class="sub" style="margin-top:2px;color:#123F6B;">🕐 ${l.asistencia.faltas.length} falta${l.asistencia.faltas.length===1?'':'s'} · ${l.asistencia.tardes.length} llegada${l.asistencia.tardes.length===1?'':'s'} tarde</div>` : ''}
       ${l.pagado ? `<div class="pagado"><span>💵 Ya pagado <b>${fmt(l.pagado)}</b></span><span>Falta pagar <b>${fmt(l.saldo)}</b></span></div>` : ''}
       <div class="acc">
@@ -930,6 +1012,7 @@ function pintarAjustes(){
   $('cf-radio').value = c.radio || 100;
   $('cf-lugar').value = c.nombreLugar || 'Aldea de Valle';
   pintarDiasEvento(); pintarDiasLibres();
+  $('cf-tope').value = adm.topeDesafios; $('cf-presentismo').value = adm.premioPresentismo;
   actualizarLinkMapa();
   $('cf-link').value = location.origin + location.pathname;
 }
@@ -1088,6 +1171,127 @@ async function borrarAjuste(id){
   catch(e){ msg('ma-msg', e.message, 'err'); }
 }
 
+/* ───── Desafíos (empleado) ───── */
+let desafioFoto = null;
+function pintarDesafiosEmp(lista){
+  const card = $('emp-desafios-card');
+  const mostrar = lista.filter(x => x.estado==='abierto' || x.estado==='tomado' || x.estado==='hecho' || x.estado==='aprobado' || x.estado==='rechazado');
+  card.classList.toggle('oculto', !mostrar.length);
+  if(!mostrar.length) return;
+  const orden = {tomado:0, abierto:1, hecho:2, aprobado:3, rechazado:4};
+  $('emp-desafios').innerHTML = mostrar.sort((a,b)=>orden[a.estado]-orden[b.estado]).map(x => {
+    const vence = x.vence ? `Vale hasta el ${new Date(x.vence+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'numeric'})}` : '';
+    let acc = '';
+    if(x.estado==='abierto') acc = `<button class="btn chico" onclick="tomarDesafio('${x.id}')">💪 Lo tomo</button>`;
+    else if(x.estado==='tomado') acc = `<button class="btn chico" onclick="terminarDesafio('${x.id}')">📸 Terminé (sacar foto)</button><button class="btn chico ghost" onclick="soltarDesafio('${x.id}')">Soltar</button>`;
+    else if(x.estado==='hecho') acc = '<span class="tag">⏳ Esperando aprobación</span>';
+    else if(x.estado==='aprobado') acc = '<span class="tag ok">✅ Aprobado: se suma a tu sueldo</span>';
+    else acc = '<span class="tag warn">No aprobado</span>';
+    return `<div class="desafio ${x.mio?'mio':''}"><div class="fila"><div class="dt">${esc(x.titulo)}</div><div class="dp">+${fmt(x.premio)}</div></div>
+      ${x.detalle||vence ? `<div class="dd">${[esc(x.detalle), vence].filter(Boolean).join(' · ')}</div>` : ''}<div class="acc">${acc}</div></div>`;
+  }).join('');
+}
+async function accionDesafio(accion, datos, textoOk){
+  try{
+    cargando(true);
+    await api(accion, Object.assign({}, sesionEmp, datos));
+    const j = await api('estado', Object.assign({}, sesionEmp, {mes: mesHoy()}));
+    mostrarEmpleado(j, sesionEmp);
+    if(textoOk) msg('marcar-msg', textoOk, 'ok');
+  }catch(e){
+    alert(e.message);
+    try{ const j = await api('estado', Object.assign({}, sesionEmp, {mes: mesHoy()})); mostrarEmpleado(j, sesionEmp); }catch(_){}
+  }finally{ cargando(false); }
+}
+function tomarDesafio(id){ accionDesafio('tomarDesafio', {id}, '💪 ¡Es tuyo! Cuando termines, tocá "Terminé" y sacá una foto.'); }
+function soltarDesafio(id){ if(confirm('¿Soltar este desafío? Lo va a poder tomar otro.')) accionDesafio('soltarDesafio', {id}); }
+function terminarDesafio(id){ desafioFoto = id; $('foto-desafio').value=''; $('foto-desafio').click(); }
+function fotoElegida(input){
+  const archivo = input.files && input.files[0];
+  if(!archivo || !desafioFoto) return;
+  const img = new Image();
+  img.onload = () => {
+    const max = 1000, k = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(img.src);
+    accionDesafio('terminarDesafio', {id: desafioFoto, foto: c.toDataURL('image/jpeg', 0.7)}, '🎉 ¡Bien ahí! Ahora lo revisa el administrador.');
+  };
+  img.src = URL.createObjectURL(archivo);
+}
+
+/* ───── Desafíos (administrador) ───── */
+const IDEAS_DESAFIOS = [
+  ['Cantina','Limpiar a fondo y reacomodar las heladeras de bebidas',6000],
+  ['Cantina','Ordenar bebidas por tipo y bajar los cajones vacíos',3000],
+  ['Cantina','Limpieza a fondo del depósito de la cantina',12000],
+  ['Cantina','Limpiar y dejar impecable la barra y los muebles',6000],
+  ['Cantina','Vender 20 cafés en el turno',6000],
+  ['Cantina','Armar la vitrina / exhibidor para que se vea lindo',3000],
+  ['Mantenimiento','Pintar / arreglar algo puntual del predio',12000],
+  ['Mantenimiento','Dejar listo el predio para el evento del sábado',6000],
+  ['Limpieza','Limpieza a fondo de asadores después del evento',6000],
+];
+function pintarDesafiosAdm(){
+  const usado = adm.usadoDesafios||0, tope = adm.topeDesafios||0;
+  $('ds-usado').textContent = fmt(usado) + (tope ? ' de ' + fmt(tope) : '');
+  const pct = tope ? Math.min(100, usado/tope*100) : 0;
+  $('ds-barra').style.width = pct+'%'; $('ds-barra').classList.toggle('lleno', pct>=90);
+  $('ds-tope').textContent = tope ? `Te quedan ${fmt(Math.max(0,tope-usado))} para premiar este mes.` : 'Sin tope mensual.';
+  const ds = adm.desafios || [];
+  const paraTxt = p => p==='todos' ? 'Todos' : p.startsWith('area:') ? p.slice(5) : (adm.empleados.find(e=>'emp:'+e.id===p)||{nombre:'?'}).nombre;
+  const revisar = ds.filter(x=>x.estado==='hecho');
+  $('ds-revisar').innerHTML = revisar.length ? `<div class="alerta"><b>📸 ${revisar.length} para aprobar</b>${revisar.map(x=>`
+    <div class="it">${x.foto?`<a href="${esc(x.foto)}" target="_blank"><img class="foto-mini" src="${esc(x.foto)}" alt="foto"/></a>`:'<span class="tag">sin foto</span>'}
+      <span style="flex:1;"><b style="display:inline;">${esc(x.nombre)}</b> · ${esc(x.titulo)} · <b style="display:inline;">+${fmt(x.premio)}</b></span>
+      <span style="display:flex;flex-direction:column;gap:4px;"><button class="btn chico" onclick="revisarDesafio('${x.id}',true)">Aprobar</button><button class="btn chico ghost" onclick="revisarDesafio('${x.id}',false)">No</button></span></div>`).join('')}</div>` : '';
+  const activos = ds.filter(x=>x.estado==='abierto'||x.estado==='tomado');
+  $('ds-activos').innerHTML = activos.length ? activos.map(x=>`<div class="marc"><span><b>${esc(x.titulo)}</b> · +${fmt(x.premio)}<br/><span class="sub">Para: ${esc(paraTxt(x.para))}${x.vence?' · hasta '+new Date(x.vence+'T12:00:00').toLocaleDateString('es-AR'):''} · ${x.estado==='tomado'?'🏃 lo está haciendo '+esc(x.nombre):'esperando que alguien lo tome'}</span></span><button class="x" onclick="borrarDesafio('${x.id}')">🗑</button></div>`).join('')
+    : '<div class="sub">No hay desafíos activos. Publicá uno: aparece de sorpresa en la app de quien corresponda.</div>';
+  const hist = ds.filter(x=>(x.estado==='aprobado'||x.estado==='rechazado') && x.mes===adm.mes);
+  $('ds-historial').innerHTML = hist.length ? hist.map(x=>`<div class="marc"><span>${x.estado==='aprobado'?'✅':'❌'} <b>${esc(x.nombre)}</b> · ${esc(x.titulo)}</span><b>${x.estado==='aprobado'?'+'+fmt(x.premio):''}</b></div>`).join('') : '<div class="sub">Todavía nada este mes.</div>';
+}
+function abrirNuevoDesafio(){
+  const areas = [...new Set(adm.empleados.filter(e=>e.activo&&e.area).map(e=>e.area))];
+  $('nd-para').innerHTML = '<option value="todos">Todos</option>' + areas.map(a=>`<option value="area:${esc(a)}">Sector ${esc(a)}</option>`).join('')
+    + adm.empleados.filter(e=>e.activo).map(e=>`<option value="emp:${esc(e.id)}">Solo ${esc(e.nombre)}</option>`).join('');
+  $('nd-ideas').innerHTML = IDEAS_DESAFIOS.map((d,i)=>`<button onclick="usarIdea(${i})">${d[0]==='Cantina'?'🍔':d[0]==='Limpieza'?'🧹':'🔧'} ${esc(d[1])}</button>`).join('');
+  ['nd-titulo','nd-detalle','nd-premio'].forEach(id=>$(id).value='');
+  $('nd-veces').value = 1;
+  const v = new Date(); v.setDate(v.getDate() + (7 - v.getDay()) % 7); $('nd-vence').value = localInput(v).slice(0,10);
+  msg('nd-msg','');
+  $('m-desafio').classList.remove('oculto');
+}
+function usarIdea(i){
+  const [area, titulo, premio] = IDEAS_DESAFIOS[i];
+  $('nd-titulo').value = titulo; $('nd-premio').value = premio;
+  const op = [...$('nd-para').options].find(o=>o.value==='area:'+area);
+  if(op) $('nd-para').value = op.value;
+}
+async function guardarDesafio(){
+  const desafio = { titulo:$('nd-titulo').value, detalle:$('nd-detalle').value, premio:$('nd-premio').value, para:$('nd-para').value, vence:$('nd-vence').value, veces:$('nd-veces').value };
+  msg('nd-msg','Publicando…','info');
+  try{ await apiAdm('guardarDesafio', {desafio}); cerrarModal('m-desafio'); await cargarAdmin(); tab('desafios'); }
+  catch(e){ msg('nd-msg', e.message, 'err'); }
+}
+async function borrarDesafio(id){
+  if(!confirm('¿Borrar este desafío?')) return;
+  try{ await apiAdm('borrarDesafio', {id}); await cargarAdmin(); }catch(e){ alert(e.message); }
+}
+async function revisarDesafio(id, aprobar, forzar){
+  if(!aprobar && !confirm('¿No aprobarlo? No se le va a pagar.')) return;
+  cargando(true,'Guardando…');
+  try{ await apiAdm('revisarDesafio', {id, aprobar, forzar:!!forzar}); await cargarAdmin(); }
+  catch(e){
+    if(e.superaTope && confirm(e.message + '\n\n¿Aprobarlo igual?')) return revisarDesafio(id, true, true);
+    if(!e.superaTope) alert(e.message);
+  }finally{ cargando(false); }
+}
+async function guardarPremios(){
+  try{ await apiAdm('guardarConfig', {config:{topeDesafios:$('cf-tope').value, premioPresentismo:$('cf-presentismo').value}}); await cargarAdmin(); msg('cf-premios-msg','✅ Guardado','ok'); }
+  catch(e){ msg('cf-premios-msg', e.message, 'err'); }
+}
+
 /* ───── Pagos y adelantos ───── */
 let tipoPagoSel = 'Adelanto';
 function tipoPago(t){ tipoPagoSel = t; $('mp-adelanto').className = 'btn '+(t==='Adelanto'?'':'ghost'); $('mp-sueldo').className = 'btn '+(t==='Pago de sueldo'?'':'ghost'); }
@@ -1133,6 +1337,8 @@ function textoRecibo(l){
   if(l.formaPago==='evento') t += `Eventos: ${l.eventos}\n`;
   t += `Cálculo: ${l.explicacion} = ${fmt(l.calculado)}\n`;
   l.ajustes.forEach(a => t += `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}\n`);
+  (l.desafios||[]).forEach(x => t += `🎯 Desafío "${x.titulo}": +${fmt(x.premio)}\n`);
+  if(l.presentismo && l.presentismo.monto) t += `⭐ Presentismo (${l.presentismo.ganadas} semana${l.presentismo.ganadas===1?'':'s'}): +${fmt(l.presentismo.monto)}\n`;
   t += `\n*Total del mes: ${fmt(l.total)}*`;
   if(l.pagado){
     l.pagos.forEach(p => t += `\n${p.tipo} ${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR')}: -${fmt(p.monto)}`);
@@ -1164,6 +1370,8 @@ function recibo(empId){
   ${l.formaPago==='evento'?`<div class="l"><span>Eventos</span><span>${l.eventos}</span></div>`:''}
   <div class="l"><span>${esc(l.explicacion)}</span><b>${fmt(l.calculado)}</b></div>
   ${l.ajustes.map(a=>`<div class="l"><span>${esc(a.concepto)}</span><b>${a.monto>0?'+':''}${fmt(a.monto)}</b></div>`).join('')}
+  ${(l.desafios||[]).map(x=>`<div class="l"><span>Desafío: ${esc(x.titulo)}</span><b>+${fmt(x.premio)}</b></div>`).join('')}
+  ${l.presentismo&&l.presentismo.monto?`<div class="l"><span>Presentismo (${l.presentismo.ganadas} semana${l.presentismo.ganadas===1?'':'s'})</span><b>+${fmt(l.presentismo.monto)}</b></div>`:''}
   <div class="tot"><span>Total del mes</span><span>${fmt(l.total)}</span></div>
   ${l.pagos.map(p=>`<div class="l"><span>${esc(p.tipo)} ${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR')}${p.nota?' · '+esc(p.nota):''}</span><b>−${fmt(p.monto)}</b></div>`).join('')}
   ${l.pagado?`<div class="tot"><span>Saldo a cobrar</span><span>${fmt(l.saldo)}</span></div>`:''}
