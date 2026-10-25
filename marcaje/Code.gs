@@ -484,8 +484,14 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
     const h = t.entrada && t.salida ? (t.salida.fechaHora - t.entrada.fechaHora) / 3600000 : 0;
     // Turno de evento: empezó un sábado, domingo o un día marcado como evento. Va entero a la tarifa de evento.
     const esEvento = tarifaEvento && !!t.entrada && esDiaEvento_(t.entrada.fechaHora);
+    // Viernes común: solo las horas desde las 23 h se pagan como evento.
+    let hEv = esEvento ? h : 0;
+    if (tarifaEvento && !esEvento && t.entrada && t.salida && Utilities.formatDate(t.entrada.fechaHora, TZ, 'u') === '5') {
+      const corte = parseLocal_(diaDe_(t.entrada.fechaHora) + 'T' + String(HORA_VIERNES_NOCHE).padStart(2, '0') + ':00');
+      if (t.salida.fechaHora > corte) hEv = (t.salida.fechaHora - Math.max(corte, t.entrada.fechaHora)) / 3600000;
+    }
     horas += h;
-    if (esEvento) horasEvento += h;
+    horasEvento += hEv;
     if (t.entrada && !t.enCurso) eventos++;
     if (t.entrada) dias[diaDe_(t.entrada.fechaHora)] = true;
     const problema = t.enCurso ? 'en curso' : !t.salida ? 'sin salida' : !t.entrada ? 'sin entrada' : '';
@@ -495,7 +501,7 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
       salida: t.salida ? t.salida.fechaHora.toISOString() : null,
       horas: redondear_(h, 2),
       problema,
-      evento: esEvento,
+      evento: hEv > 0,
     };
   });
   horas = redondear_(horas, 2);
@@ -507,7 +513,7 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
       if (tarifaEvento && horasEvento > 0) {
         const comunes = redondear_(horas - horasEvento, 2), ve = Number(e.valorEvento);
         calculado = comunes * valor + horasEvento * ve;
-        explicacion = `${fmtHoras_(comunes)} comunes × ${fmtPesos_(valor)} + ${fmtHoras_(horasEvento)} de evento × ${fmtPesos_(ve)}`;
+        explicacion = `${fmtHoras_(comunes)} comunes × ${fmtPesos_(valor)} + ${fmtHoras_(horasEvento)} de fin de semana/evento × ${fmtPesos_(ve)}`;
       } else {
         calculado = horas * valor;
         explicacion = `${fmtHoras_(horas)} × ${fmtPesos_(valor)} la hora`;
@@ -939,7 +945,8 @@ function diasEvento_() {
   if (!_diasEvento) _diasEvento = new Set(String(config_().diasEvento || '').split(',').map(x => x.trim()).filter(Boolean));
   return _diasEvento;
 }
-const HORA_EVENTO_NOCHE = 16;   // en los días marcados (viernes), solo cuentan los turnos que empiezan desde esta hora
+const HORA_EVENTO_NOCHE = 16;
+const HORA_VIERNES_NOCHE = 23;   // los viernes comunes, las horas desde esta hora se pagan como evento   // en los días marcados (viernes), solo cuentan los turnos que empiezan desde esta hora
 function esDiaEvento_(fecha) {
   const dow = Number(Utilities.formatDate(fecha, TZ, 'u'));   // 1 = lunes … 7 = domingo
   if (dow >= 6) return true;
