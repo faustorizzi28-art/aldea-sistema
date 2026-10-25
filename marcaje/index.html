@@ -136,6 +136,12 @@
   .presets button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;}
   .inactivo{opacity:.55;}
 
+  .dias-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .dias-sel button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--borde);background:#fff;font-weight:800;font-size:14px;color:var(--gris);}
+  .dias-sel button.on{background:var(--marca);border-color:var(--marca);color:#fff;}
+  .alerta.azul{background:#E8F0FA;border-color:#C5D8EE;color:#123F6B;}
+  .alerta.azul .it{border-top-color:#C5D8EE;}
+  .pagado{display:flex;justify-content:space-between;gap:8px;background:var(--gris-claro);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;}
   .modal{position:fixed;inset:0;background:rgba(15,20,15,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
   .modal .caja{background:var(--fondo);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));}
   .modal h3{font-size:17px;font-weight:800;margin-bottom:14px;}
@@ -262,8 +268,9 @@
         <div class="ahora" id="adm-ahora"></div>
       </div>
       <div id="adm-alertas"></div>
+      <div id="adm-asistencia"></div>
       <div class="total-mes">
-        <div><div class="l">Total a pagar en el mes</div><div class="v" id="adm-total">$0</div></div>
+        <div><div class="l">Total a pagar en el mes</div><div class="v" id="adm-total">$0</div><div class="l" id="adm-saldo" style="margin-top:4px;"></div></div>
         <div style="text-align:right;"><div class="l">Horas</div><div style="font-size:18px;font-weight:800;" id="adm-horas">0 h</div></div>
       </div>
       <div class="card"><div id="adm-liq"></div></div>
@@ -329,6 +336,17 @@
         </div>
         <div id="cf-dias-ev" style="margin-top:10px;"></div>
         <div class="msg" id="cf-ev-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Feriados y días libres</h2>
+        <p class="sub" style="margin-bottom:12px;">Los días que cargues acá no cuentan como falta para nadie.</p>
+        <div style="display:flex;gap:8px;">
+          <div class="field" style="flex:1;margin:0;"><input id="cf-dia-libre" type="date"/></div>
+          <button class="btn" onclick="agregarDiaLibre()">Agregar</button>
+        </div>
+        <div id="cf-dias-libres" style="margin-top:10px;"></div>
+        <div class="msg" id="cf-libre-msg"></div>
       </div>
 
       <div class="card">
@@ -400,6 +418,13 @@
     <div class="ayuda" id="me-forma-ayuda" style="margin:-4px 0 12px;"></div>
     <div class="field"><label>Celular (para WhatsApp)</label><input id="me-tel" type="tel" inputmode="tel" placeholder="351 1234567"/>
       <div class="ayuda">Código de área + número, sin 0 ni 15.</div></div>
+    <div class="field"><label>Horario esperado (para avisarte si falta o llega tarde)</label>
+      <div class="dias-sel" id="me-dias"></div>
+      <div class="grid2">
+        <div><div class="ayuda" style="margin:0 0 4px;">Entra</div><input id="me-hent" type="time"/></div>
+        <div><div class="ayuda" style="margin:0 0 4px;">Sale</div><input id="me-hsal" type="time"/></div>
+      </div>
+      <div class="ayuda">Dejalo vacío si no tiene horario fijo (profes, eventos). Se avisa si llega más de 10 min tarde.</div></div>
     <div class="field"><label>Notas</label><textarea id="me-notas" rows="2"></textarea></div>
     <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-bottom:14px;"><input type="checkbox" id="me-activo" style="width:20px;height:20px;"/> Activo (aparece en la lista para marcar)</label>
     <div class="grid2">
@@ -447,6 +472,27 @@
       <button class="btn" onclick="guardarAjuste()">Guardar</button>
     </div>
     <div class="msg" id="ma-msg"></div>
+  </div>
+</div>
+
+<div class="modal oculto" id="m-pagos" onclick="if(event.target===this)cerrarModal('m-pagos')">
+  <div class="caja">
+    <h3>Pagos y adelantos — <span id="mp-nombre"></span></h3>
+    <div class="pagado" style="margin:0 0 14px;" id="mp-resumen"></div>
+    <input type="hidden" id="mp-emp"/>
+    <div class="grid2" style="margin-bottom:12px;">
+      <button class="btn" id="mp-adelanto" onclick="tipoPago('Adelanto')">Adelanto</button>
+      <button class="btn ghost" id="mp-sueldo" onclick="tipoPago('Pago de sueldo')">Pago de sueldo</button>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Monto ($)</label><input id="mp-monto" type="number" inputmode="numeric" min="0"/></div>
+      <div class="field"><label>Fecha</label><input id="mp-fecha" type="date"/></div>
+    </div>
+    <div class="field"><label>Nota (opcional)</label><input id="mp-nota" placeholder="Efectivo, transferencia…"/></div>
+    <button class="btn full" onclick="guardarPago()">Guardar</button>
+    <div class="msg" id="mp-msg"></div>
+    <div id="mp-lista" style="margin-top:14px;"></div>
+    <button class="btn ghost full" style="margin-top:12px;" onclick="cerrarModal('m-pagos')">Cerrar</button>
   </div>
 </div>
 
@@ -645,6 +691,7 @@ function pintarMesEmp(j){
     <div class="kpi"><div class="v">${fmtH(l.horas)}</div><div class="l">Horas</div></div>
     <div class="kpi"><div class="v">${l.dias}</div><div class="l">Días</div></div>
     ${tercero}`;
+  if(l.pagado) $('emp-kpis').innerHTML += `<div class="kpi" style="grid-column:1/-1;display:flex;justify-content:space-between;"><div><div class="v">${fmt(l.pagado)}</div><div class="l">Ya cobraste (adelantos y pagos)</div></div><div style="text-align:right;"><div class="v">${fmt(l.saldo)}</div><div class="l">Te falta cobrar</div></div></div>`;
   let ex = l.explicacion;
   if(l.ajustes.length) ex += ' · ' + l.ajustes.map(a => `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}`).join(' · ');
   if(l.sinSalida) ex += ' · ⚠️ Hay turnos sin salida: avisale al administrador para que los corrija.';
@@ -803,9 +850,21 @@ function pintarResumen(){
     ${problemas.map(({l,t}) => `<div class="it"><span><b style="display:inline;">${esc(l.nombre)}</b> · ${t.problema==='sin salida' ? 'entró '+diaCorto(t.entrada)+' '+hora(t.entrada)+' y no marcó salida' : 'salió '+diaCorto(t.salida)+' '+hora(t.salida)+' sin entrada'}</span>
       <button class="btn chico" onclick="abrirManual('${l.empleadoId}','${t.problema==='sin salida'?'SALIDA':'ENTRADA'}','${t.entrada||t.salida}')">Corregir</button></div>`).join('')}</div>` : '';
 
+  const fechaLarga = f => cap(new Date(f+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'}).replace('.',''));
+  const avisos = [];
+  adm.liquidacion.forEach(l => {
+    const a = l.asistencia; if(!a) return;
+    if(a.hoyNoLlego && adm.mes===mesHoy()) avisos.push(`<div class="it"><span><b style="display:inline;">${esc(l.nombre)}</b> · <b style="display:inline;">hoy todavía no marcó la entrada</b> (${esc(a.horario)})</span></div>`);
+    a.faltas.forEach(f => avisos.push(`<div class="it"><span><b style="display:inline;">${esc(l.nombre)}</b> · faltó el ${fechaLarga(f)}</span><button class="btn chico ghost" onclick="marcarDiaLibre('${f}')">Era feriado</button></div>`));
+    a.tardes.forEach(t => avisos.push(`<div class="it"><span><b style="display:inline;">${esc(l.nombre)}</b> · llegó tarde el ${fechaLarga(t.fecha)}: ${t.hora} (${t.minutos>=60?Math.floor(t.minutos/60)+' h '+String(t.minutos%60).padStart(2,'0'):t.minutos+' min'} tarde)</span></div>`));
+  });
+  $('adm-asistencia').innerHTML = avisos.length ? `<div class="alerta azul"><b>🕐 Asistencia del mes</b>${avisos.join('')}</div>` : '';
+
   const tot = adm.liquidacion.reduce((a,l)=>a+l.total,0);
   const hs = adm.liquidacion.reduce((a,l)=>a+l.horas,0);
+  const pagadoTot = adm.liquidacion.reduce((a,l)=>a+(l.pagado||0),0);
   $('adm-total').textContent = fmt(tot);
+  $('adm-saldo').textContent = pagadoTot ? `Ya pagado ${fmt(pagadoTot)} · Falta pagar ${fmt(tot-pagadoTot)}` : '';
   $('adm-horas').textContent = fmtH(hs);
   $('adm-liq').innerHTML = adm.liquidacion.length ? adm.liquidacion.map(l => `
     <div class="emp ${l.activo?'':'inactivo'}">
@@ -815,9 +874,12 @@ function pintarResumen(){
       </div>
       <div class="sub" style="margin-top:4px;">${esc(l.explicacion)}${l.formaPago!=='evento'?'':` · ${fmtH(l.horas)}`} · ${l.dias} día${l.dias===1?'':'s'}</div>
       ${l.ajustes.length ? `<div class="sub" style="margin-top:2px;">${l.ajustes.map(a=>`${esc(a.concepto)}: <b>${a.monto>0?'+':''}${fmt(a.monto)}</b>`).join(' · ')}</div>` : ''}
+      ${l.asistencia && (l.asistencia.faltas.length || l.asistencia.tardes.length) ? `<div class="sub" style="margin-top:2px;color:#123F6B;">🕐 ${l.asistencia.faltas.length} falta${l.asistencia.faltas.length===1?'':'s'} · ${l.asistencia.tardes.length} llegada${l.asistencia.tardes.length===1?'':'s'} tarde</div>` : ''}
+      ${l.pagado ? `<div class="pagado"><span>💵 Ya pagado <b>${fmt(l.pagado)}</b></span><span>Falta pagar <b>${fmt(l.saldo)}</b></span></div>` : ''}
       <div class="acc">
         <button class="btn chico ghost" onclick="recibo('${l.empleadoId}')">🧾 Recibo</button>
         <button class="btn chico wa" onclick="whatsapp('${l.empleadoId}')">WhatsApp</button>
+        <button class="btn chico ghost" onclick="abrirPagos('${l.empleadoId}')">💵 Pagos / adelantos</button>
         <button class="btn chico ghost" onclick="abrirAjuste('${l.empleadoId}')">± Extra / descuento</button>
       </div>
       ${l.turnos.length ? `<details><summary>Ver ${l.turnos.length} turno${l.turnos.length>1?'s':''}</summary>${l.turnos.map(filaTurno).join('')}</details>` : ''}
@@ -867,7 +929,7 @@ function pintarAjustes(){
   $('cf-lat').value = c.centroLat || ''; $('cf-lng').value = c.centroLng || '';
   $('cf-radio').value = c.radio || 100;
   $('cf-lugar').value = c.nombreLugar || 'Aldea de Valle';
-  pintarDiasEvento();
+  pintarDiasEvento(); pintarDiasLibres();
   actualizarLinkMapa();
   $('cf-link').value = location.origin + location.pathname;
 }
@@ -897,6 +959,12 @@ function pinAzar(){
   let p; do{ p = String(1000 + Math.floor(Math.random()*9000)); }while(usados.has(p));
   $('me-pin').value = p;
 }
+const DIAS_LETRA = ['L','M','X','J','V','S','D'];
+let diasSel = new Set();
+function pintarDiasSel(){
+  $('me-dias').innerHTML = DIAS_LETRA.map(d => `<button type="button" class="${diasSel.has(d)?'on':''}" onclick="toggleDia('${d}')">${d}</button>`).join('');
+}
+function toggleDia(d){ diasSel.has(d) ? diasSel.delete(d) : diasSel.add(d); pintarDiasSel(); }
 function abrirEmpleado(id){
   const e = id ? adm.empleados.find(x=>x.id===id) : null;
   $('me-titulo').textContent = e ? 'Editar a '+e.nombre : 'Sumar persona';
@@ -911,6 +979,10 @@ function abrirEmpleado(id){
   $('me-ev').value = e && e.valorEvento ? e.valorEvento : '';
   $('me-tel').value = e ? e.telefono : '';
   $('me-notas').value = e ? e.notas : '';
+  diasSel = new Set(e && e.horarioDias ? e.horarioDias.split(',') : []);
+  pintarDiasSel();
+  $('me-hent').value = e && e.horarioEntrada ? e.horarioEntrada : '';
+  $('me-hsal').value = e && e.horarioSalida ? e.horarioSalida : '';
   $('me-activo').checked = e ? e.activo : true;
   if(!e) pinAzar();
   actualizarFormaPago(); msg('me-msg','');
@@ -921,6 +993,7 @@ async function guardarEmpleado(){
     id: $('me-id').value || undefined, nombre: $('me-nombre').value, area: $('me-area').value, pin: $('me-pin').value,
     formaPago: $('me-forma').value, valor: $('me-valor').value, horasSemana: $('me-hs').value, valorEvento: $('me-ev').value,
     telefono: $('me-tel').value, notas: $('me-notas').value, activo: $('me-activo').checked,
+    horarioDias: DIAS_LETRA.filter(d => diasSel.has(d)).join(','), horarioEntrada: $('me-hent').value, horarioSalida: $('me-hsal').value,
   };
   if(empleado.valor===''){ msg('me-msg','Falta el valor.','err'); return; }
   if(empleado.formaPago==='semanal' && !(Number(empleado.horasSemana)>0)){ msg('me-msg','Falta cuántas horas trabaja por semana.','err'); return; }
@@ -1015,6 +1088,42 @@ async function borrarAjuste(id){
   catch(e){ msg('ma-msg', e.message, 'err'); }
 }
 
+/* ───── Pagos y adelantos ───── */
+let tipoPagoSel = 'Adelanto';
+function tipoPago(t){ tipoPagoSel = t; $('mp-adelanto').className = 'btn '+(t==='Adelanto'?'':'ghost'); $('mp-sueldo').className = 'btn '+(t==='Pago de sueldo'?'':'ghost'); }
+function abrirPagos(empId){
+  const l = adm.liquidacion.find(x=>x.empleadoId===empId);
+  $('mp-emp').value = empId; $('mp-nombre').textContent = l.nombre;
+  $('mp-monto').value = ''; $('mp-nota').value = '';
+  const hoy = new Date(); $('mp-fecha').value = localInput(hoy).slice(0,10);
+  tipoPago('Adelanto'); msg('mp-msg','');
+  $('mp-resumen').innerHTML = `<span>Total ${mesTexto(adm.mes)}: <b>${fmt(l.total)}</b></span><span>Falta pagar <b>${fmt(l.saldo)}</b></span>`;
+  $('mp-lista').innerHTML = l.pagos.length ? '<div class="sub" style="font-weight:700;margin-bottom:4px;">Registrados este mes</div>' + l.pagos.map(p => `<div class="marc"><span>${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR')} · ${esc(p.tipo)}${p.nota?' · '+esc(p.nota):''} · <b>${fmt(p.monto)}</b></span><button class="x" onclick="borrarPago('${p.id}')">🗑</button></div>`).join('') : '<div class="sub">Todavía no hay pagos ni adelantos este mes.</div>';
+  $('m-pagos').classList.remove('oculto');
+}
+async function guardarPago(){
+  const monto = Number($('mp-monto').value);
+  if(!(monto>0)){ msg('mp-msg','Poné el monto.','err'); return; }
+  msg('mp-msg','Guardando…','info');
+  try{
+    const empId = $('mp-emp').value;
+    await apiAdm('guardarPago', { mes: adm.mes, empleadoId: empId, tipo: tipoPagoSel, monto, fecha: $('mp-fecha').value, nota: $('mp-nota').value });
+    await cargarAdmin(); abrirPagos(empId); msg('mp-msg','✅ Guardado','ok');
+  }catch(e){ msg('mp-msg', e.message, 'err'); }
+}
+async function borrarPago(id){
+  if(!confirm('¿Borrar este pago?')) return;
+  try{ const empId = $('mp-emp').value; await apiAdm('borrarPago', {id}); await cargarAdmin(); abrirPagos(empId); }
+  catch(e){ msg('mp-msg', e.message, 'err'); }
+}
+async function marcarDiaLibre(f){
+  if(!confirm('¿Marcar ese día como feriado o día libre? No va a contar como falta para nadie.')) return;
+  cargando(true,'Guardando…');
+  try{ await apiAdm('guardarConfig', {config:{diasLibres: [...(adm.config.diasLibres||[]), f]}}); await cargarAdmin(); }
+  catch(e){ alert(e.message); }
+  finally{ cargando(false); }
+}
+
 /* ───── Recibos, WhatsApp, CSV ───── */
 function textoRecibo(l){
   const lugar = adm.config.nombreLugar || 'Aldea de Valle';
@@ -1024,7 +1133,11 @@ function textoRecibo(l){
   if(l.formaPago==='evento') t += `Eventos: ${l.eventos}\n`;
   t += `Cálculo: ${l.explicacion} = ${fmt(l.calculado)}\n`;
   l.ajustes.forEach(a => t += `${a.concepto}: ${a.monto>0?'+':''}${fmt(a.monto)}\n`);
-  t += `\n*Total a cobrar: ${fmt(l.total)}*`;
+  t += `\n*Total del mes: ${fmt(l.total)}*`;
+  if(l.pagado){
+    l.pagos.forEach(p => t += `\n${p.tipo} ${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR')}: -${fmt(p.monto)}`);
+    t += `\n*Saldo a cobrar: ${fmt(l.saldo)}*`;
+  }
   return t;
 }
 function whatsapp(empId){
@@ -1051,7 +1164,9 @@ function recibo(empId){
   ${l.formaPago==='evento'?`<div class="l"><span>Eventos</span><span>${l.eventos}</span></div>`:''}
   <div class="l"><span>${esc(l.explicacion)}</span><b>${fmt(l.calculado)}</b></div>
   ${l.ajustes.map(a=>`<div class="l"><span>${esc(a.concepto)}</span><b>${a.monto>0?'+':''}${fmt(a.monto)}</b></div>`).join('')}
-  <div class="tot"><span>Total</span><span>${fmt(l.total)}</span></div>
+  <div class="tot"><span>Total del mes</span><span>${fmt(l.total)}</span></div>
+  ${l.pagos.map(p=>`<div class="l"><span>${esc(p.tipo)} ${new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR')}${p.nota?' · '+esc(p.nota):''}</span><b>−${fmt(p.monto)}</b></div>`).join('')}
+  ${l.pagado?`<div class="tot"><span>Saldo a cobrar</span><span>${fmt(l.saldo)}</span></div>`:''}
   ${filas?`<table><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th style="text-align:right;">Horas</th></tr></thead><tbody>${filas}</tbody></table>`:''}
   <div class="firma"><div>Firma de ${esc(l.nombre)}</div><div>Firma ${lugar}</div></div>
   <button onclick="window.print()">Imprimir / Guardar PDF</button></body></html>`);
@@ -1061,9 +1176,9 @@ function exportarCSV(){
   const sep = ';';
   const q = v => { const s = String(v==null?'':v); return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
   const num = n => String(Math.round(Number(n)*100)/100).replace('.', ',');
-  const filas = [['Empleado','Área','Forma de pago','Valor','Horas','Días','Eventos','Calculado','Ajustes','Total','Turnos sin salida','Detalle']];
-  adm.liquidacion.forEach(l => filas.push([l.nombre,l.area,l.formaPagoTexto,l.valor,num(l.horas),l.dias,l.eventos,l.calculado,l.totalAjustes,l.total,l.sinSalida,l.explicacion + (l.ajustes.length?' · '+l.ajustes.map(a=>a.concepto+': '+a.monto).join(' · '):'')]));
-  filas.push(['TOTAL','','','','','','','','',adm.liquidacion.reduce((a,l)=>a+l.total,0),'','']);
+  const filas = [['Empleado','Área','Forma de pago','Valor','Horas','Días','Eventos','Calculado','Ajustes','Total','Ya pagado','Saldo','Turnos sin salida','Detalle']];
+  adm.liquidacion.forEach(l => filas.push([l.nombre,l.area,l.formaPagoTexto,l.valor,num(l.horas),l.dias,l.eventos,l.calculado,l.totalAjustes,l.total,l.pagado||0,l.saldo??l.total,l.sinSalida,l.explicacion + (l.ajustes.length?' · '+l.ajustes.map(a=>a.concepto+': '+a.monto).join(' · '):'')]));
+  filas.push(['TOTAL','','','','','','','','',adm.liquidacion.reduce((a,l)=>a+l.total,0),adm.liquidacion.reduce((a,l)=>a+(l.pagado||0),0),adm.liquidacion.reduce((a,l)=>a+(l.saldo??l.total),0),'','']);
   filas.push([]); filas.push(['Marcajes']); filas.push(['Fecha','Hora','Persona','Tipo','Origen','Distancia (m)','Nota']);
   [...adm.marcajes].reverse().forEach(m => filas.push([new Date(m.fechaHora).toLocaleDateString('es-AR'), hora(m.fechaHora), m.nombre, m.tipo, m.origen, m.distancia, m.nota]));
   const csv = '﻿' + filas.map(f => f.map(q).join(sep)).join('\r\n');
@@ -1111,6 +1226,22 @@ async function probarDistancia(){
     const r = Number($('cf-radio').value)||100;
     msg('cf-msg', `Estás a ${d} m del centro (±${Math.round(c.accuracy)} m). ${d<=r?'✅ Desde acá se puede marcar.':'❌ Desde acá NO se puede marcar.'}${d>r && c.accuracy>300 ? ' '+ayudaUbicacionAproximada() : ''}`, d<=r?'ok':'err');
   }catch(e){ msg('cf-msg', e.message, 'err'); }
+}
+function pintarDiasLibres(){
+  const dias = (adm.config.diasLibres || []).slice().sort().reverse();
+  $('cf-dias-libres').innerHTML = dias.length
+    ? dias.map(d => `<div class="marc"><span>🏖️ ${cap(new Date(d+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}))}</span><button class="x" title="Quitar" onclick="quitarDiaLibre('${d}')">🗑</button></div>`).join('')
+    : '<div class="sub">Ninguno cargado.</div>';
+}
+async function agregarDiaLibre(){
+  const d = $('cf-dia-libre').value;
+  if(!d){ msg('cf-libre-msg','Elegí la fecha.','err'); return; }
+  try{ await apiAdm('guardarConfig', {config:{diasLibres: [...(adm.config.diasLibres||[]), d]}}); $('cf-dia-libre').value=''; await cargarAdmin(); msg('cf-libre-msg','✅ Agregado','ok'); }
+  catch(e){ msg('cf-libre-msg', e.message, 'err'); }
+}
+async function quitarDiaLibre(d){
+  try{ await apiAdm('guardarConfig', {config:{diasLibres: (adm.config.diasLibres||[]).filter(x=>x!==d)}}); await cargarAdmin(); }
+  catch(e){ msg('cf-libre-msg', e.message, 'err'); }
 }
 function pintarDiasEvento(){
   const dias = (adm.config.diasEvento || []).slice().sort().reverse();

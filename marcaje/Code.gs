@@ -19,6 +19,7 @@ const HOJAS = {
   Marcajes:  ['id', 'empleadoId', 'nombre', 'tipo', 'fechaHora', 'lat', 'lng', 'distancia', 'precision', 'origen', 'nota'],
   Config:    ['clave', 'valor', 'descripcion'],
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
+  Pagos:     ['id', 'mes', 'fecha', 'empleadoId', 'nombre', 'tipo', 'monto', 'nota', 'creado'],
 };
 
 const FORMAS_PAGO = {
@@ -111,6 +112,8 @@ function manejar_(d) {
       borrarMarcaje: conAdmin_(accBorrarMarcaje_),
       guardarAjuste: conAdmin_(accGuardarAjuste_),
       borrarAjuste: conAdmin_(accBorrarAjuste_),
+      guardarPago: conAdmin_(accGuardarPago_),
+      borrarPago: conAdmin_(accBorrarPago_),
       guardarConfig: conAdmin_(accGuardarConfig_),
       guardarLiquidacion: conAdmin_(accGuardarLiquidacion_),
     };
@@ -233,7 +236,7 @@ function accAdminDatos_(d) {
     marcajes: delMes,
     liquidacion,
     adentro,
-    config: { centroLat: cfg.centroLat, centroLng: cfg.centroLng, radio: Number(cfg.radio) || 100, direccion: cfg.direccion, nombreLugar: cfg.nombreLugar, diasEvento: Array.from(diasEvento_()) },
+    config: { centroLat: cfg.centroLat, centroLng: cfg.centroLng, radio: Number(cfg.radio) || 100, direccion: cfg.direccion, nombreLugar: cfg.nombreLugar, diasEvento: Array.from(diasEvento_()), diasLibres: listaConfig_('diasLibres') },
     liquidacionGuardada: !!guardada,
     formasPago: FORMAS_PAGO,
   };
@@ -280,6 +283,15 @@ function accGuardarEmpleado_(d) {
     const colEv = columna_(sh, 'valorEvento');
     const filaN = idx >= 0 ? emps[idx]._fila : sh.getLastRow();
     sh.getRange(filaN, colEv).setValue(valorEvento);
+    // Horario esperado, para avisar faltas y llegadas tarde.
+    const dias = String(x.horarioDias || '').split(',').filter(dd => DIAS_LETRA.includes(dd)).join(',');
+    const entrada = /^\d{2}:\d{2}$/.test(x.horarioEntrada || '') ? x.horarioEntrada : '';
+    const salida = /^\d{2}:\d{2}$/.test(x.horarioSalida || '') ? x.horarioSalida : '';
+    const antes = idx >= 0 ? emps[idx] : {};
+    const cambio = dias !== (antes.horarioDias || '') || entrada !== (antes.horarioEntrada || '');
+    const valores = { horarioDias: dias, horarioEntrada: entrada, horarioSalida: salida,
+      horarioDesde: !dias || !entrada ? '' : cambio ? diaDe_(new Date()) : (antes.horarioDesde || diaDe_(new Date())) };
+    Object.keys(valores).forEach(k => sh.getRange(filaN, columna_(sh, k)).setNumberFormat('@').setValue(valores[k]));
     return { ok: true, id: fila[0] };
   } finally {
     lock.releaseLock();
@@ -311,6 +323,21 @@ function accGuardarAjuste_(d) {
 
 function accBorrarAjuste_(d) { return borrarPorId_('Ajustes', d.id); }
 
+function accGuardarPago_(d) {
+  const e = empleados_().find(x => x.id === d.empleadoId);
+  if (!e) return { ok: false, error: 'Empleado no encontrado.' };
+  const monto = Number(d.monto);
+  if (!(monto > 0)) return { ok: false, error: 'Poné el monto que se pagó.' };
+  if (!/^\d{4}-\d{2}$/.test(d.mes || '')) return { ok: false, error: 'Mes inválido.' };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha || '')) return { ok: false, error: 'Fecha inválida.' };
+  const tipo = d.tipo === 'Pago de sueldo' ? 'Pago de sueldo' : 'Adelanto';
+  const sh = hojaOCrear_('Pagos');
+  sh.appendRow([uid_(), "'" + d.mes, "'" + d.fecha, e.id, e.nombre, tipo, monto, String(d.nota || '').trim(), new Date()]);
+  return { ok: true };
+}
+
+function accBorrarPago_(d) { return borrarPorId_('Pagos', d.id); }
+
 function accGuardarConfig_(d) {
   const c = d.config || {};
   const cambios = {};
@@ -328,10 +355,11 @@ function accGuardarConfig_(d) {
     cambios.radio = Math.round(r);
   }
   if ('nombreLugar' in c) cambios.nombreLugar = String(c.nombreLugar).trim() || 'Aldea de Valle';
-  if ('diasEvento' in c) {
-    const lista = (Array.isArray(c.diasEvento) ? c.diasEvento : []).map(String).filter(f => /^\d{4}-\d{2}-\d{2}$/.test(f));
-    cambios.diasEvento = Array.from(new Set(lista)).sort().join(',');
-  }
+  ['diasEvento', 'diasLibres'].forEach(k => {
+    if (!(k in c)) return;
+    const lista = (Array.isArray(c[k]) ? c[k] : []).map(String).filter(f => /^\d{4}-\d{2}-\d{2}$/.test(f));
+    cambios[k] = Array.from(new Set(lista)).sort().join(',');
+  });
   if ('pinAdminNuevo' in c) {
     if (!/^\d{4,8}$/.test(String(c.pinAdminNuevo))) return { ok: false, error: 'El PIN de administrador tiene que ser de 4 a 8 números.' };
     cambios.pinAdmin = String(c.pinAdminNuevo);
@@ -341,7 +369,7 @@ function accGuardarConfig_(d) {
   Object.keys(cambios).forEach(k => {
     const i = vals.findIndex(r => r[0] === k);
     if (i >= 1) sh.getRange(i + 1, 2).setValue(String(cambios[k]));
-    else sh.appendRow([k, String(cambios[k]), k === 'diasEvento' ? 'Días de evento además de sábados y domingos (AAAA-MM-DD separados por coma).' : '']);
+    else sh.appendRow([k, String(cambios[k]), k === 'diasEvento' ? 'Días de evento además de sábados y domingos (AAAA-MM-DD separados por coma).' : k === 'diasLibres' ? 'Feriados y días libres: no cuentan como falta.' : '']);
   });
   return { ok: true };
 }
@@ -355,18 +383,21 @@ function accGuardarLiquidacion_(d) {
   const nombre = 'Liquidación ' + mes;
   let sh = ss.getSheetByName(nombre);
   if (sh) sh.clear(); else sh = ss.insertSheet(nombre);
-  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes', 'Horas de evento', 'Valor hora evento', 'Cálculo'];
+  const enc = ['Empleado', 'Área', 'Forma de pago', 'Valor', 'Horas', 'Días', 'Eventos', 'Calculado', 'Ajustes', 'Total a pagar', 'Turnos sin salida', 'Detalle ajustes', 'Horas de evento', 'Valor hora evento', 'Cálculo', 'Ya pagado', 'Saldo a pagar', 'Faltas', 'Llegadas tarde'];
   const filas = liq.map(l => [l.nombre, l.area, l.formaPagoTexto, l.valor, l.horas, l.dias, l.eventos, l.calculado, l.totalAjustes, l.total, l.sinSalida,
-    l.ajustes.map(a => `${a.concepto}: ${a.monto}`).join(' · '), l.horasEvento || '', l.valorEvento || '', l.explicacion]);
+    l.ajustes.map(a => `${a.concepto}: ${a.monto}`).join(' · '), l.horasEvento || '', l.valorEvento || '', l.explicacion, l.pagado, l.saldo,
+    l.asistencia ? l.asistencia.faltas.length : '', l.asistencia ? l.asistencia.tardes.length : '']);
   const total = liq.reduce((a, l) => a + l.total, 0);
   sh.appendRow(enc);
   if (filas.length) sh.getRange(2, 1, filas.length, enc.length).setValues(filas);
-  sh.appendRow(['TOTAL', '', '', '', '', '', '', '', '', total, '', '', '', '', '']);
+  sh.appendRow(['TOTAL', '', '', '', '', '', '', '', '', total, '', '', '', '', '',
+    liq.reduce((a, l) => a + l.pagado, 0), liq.reduce((a, l) => a + l.saldo, 0), '', '']);
   sh.appendRow(['Guardado el ' + Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy HH:mm')]);
   sh.getRange(1, 1, 1, enc.length).setFontWeight('bold').setBackground('#E3EDE4');
   sh.getRange(filas.length + 2, 1, 1, enc.length).setFontWeight('bold');
   sh.getRange(2, 4, filas.length + 1, 1).setNumberFormat('$#,##0');
   sh.getRange(2, 8, filas.length + 1, 3).setNumberFormat('$#,##0');
+  sh.getRange(2, 16, filas.length + 1, 2).setNumberFormat('$#,##0');
   sh.setFrozenRows(1);
   return { ok: true, hoja: nombre, total };
 }
@@ -474,12 +505,18 @@ function liquidarEmpleado_(e, mes, marcajes, ajustes) {
   const ajs = ajustes.filter(a => a.empleadoId === e.id && a.mes === mes)
     .map(a => ({ id: a.id, monto: a.monto, concepto: a.concepto }));
   const totalAjustes = ajs.reduce((a, x) => a + x.monto, 0);
+  const pagos = pagos_().filter(p => p.empleadoId === e.id && p.mes === mes)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha)).map(p => ({ id: p.id, fecha: p.fecha, tipo: p.tipo, monto: p.monto, nota: p.nota }));
+  const pagado = pagos.reduce((a, p) => a + p.monto, 0);
+  const total = calculado + totalAjustes;
   return {
     empleadoId: e.id, nombre: e.nombre, area: e.area, activo: e.activo, telefono: e.telefono,
     formaPago: e.formaPago, formaPagoTexto: FORMAS_PAGO[e.formaPago] || e.formaPago, valor, horasSemana: e.horasSemana,
     valorEvento: tarifaEvento ? Number(e.valorEvento) : '', horasEvento,
     horas, dias: Object.keys(dias).length, eventos, sinSalida,
-    calculado, explicacion, ajustes: ajs, totalAjustes, total: calculado + totalAjustes,
+    calculado, explicacion, ajustes: ajs, totalAjustes, total,
+    pagos, pagado, saldo: total - pagado,
+    asistencia: asistencia_(e, mes, marcajes),
     turnos: detalle.reverse(),
   };
 }
@@ -510,6 +547,8 @@ function empleados_() {
     activo: e.activo === true || String(e.activo).toUpperCase() === 'TRUE' || String(e.activo).toUpperCase() === 'SI',
     notas: String(e.notas || ''), creado: e.creado instanceof Date ? e.creado : null,
     valorEvento: e.valorEvento === '' || e.valorEvento == null ? '' : Number(e.valorEvento),
+    horarioDias: String(e.horarioDias || ''), horarioEntrada: hhmm_(e.horarioEntrada), horarioSalida: hhmm_(e.horarioSalida),
+    horarioDesde: e.horarioDesde instanceof Date ? diaDe_(e.horarioDesde) : String(e.horarioDesde || ''),
   }));
 }
 
@@ -526,6 +565,84 @@ function ajustes_() {
     id: String(a.id), mes: a.mes instanceof Date ? Utilities.formatDate(a.mes, TZ, 'yyyy-MM') : String(a.mes),
     empleadoId: String(a.empleadoId), monto: Number(a.monto) || 0, concepto: String(a.concepto || ''),
   }));
+}
+
+let _pagos = null;
+function pagos_() {
+  if (_pagos) return _pagos;
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Pagos');
+  if (!sh) return (_pagos = []);
+  _pagos = filas_('Pagos').map(p => ({
+    id: String(p.id), mes: p.mes instanceof Date ? Utilities.formatDate(p.mes, TZ, 'yyyy-MM') : String(p.mes),
+    fecha: p.fecha instanceof Date ? diaDe_(p.fecha) : String(p.fecha),
+    empleadoId: String(p.empleadoId), tipo: String(p.tipo || 'Adelanto'), monto: Number(p.monto) || 0, nota: String(p.nota || ''),
+  }));
+  return _pagos;
+}
+
+function hojaOCrear_(nombre) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(nombre);
+  if (!sh) {
+    sh = ss.insertSheet(nombre);
+    sh.appendRow(HOJAS[nombre]);
+    sh.getRange(1, 1, 1, HOJAS[nombre].length).setFontWeight('bold').setBackground('#E3EDE4');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function listaConfig_(clave) {
+  return String(config_()[clave] || '').split(',').map(x => x.trim()).filter(Boolean);
+}
+
+function hhmm_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'HH:mm');
+  const s = String(v || '').trim();
+  return /^\d{1,2}:\d{2}$/.test(s) ? s.padStart(5, '0') : '';
+}
+
+/* ───────────────────────── Asistencia (faltas y llegadas tarde) ───────────────────────── */
+const DIAS_LETRA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];   // lunes … domingo
+
+/** Compara el horario esperado de un empleado con sus entradas del mes. */
+function asistencia_(e, mes, marcajes) {
+  if (!e.horarioDias || !e.horarioEntrada) return null;
+  const dias = e.horarioDias.split(',');
+  const tolerancia = Number(config_().toleranciaMin) || 10;
+  const libres = listaConfig_('diasLibres');
+  const [hE, mE] = e.horarioEntrada.split(':').map(Number);
+  const esperado = hE * 60 + mE;
+  const hoy = diaDe_(new Date());
+  const ahoraMin = Number(Utilities.formatDate(new Date(), TZ, 'H')) * 60 + Number(Utilities.formatDate(new Date(), TZ, 'm'));
+  const primeras = {};
+  marcajes.filter(m => m.empleadoId === e.id && m.tipo === 'ENTRADA').forEach(m => {
+    const d = diaDe_(m.fechaHora);
+    if (!primeras[d] || m.fechaHora < primeras[d]) primeras[d] = m.fechaHora;
+  });
+  const faltas = [], tardes = [];
+  let hoyNoLlego = false;
+  const [y, mm] = mes.split('-').map(Number);
+  const ultimo = new Date(Date.UTC(y, mm, 0)).getUTCDate();
+  for (let dia = 1; dia <= ultimo; dia++) {
+    const f = `${mes}-${String(dia).padStart(2, '0')}`;
+    if (f > hoy) break;
+    if (e.horarioDesde && f < e.horarioDesde) continue;
+    if (libres.includes(f)) continue;
+    const dow = new Date(Date.UTC(y, mm - 1, dia, 15)).getUTCDay();          // 0 = domingo
+    if (!dias.includes(DIAS_LETRA[(dow + 6) % 7])) continue;
+    const ent = primeras[f];
+    if (!ent) {
+      if (f < hoy) faltas.push(f);
+      else if (ahoraMin > esperado + tolerancia) hoyNoLlego = true;
+      continue;
+    }
+    const real = Number(Utilities.formatDate(ent, TZ, 'H')) * 60 + Number(Utilities.formatDate(ent, TZ, 'm'));
+    if (real - esperado > tolerancia) tardes.push({ fecha: f, minutos: real - esperado, hora: Utilities.formatDate(ent, TZ, 'HH:mm') });
+  }
+  const nombres = { L: 'lun', M: 'mar', X: 'mié', J: 'jue', V: 'vie', S: 'sáb', D: 'dom' };
+  const txtDias = e.horarioDias === 'L,M,X,J,V' ? 'lunes a viernes' : dias.map(dd => nombres[dd]).join(', ');
+  return { faltas, tardes, hoyNoLlego, horario: `entra ${txtDias} a las ${e.horarioEntrada}` };
 }
 
 function config_() {
