@@ -2,6 +2,7 @@
 
 Uso:  python3 herramientas/generar-lounge.py
 Crea:
+  public/musica/lounge-eventos-30.mp3  igual, 12 compases (~30 s), para reels más largos.
   public/musica/lounge-eventos.mp3   ~20 s, 96 bpm. Lounge / deep house suave:
                                      piano eléctrico con acordes de 9na, colchón cálido, bajo redondo,
                                      bombo apagado y shaker muy bajito. Entra el ritmo en el compás 2.
@@ -105,8 +106,9 @@ def reverb(x, seg=2.2, mezcla=0.28):
     return x * (1 - mezcla) + h * mezcla
 
 
-def lounge():
-    n = int(LARGO * SR) + SR
+def lounge(compases=8):
+    largo = compases * COMPAS
+    n = int(largo * SR) + SR
     piano, pad, graves, ritmo = (np.zeros(n) for _ in range(4))
     # Fmaj9 – Em7 – Dm9 – Cmaj9 (sube y baja, nada estridente)
     acordes = [
@@ -115,7 +117,7 @@ def lounge():
         (38, [53, 57, 60, 64]),
         (36, [52, 55, 59, 62]),
     ]
-    for c in range(8):
+    for c in range(compases):
         raiz, voces = acordes[c % 4]
         ini = c * COMPAS
         pegar(pad, colchon([v - 12 for v in voces[:3]] + voces[1:], COMPAS + 0.4), ini)
@@ -143,7 +145,7 @@ def lounge():
     dly = int(0.011 * SR)
     izq = mono + np.roll(piano, dly) * 0.08 + np.roll(pad, dly) * 0.05
     der = mono + piano * 0.08 + pad * 0.05
-    st = np.stack([izq, der], axis=1)[: int(LARGO * SR)]
+    st = np.stack([izq, der], axis=1)[: int(largo * SR)]
     fin = int(1.5 * SR)
     st[-fin:] *= np.linspace(1, 0, fin)[:, None]
     return st
@@ -164,3 +166,4 @@ def guardar(st, ruta):
 
 if __name__ == "__main__":
     guardar(lounge(), os.path.join(PUBLIC, "musica", "lounge-eventos.mp3"))
+    guardar(lounge(12), os.path.join(PUBLIC, "musica", "lounge-eventos-30.mp3"))

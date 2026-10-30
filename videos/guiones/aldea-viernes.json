@@ -1,0 +1,26 @@
+{
+  "titulo": "Aldea de Valle – Un viernes en Aldea (reel de eventos)",
+  "letra": "serif",
+  "acento": "#E9D9B4",
+  "musica": "lounge-eventos-30.mp3",
+  "volumenMusica": 0.75,
+  "tomas": [
+    { "video": "viernes-pergola-atardecer.mp4", "desde": 0.6, "segundos": 3.6, "texto": "Un viernes\nen Aldea." },
+    { "video": "viernes-revelacion.mp4", "desde": 4.0, "segundos": 3.6, "texto": "Una revelación\nen familia." },
+    { "video": "viernes-pergola-gente.mp4", "desde": 2.5, "segundos": 3.0 },
+    { "video": "viernes-abrazo.mp4", "desde": 0.6, "segundos": 2.8 },
+    { "video": "viernes-club.mp4", "desde": 0.3, "segundos": 3.2, "texto": "El club,\nen su encuentro." },
+    { "video": "viernes-cumple.mp4", "desde": 5.5, "segundos": 3.0, "texto": "Un cumpleaños." },
+    { "video": "viernes-salon.mp4", "desde": 0.5, "segundos": 3.2, "texto": "Todo convive\nen un mismo lugar." },
+    { "video": "viernes-campo.mp4", "desde": 5.5, "segundos": 3.0, "texto": "Y queda espacio\npara el tuyo." }
+  ],
+  "cierre": {
+    "logo": "logo-aldea.png",
+    "arriba": "EVENTOS PRIVADOS",
+    "texto": "Reservá tu fecha\nen Aldea.",
+    "color": "#1E3226",
+    "boton": "Consultá disponibilidad",
+    "abajo": "WhatsApp 351 530 8489 · @aldeadevalle",
+    "segundos": 4.6
+  }
+}

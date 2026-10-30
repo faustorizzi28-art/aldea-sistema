@@ -17,6 +17,7 @@ import historia from "../guiones/historia-lunes-2026-10-19.json";
 import glorin from "../guiones/glorin-reel-cumples.json";
 import aldeaPileta from "../guiones/historia-aldea-pileta.json";
 import aldeaEventos from "../guiones/historia-aldea-eventos.json";
+import aldeaViernes from "../guiones/aldea-viernes.json";
 import bunkaiCeremonia from "../guiones/bunkai-ceremonia.json";
 import bunkaiHomenaje from "../guiones/bunkai-ceremonia-homenaje.json";
 import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
@@ -173,6 +174,16 @@ export const RemotionRoot: React.FC = () => {
       fps={FPS}
       durationInFrames={duracionHistoria(bunkaiHomenaje as GuionHistoria)}
       defaultProps={bunkaiHomenaje as GuionHistoria}
+      calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
+    />
+    <Composition
+      id="AldeaViernes"
+      component={Historia}
+      width={ANCHO}
+      height={ALTO}
+      fps={FPS}
+      durationInFrames={duracionHistoria(aldeaViernes as GuionHistoria)}
+      defaultProps={aldeaViernes as GuionHistoria}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionHistoria(props) })}
     />
     <Composition
