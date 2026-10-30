@@ -22,7 +22,7 @@ import bunkaiCeremonia from "../guiones/bunkai-ceremonia.json";
 import bunkaiHomenaje from "../guiones/bunkai-ceremonia-homenaje.json";
 import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
 import teaserDewey from "../guiones/teaser-colonia-dewey.json";
-import { PortadaDewey, PortadaAldeaVerano } from "./Portada";
+import { PortadaDewey, PortadaAldeaVerano, PortadaAldeaViernes } from "./Portada";
 import teaserAldea from "../guiones/teaser-aldea-verano.json";
 
 // Acá se "registran" los videos. Cada <Composition> aparece en el Estudio.
@@ -198,6 +198,7 @@ export const RemotionRoot: React.FC = () => {
     />
     <Composition id="PortadaDewey" component={PortadaDewey} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
     <Composition id="PortadaAldeaVerano" component={PortadaAldeaVerano} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
+    <Composition id="PortadaAldeaViernes" component={PortadaAldeaViernes} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
     <Composition id="TeaserAldea" component={Teaser} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={duracionTeaser(teaserAldea as GuionTeaser)} defaultProps={teaserAldea as GuionTeaser} />
     </>
   );

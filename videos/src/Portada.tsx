@@ -22,3 +22,29 @@ export const PortadaDewey: React.FC = () => <Portada foto="dewey-fogon.jpg" logo
 export const PortadaAldeaVerano: React.FC = () => (
   <Portada foto="pileta-verano.jpg" logo="logo-aldea.png" logoAncho={300} arriba="ALDEA DE VALLE" abajo={"ESCUELA DE VERANO\n2026–27\nMUY PRONTO"} />
 );
+
+// Portada elegante para los reels de eventos de Aldea (Instrument Serif + Archivo, cargadas en Espacios.tsx).
+// El título va dentro de la zona 4:5 del centro para que no se corte en la grilla del perfil.
+const SERIF = "'Instrument Serif', serif";
+const SANS = "'Archivo', sans-serif";
+type PE = { foto: string; arriba: string; titulo: string; abajo: string };
+export const PortadaEventos: React.FC<PE> = (p) => (
+  <AbsoluteFill style={{ backgroundColor: "#1E3226" }}>
+    <Img src={staticFile(`fotos/${p.foto}`)} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(1.05) contrast(1.05)" }} />
+    <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(20,30,24,0.55) 0%, rgba(20,30,24,0) 22%, rgba(20,30,24,0) 48%, rgba(20,30,24,0.82) 72%, rgba(20,30,24,0.92) 100%)" }} />
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: 330 }}>
+      <Img src={staticFile("fotos/logo-aldea.png")} style={{ width: 120, height: "auto", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.5))" }} />
+    </AbsoluteFill>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-start", paddingTop: 1130, gap: 22 }}>
+      <div style={{ fontFamily: SANS, fontWeight: 500, fontSize: 32, letterSpacing: "0.34em", color: "#E9D9B4" }}>{p.arriba}</div>
+      <div style={{ fontFamily: SERIF, fontSize: 170, lineHeight: 0.95, color: "white", textAlign: "center", whiteSpace: "pre-line", letterSpacing: "-0.01em", textShadow: "0 4px 24px rgba(0,0,0,0.35)" }}>
+        {p.titulo}
+      </div>
+      <div style={{ width: 90, height: 2, backgroundColor: "#E9D9B4", marginTop: 8 }} />
+      <div style={{ fontFamily: SANS, fontWeight: 500, fontSize: 34, letterSpacing: "0.12em", color: "white" }}>{p.abajo}</div>
+    </AbsoluteFill>
+  </AbsoluteFill>
+);
+export const PortadaAldeaViernes: React.FC = () => (
+  <PortadaEventos foto="aldea-viernes-revelacion.jpg" arriba="ALDEA DE VALLE" titulo={"Un viernes\nen Aldea"} abajo="Revelaciones · Cumpleaños · Encuentros" />
+);
