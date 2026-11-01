@@ -15,7 +15,7 @@ Guido “Ninja” Cannetti: casi 10 años en la UFC y hoy invicto en BKFC (boxeo
 
 No hace falta experiencia: técnicas de a dos, para todos los niveles. También hay entrada de espectador.
 
-⚠️ SOLO 120 LUGARES · se llenan por orden de pago
+⚠️ CUPOS LIMITADOS · se llenan por orden de pago
 💰 $49.000 hasta el 13/11 · $55.000 el día del evento
 
 👉 Inscripción en 1 minuto: LINK EN LA BIO
@@ -32,4 +32,4 @@ Organizan @aldeadevalle × @theclan × @bunkaidojo
 
 El NINJA Cannetti (ex UFC · BKFC) en Córdoba 🥊
 Sáb 14/11 · 16hs · Aldea de Valle
-Solo 120 lugares 👉 link en bio
+Cupos limitados 👉 link en bio
