@@ -25,7 +25,9 @@ cena a la salida (lomitos, pizzas, hamburguesas).
 - Cupo lleno → se cierra esa entrada y aparece "Lista de espera".
 
 **Para ustedes**
-- Todo entra en la pestaña **Ninja Cannetti** del Sheet de siempre: tipo,
+- Todo entra en una planilla propia del evento, **"Ninja Cannetti — Inscriptos"**
+  (separada de la de Aldea, para compartirla con los organizadores). Se crea
+  corriendo `crearPlanillaEvento` una vez; el link sale en el registro de ejecución: tipo,
   datos, tarifa, cuántos reservaron mesa para cenar, total a pagar y estado
   "⏳ Falta pago". Sumando la columna "Mesa cena" sabés cuántos cenan.
 - Mail por cada inscripción con el conteo (ej. "37/120").

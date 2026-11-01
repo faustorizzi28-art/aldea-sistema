@@ -28,14 +28,13 @@ Archivos (están en esta carpeta):
     Revisá que la última línea del editor sea `</html>` (si no, se cortó al pegar).
 12. Guardá con **Ctrl+S**.
 
-## 4. Probar que conecta con la planilla
-13. Arriba, en la lista de funciones (al lado de "Depurar"), elegí **estado** y tocá **▶ Ejecutar**.
-14. Te va a pedir permisos: **Revisar permisos** → elegí tu cuenta →
-    si aparece "Google no verificó esta app": **Configuración avanzada** →
+## 4. Crear la planilla del evento
+13. Arriba, en la lista de funciones (al lado de "Depurar"), elegí **crearPlanillaEvento** y tocá **▶ Ejecutar**.
+14. Si pide permisos: **Revisar permisos** → tu cuenta → **Configuración avanzada** →
     **Ir a Inscripción Ninja (no seguro)** → **Permitir**.
-    (Es seguro: la app sos vos.)
-15. Abajo debe decir "Ejecución completada". En la planilla aparece sola la
-    pestaña **Ninja Cannetti** con los títulos de las columnas.
+15. En el "Registro de ejecución" aparece **"Planilla del evento: https://docs.google.com/..."**.
+    Ese es el link de la planilla **"Ninja Cannetti — Inscriptos"** (también queda en tu Google Drive).
+    Es solo del evento: la podés compartir con los organizadores sin mostrar nada de Aldea.
 
 ## 5. Publicar
 16. Arriba a la derecha: **Implementar** → **Nueva implementación**.
@@ -49,7 +48,7 @@ Archivos (están en esta carpeta):
 
 ## 6. Prueba real (antes de difundir)
 20. Abrí el link en tu celular y hacé una inscripción de prueba con tus datos.
-21. Revisá que: aparece la fila en la pestaña "Ninja Cannetti", te llega el mail,
+21. Revisá que: aparece la fila en la planilla "Ninja Cannetti — Inscriptos", te llega el mail,
     y el botón de WhatsApp le escribe a Valeria.
 22. Borrá esa fila de prueba de la planilla.
 

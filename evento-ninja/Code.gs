@@ -4,7 +4,9 @@
  * Página pública de venta de entradas para el evento del sábado 14 de
  * noviembre (16hs) en Aldea de Valle. Mismo esquema que la reserva de
  * cancha: un solo proyecto de Apps Script sirve la página y guarda los
- * datos en el Sheet de siempre.
+ * datos en una planilla PROPIA del evento ("Ninja Cannetti — Inscriptos"),
+ * separada de la de Aldea, para poder compartirla con los organizadores.
+ * Se crea corriendo crearPlanillaEvento() una vez (ver PASO-A-PASO.md).
  *
  * Dos tipos de entrada:
  *   - Seminario (entrena): cupo CONFIG.cupoSeminario (120).
@@ -35,7 +37,8 @@
 
 const CONFIG = {
   marca: 'Aldea del Valle',
-  sheetId: '14ryo80HIfT2MIi1X4fugC6Me5FH-FaiyCt9kywbREIs', // mismo Sheet que usa la app interna
+  nombrePlanilla: 'Ninja Cannetti — Inscriptos', // planilla propia del evento (se crea sola)
+  sheetIdAldea: '14ryo80HIfT2MIi1X4fugC6Me5FH-FaiyCt9kywbREIs', // solo para pasar inscriptos ya cargados ahí
   pestana: 'Ninja Cannetti',
   whatsapp: '5493513855564',      // Valeria: recibe comprobantes y consultas
   emailAviso: '',                 // vacío = llega al mail de la cuenta dueña del script
@@ -70,8 +73,43 @@ const COLUMNAS = ['Alta', 'Código', 'Tipo', 'Nombre', 'DNI', 'WhatsApp', 'Email
   'Tarifa', 'Precio entrada', 'Mesa cena (personas)', 'Total a pagar', 'Estado', 'Obs'];
 const C = COLUMNAS.reduce((m, n, i) => (m[n] = i, m), {});
 
+/** La planilla del evento: su ID queda guardado en las propiedades del script. */
+function abrirPlanilla_() {
+  const id = PropertiesService.getScriptProperties().getProperty('PLANILLA_EVENTO');
+  return id ? SpreadsheetApp.openById(id) : crearPlanilla_();
+}
+
+function crearPlanilla_() {
+  const ss = SpreadsheetApp.create(CONFIG.nombrePlanilla);
+  const sh = ss.getSheets()[0].setName(CONFIG.pestana);
+  sh.appendRow(COLUMNAS);
+  sh.setFrozenRows(1);
+  sh.getRange(1, 1, 1, COLUMNAS.length).setFontWeight('bold');
+  // Si ya había inscriptos en la pestaña de la planilla de Aldea, se copian
+  try {
+    const vieja = SpreadsheetApp.openById(CONFIG.sheetIdAldea).getSheetByName(CONFIG.pestana);
+    if (vieja && vieja.getLastRow() > 1) {
+      const filas = vieja.getRange(2, 1, vieja.getLastRow() - 1, COLUMNAS.length).getValues();
+      sh.getRange(2, 1, filas.length, COLUMNAS.length).setValues(filas);
+    }
+  } catch (e) {}
+  PropertiesService.getScriptProperties().setProperty('PLANILLA_EVENTO', ss.getId());
+  return ss;
+}
+
+/**
+ * Correr UNA vez desde el editor: crea la planilla del evento (o muestra la que
+ * ya existe) y escribe el link en el "Registro de ejecución".
+ */
+function crearPlanillaEvento() {
+  const ss = abrirPlanilla_();
+  abrirPestana_();
+  Logger.log('Planilla del evento: ' + ss.getUrl());
+  return ss.getUrl();
+}
+
 function abrirPestana_() {
-  const ss = SpreadsheetApp.openById(CONFIG.sheetId);
+  const ss = abrirPlanilla_();
   let sh = ss.getSheetByName(CONFIG.pestana);
   if (!sh) {
     sh = ss.insertSheet(CONFIG.pestana);
@@ -220,7 +258,7 @@ function liberarVencidas() {
 
 /** Crea/actualiza la pestaña "Acreditación" con los pagados, ordenados por nombre, para imprimir. */
 function armarListaAcreditacion() {
-  const ss = SpreadsheetApp.openById(CONFIG.sheetId);
+  const ss = abrirPlanilla_();
   const pagados = abrirPestana_().getDataRange().getValues().slice(1)
     .filter(f => f[C['Estado']] === ESTADO_PAGADO)
     .sort((a, b) => String(a[C['Nombre']]).localeCompare(String(b[C['Nombre']]), 'es'));
