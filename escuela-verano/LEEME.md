@@ -61,6 +61,7 @@ Tiene **tres puertas** con el mismo link:
 
 ### Datos de la temporada 2026-27 (definidos por Fausto, 23/10/2026)
 - **Fechas:** del lunes 14/12 al viernes 19/2, 10 semanas de lunes a viernes. No hay escuela el 25/12, el 1/1 ni en Carnaval (8 y 9/2).
+- **Campamento:** la semana del 11 al 15 de enero (semana 5), a mitad de mes, en las dos sedes. Las demás temáticas se cambian desde Administración → Contenido.
 - **Horarios para las familias:**
   - Mañana, de 9 a 13 h.
   - Jornada completa, de 9 a 16 h.

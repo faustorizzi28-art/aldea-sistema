@@ -319,10 +319,10 @@ function cargarTematicasEjemplo_() {
     ['🚀', 'Viaje al espacio', 'Planetas, cohetes y astronautas por un día.'],
     ['🦖', 'Dinosaurios', 'Excavaciones, huellas y el museo de la colonia.'],
     ['🌎', 'Vuelta al mundo', 'Cada día un país: comidas, juegos y bailes.'],
-    ['🦸', 'Superhéroes', 'Circuitos, misiones y la capa propia.'],
+    ['🏕️', 'Campamento', 'Fogón, carpas y noche de campamento (a confirmar).'],
     ['🎪', 'Circo', 'Malabares, equilibrio y la gran función.'],
     ['🌊', 'Fondo del mar', 'Juegos de agua y criaturas marinas.'],
-    ['🏕️', 'Campamento', 'Fogón, carpas y noche de campamento (a confirmar).'],
+    ['🦸', 'Superhéroes', 'Circuitos, misiones y la capa propia.'],
     ['🎭', 'Carnaval', 'Disfraces, murga y espuma.'],
     ['🏆', 'Olimpíadas', 'Equipos, medallas y la gran final de despedida.']
   ];
