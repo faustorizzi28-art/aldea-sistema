@@ -182,6 +182,7 @@
   .extras div{display:flex; justify-content:space-between; align-items:baseline; gap:12px; border:1px solid var(--linea); border-radius:14px; padding:14px 16px; font-size:15px;}
   .extras small{color:var(--crema2); font-size:12.5px;}
   .extras b{font-family:'Anton',sans-serif; font-weight:400; font-size:24px;}
+  .nota-cena{margin:8px 0 0; font-size:13px; line-height:1.45; color:#5B574C;}
   .detalle{margin-top:18px; padding-top:14px; border-top:1.5px dashed #DAD3C1; font-size:14px; color:#5B574C; display:grid; gap:4px;}
   .detalle div{display:flex; justify-content:space-between; gap:12px;}
   .detalle b{color:var(--negro);}
@@ -248,7 +249,7 @@
         <span class="nombre">Guido Cannetti</span>
         <span class="ciudad"><small>en</small>Córdoba</span>
       </h1>
-      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Sorteo de guantes y tibiales, y asado con el Ninja. <b>Solo 120 lugares.</b></p>
+      <p class="bajada">Casi una década en la <b>UFC</b>, hoy peleador de <b>Bare Knuckle (BKFC)</b>. Viene a Aldea de Valle a dar un seminario de <b>MMA, Muay Thai, kickboxing y boxeo a puño limpio</b>. Sorteo de guantes y tibiales, y a la salida, cena en Aldea. <b>Solo 120 lugares.</b></p>
       <div class="chips">
         <span class="chip rojo">Ex UFC</span>
         <span class="chip">BKFC · Puño limpio</span>
@@ -338,7 +339,7 @@
       <div class="card aparecer destacada"><div class="ic">✊</div><h3>Tips de puño limpio</h3><p>Lo que aprendió en la BKFC: cómo se cierra la mano sin guante, guardia, cortes y por qué cambia todo.</p></div>
       <div class="card aparecer"><div class="ic">🎤</div><h3>Charla, fotos y firmas</h3><p>Su camino de Argentina a la UFC y al bare knuckle. Después, fotos con él: traé guantes o remera para firmar.</p></div>
       <div class="card aparecer"><div class="ic">🎁</div><h3>Sorteo</h3><p>Entre todos los que entrenan se sortean guantes y tibiales. Tu código de inscripción es tu número.</p></div>
-      <div class="card aparecer"><div class="ic">🍖</div><h3>Asado con el Ninja</h3><p>Para cerrar: asado con bebida libre hasta la 1 de la mañana, comiendo con él. Lo sumás al inscribirte.</p></div>
+      <div class="card aparecer"><div class="ic">🍔</div><h3>Cena a la salida</h3><p>Lomitos, pizzas, hamburguesas y más en la cantina de Aldea. Reservá tu mesa gratis al inscribirte.</p></div>
     </div>
   </div>
 </section>
@@ -403,15 +404,16 @@
             <label><input type="radio" name="exp" value="Otra"><span>Otra</span></label>
           </div>
         </div>
-        <div id="bloque-asado">
-          <label>¿Te quedás al asado con el Ninja? <small id="asado-cierre"></small></label>
-          <div class="opciones" id="f-asado">
-            <label><input type="radio" name="asado" value="no" checked><span>No</span></label>
-            <label><input type="radio" name="asado" value="si"><span id="asado-op">Sí, asado + bebida libre</span></label>
+        <div id="bloque-cena">
+          <label>¿Te quedás a cenar? <small id="cena-cierre"></small></label>
+          <div class="opciones" id="f-cena">
+            <label><input type="radio" name="cena" value="no" checked><span>No</span></label>
+            <label><input type="radio" name="cena" value="si"><span>Sí, reservame mesa</span></label>
           </div>
-          <div id="asado-personas" class="oculto">
-            <label for="f-personas">¿Cuántos se quedan? <small>(contándote a vos)</small></label>
+          <div id="cena-personas" class="oculto">
+            <label for="f-personas">¿Para cuántos? <small>(contándote a vos)</small></label>
             <select id="f-personas"></select>
+            <p class="nota-cena" id="cena-menu"></p>
           </div>
         </div>
         <label class="check"><input id="f-acepta" type="checkbox"> <span id="txt-acepta"></span></label>
@@ -447,9 +449,9 @@
     <details><summary>¿A qué hora y dónde es?</summary><p>Sábado 14 de noviembre a las 16hs en Aldea de Valle. Si somos hasta 80 se hace en el salón; si somos más, en la cancha de pasto sintético.</p></details>
     <details><summary>¿Tengo que saber pelear?</summary><p>No. Se trabajan técnicas de a dos, frente a frente, sin sparring. Es para todos los niveles, y los profes de The Clan ayudan a corregir.</p></details>
     <details><summary>¿Qué tengo que llevar?</summary><p>Ropa cómoda, agua, vendas, guantes y tibiales si tenés. Los tatamis los ponemos nosotros. Si querés que el Ninja te firme algo, traelo.</p></details>
-    <details><summary>¿Puedo ir solo a mirar?</summary><p>Sí, con la entrada de espectador. Ves todo el seminario y la charla, y podés sumarte al asado.</p></details>
+    <details><summary>¿Puedo ir solo a mirar?</summary><p>Sí, con la entrada de espectador. Ves todo el seminario y la charla, y podés quedarte a cenar.</p></details>
     <details><summary>¿Cómo es el sorteo?</summary><p>Todos los que entrenan participan con su código de inscripción. Se sortean guantes y tibiales.</p></details>
-    <details><summary>¿Cómo es lo del asado?</summary><p>Asado con bebida libre (con alcohol) hasta la 1 de la mañana, comiendo con el Ninja, por <span class="asado-precio">$22.000</span> por persona. Podés anotar acompañantes aunque no entrenen. Se anota hasta 3 días antes (<span class="asado-hasta">11 de noviembre</span>) para comprar la carne justa. No hay opción vegetariana ni sin TACC.</p></details>
+    <details><summary>¿Hay comida a la salida?</summary><p>Sí: lomitos, pizzas, hamburguesas y más en la cantina de Aldea. Al inscribirte podés reservar mesa (gratis) para vos y tus acompañantes, aunque no entrenen; lo que comas se paga en la cantina. Las reservas de mesa van hasta el <span class="cena-hasta">13 de noviembre</span>.</p></details>
     <details><summary>¿Cuándo queda confirmado mi lugar?</summary><p>Cuando le mandás el comprobante a Valeria por WhatsApp. Tenés 48 horas desde que te inscribís; después el lugar se libera.</p></details>
     <details><summary>¿Pueden ir menores?</summary><p>Para entrenar, desde los 14 años con autorización firmada por madre, padre o tutor. Los más chicos pueden venir como espectadores acompañados de un adulto.</p></details>
     <details><summary>¿Hay devolución?</summary><p>No. Si no podés ir, podés pasarle tu lugar a otra persona avisándole a Valeria por WhatsApp.</p></details>
@@ -476,7 +478,7 @@ const DEMO = { inscriptos: 0, espectadores: 0, cupoMaximo: 120, cupoEspectadores
   { nombre: 'Preventa', precio: 42000, hasta: '2026-10-31' },
   { nombre: 'General', precio: 49000, hasta: '2026-11-13' },
   { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
-], precioEspectador: 15000, asado: { nombre: 'Asado + bebida libre', precio: 22000, hasta: '2026-11-11' }, maxPersonasAsado: 6, horasParaPagar: 48 };
+], precioEspectador: 15000, cena: { nombre: 'Cena a la salida', hasta: '2026-11-13', menu: ['lomitos', 'pizzas', 'hamburguesas'] }, maxPersonasCena: 8, horasParaPagar: 48 };
 
 const enAppsScript = typeof google !== 'undefined' && google.script && google.script.run;
 const modoDemo = !enAppsScript && !API_URL_FIJA;
@@ -496,13 +498,12 @@ function llamar(fn, arg){
 function hoyStr(){ return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Cordoba' }); }
 function estadoDemo(){
   return Object.assign({}, DEMO, { tarifa: DEMO.precios.find(p => hoyStr() <= p.hasta) || null,
-    asado: Object.assign({ abierto: hoyStr() <= DEMO.asado.hasta }, DEMO.asado) });
+    cena: Object.assign({ abierto: hoyStr() <= DEMO.cena.hasta }, DEMO.cena) });
 }
 function demoInscribir(d){
   const e = estadoDemo();
   const entrada = d.tipo === 'espectador' ? { nombre: 'Espectador', precio: e.precioEspectador } : e.tarifa;
-  const asado = { personas: d.personasAsado, total: e.asado.precio * d.personasAsado };
-  return { ok:true, codigo:'NC-000', tipo: d.tipo === 'espectador' ? 'Espectador' : 'Seminario', entrada, asado, total: entrada.precio + asado.total,
+  return { ok:true, codigo:'NC-000', tipo: d.tipo === 'espectador' ? 'Espectador' : 'Seminario', entrada, mesa: d.personasCena, total: entrada.precio,
     horasParaPagar: e.horasParaPagar, pago:{ alias:'theclan.aldea', banco:'', titular:'' }, whatsappComprobante: wa(WHATSAPP, 'Hola Vale! (demo)') };
 }
 
@@ -511,6 +512,7 @@ const wa = (n, t) => 'https://wa.me/' + n + '?text=' + encodeURIComponent(t);
 const fechaCorta = s => new Date(s + 'T12:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'short' });
 const fechaLarga = s => new Date(s + 'T12:00:00').toLocaleDateString('es-AR', { day:'numeric', month:'long' });
 const $ = id => document.getElementById(id);
+const menuTxt = m => (m.join(', ') + ' y más').replace(/^./, c => c.toUpperCase());
 const tipoElegido = () => (document.querySelector('input[name=tipo]:checked') || {}).value || 'seminario';
 
 function pintarEstado(e){
@@ -530,20 +532,19 @@ function pintarEstado(e){
   }).join('');
   $('extras').innerHTML =
     `<div><span>👀 Entrada espectador</span><b>${pesos(e.precioEspectador)}</b></div>` +
-    `<div><span>🍖 ${e.asado.nombre} <small>${e.asado.abierto ? 'hasta el ' + fechaCorta(e.asado.hasta) : 'cerrado'}</small></span><b>${pesos(e.asado.precio)}</b></div>`;
+    `<div><span>🍔 ${e.cena.nombre} <small>${menuTxt(e.cena.menu)} · se paga en la cantina</small></span><b>Reservá mesa</b></div>`;
 
   if (e.tarifa) {
     $('tipo-sem-precio').textContent = 'Seminario · ' + pesos(e.tarifa.precio);
     $('flot-precio').textContent = pesos(e.tarifa.precio);
   }
   $('tipo-esp-precio').textContent = 'Espectador · ' + pesos(e.precioEspectador);
-  $('asado-op').textContent = 'Sí · ' + pesos(e.asado.precio) + ' c/u';
-  $('asado-cierre').textContent = e.asado.abierto ? '(hasta el ' + fechaLarga(e.asado.hasta) + ')' : '';
-  document.querySelectorAll('.asado-precio').forEach(x => x.textContent = pesos(e.asado.precio));
-  document.querySelectorAll('.asado-hasta').forEach(x => x.textContent = fechaLarga(e.asado.hasta));
-  $('bloque-asado').classList.toggle('oculto', !e.asado.abierto);
+  $('cena-cierre').textContent = e.cena.abierto ? '(reservás hasta el ' + fechaLarga(e.cena.hasta) + ')' : '';
+  $('cena-menu').textContent = menuTxt(e.cena.menu) + '. La mesa es gratis: lo que comas se paga en la cantina.';
+  document.querySelectorAll('.cena-hasta').forEach(x => x.textContent = fechaLarga(e.cena.hasta));
+  $('bloque-cena').classList.toggle('oculto', !e.cena.abierto);
   if (!$('f-personas').children.length) {
-    $('f-personas').innerHTML = Array.from({ length: e.maxPersonasAsado }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? 'personas' : 'persona (solo yo)'}</option>`).join('');
+    $('f-personas').innerHTML = Array.from({ length: e.maxPersonasCena }, (_, i) => `<option value="${i + 1}">${i + 1} ${i ? 'personas' : 'persona (solo yo)'}</option>`).join('');
   }
   const espAgotado = e.espectadores >= e.cupoEspectadores;
   document.querySelector('input[name=tipo][value=espectador]').disabled = espAgotado;
@@ -561,25 +562,24 @@ function pintarEstado(e){
   pintarTotal();
 }
 
-function asadoElegido(){
-  const si = (document.querySelector('input[name=asado]:checked') || {}).value === 'si' && ESTADO.asado.abierto;
-  const personas = si ? parseInt($('f-personas').value, 10) || 1 : 0;
-  return { personas, total: ESTADO.asado.precio * personas };
+function mesaElegida(){
+  const si = (document.querySelector('input[name=cena]:checked') || {}).value === 'si' && ESTADO.cena.abierto;
+  return si ? parseInt($('f-personas').value, 10) || 1 : 0;
 }
 
 function pintarTotal(){
   if (!ESTADO || !ESTADO.tarifa) return;
   const esp = tipoElegido() === 'espectador';
   const entrada = esp ? { nombre: 'Espectador', precio: ESTADO.precioEspectador } : ESTADO.tarifa;
-  const a = asadoElegido();
+  const mesa = mesaElegida();
   $('bloque-exp').classList.toggle('oculto', esp);
-  $('asado-personas').classList.toggle('oculto', !a.personas);
+  $('cena-personas').classList.toggle('oculto', !mesa);
   $('txt-acepta').textContent = esp
     ? 'Acepto que no hay devolución y que el estacionamiento se paga aparte.'
     : 'Declaro estar en condiciones físicas de entrenar y participo bajo mi responsabilidad. Acepto que no hay devolución. Si soy menor (desde 14 años), llevo la autorización firmada.';
   $('detalle').innerHTML = `<div><span>${esp ? 'Entrada espectador' : 'Seminario · ' + entrada.nombre}</span><b>${pesos(entrada.precio)}</b></div>` +
-    (a.personas ? `<div><span>${ESTADO.asado.nombre} × ${a.personas}</span><b>${pesos(a.total)}</b></div>` : '');
-  $('total-v').textContent = pesos(entrada.precio + a.total);
+    (mesa ? `<div><span>Mesa para cenar · ${mesa} ${mesa > 1 ? 'personas' : 'persona'}</span><b>Se paga en cantina</b></div>` : '');
+  $('total-v').textContent = pesos(entrada.precio);
 }
 
 async function enviar(){
@@ -588,7 +588,7 @@ async function enviar(){
   const d = {
     tipo, nombre: $('f-nombre').value.trim(), dni: $('f-dni').value.trim(), tel: $('f-tel').value.trim(),
     email: $('f-email').value.trim(), experiencia: tipo === 'seminario' && exp ? exp.value : '',
-    acepta: $('f-acepta').checked, personasAsado: asadoElegido().personas,
+    acepta: $('f-acepta').checked, personasCena: mesaElegida(),
   };
   const msg = $('msg'), btn = $('btn-enviar');
   const faltan = [];
@@ -605,7 +605,7 @@ async function enviar(){
     $('paso-ok').classList.remove('oculto');
     $('ok-sub').innerHTML = 'Tu código es <b>' + r.codigo + '</b>' + (r.tipo === 'Seminario' ? ' (es tu número para el sorteo)' : '') +
       '<br>' + (r.tipo === 'Seminario' ? 'Seminario · ' + r.entrada.nombre : 'Espectador') + ': ' + pesos(r.entrada.precio) +
-      (r.asado.personas ? '<br>Asado + bebida libre × ' + r.asado.personas + ': ' + pesos(r.asado.total) : '');
+      (r.mesa ? '<br>🍔 Mesa reservada para cenar: ' + r.mesa + (r.mesa > 1 ? ' personas' : ' persona') + ' (se paga en la cantina)' : '');
     $('pago').innerHTML = `Transferí <b>${pesos(r.total)}</b> al alias:<br>
       <span class="alias">${r.pago.alias}</span><button class="copiar" id="btn-copiar">Copiar</button><br>
       ${[r.pago.banco, r.pago.titular && 'Titular: ' + r.pago.titular].filter(Boolean).map(t => `<small>${t}</small>`).join(' · ')}`;
@@ -633,7 +633,7 @@ $('btn-play').onclick = () => vid.play();
 vid.addEventListener('play', () => vid.parentElement.classList.add('reproduciendo'));
 vid.addEventListener('pause', () => { if (vid.currentTime < 0.2 || vid.ended) vid.parentElement.classList.remove('reproduciendo'); });
 $('f-tipo').addEventListener('change', pintarTotal);
-$('f-asado').addEventListener('change', pintarTotal);
+$('f-cena').addEventListener('change', pintarTotal);
 $('f-personas').addEventListener('change', pintarTotal);
 $('btn-consulta').href = wa(WHATSAPP, 'Hola Vale! Quiero consultar por el evento del Ninja Cannetti en Aldea de Valle.');
 $('btn-espera').href = wa(WHATSAPP, 'Hola Vale! Quiero quedar en lista de espera para el evento del Ninja Cannetti.');

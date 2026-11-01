@@ -4,7 +4,7 @@ Página pública para vender las entradas del evento con Guido "Ninja"
 Cannetti (ex UFC, hoy BKFC): **sábado 14 de noviembre, 16hs, Aldea de
 Valle**. Seminario de MMA, Muay Thai, kickboxing y tips de puño limpio,
 técnicas frente a frente, charla, fotos, sorteo de guantes y tibiales, y
-asado con el Ninja.
+cena a la salida (lomitos, pizzas, hamburguesas).
 
 ## Qué hace
 
@@ -13,8 +13,9 @@ asado con el Ninja.
 - El precio del seminario **cambia solo según la fecha**: $42.000 hasta el
   31/10, $49.000 hasta el 13/11, $55.000 el 14/11. Las etapas pasadas se
   ven tachadas. Espectador: $15.000 (provisorio).
-- Puede sumar **asado + bebida libre** ($22.000 por persona) para él y
-  acompañantes (hasta 6). El asado se cierra solo el **11/11** (3 días antes).
+- Puede **reservar mesa para cenar a la salida** (lomitos, pizzas,
+  hamburguesas y más) para él y acompañantes (hasta 8). La reserva es
+  gratis: la comida se paga en la cantina. Se reserva hasta el **13/11**.
 - Ve el detalle y el total; al confirmar recibe su código (NC-001…), que es
   también su número de sorteo, el alias con botón "Copiar" y un botón para
   mandarle el comprobante a **Valeria** por WhatsApp. Tiene **48 hs** para pagar.
@@ -22,7 +23,8 @@ asado con el Ninja.
 
 **Para ustedes**
 - Todo entra en la pestaña **Ninja Cannetti** del Sheet de siempre: tipo,
-  datos, tarifa, personas de asado, total a pagar y estado "⏳ Falta pago".
+  datos, tarifa, cuántos reservaron mesa para cenar, total a pagar y estado
+  "⏳ Falta pago". Sumando la columna "Mesa cena" sabés cuántos cenan.
 - Mail por cada inscripción con el conteo (ej. "37/120").
 - Llegó el comprobante → estado "✅ Pagado".
 - **48 hs sin pago**: la función `liberarVencidas` las pasa a "❌ Cancelado
@@ -33,7 +35,7 @@ asado con el Ninja.
 - **Lista impresa para acreditar**: el día anterior correr
   `armarListaAcreditacion` (en el editor, elegirla arriba y ▶ Ejecutar).
   Crea la pestaña "Acreditación" con los pagados por orden alfabético, tipo,
-  código, cuántas pulseras de asado y columna para firma del deslinde.
+  código, cuántos tienen mesa para cenar y columna para firma del deslinde.
   Archivo → Imprimir.
 
 ## Antes de publicar — completar
@@ -69,8 +71,7 @@ Costo Ninja (honorario + traslado + hospedaje + comida): **$1.500.000 a $2.000.0
 | 120 (cupo lleno) | $5.880.000 | $3.880.000 |
 
 Con 40 en preventa ($42.000) y 60 a $49.000: **$4.620.000** a 100 inscriptos.
-Espectadores y asado van aparte (el asado deja margen solo si $22.000 cubre
-carne + bebida libre con alcohol hasta la 1am: calcularlo con el proveedor).
+Espectadores y la cena (se vende en la cantina) van aparte.
 Falta restar sonido, fotógrafo, sorteo (guantes y tibiales) y la parte de The Clan.
 
 Pendientes de organización: ver `PREGUNTAS.md`.

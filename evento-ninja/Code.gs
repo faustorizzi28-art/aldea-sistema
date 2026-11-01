@@ -9,8 +9,9 @@
  * Dos tipos de entrada:
  *   - Seminario (entrena): cupo CONFIG.cupoSeminario (120).
  *   - Espectador (solo mira): cupo aparte, CONFIG.cupoEspectadores.
- * Cualquiera de los dos puede sumar asado con bebida libre (hasta
- * CONFIG.asadoHasta, para comprar la carne con tiempo).
+ * Cualquiera de los dos puede reservar mesa para la cena a la salida
+ * (lomitos, pizzas, hamburguesas). La reserva es gratis: lo que se come
+ * se paga en la cantina. Se reserva hasta CONFIG.cena.hasta.
  *
  * Cada inscripción:
  *   1) se guarda en la pestaña "Ninja Cannetti" (se crea sola) con estado
@@ -26,7 +27,7 @@
  *
  * Día del evento: correr armarListaAcreditacion() → crea la pestaña
  * "Acreditación" con los pagados ordenados por apellido, lista para
- * imprimir (pulsera de inscripción y de asado).
+ * imprimir (pulsera de inscripción y cuántos tienen mesa para cenar).
  *
  * INSTALACIÓN: ver LEEME.md en esta misma carpeta.
  * ------------------------------------------------------------
@@ -49,8 +50,13 @@ const CONFIG = {
     { nombre: 'Última hora', precio: 55000, hasta: '2026-11-14' },
   ],
   precioEspectador: 15000,        // PROVISORIO: confirmar
-  asado: { nombre: 'Asado + bebida libre', precio: 22000, hasta: '2026-11-11' },
-  maxPersonasAsado: 6,            // contando al inscripto
+  // Cena a la salida: solo se reserva la mesa, la comida se paga en la cantina
+  cena: {
+    nombre: 'Cena a la salida',
+    hasta: '2026-11-13',
+    menu: ['lomitos', 'pizzas', 'hamburguesas'],   // se muestra como "Lomitos, pizzas, hamburguesas y más"
+  },
+  maxPersonasCena: 8,             // contando al inscripto
   // banco y titular son opcionales: si quedan vacíos la página muestra solo el alias
   pago: { alias: 'theclan.aldea', banco: '', titular: '' },
 };
@@ -61,7 +67,7 @@ const ESTADO_PAGADO = '✅ Pagado';
 const ESTADO_VENCIDO = '❌ Cancelado (sin pago 48hs)';
 const TIPOS = { seminario: 'Seminario', espectador: 'Espectador' };
 const COLUMNAS = ['Alta', 'Código', 'Tipo', 'Nombre', 'DNI', 'WhatsApp', 'Email', 'Experiencia',
-  'Tarifa', 'Precio entrada', 'Personas asado', 'Total asado', 'Total a pagar', 'Estado', 'Obs'];
+  'Tarifa', 'Precio entrada', 'Mesa cena (personas)', 'Total a pagar', 'Estado', 'Obs'];
 const C = COLUMNAS.reduce((m, n, i) => (m[n] = i, m), {});
 
 function abrirPestana_() {
@@ -111,8 +117,8 @@ function estado() {
     tarifa: tarifaVigente_(),
     precios: CONFIG.precios,
     precioEspectador: CONFIG.precioEspectador,
-    asado: Object.assign({ abierto: hoy_() <= CONFIG.asado.hasta }, CONFIG.asado),
-    maxPersonasAsado: CONFIG.maxPersonasAsado,
+    cena: Object.assign({ abierto: hoy_() <= CONFIG.cena.hasta }, CONFIG.cena),
+    maxPersonasCena: CONFIG.maxPersonasCena,
     horasParaPagar: CONFIG.horasParaPagar,
   };
 }
@@ -137,8 +143,8 @@ function inscribir(d) {
     const dni = soloDigitos_(d.dni);
     if (activas.some(f => soloDigitos_(f[C['DNI']]) === dni)) throw new Error('Ya hay una inscripción con ese DNI. Si no te llegaron los datos de pago, escribinos por WhatsApp.');
 
-    const asado = calcularAsado_(d);
-    const total = entrada.precio + asado.total;
+    const mesa = personasMesa_(d);
+    const total = entrada.precio;
     const nombre = String(d.nombre).trim();
 
     const sh = abrirPestana_();
@@ -154,8 +160,7 @@ function inscribir(d) {
     fila[C['Experiencia']] = tipo === TIPOS.seminario ? (d.experiencia || '') : '';
     fila[C['Tarifa']] = entrada.nombre;
     fila[C['Precio entrada']] = entrada.precio;
-    fila[C['Personas asado']] = asado.personas;
-    fila[C['Total asado']] = asado.total;
+    fila[C['Mesa cena (personas)']] = mesa;
     fila[C['Total a pagar']] = total;
     fila[C['Estado']] = ESTADO_PENDIENTE;
     fila[C['Obs']] = 'Inscripción web';
@@ -169,25 +174,24 @@ function inscribir(d) {
       codigo: codigo,
       tipo: tipo,
       entrada: entrada,
-      asado: asado,
+      mesa: mesa,
       total: total,
       horasParaPagar: CONFIG.horasParaPagar,
       pago: CONFIG.pago,
       whatsappComprobante: linkWhatsApp_(CONFIG.whatsapp,
         'Hola Vale! Te mando el comprobante de mi inscripción al evento del Ninja Cannetti. Código ' + codigo + ' · ' + nombre + ' · DNI ' + dni +
-        ' · ' + tipo + (asado.personas ? ' · Asado x' + asado.personas : '') + ' · Total $' + fmtMiles_(total)),
+        ' · ' + tipo + (mesa ? ' · Mesa para ' + mesa : '') + ' · Total $' + fmtMiles_(total)),
     };
   } finally {
     lock.releaseLock();
   }
 }
 
-/** El precio y la fecha límite del asado salen de CONFIG, no de la página. */
-function calcularAsado_(d) {
-  const personas = Math.max(0, Math.min(CONFIG.maxPersonasAsado, parseInt(d.personasAsado, 10) || 0));
-  if (!personas) return { personas: 0, total: 0 };
-  if (hoy_() > CONFIG.asado.hasta) throw new Error('El asado ya cerró (se anotaba hasta 3 días antes). Desmarcalo para seguir.');
-  return { personas: personas, total: CONFIG.asado.precio * personas };
+/** Cuántos reservan mesa para la cena (no se cobra: se paga en la cantina). */
+function personasMesa_(d) {
+  const personas = Math.max(0, Math.min(CONFIG.maxPersonasCena, parseInt(d.personasCena, 10) || 0));
+  if (personas && hoy_() > CONFIG.cena.hasta) throw new Error('Las reservas de mesa ya cerraron. Desmarcala para seguir: igual podés comprar en la cantina.');
+  return personas;
 }
 
 function filasActivas_() {
@@ -222,13 +226,13 @@ function armarListaAcreditacion() {
     .sort((a, b) => String(a[C['Nombre']]).localeCompare(String(b[C['Nombre']]), 'es'));
   let sh = ss.getSheetByName('Acreditación');
   if (sh) sh.clear(); else sh = ss.insertSheet('Acreditación');
-  const filas = [['✔', 'Nombre', 'DNI', 'Tipo', 'Código', 'Pulseras asado', 'Firma deslinde']]
-    .concat(pagados.map(f => ['☐', f[C['Nombre']], f[C['DNI']], f[C['Tipo']], f[C['Código']], f[C['Personas asado']] || '', '']));
+  const filas = [['✔', 'Nombre', 'DNI', 'Tipo', 'Código', 'Mesa cena', 'Firma deslinde']]
+    .concat(pagados.map(f => ['☐', f[C['Nombre']], f[C['DNI']], f[C['Tipo']], f[C['Código']], f[C['Mesa cena (personas)']] || '', '']));
   sh.getRange(1, 1, filas.length, filas[0].length).setValues(filas);
   sh.getRange(1, 1, 1, filas[0].length).setFontWeight('bold');
   sh.setFrozenRows(1);
-  const asados = pagados.reduce((s, f) => s + (Number(f[C['Personas asado']]) || 0), 0);
-  sh.getRange(filas.length + 2, 2).setValue('Total: ' + pagados.length + ' personas · ' + asados + ' pulseras de asado');
+  const cenan = pagados.reduce((s, f) => s + (Number(f[C['Mesa cena (personas)']]) || 0), 0);
+  sh.getRange(filas.length + 2, 2).setValue('Total: ' + pagados.length + ' personas · ' + cenan + ' con mesa para cenar');
 }
 
 function tarifaVigente_() {
@@ -265,7 +269,7 @@ function avisarDueno_(f, n, cupo, waAviso) {
     (f[C['Email']] ? '<p>' + esc_(f[C['Email']]) + '</p>' : '') +
     '<p>' + esc_(f[C['Tipo']]) + ' · ' + esc_(f[C['Tarifa']]) + ': $' + fmtMiles_(f[C['Precio entrada']]) +
     (f[C['Experiencia']] ? ' · Entrena: ' + esc_(f[C['Experiencia']]) : '') + '</p>' +
-    (f[C['Personas asado']] ? '<p>🍖 Asado × ' + f[C['Personas asado']] + ': $' + fmtMiles_(f[C['Total asado']]) + '</p>' : '') +
+    (f[C['Mesa cena (personas)']] ? '<p>🍔 Reservó mesa para cenar: ' + f[C['Mesa cena (personas)']] + ' personas</p>' : '') +
     '<p><b>Total a pagar: $' + fmtMiles_(f[C['Total a pagar']]) + '</b></p>' +
     '<p>Van <b>' + n + '</b> de ' + cupo + (f[C['Tipo']] === TIPOS.seminario ? ' (objetivo ' + CONFIG.objetivo + ')' : '') + '</p>' +
     '<p><a href="' + esc_(waAviso) + '" style="background:#25D366;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:bold;">💬 Escribirle por WhatsApp</a></p>' +

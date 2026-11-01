@@ -7,8 +7,8 @@
 - Entrada espectador: sí. Sorteo: guantes y tibiales.
 - Precios seminario: $42.000 / $49.000 / $55.000 (cambian solos por fecha).
 - 48 hs para pagar. Sin devolución (se puede ceder el lugar).
-- Asado + bebida libre (con alcohol, hasta la 1am): $22.000 p/p. Se anota hasta 3 días antes (11/11). Sin opción vegetariana/sin TACC. El Ninja come con todos.
-- Comprobantes y consultas: **Valeria**, +54 9 3513 85-5564. Valeria acredita con lista impresa; pulseras de inscripción y de asado.
+- ~~Asado + bebida libre $22.000~~ → reemplazado por **cena a la salida**: lomitos, pizzas, hamburguesas y más en la cantina. Desde la web solo se reserva mesa (gratis, hasta el 13/11); se paga lo que se consume.
+- Comprobantes y consultas: **Valeria**, +54 9 3513 85-5564. Valeria acredita con lista impresa; pulsera de inscripción; la lista marca quién tiene mesa para cenar.
 - **Guillermo Toledo** acompaña al Ninja.
 - Seguro: listo. Baños, luz y agua: sí. Estacionamiento: se cobra aparte. Cantina abierta. Venta en puerta: sí.
 - Sin invitados/cortesías. Difusión: publica Fausto; se invita a todos los gimnasios.
@@ -18,12 +18,13 @@
 - [ ] ⚠️ **Precio entrada espectador** (en la página está $15.000 provisorio) y cupo de espectadores (80 provisorio).
 - [ ] Fotos: ya están en la página. Confirmar con el Ninja / The Clan que se pueden usar (las de la UFC y BKFC son de esas organizaciones).
 - [ ] Edad mínima: en la página puse **14 años con autorización firmada** para entrenar; menores de 14 solo como espectadores. Confirmar.
-- [ ] Estacionamiento: ¿precio? ¿se incluye para los del asado?
+- [ ] Estacionamiento: ¿precio? ¿se incluye para los que cenan?
 - [ ] Sonido y micrófono: averiguar.
 - [ ] Fotógrafo / video: averiguar.
-- [ ] Duración de cada bloque del seminario (para armar el cronograma 16hs → asado).
+- [ ] Duración de cada bloque del seminario (para armar el cronograma 16hs → cena).
 - [ ] Precio en puerta (¿$55.000 seminario?).
-- [ ] Costo real del asado con bebida libre con alcohol (¿$22.000 deja margen?).
+- [ ] Precios del menú de la cena (lomito, pizza, hamburguesa, bebidas) para mostrarlos si se quiere.
+- [ ] ¿Cuántas mesas/lugares hay para cenar? (hoy la web no limita las reservas de mesa)
 - [ ] Acuerdo con el Ninja y con The Clan: qué cubre el $1,5–2M, cuándo se paga, reparto, qué pasa si se suspende.
 - [ ] Llegada/salida del Ninja, hospedaje, quién lo busca.
 - [ ] ¿Él vende merchandising? ¿Graba un video invitando?
