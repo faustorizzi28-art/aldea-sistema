@@ -47,7 +47,7 @@ En `Code.gs`, bloque `CONFIG`:
 - `precioEspectador`: confirmar (está en $15.000).
 - `cupoEspectadores`: confirmar (está en 80).
 
-Fotos: van embebidas dentro de `index.html`. Video del Ninja: se muestra desde Google Drive (constante `VIDEO_DRIVE_ID`, ver PASO-A-PASO.md). Originales en `img/`.
+Fotos: van embebidas dentro de `index.html`. Video del Ninja: el play abre el posteo de Instagram (constante `VIDEO_INSTAGRAM`). Originales en `img/`.
 
 ## Instalación (detallada en PASO-A-PASO.md)
 1. **script.google.com** → Nuevo proyecto.

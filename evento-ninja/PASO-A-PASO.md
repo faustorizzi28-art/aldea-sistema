@@ -6,8 +6,7 @@ y entrar con la cuenta de Google dueña de la planilla
 
 Archivos (están en esta carpeta):
 - `Code.gs` → el "motor" (guarda las inscripciones en la planilla).
-- `index.html` → la página (230 KB). El video del Ninja se muestra desde Google Drive
-  (ver paso 8).
+- `index.html` → la página (230 KB). El video del Ninja abre el posteo de Instagram (paso 8).
 
 ## 1. Crear el proyecto
 1. Entrá a **script.google.com**.
@@ -74,13 +73,7 @@ Archivos (están en esta carpeta):
    Versión: **Nueva versión** → **Implementar**.
    Así el link `/exec` sigue siendo el mismo.
 
-## 8. Video del Ninja (desde Google Drive)
-1. Subí el video a tu Google Drive.
-2. Clic derecho → **Compartir** → Acceso general: **Cualquier persona con el enlace** → Listo.
-3. Clic derecho → **Compartir** → **Copiar vínculo**. Queda algo así:
-   `https://drive.google.com/file/d/`**`1AbCdEfGh...`**`/view?usp=sharing`
-4. La parte en negrita (entre `/d/` y `/view`) es el ID.
-5. En el editor, archivo **Index**, buscá (Ctrl+F) `VIDEO_DRIVE_ID = ''` y pegá el ID entre
-   las comillas: `VIDEO_DRIVE_ID = '1AbCdEfGh...'`.
-6. Guardá y publicá una **nueva versión** (sección de abajo).
-Mientras esté vacío, la sección del video no aparece.
+## 8. Video del Ninja
+El botón de play abre el posteo de Instagram con el video:
+https://www.instagram.com/p/Dek7zAuRKdA/
+Para cambiarlo: en el archivo **Index** buscá (Ctrl+F) `VIDEO_INSTAGRAM` y reemplazá el link.
