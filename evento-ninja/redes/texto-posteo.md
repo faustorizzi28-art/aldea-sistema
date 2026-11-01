@@ -33,3 +33,10 @@ Organizan @aldeadevalle × @theclan × @bunkaidojo
 El NINJA Cannetti (ex UFC · BKFC) en Córdoba 🥊
 Sáb 14/11 · 16hs · Aldea de Valle
 Cupos limitados 👉 link en bio
+
+---
+
+# Música
+- `cancion-ninja.mp3`: pista ORIGINAL (sin derechos de autor), 31 s, 140 BPM.
+  Se regenera con `python3 evento-ninja/herramientas/cancion-ninja.py`.
+- `reel-ninja.mp4`: reel 9:16 con las placas cortadas al ritmo (el golpe fuerte cae en la portada, a los 13,7 s).
