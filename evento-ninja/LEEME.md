@@ -1,5 +1,8 @@
 # Inscripción evento Ninja Cannetti — Aldea del Valle × The Clan
 
+**Link publicado (para compartir):**
+https://script.google.com/macros/s/AKfycbwh5c9_ndsD9f8uNvn58zlgS7_aDCvznyEgjlpwHQKWiNCI7tcQoFNgDzQTDhuyH0Rt/exec
+
 Página pública para vender las entradas del evento con Guido "Ninja"
 Cannetti (ex UFC, hoy BKFC): **sábado 14 de noviembre, 16hs, Aldea de
 Valle**. Seminario de MMA, Muay Thai, kickboxing y tips de puño limpio,
