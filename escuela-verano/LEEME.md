@@ -44,7 +44,7 @@ Tiene **tres puertas** con el mismo link:
 ## Qué hace
 
 ### Familias
-- Al entrar eligen **Aldea de Valle** o **Colonia Dewey**. Hay una tabla de **“¿Qué diferencia hay?”** con horarios, pileta, comida, actividades y precios de cada sede.
+- Al entrar eligen **Aldea de Valle** o **Colonia Dewey**. 
 - Por cada sede ven cómo funciona, los grupos por edad, la **temática de cada semana**, los precios y los descuentos.
 - **Presupuesto al instante:** eligen semanas o días sueltos, mañana o jornada completa, pre hora y almuerzo. El precio aparece en vivo según la etapa (preventa, segunda etapa u oficial) y ya incluye los descuentos por hermanos y por renovación.
 - **Inscripción en 4 pasos:** cuándo, quién (con ficha de salud: alergias, medicación, si sabe nadar y si autoriza fotos), datos del adulto (contacto de emergencia y quiénes pueden retirar) y reglamento. Si cierran la página, al volver sigue lo que habían cargado.

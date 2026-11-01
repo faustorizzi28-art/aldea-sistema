@@ -280,7 +280,7 @@ function precioDesde(s) { return etapaActual(s).semanas[1]; }
 function vInicio() { vElegirSede(); }
 function vElegirSede(destino) {
   tema(null);
-  const s = PUB.sedes, etiquetas = s[0].ficha.map(f => f[0]);
+  const s = PUB.sedes;
   pintar(`
   <header class="top"><div class="marca">☀️ ${esc(PUB.marca)} <small>${esc(PUB.temporada)}</small></div></header>
   <section class="hero" style="padding-bottom:46px"><div class="sol"></div><div class="wrap" style="position:relative">
@@ -290,14 +290,6 @@ function vElegirSede(destino) {
   <div class="wrap">
     <div class="eleccion">${s.map(x => `<button style="--c:${x.color}" onclick="elegirSede('${x.id}','${destino || ''}')">${logoSede(x.id, 72, true)}
       <span><b>${esc(x.nombre)}</b><span class="muted chico">${esc(x.direccion)}</span></span><span class="flecha" aria-hidden="true">→</span></button>`).join('')}</div>
-    <details class="card" style="margin-top:22px"><summary><b>¿Todavía no elegiste? Mirá la diferencia</b></summary>
-      <div class="scroll-x" style="margin-top:10px"><table class="t">
-        <tr><th></th>${s.map(x => `<th style="color:${x.color}">${esc(x.nombre)}</th>`).join('')}</tr>
-        ${etiquetas.map((e, i) => `<tr><td><b>${esc(e)}</b></td>${s.map(x => `<td>${esc((x.ficha[i] || [])[1] || '—')}</td>`).join('')}</tr>`).join('')}
-        <tr><td><b>1 semana</b></td>${s.map(x => `<td>${pesos(etapaActual(x).semanas[1])}</td>`).join('')}</tr>
-        <tr><td><b>Temporada completa</b></td>${s.map(x => `<td>${pesos(etapaActual(x).semanas[x.semanas.length] || etapaActual(x).semanas.slice(-1)[0])}</td>`).join('')}</tr>
-        <tr><td><b>Precio</b></td>${s.map(x => `<td>${esc(etapaActual(x).nombre)}${etapaActual(x).hasta ? ' hasta el ' + fCorta(etapaActual(x).hasta) : ''}</td>`).join('')}</tr>
-      </table></div></details>
   </div>
   <div class="pie">${pieGlorin()}</div>`);
   scrollTo(0, 0);
