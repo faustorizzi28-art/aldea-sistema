@@ -1,0 +1,22 @@
+{
+  "titulo": "Aldea de Valle – Un viernes en Aldea (historia de 15 s)",
+  "letra": "serif",
+  "acento": "#E9D9B4",
+  "musica": "lounge-eventos.mp3",
+  "volumenMusica": 0.75,
+  "tomas": [
+    { "video": "viernes-pergola-atardecer.mp4", "desde": 0.6, "segundos": 2.8, "texto": "Un viernes\nen Aldea." },
+    { "video": "viernes-revelacion.mp4", "desde": 4.0, "segundos": 3.0, "texto": "Revelaciones." },
+    { "video": "viernes-club.mp4", "desde": 0.3, "segundos": 2.4, "texto": "Encuentros." },
+    { "video": "viernes-cumple.mp4", "desde": 5.5, "segundos": 2.6, "texto": "Cumpleaños." }
+  ],
+  "cierre": {
+    "logo": "logo-aldea.png",
+    "arriba": "EVENTOS PRIVADOS",
+    "texto": "Tu evento,\nacá.",
+    "color": "#1E3226",
+    "boton": "Consultá fechas disponibles",
+    "abajo": "WhatsApp 351 530 8489 · @aldeadevalle",
+    "segundos": 4.2
+  }
+}
