@@ -47,7 +47,7 @@ En `Code.gs`, bloque `CONFIG`:
 - `precioEspectador`: confirmar (está en $15.000).
 - `cupoEspectadores`: confirmar (está en 80).
 
-Fotos y video del Ninja (sección "Mensaje del Ninja"): van embebidos dentro de `index.html` (así funcionan en Apps Script sin subir nada aparte). Los originales recortados están en `img/`.
+Fotos: van embebidas dentro de `index.html`. Video del Ninja: se muestra desde Google Drive (constante `VIDEO_DRIVE_ID`, ver PASO-A-PASO.md). Originales en `img/`.
 
 ## Instalación (detallada en PASO-A-PASO.md)
 1. **script.google.com** → Nuevo proyecto.
@@ -79,6 +79,3 @@ Falta restar sonido, fotógrafo, sorteo (guantes y tibiales) y la parte de The C
 
 Pendientes de organización: ver `PREGUNTAS.md`.
 
-Nota: con el video embebido `index.html` pesa ~1,2 MB. Si al pegarlo en
-Apps Script el editor anda lento, alternativa: subir el video a YouTube
-(oculto) o Drive y reemplazar el `<video>` por el reproductor embebido.
