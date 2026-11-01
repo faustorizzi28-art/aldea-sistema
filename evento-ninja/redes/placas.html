@@ -1,0 +1,145 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{background:#333;font-family:'Archivo',sans-serif;color:#F4EFE3}
+.s{width:1080px;height:1350px;position:relative;overflow:hidden;margin-bottom:20px;background:#0C0C0B}
+.s.story{height:1920px}
+.d{font-family:'Anton',sans-serif;text-transform:uppercase;line-height:.88}
+.am{color:#F2CA11}.ro{color:#D7261E}
+.glow{position:absolute;inset:0;background:radial-gradient(70% 55% at 75% 30%,rgba(215,38,30,.55),transparent 70%),radial-gradient(60% 50% at 10% 100%,rgba(242,202,17,.18),transparent 70%)}
+.ghost{position:absolute;font-family:'Anton';color:transparent;-webkit-text-stroke:3px rgba(244,239,227,.07);line-height:.8;pointer-events:none}
+.top{position:absolute;left:70px;right:70px;top:60px;display:flex;justify-content:space-between;align-items:center;font:800 22px 'Archivo';letter-spacing:.22em;text-transform:uppercase}
+.top .pag{color:rgba(244,239,227,.5)}
+.marcas{position:absolute;left:0;right:0;bottom:0;padding:30px 70px;display:flex;justify-content:center;gap:26px;align-items:center;font:800 22px 'Archivo';letter-spacing:.2em;text-transform:uppercase;background:#F2CA11;color:#0C0C0B}
+.marcas i{font-style:normal;opacity:.5}
+.eb{font:800 26px 'Archivo';letter-spacing:.3em;text-transform:uppercase;color:#F2CA11}
+.p{font:500 34px/1.4 'Archivo';color:rgba(244,239,227,.8)}.p b{color:#F4EFE3}
+.chip{display:inline-block;font:800 24px 'Archivo';letter-spacing:.16em;text-transform:uppercase;padding:14px 22px;border-radius:999px;border:2px solid rgba(244,239,227,.25)}
+.chip.r{background:#D7261E;border-color:#D7261E}
+.desliza{position:absolute;right:70px;bottom:130px;font:800 22px 'Archivo';letter-spacing:.2em;text-transform:uppercase;color:#F2CA11}
+</style></head><body>
+
+<!-- 1 PORTADA -->
+<div class="s" id="p1">
+ <div class="glow"></div>
+ <div class="ghost" style="right:-40px;top:240px;font-size:520px">NINJA</div>
+ <img src="../img/ninja-ufc.webp" style="position:absolute;right:-150px;bottom:90px;height:1060px;-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent)">
+ <div class="top"><span>Seminario</span><span class="am">14 · 11 · 16HS</span></div>
+ <div style="position:absolute;left:70px;top:170px;width:640px">
+  <div class="eb" style="margin-bottom:20px">Ex UFC · BKFC</div>
+  <div class="d am" style="font-size:250px">“Ninja”</div>
+  <div class="d" style="font-size:96px;margin-top:14px">Guido<br>Cannetti</div>
+  <div class="d ro" style="font-size:150px;margin-top:40px"><span style="font-size:54px;color:#F4EFE3;vertical-align:58px">en </span>Córdoba</div>
+ </div>
+ <div style="position:absolute;left:70px;bottom:150px;display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+  <span class="chip r">Solo 120 lugares</span>
+  <span class="chip" style="background:#0C0C0B">Sáb 14 nov · Aldea de Valle</span>
+ </div>
+ <div class="marcas">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- 2 QUIEN ES -->
+<div class="s" id="p2">
+ <img src="../img/ninja-bkfc.webp" style="position:absolute;right:0;top:0;width:560px;height:1350px;object-fit:cover;object-position:50% 20%">
+ <div style="position:absolute;right:0;top:0;width:560px;height:1350px;background:linear-gradient(90deg,#0C0C0B 0%,rgba(12,12,11,0) 35%)"></div>
+ <div class="top"><span class="am">El peleador</span><span class="pag">2/6</span></div>
+ <div style="position:absolute;left:70px;top:190px;width:560px">
+  <div class="d" style="font-size:118px">De la<br><span class="am">UFC</span> al<br><span class="ro">puño<br>limpio</span></div>
+  <p class="p" style="margin-top:36px">Casi diez años en la UFC. Entró por <b>The Ultimate Fighter</b> en el equipo Werdum. En 2026 debutó en <b>BKFC</b>, boxeo sin guantes… <b>y ganó.</b></p>
+ </div>
+ <div style="position:absolute;left:70px;bottom:150px;display:grid;grid-template-columns:repeat(3,auto);gap:46px">
+  <div><div class="d am" style="font-size:110px">9</div><div style="font:600 24px 'Archivo';color:rgba(244,239,227,.7);margin-top:8px">años<br>en la UFC</div></div>
+  <div><div class="d am" style="font-size:110px">10</div><div style="font:600 24px 'Archivo';color:rgba(244,239,227,.7);margin-top:8px">victorias<br>en MMA</div></div>
+  <div><div class="d am" style="font-size:110px">1-0</div><div style="font:600 24px 'Archivo';color:rgba(244,239,227,.7);margin-top:8px">invicto<br>en BKFC</div></div>
+ </div>
+ <div class="marcas">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- 3 QUE VAS A ENTRENAR -->
+<div class="s" id="p3">
+ <div class="glow" style="opacity:.6"></div>
+ <img src="../img/ninja-grito.webp" style="position:absolute;left:0;right:0;top:0;width:1080px;height:470px;object-fit:cover;object-position:50% 22%;-webkit-mask-image:linear-gradient(180deg,#000 55%,transparent)">
+ <div class="top"><span class="am">El seminario</span><span class="pag">3/6</span></div>
+ <div style="position:absolute;left:70px;right:70px;top:440px">
+  <div class="d" style="font-size:104px">Lo que vas a <span class="am">entrenar</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:40px">
+   <div style="border:2px solid rgba(244,239,227,.15);border-radius:24px;padding:28px 30px"><div class="d" style="font-size:64px">🥋 MMA</div></div>
+   <div style="border:2px solid rgba(244,239,227,.15);border-radius:24px;padding:28px 30px"><div class="d" style="font-size:64px">🦵 Muay Thai</div></div>
+   <div style="border:2px solid rgba(244,239,227,.15);border-radius:24px;padding:28px 30px"><div class="d" style="font-size:64px">🥊 Kickboxing</div></div>
+   <div style="border:2px solid #D7261E;background:rgba(215,38,30,.18);border-radius:24px;padding:28px 30px"><div class="d" style="font-size:64px">✊ Puño limpio</div><div style="font:700 22px 'Archivo';color:#F2CA11;margin-top:8px;letter-spacing:.1em;text-transform:uppercase">Tips de la BKFC</div></div>
+  </div>
+  <p class="p" style="margin-top:36px">Técnicas de a dos, <b>frente a frente</b>. Para todos los niveles: no hace falta experiencia.</p>
+ </div>
+ <div class="marcas">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- 4 INCLUYE -->
+<div class="s" id="p4">
+ <img src="../img/ninja-bandera.webp" style="position:absolute;inset:0;width:1080px;height:1350px;object-fit:cover;object-position:55% 30%;opacity:.35">
+ <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,12,11,.6),#0C0C0B 70%)"></div>
+ <div class="top"><span class="am">Además</span><span class="pag">4/6</span></div>
+ <div style="position:absolute;left:70px;right:70px;top:200px">
+  <div class="d" style="font-size:120px">Una tarde<br>con <span class="am">el Ninja</span></div>
+  <div style="display:flex;flex-direction:column;gap:22px;margin-top:56px">
+   <div style="display:flex;gap:28px;align-items:center"><div style="font-size:66px">🎤</div><div><div class="d" style="font-size:54px">Charla y preguntas</div><div class="p" style="font-size:28px">De Argentina al octágono y al bare knuckle</div></div></div>
+   <div style="display:flex;gap:28px;align-items:center"><div style="font-size:66px">📸</div><div><div class="d" style="font-size:54px">Fotos y firmas</div><div class="p" style="font-size:28px">Traé tus guantes o tu remera</div></div></div>
+   <div style="display:flex;gap:28px;align-items:center"><div style="font-size:66px">🎁</div><div><div class="d" style="font-size:54px">Sorteo</div><div class="p" style="font-size:28px">Guantes y tibiales entre los que entrenan</div></div></div>
+   <div style="display:flex;gap:28px;align-items:center"><div style="font-size:66px">🍔</div><div><div class="d" style="font-size:54px">Cena a la salida</div><div class="p" style="font-size:28px">Lomitos, pizzas y hamburguesas. Reservá tu mesa</div></div></div>
+  </div>
+ </div>
+ <div class="marcas">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- 5 PRECIO -->
+<div class="s" id="p5" style="background:#F2CA11;color:#0C0C0B">
+ <div class="ghost" style="left:-20px;bottom:120px;font-size:430px;-webkit-text-stroke:3px rgba(12,12,11,.08)">120</div>
+ <div class="top"><span>Entradas</span><span style="opacity:.5">5/6</span></div>
+ <div style="position:absolute;left:70px;right:70px;top:190px">
+  <div class="d" style="font-size:150px">Solo <span class="ro">120</span><br>lugares</div>
+  <p style="font:600 34px/1.4 'Archivo';margin-top:24px">Se llenan por orden de pago.</p>
+  <div style="margin-top:56px;background:#0C0C0B;color:#F4EFE3;border-radius:30px;padding:44px 48px">
+   <div style="font:800 24px 'Archivo';letter-spacing:.25em;text-transform:uppercase;color:#F2CA11">Seminario · hasta el 13/11</div>
+   <div class="d" style="font-size:170px;margin-top:10px">$49.000</div>
+   <div style="font:600 28px 'Archivo';color:rgba(244,239,227,.7);margin-top:14px">El día del evento: $55.000</div>
+  </div>
+  <div style="margin-top:26px;display:flex;gap:16px;flex-wrap:wrap">
+   <span class="chip" style="border-color:#0C0C0B">👀 Entrada espectador</span>
+   <span class="chip" style="border-color:#0C0C0B">Pago por transferencia</span>
+  </div>
+ </div>
+ <div class="marcas" style="background:#0C0C0B;color:#F2CA11">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- 6 CTA -->
+<div class="s" id="p6">
+ <img src="../img/ninja-entreno.webp" style="position:absolute;inset:0;width:1080px;height:1350px;object-fit:cover;object-position:50% 30%;opacity:.45">
+ <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,12,11,.3),#0C0C0B 62%)"></div>
+ <div class="top"><span class="am">Inscripción</span><span class="pag">6/6</span></div>
+ <div style="position:absolute;left:70px;right:70px;bottom:170px">
+  <div class="d" style="font-size:140px">Asegurá<br><span class="am">tu lugar</span></div>
+  <div style="margin-top:40px;background:#F2CA11;color:#0C0C0B;border-radius:999px;padding:30px 44px;display:inline-block" class="d"><span style="font-size:60px">🔗 Link en la bio</span></div>
+  <p class="p" style="margin-top:34px">Te inscribís en 1 minuto desde el celular.<br>Consultas: <b>Valeria · 351 385-5564</b></p>
+  <div style="margin-top:34px;display:flex;gap:16px;flex-wrap:wrap"><span class="chip r">Sáb 14 nov · 16hs</span><span class="chip">Aldea de Valle · Córdoba</span></div>
+ </div>
+ <div class="marcas">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+
+<!-- HISTORIA 9:16 -->
+<div class="s story" id="story">
+ <div class="glow"></div>
+ <div class="ghost" style="left:-30px;top:700px;font-size:560px">NINJA</div>
+ <div style="position:absolute;left:70px;right:70px;top:170px">
+  <div class="eb">Ex UFC · BKFC · Seminario</div>
+  <div class="d am" style="font-size:260px;margin-top:20px">“Ninja”</div>
+  <div class="d" style="font-size:100px;margin-top:12px">Guido Cannetti</div>
+  <div class="d ro" style="font-size:170px;margin-top:30px"><span style="font-size:60px;color:#F4EFE3;vertical-align:66px">en </span>Córdoba</div>
+ </div>
+ <img src="../img/ninja-ufc.webp" style="position:absolute;left:50%;transform:translateX(-50%);bottom:330px;height:830px;-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent)">
+ <div style="position:absolute;left:70px;right:70px;bottom:330px;display:flex;justify-content:space-between">
+  <span class="chip r">14 nov · 16hs</span><span class="chip" style="background:#0C0C0B">Solo 120 lugares</span>
+ </div>
+ <div style="position:absolute;left:70px;right:70px;bottom:190px;text-align:center;background:#F2CA11;color:#0C0C0B;border-radius:999px;padding:30px" class="d"><span style="font-size:64px">Inscribite · link en bio</span></div>
+ <div class="marcas" style="bottom:60px;background:none;color:#F4EFE3">Aldea de Valle <i>×</i> The Clan <i>×</i> Bunkai Dojo</div>
+</div>
+</body></html>
