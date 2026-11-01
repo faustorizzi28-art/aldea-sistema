@@ -7,8 +7,39 @@ Tiene **tres puertas** con el mismo link:
 | Quién | Link | Cómo entra |
 |---|---|---|
 | Familias | `…/exec` | Sin cuenta para inscribirse. Después entran con su mail y les llega un código de 6 números (no hay contraseñas). |
-| Equipo (profes, guardavidas, enfermería, coordinación, administración) | `…/exec?p=profes` | Con su mail y un código. La administración los da de alta con su rol. |
+| Equipo (profes, auxiliares de área, guardavidas, coordinación, administración) | `…/exec?p=profes` | Con su mail y un código. La administración los da de alta con su rol. |
 | Administración | `…/exec?p=admin` | Con PIN. Cada sede tiene el suyo y hay un PIN general que ve las dos. |
+
+## Cómo se entra (definido por Fausto, 1/11/2026)
+1. **¿De qué escuela de verano sos?** La primera pantalla muestra las dos sedes con su logo: **Aldea de Valle** o **Colonia Dewey**. La app recuerda la elección: la próxima vez entra directo a esa sede, con un botón para cambiarla.
+2. **¿Quién sos?** Dentro de cada sede, con su logo y sus colores:
+   - **Mamá, papá o tutor:** inscribir, mi cuenta (fotos, asistencia, avisos), pagar e información y precios.
+   - **Equipo:** profes, auxiliares de área, coordinación y guardavidas.
+   - **Administración.**
+3. Arriba de todo, un botón grande: **Inscribí a tu hijo**.
+
+**Links directos** (están para copiar en Administración → Ajustes):
+
+| Para | Link |
+|---|---|
+| Entrada general (elegir la escuela) | `…/exec` |
+| Entrada de una sede | `…/exec?sede=aldea` · `…/exec?sede=colonia` |
+| **Inscripción directa** (Instagram, WhatsApp, flyers) | `…/exec?p=inscribir&sede=aldea` · `…/exec?p=inscribir&sede=colonia` |
+| Pagos de las familias | `…/exec?p=pagar` |
+
+### Pagos
+- Al inscribirse, la familia recibe **un link de pago** en pantalla y por mail. Lo abre sin usuario ni contraseña y elige pagar la **seña** o **todo el saldo**.
+- **Mercado Pago**, si la sede lo conectó: tarjeta de débito, crédito o dinero en cuenta. El pago **se registra solo** (Mercado Pago le avisa a la app) y a la familia le llega el mail de "recibimos tu pago". Cada sede conecta su propia cuenta en **Administración → Ajustes**, pegando el *Access Token de producción* (Mercado Pago → Tu negocio → Configuración → Credenciales). El token no queda en el código. Si querés trasladar la comisión de Mercado Pago, cambiá `mercadoPagoRecargoPct` en `CONFIG`.
+- **Transferencia:** la familia ve el alias de la sede (o un botón para pedirlo por WhatsApp mientras no esté cargado) y **sube el comprobante** (foto o PDF).
+  - A la administración le llega un aviso. En **Cobros → Comprobantes para revisar** lo abre, lo **aprueba** y el pago queda registrado y la familia avisada. También lo puede **rechazar**.
+  - Los comprobantes se guardan en Drive, en `Escuela de Verano — Comprobantes / <sede>`.
+- Los recordatorios de deuda también traen el botón **Pagar ahora**.
+
+### Logos y tipografía
+- **Aldea de Valle:** el logo de la web de Aldea.
+- **Colonia Dewey:** se sube desde **Administración → Ajustes → Logo**. Hasta entonces se ve "CD" con los colores de la sede. Cada administración puede cambiar el logo de su sede.
+- **GLORIN Animaciones:** aparece al pie, con link a las reservas de cumpleaños.
+- **Tipografía:** Baloo 2 en los títulos y Nunito en el texto. Se cambia en dos variables al principio de `Index.html` (`--f-titulo` y `--f-texto`).
 
 ## Qué hace
 
@@ -52,9 +83,8 @@ Cada persona se carga una vez en **Administración → Equipo** con su mail, sed
 | Rol | Qué ve y qué hace |
 |---|---|
 | 🧑‍🏫 **Profe** | Marca entrada y salida, toma asistencia **solo de sus grupos**, sube fotos (quedan pendientes hasta que las aprueba el coordinador), ve el cronograma y sus horas. |
-| 🙋 **Auxiliar / ayudante** | Igual que el profe: asistencia de sus grupos y fotos (obligatorias para cerrar el turno). Cobra por quincena. |
+| 🙋 **Auxiliar de área** | Igual que el profe: asistencia de sus grupos y fotos (obligatorias para cerrar el turno). Cobra por quincena. |
 | 🛟 **Guardavidas** | Marca entrada y salida y ve la **lista de pileta** del día, por grupo: quién no sabe nadar, quién nada un poco y quién no tiene el dato cargado. |
-| 🩺 **Enfermería / acompañante** | Marca entrada y salida y ve las **fichas de salud** de los chicos del día: alergias, medicación, condiciones, obra social y contacto de emergencia. |
 | 📋 **Coordinador/a** | Todo lo del profe, pero con **todos los grupos**. Además ve el **equipo de hoy** (quién marcó, quién no, quién llegó tarde) y arma los **turnos** de cada uno. Corrige marcajes olvidados, **aprueba las fotos** antes de que las vean las familias, arma el cronograma y las temáticas y ve salud y pileta. **No ve la plata.** |
 | 🗂️ **Administración** | Todo lo del coordinador y además el panel de administración de su sede (cobros, deudas, pagos al equipo). Entra con su mail, sin PIN. Solo la administración general puede dar este rol. |
 | 👑 **Dueño** | El PIN general: ve y maneja las dos sedes. |
@@ -131,8 +161,8 @@ Cada administración entra con su PIN y **solo ve y toca lo de su sede**. El PIN
    - Cambiá los PIN. Los de cada sede también están en la hoja `Config`.
    - Poné el mail de cada administración.
    - Parado en Colonia Dewey, tocá **Usar mi ubicación**. La de Aldea ya está cargada.
-8. En **Equipo**, sumá a cada persona con su mail y su rol. Después, el coordinador carga los turnos.
-9. Compartí los links: el de familias en Instagram y en la web de Aldea, y el de profes en el grupo de WhatsApp.
+8. En **Ajustes**, subí el logo de Colonia Dewey y conectá Mercado Pago en cada sede (si lo van a usar). En **Equipo**, sumá a cada persona con su mail y su rol. Después, el coordinador carga los turnos.
+9. Compartí los links: el de **inscripción directa** de cada sede en Instagram y en la web de Aldea, y el del equipo en el grupo de WhatsApp.
 
 Si cambiás el código: **Implementar → Administrar implementaciones → Editar → Nueva versión**. Así el link no cambia.
 

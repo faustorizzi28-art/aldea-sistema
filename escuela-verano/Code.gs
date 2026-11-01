@@ -43,7 +43,11 @@ const CONFIG = {
   aprobarFotos: true,           // true = las fotos de los profes las aprueba el coordinador antes de que las vean las familias
   minutosTolerancia: 10,
   fotoParaCerrarTurno: ['profe', 'auxiliar'],   // estos roles tienen que subir al menos una foto o video del día para marcar la salida
-  maxVideoMB: 300,        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
+  maxVideoMB: 300,
+  // Pagos online: cada sede conecta su cuenta de Mercado Pago desde Administración → Ajustes (el token queda guardado aparte, no en el código)
+  mercadoPagoRecargoPct: 0,     // % que se suma al pagar con Mercado Pago (para cubrir la comisión); 0 = sin recargo
+  glorin: { nombre: 'GLORIN Animaciones', detalle: 'Animación de cumpleaños y eventos',
+            url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
   grupos: [
     { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 3,  edadMax: 4 },
     { id: 'exploradores', nombre: 'Exploradores', emoji: '🧭', edadMin: 5,  edadMax: 6 },
@@ -152,6 +156,7 @@ const HOJAS = {
   Grupos:        ['id', 'sede', 'nombre', 'emoji', 'base', 'creado'],
   Interesados:   ['fecha', 'email', 'nombre', 'whatsapp', 'sede', 'origen'],
   Avisos:        ['fecha', 'tipo', 'sede', 'destino', 'referencia', 'detalle'],
+  Comprobantes:  ['id', 'fecha', 'inscripcionId', 'familiaId', 'chico', 'sede', 'monto', 'archivo', 'estado', 'revisadoPor', 'nota'],
   Config:        ['clave', 'valor', 'descripcion']
 };
 // Columnas que tienen que quedar como texto (si no, Sheets convierte fechas y teléfonos)
@@ -167,9 +172,8 @@ const DIAS_SEM = ['lun', 'mar', 'mie', 'jue', 'vie'];
 // Equipo: todos entran con su mail a ?p=profes. Lo que ve cada uno depende de su rol.
 const ROLES = {
   profe:       { nombre: 'Profe',          emoji: '🧑‍🏫', permisos: ['asistencia', 'fotos'] },
-  auxiliar:    { nombre: 'Auxiliar / ayudante', emoji: '🙋', permisos: ['asistencia', 'fotos'] },
+  auxiliar:    { nombre: 'Auxiliar de área', emoji: '🙋', permisos: ['asistencia', 'fotos'] },
   guardavidas: { nombre: 'Guardavidas',    emoji: '🛟', permisos: ['pileta'] },
-  enfermeria:  { nombre: 'Enfermería / acompañante', emoji: '🩺', permisos: ['salud'] },
   coordinador: { nombre: 'Coordinador/a',  emoji: '📋', permisos: ['asistencia', 'asistenciaTodos', 'fotos', 'aprobarFotos', 'equipo', 'cronograma', 'grupos', 'salud', 'pileta'] },
   admin:       { nombre: 'Administración', emoji: '🗂️', permisos: ['asistencia', 'asistenciaTodos', 'fotos', 'aprobarFotos', 'equipo', 'cronograma', 'grupos', 'salud', 'pileta', 'plata'] }
 };
@@ -183,6 +187,19 @@ function doGet(e) {
     .setTitle(titulos[p] || 'Escuela de Verano · Aldea de Valle y Colonia Dewey')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/** Avisos de Mercado Pago (webhook). La URL se arma sola al crear cada pago. */
+function doPost(e) {
+  try {
+    const prm = (e && e.parameter) || {};
+    let body = {};
+    try { body = JSON.parse((e.postData && e.postData.contents) || '{}'); } catch (x) { body = {}; }
+    const tipo = prm.type || prm.topic || body.type || body.topic || '';
+    const id = prm['data.id'] || (body.data && body.data.id) || (tipo === 'payment' ? prm.id : '');
+    if (prm.mp && id && /payment/.test(tipo || 'payment')) registrarPagoMP_(prm.sede, String(id));
+  } catch (err) { Logger.log(err); }
+  return ContentService.createTextOutput('ok');
 }
 
 /** Única puerta de entrada desde la página (google.script.run.api). */
@@ -208,6 +225,11 @@ const ACCIONES = {
   pedirCodigo:     ['publico', accPedirCodigo_],
   verificarCodigo: ['publico', accVerificarCodigo_],
   adminLogin:      ['publico', accAdminLogin_],
+  // pagos: con el link de pago del mail (sin entrar) o desde Mi cuenta
+  pagos:           ['publico', accPagos_],
+  pagarMP:         ['publico', accPagarMP_],
+  confirmarMP:     ['publico', d => registrarPagoMP_(d.sede, String(d.payment_id || ''))],
+  subirComprobante: ['publico', accSubirComprobante_],
   // familias
   miCuenta:        ['familia', accMiCuenta_],
   renovar:         ['familia', accRenovar_],
@@ -243,6 +265,9 @@ const ACCIONES = {
   asignarGrupo:    ['admin', accAsignarGrupo_],
   recordar:        ['admin', accRecordar_],
   guardarProfe:    ['admin', accGuardarProfe_],
+  revisarComprobante: ['admin', accRevisarComprobante_],
+  subirLogo:       ['admin', accSubirLogo_],
+  guardarMP:       ['admin', accGuardarMP_],
   crearGrupo:      ['admin', accCrearGrupo_],
   equipoHoyAdmin:  ['admin', (d, s) => equipoHoy_(s.s, d.sede)],
   guardarTurnoAdmin: ['admin', accGuardarTurno_],
@@ -337,11 +362,11 @@ function accPublico_() {
       bajada: s.bajada, ficha: s.ficha, inicio: s.inicio, fin: s.fin, precios: s.precios, cupoPorGrupo: s.cupoPorGrupo,
       pago: s.pago,
       semanas: semanas_(id).map(w => Object.assign(w, { tematica: temSede[w.id] || null })),
-      tieneUbicacion: !!geo_(id).lat
+      tieneUbicacion: !!geo_(id).lat, logo: logoSede_(id), mercadoPago: !!tokenMP_(id), recargoMP: CONFIG.mercadoPagoRecargoPct
     };
   });
   return {
-    marca: CONFIG.marca, temporada: CONFIG.temporada, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
+    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
     grupos: todosGrupos_(), sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(), periodos: periodosTemporada_(), periodoActual: periodoActual_(),
     cotizar: cotizarPuro_.toString(), formasPago: FORMAS_PAGO, estados: ESTADOS
   };
@@ -521,6 +546,7 @@ function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
   return {
     items, total: q.total, sena: q.sena, detalle: q.detalleBase + ' · ' + q.turno.nombre + ' · ' + q.etapa.nombre, sobrecupo: asign.filter(a => a.sobrecupo), desde: q.dias[0], hasta: q.dias[q.dias.length - 1],
     pago: sede.pago, sede: sede.nombre, whatsapp: sede.whatsapp,
+    tokenPago: tokenPago_(items.map(i => i.id)),
     waComprobante: linkWhatsApp_(sede.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano de ' + items.map(i => i.chico).join(' y ') + ' (' + items.map(i => i.id).join(', ') + ').')
   };
 }
@@ -1235,7 +1261,7 @@ function accTablero_(d, sesion) {
       chicos: Object.keys(activas.reduce((a, i) => (a[i.chicoId] = 1, a), {})).length,
       inscripciones: activas.length, facturado: sum(activas, 'total'), cobrado: sum(activas, 'pagado'), pendiente: sum(activas, 'saldo'),
       hoyEsperados, hoyPresentes, interesados: filas_('Interesados').filter(x => enSede_(sede, x.sede)).length,
-      cuotaMail: MailApp.getRemainingDailyQuota()
+      cuotaMail: MailApp.getRemainingDailyQuota(), comprobantes: filas_('Comprobantes').filter(c => c.estado === 'Pendiente' && enSede_(sede, c.sede)).length
     },
     porGrupo, vencen, deudas, pagos: pagos.slice(0, 300), profes, sobrecupos: sobrecupos_(sede), carpetaFotos: carpetaFotos_().getUrl(),
     inscripciones: insc.sort((a, b) => b.creado - a.creado),
@@ -1248,6 +1274,9 @@ function accTablero_(d, sesion) {
     publicaciones: filas_('Publicaciones').filter(p => enSede_(sede, p.sede)).map(pubPublica_).sort((a, b) => b.ts - a.ts).slice(0, 40),
     ubicaciones: Object.keys(CONFIG.sedes).filter(id => enSede_(sede, id)).map(id => Object.assign({ id, nombre: CONFIG.sedes[id].nombre }, geo_(id))),
     ajustes: ajustesPublicos_(sesion.s),
+    comprobantes: filas_('Comprobantes').filter(c => enSede_(sede, c.sede)).map(c => ({ id: c.id, fecha: c.fecha instanceof Date ? Utilities.formatDate(c.fecha, TZ, 'yyyy-MM-dd HH:mm') : String(c.fecha),
+      inscripcionId: c.inscripcionId, chico: c.chico, sede: c.sede, monto: Number(c.monto) || 0, archivo: c.archivo, estado: c.estado, nota: c.nota })).sort((a, b) => a.fecha < b.fecha ? 1 : -1).slice(0, 100),
+    marcas: Object.keys(CONFIG.sedes).filter(id => enSede_(sede, id)).map(id => ({ id, nombre: CONFIG.sedes[id].nombre, logo: logoSede_(id), mercadoPago: !!tokenMP_(id) })),
     roles: Object.keys(ROLES).map(k => ({ id: k, nombre: ROLES[k].nombre, emoji: ROLES[k].emoji })),
     avisosHoy: filas_('AvisosFamilia').filter(a => a.estado !== 'anulado' && iso_(a.fecha) === hoy && enSede_(sede, a.sede)).length,
     url: ScriptApp.getService().getUrl(), planilla: SpreadsheetApp.getActiveSpreadsheet().getUrl()
@@ -1351,7 +1380,7 @@ function accGuardarProfe_(d, sesion) {
     const queHace = {
       profe: 'marcás entrada y salida, tomás asistencia de tus grupos, subís fotos y ves el cronograma',
       guardavidas: 'marcás entrada y salida y ves la lista de la pileta (quién sabe nadar)',
-      enfermeria: 'marcás entrada y salida y ves las fichas de salud de los chicos del día',
+      auxiliar: 'marcás entrada y salida, tomás asistencia de tus grupos y subís fotos del día',
       coordinador: 'marcás entrada y salida, controlás la asistencia de todos los grupos, al equipo y sus turnos, aprobás las fotos y armás el cronograma',
       admin: 'tenés todo lo del coordinador y además el panel de administración'
     }[datos.rol];
@@ -1492,6 +1521,160 @@ function ajustesPublicos_(s) {
   return out;
 }
 
+// ======== PAGOS: link de pago, Mercado Pago y comprobantes ========
+function tokenMP_(sede) { return PropertiesService.getScriptProperties().getProperty('MP_TOKEN_' + sede) || ''; }
+
+/** Qué inscripciones puede pagar quien tiene este token (link de pago del mail o sesión de la familia). */
+function inscripcionesDeToken_(t) {
+  const ses = leerToken_(t);
+  if (!ses) throw new Error('El link de pago venció. Entrá a Mi cuenta con tu mail para pagar.');
+  if (ses.r === 'pago') return filas_('Inscripciones').filter(i => (ses.i || []).indexOf(i.id) >= 0);
+  if (ses.r === 'familia') { const fam = familiaDe_(ses); return filas_('Inscripciones').filter(i => i.familiaId === fam.id); }
+  throw new Error('No tenés acceso a estos pagos.');
+}
+function montoAPagar_(i, que) {
+  const total = Number(i.total) || 0, pagado = Number(i.pagado) || 0, saldo = total - pagado;
+  const sena = Math.round(total * CONFIG.sedes[i.sede].precios.senaPct / 100 / 100) * 100;
+  return que === 'sena' ? Math.max(0, Math.min(saldo, sena - pagado)) : saldo;
+}
+function accPagos_(d) {
+  const lista = inscripcionesDeToken_(d.t).filter(i => i.estado !== 'Cancelada');
+  const ids = lista.map(i => i.id);
+  const comp = filas_('Comprobantes').filter(c => ids.indexOf(c.inscripcionId) >= 0);
+  return {
+    items: lista.map(i => ({ id: i.id, chico: i.chico, sede: i.sede, desde: iso_(i.fechaInicio), hasta: iso_(i.fechaFin), turno: i.turno,
+      total: Number(i.total) || 0, pagado: Number(i.pagado) || 0, saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
+      sena: montoAPagar_(i, 'sena'), estado: i.estado })),
+    comprobantes: comp.map(c => ({ id: c.id, inscripcionId: c.inscripcionId, monto: Number(c.monto) || 0, estado: c.estado, fecha: c.fecha instanceof Date ? diaDe_(c.fecha) : String(c.fecha).slice(0, 10) })),
+    sedes: Object.keys(CONFIG.sedes).map(id => ({ id, mercadoPago: !!tokenMP_(id), pago: CONFIG.sedes[id].pago, whatsapp: CONFIG.sedes[id].whatsapp }))
+  };
+}
+function accPagarMP_(d) {
+  const i = inscripcionesDeToken_(d.t).filter(x => x.id === d.inscripcionId)[0];
+  if (!i) throw new Error('No encontramos esa inscripción.');
+  const token = tokenMP_(i.sede);
+  if (!token) throw new Error('Esta sede todavía no tiene Mercado Pago. Pagá por transferencia.');
+  let monto = montoAPagar_(i, d.que === 'sena' ? 'sena' : 'saldo');
+  if (monto <= 0) throw new Error('No hay nada para pagar en esta inscripción.');
+  const recargo = Math.round(monto * (CONFIG.mercadoPagoRecargoPct || 0) / 100);
+  const url = ScriptApp.getService().getUrl(), sede = CONFIG.sedes[i.sede];
+  const vuelta = url + '?p=pagar&sede=' + i.sede + '&t=' + encodeURIComponent(d.t);
+  const f = filas_('Familias').filter(x => x.id === i.familiaId)[0] || {};
+  const r = UrlFetchApp.fetch('https://api.mercadopago.com/checkout/preferences', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + token },
+    payload: JSON.stringify({
+      items: [{ title: 'Escuela de verano ' + sede.nombre + ' · ' + i.chico + (d.que === 'sena' ? ' (seña)' : ''), quantity: 1, currency_id: 'ARS', unit_price: monto + recargo }],
+      external_reference: i.id, payer: f.email ? { email: f.email } : undefined,
+      notification_url: url + '?mp=1&sede=' + i.sede,
+      back_urls: { success: vuelta + '&mp=ok', pending: vuelta + '&mp=pendiente', failure: vuelta + '&mp=error' }, auto_return: 'approved'
+    })
+  });
+  if (r.getResponseCode() >= 300) throw new Error('Mercado Pago no respondió (' + r.getResponseCode() + '). Probá de nuevo o pagá por transferencia.');
+  const pref = JSON.parse(r.getContentText());
+  return { url: pref.init_point, monto: monto + recargo };
+}
+/** Consulta el pago en Mercado Pago y, si está aprobado, lo registra (una sola vez aunque llegue repetido). */
+function registrarPagoMP_(sedeId, paymentId) {
+  if (!/^\d+$/.test(paymentId) || !CONFIG.sedes[sedeId]) return { estado: 'desconocido' };
+  const token = tokenMP_(sedeId);
+  if (!token) return { estado: 'sin-mp' };
+  const r = UrlFetchApp.fetch('https://api.mercadopago.com/v1/payments/' + paymentId, { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) return { estado: 'desconocido' };
+  const pay = JSON.parse(r.getContentText());
+  if (pay.status !== 'approved') return { estado: pay.status };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    if (filas_('Pagos').some(x => String(x.nota) === 'MP ' + paymentId)) return { estado: 'approved', yaRegistrado: true };
+    const i = filas_('Inscripciones').filter(x => x.id === pay.external_reference)[0];
+    if (!i || i.sede !== sedeId) return { estado: 'desconocido' };
+    const monto = Math.round(Number(pay.transaction_amount) || 0);
+    agregar_('Pagos', { id: uid_(), fecha: hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
+      medio: 'Mercado Pago', nota: 'MP ' + paymentId, cargadoPor: 'Mercado Pago' });
+    const res = recalcularInsc_(i.id);
+    avisoPagoFamilia_(i, monto, res);
+    avisarAdmin_(i.sede, '💳 Pago con Mercado Pago · ' + i.chico + ' · ' + pesos_(monto), '<p>Entró un pago de <b>' + pesos_(monto) + '</b> de ' + esc_(i.chico) + ' por Mercado Pago. Ya quedó registrado.</p>');
+    return { estado: 'approved', monto, saldo: res.saldo };
+  } finally { lock.releaseLock(); }
+}
+function avisoPagoFamilia_(i, monto, r) {
+  const f = filas_('Familias').filter(x => x.id === i.familiaId)[0];
+  if (!f || !f.email) return;
+  try {
+    enviarMail_(f.email, '✅ Recibimos tu pago · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Registramos tu pago de <b>' + pesos_(monto) + '</b> para ' + esc_(i.chico) + '.</p>' +
+      '<p>' + (r.saldo > 0 ? 'Te queda un saldo de <b>' + pesos_(r.saldo) + '</b>.' : '¡Está todo pago! 🎉') + '</p>' + boton_(urlCuenta_(), 'Ver mi cuenta', colorSede_(i.sede)), i.sede);
+  } catch (e) { Logger.log(e); }
+}
+function accSubirComprobante_(d) {
+  const i = inscripcionesDeToken_(d.t).filter(x => x.id === d.inscripcionId)[0];
+  if (!i) throw new Error('No encontramos esa inscripción.');
+  const monto = Math.round(Number(String(d.monto || '').replace(/[^\d]/g, '')));
+  if (!monto) throw new Error('Poné cuánto transferiste.');
+  if (!d.b64) throw new Error('Adjuntá la foto o el PDF del comprobante.');
+  if (String(d.b64).length > 14 * 1024 * 1024) throw new Error('El archivo es muy pesado. Mandá una captura de pantalla.');
+  const tipo = /pdf/.test(d.tipo || '') ? 'application/pdf' : 'image/jpeg';
+  const carpeta = carpetaComprobantes_(i.sede);
+  const file = carpeta.createFile(Utilities.newBlob(Utilities.base64Decode(d.b64), tipo, diaDe_(new Date()) + '_' + i.chico + '_' + monto + (tipo === 'application/pdf' ? '.pdf' : '.jpg')));
+  const id = uid_();
+  agregar_('Comprobantes', { id, fecha: new Date(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto, archivo: file.getUrl(), estado: 'Pendiente', revisadoPor: '', nota: limpio_(d.nota) });
+  avisarAdmin_(i.sede, '🧾 Comprobante para revisar · ' + i.chico + ' · ' + pesos_(monto),
+    '<p>' + esc_(i.chico) + ' mandó un comprobante de transferencia por <b>' + pesos_(monto) + '</b>.</p>' + boton_(file.getUrl(), 'Ver comprobante', '#2F4A38') +
+    '<p>Aprobalo desde Administración → Cobros para que se registre el pago.</p>');
+  return { id, estado: 'Pendiente' };
+}
+function carpetaComprobantes_(sede) {
+  const props = PropertiesService.getScriptProperties();
+  let raiz;
+  try { raiz = props.getProperty('CARPETA_COMPROBANTES') && DriveApp.getFolderById(props.getProperty('CARPETA_COMPROBANTES')); } catch (e) { raiz = null; }
+  if (!raiz) { raiz = DriveApp.createFolder('Escuela de Verano — Comprobantes'); props.setProperty('CARPETA_COMPROBANTES', raiz.getId()); }
+  const it = raiz.getFoldersByName(CONFIG.sedes[sede].nombre);
+  return it.hasNext() ? it.next() : raiz.createFolder(CONFIG.sedes[sede].nombre);
+}
+function accRevisarComprobante_(d, sesion) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const c = filas_('Comprobantes').filter(x => x.id === d.id)[0];
+    if (!c || (sesion.s !== 'todas' && c.sede !== sesion.s)) throw new Error('No encuentro ese comprobante.');
+    if (c.estado !== 'Pendiente') throw new Error('Ese comprobante ya se revisó.');
+    if (!d.aprobar) { actualizar_('Comprobantes', c._fila, { estado: 'Rechazado', revisadoPor: sesion.s, nota: limpio_(d.nota) }); return { estado: 'Rechazado' }; }
+    const monto = Math.round(Number(d.monto) || Number(c.monto));
+    const i = filas_('Inscripciones').filter(x => x.id === c.inscripcionId)[0];
+    agregar_('Pagos', { id: uid_(), fecha: hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
+      medio: 'Transferencia', nota: 'Comprobante ' + c.id, cargadoPor: sesion.s });
+    actualizar_('Comprobantes', c._fila, { estado: 'Aprobado', revisadoPor: sesion.s, monto });
+    const r = recalcularInsc_(i.id);
+    avisoPagoFamilia_(i, monto, r);
+    return { estado: 'Aprobado', saldo: r.saldo };
+  } finally { lock.releaseLock(); }
+}
+
+// ======== LOGOS ========
+function logoSede_(id) {
+  const fid = config_()['logo_' + id];
+  return fid ? 'https://drive.google.com/thumbnail?id=' + fid + '&sz=w600' : (CONFIG.sedes[id].logo || '');
+}
+function accSubirLogo_(d, sesion) {
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  if (!d.b64) throw new Error('Elegí la imagen del logo.');
+  const tipo = /png/.test(d.tipo || '') ? 'image/png' : 'image/jpeg';
+  const file = carpetaFotos_().createFile(Utilities.newBlob(Utilities.base64Decode(d.b64), tipo, 'Logo ' + CONFIG.sedes[sede].nombre + (tipo === 'image/png' ? '.png' : '.jpg')));
+  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { /* dominio */ }
+  guardarConfig_('logo_' + sede, file.getId(), 'Logo de ' + CONFIG.sedes[sede].nombre + ' (archivo de Drive)');
+  return { logo: logoSede_(sede) };
+}
+function accGuardarMP_(d, sesion) {
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  const props = PropertiesService.getScriptProperties();
+  const t = String(d.token || '').trim();
+  if (!t) { props.deleteProperty('MP_TOKEN_' + sede); return { mercadoPago: false }; }
+  if (!/^(APP_USR|TEST)-/.test(t)) throw new Error('El Access Token de Mercado Pago empieza con APP_USR- (o TEST- para pruebas).');
+  props.setProperty('MP_TOKEN_' + sede, t);
+  return { mercadoPago: true };
+}
+
 // ======== AVISOS AUTOMÁTICOS ========
 function tareaDiaria() {
   const hoy = hoy_();
@@ -1597,8 +1780,9 @@ function mailInscripcion_(fam, res, sede) {
     '<p>' + esc_(res.detalle) + '<br>Del ' + fechaLarga_(res.desde) + ' al ' + fechaLarga_(res.hasta) + '</p>' +
     '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr></table>' +
     '<p>Para reservar el lugar necesitamos la seña de <b>' + pesos_(res.sena) + '</b> (' + sede.precios.senaPct + '%).</p>' +
+    boton_(urlPago_(res.tokenPago), '💳 Pagar la seña' + (tokenMP_(sede.id) ? ' (Mercado Pago o transferencia)' : ''), sede.color) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(sede.id)) + '</pre>' +
-    boton_(res.waComprobante, '💬 Mandar el comprobante por WhatsApp', '#25D366') +
+    '<p style="color:#555">Si pagás por transferencia, subí el comprobante desde el mismo link y la administración lo confirma.</p>' +
     '<p>Desde <b>Mi cuenta</b> vas a ver las fotos del día, la asistencia, el cronograma y el saldo. Entrás con este mail.</p>' +
     boton_(urlCuenta_(), 'Entrar a mi cuenta', sede.color), sede.id);
 }
@@ -1625,8 +1809,8 @@ function mailRenovacion_(f, i) {
 function mailDeuda_(f, i) {
   enviarMail_(f.email, '💳 Saldo pendiente · escuela de verano de ' + i.chico,
     '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Te recordamos que queda un saldo de <b>' + pesos_(i.saldo) + '</b> de la escuela de verano de ' + esc_(i.chico) + '.</p>' +
+    boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar ahora', colorSede_(i.sede)) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(i.sede)) + '</pre>' +
-    boton_(linkWhatsApp_(CONFIG.sedes[i.sede].whatsapp, '¡Hola! Te mando el comprobante de ' + i.chico + ' (' + i.id + ').'), '💬 Mandar comprobante', '#25D366') +
     '<p style="color:#777">Si ya pagaste, ignorá este mail: puede tardar un día en impactar.</p>', i.sede);
 }
 function avisarAdmin_(sede, asunto, html) {
@@ -1653,6 +1837,8 @@ function datosPagoTexto_(sedeId) {
   return ['Alias: ' + p.alias, p.cbu ? 'CBU/CVU: ' + p.cbu : '', 'Banco: ' + p.banco, 'Titular: ' + p.titular].filter(Boolean).join('\n');
 }
 function urlCuenta_() { return ScriptApp.getService().getUrl() + '?p=cuenta'; }
+function urlPago_(t) { return ScriptApp.getService().getUrl() + '?p=pagar&t=' + encodeURIComponent(t); }
+function tokenPago_(ids) { return firmar_({ r: 'pago', i: ids, x: Date.now() + 120 * 86400000 }); }
 function colorSede_(s) { return CONFIG.sedes[s] ? CONFIG.sedes[s].color : '#2F4A38'; }
 function nombreGrupo_(id) { const g = todosGrupos_().filter(x => x.id === id)[0]; return g ? g.emoji + ' ' + g.nombre : id; }
 
