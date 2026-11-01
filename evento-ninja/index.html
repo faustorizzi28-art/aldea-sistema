@@ -629,9 +629,11 @@ function cuentaRegresiva(){
 }
 
 const vid = $('video-ninja');
-$('btn-play').onclick = () => vid.play();
-vid.addEventListener('play', () => vid.parentElement.classList.add('reproduciendo'));
-vid.addEventListener('pause', () => { if (vid.currentTime < 0.2 || vid.ended) vid.parentElement.classList.remove('reproduciendo'); });
+if (vid) {
+  $('btn-play').onclick = () => vid.play();
+  vid.addEventListener('play', () => vid.parentElement.classList.add('reproduciendo'));
+  vid.addEventListener('pause', () => { if (vid.currentTime < 0.2 || vid.ended) vid.parentElement.classList.remove('reproduciendo'); });
+}
 $('f-tipo').addEventListener('change', pintarTotal);
 $('f-cena').addEventListener('change', pintarTotal);
 $('f-personas').addEventListener('change', pintarTotal);

@@ -46,7 +46,7 @@ En `Code.gs`, bloque `CONFIG`:
 
 Fotos y video del Ninja (sección "Mensaje del Ninja"): van embebidos dentro de `index.html` (así funcionan en Apps Script sin subir nada aparte). Los originales recortados están en `img/`.
 
-## Instalación
+## Instalación (detallada en PASO-A-PASO.md)
 1. **script.google.com** → Nuevo proyecto.
 2. Pegá `Code.gs` completo.
 3. **+** → **HTML** → nombre exacto **Index** → pegá `index.html`.
