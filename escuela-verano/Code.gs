@@ -98,7 +98,7 @@ const CONFIG = {
     colonia: {
       id: 'colonia',
       nombre: 'Colonia Dewey',
-      color: '#1C5D8C', acento: '#FFB627',
+      color: '#C41E3A', acento: '#6CCDF2',   // rojo y celeste del logo de Colonia Dewey
       direccion: 'Etruria 7755, Villa Rivera Indarte, Córdoba',
       whatsapp: '5493515308489',
       lat: null, lng: null, radio: 150,   // fijala desde Administración → Ajustes → "Usar mi ubicación"

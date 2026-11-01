@@ -37,7 +37,7 @@ Tiene **tres puertas** con el mismo link:
 
 ### Logos y tipografía
 - **Aldea de Valle:** el logo de la web de Aldea.
-- **Colonia Dewey:** se sube desde **Administración → Ajustes → Logo**. Hasta entonces se ve "CD" con los colores de la sede. Cada administración puede cambiar el logo de su sede.
+- **Colonia Dewey:** ya está cargado, en sus dos versiones (en `logos/`): en color sobre fondo claro (la tarjeta para elegir escuela) y en blanco sobre las barras de la sede. La sede usa los colores del logo, rojo y celeste. Si algún día cambia, cada administración sube el nuevo desde **Administración → Ajustes → Logo**.
 - **GLORIN Animaciones:** aparece al pie, con link a las reservas de cumpleaños.
 - **Tipografía:** Baloo 2 en los títulos y Nunito en el texto. Se cambia en dos variables al principio de `Index.html` (`--f-titulo` y `--f-texto`).
 
