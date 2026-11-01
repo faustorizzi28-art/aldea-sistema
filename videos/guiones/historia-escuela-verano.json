@@ -1,0 +1,24 @@
+{
+  "titulo": "Aldea de Valle – Escuela de Verano, inscripciones abiertas (historia 16 s)",
+  "letra": "serif",
+  "acento": "#F2CA11",
+  "musica": "ilusion-campeonato.mp3",
+  "volumenMusica": 0.75,
+  "tomas": [
+    { "video": "pileta-4220.mp4", "desde": 2.0, "segundos": 2.0, "texto": "Se viene\nel verano…" },
+    { "video": "pileta-4221.mp4", "desde": 3.0, "segundos": 2.0, "texto": "…y se vive\nen Aldea." },
+    { "foto": "pileta-verano.jpg", "segundos": 2.0, "texto": "Pileta." },
+    { "video": "viernes-club.mp4", "desde": 0.3, "segundos": 2.0, "texto": "Deportes." },
+    { "foto": "escuela-verano.jpg", "segundos": 2.0, "texto": "Amigos." },
+    { "video": "viernes-cumple.mp4", "desde": 5.5, "segundos": 2.0, "texto": "Y mil juegos." }
+  ],
+  "cierre": {
+    "logo": "logo-aldea.png",
+    "arriba": "ESCUELA DE VERANO",
+    "texto": "Inscripciones\nabiertas.",
+    "color": "#2F4A38",
+    "boton": "Desde los 3 años · Cupos limitados",
+    "abajo": "WhatsApp 351 530 8489 · @aldeadevalle",
+    "segundos": 4.0
+  }
+}
