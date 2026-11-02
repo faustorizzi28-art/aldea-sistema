@@ -35,6 +35,41 @@ Tiene **tres puertas** con el mismo link:
   - Los comprobantes se guardan en Drive, en `Escuela de Verano — Comprobantes / <sede>`.
 - Los recordatorios de deuda también traen el botón **Pagar ahora**.
 
+### Efectivo y transferencia
+- La mayoría de los pagos van a ser en **efectivo**, que es el precio más barato. **Los precios cargados en `CONFIG` son los de efectivo.**
+- **Transferencia y Mercado Pago** pagan un **% más**: 10% de ejemplo, a confirmar. Lo cambia la administración general en **Ajustes → Recargo por transferencia**. Si querés, `mercadoPagoRecargoPct` suma un extra solo para Mercado Pago.
+- La familia ve los dos precios en todos lados: presupuesto, inscripción, mails y pagos. Ejemplo: *$100.000 en efectivo · $110.000 por transferencia*.
+- El saldo se lleva **en pesos de efectivo**:
+  - Al registrar un pago, la administración pone la plata que entró, con **Efectivo** como opción por defecto.
+  - Si fue por transferencia o Mercado Pago, la app descuenta sola el recargo. Por ejemplo, $110.000 transferidos cubren $100.000 del saldo.
+- En la planilla, la hoja `Pagos` guarda lo que entró (`monto`) y lo que cubrió del saldo (`acredita`).
+
+### Eventos que se cobran aparte
+- **Administración → Eventos**: campamento, festejo con las familias, cierre de temporada o cualquier otro, con botones para arrancar cada uno ya armado.
+- Cada evento tiene:
+  - fecha, horario, lugar y descripción
+  - **precio por chico** en efectivo
+  - si pueden venir **adultos** y cuánto pagan
+  - **cupo** y para qué **grupos** es
+  - hasta cuándo se anotan
+  - estado: abierto, cerrado o cancelado
+- Con **Avisar a las familias** les llega un mail con el evento y el botón para anotarse. Va solo a las familias de esos grupos.
+- Las familias se anotan desde **Mi cuenta → 🎉 Eventos** y pagan aparte: en efectivo en la sede, por transferencia (con comprobante) o con Mercado Pago. El evento se paga entero, sin seña.
+- La administración ve en cada evento los chicos y adultos anotados, lo cobrado y lo que falta, con botones de **Pago** y **WhatsApp**. Las deudas de eventos también aparecen en **Cobros**.
+- Los eventos no cuentan para los cupos por grupo, la asistencia diaria ni los avisos de renovación.
+
+### Fotos: un Drive para cada escuela
+- Cada sede tiene su carpeta de Drive (`Fotos <sede> — Escuela de Verano`) con dos partes:
+  - **Material del equipo / <día>**: todo lo que suben los profes. Es privado y sirve como material para redes.
+  - **Para las familias / <día>**: solo lo aprobado por la coordinación, compartido por link.
+- Cuando la coordinación aprueba una foto o video, el archivo pasa solo a la carpeta del día de las familias. Si después se oculta, vuelve a la del equipo.
+- En **Mi cuenta → Fotos**, cada día tiene el botón **📁 Todas las fotos del día en Drive** para verlas y descargarlas.
+- **A las 19 h** les llega a las familias de los chicos que fueron ese día un mail con el link a las fotos de hoy. Se apaga con `mailFotosDelDia: false`.
+- Si una escuela quiere usar **su propio Drive**:
+  1. Crea una carpeta y la comparte como **Editor** con la cuenta de la planilla.
+  2. En **Ajustes → Drive de fotos**, pega el link.
+- Si ya tenías la app instalada, volvé a correr `configurarInicial` una vez para que quede programado el mail de las 19 h.
+
 ### Logos y tipografía
 - **Aldea de Valle:** el logo de la web de Aldea.
 - **Colonia Dewey:** ya está cargado, en sus dos versiones (en `logos/`): en color sobre fondo claro (la tarjeta para elegir escuela) y en blanco sobre las barras de la sede. La sede usa los colores del logo, rojo y celeste. Si algún día cambia, cada administración sube el nuevo desde **Administración → Ajustes → Logo**.

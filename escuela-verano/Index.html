@@ -41,7 +41,7 @@
   .card h3{font-size:18px}
   .muted{color:var(--gris)}
   .chico{font-size:13px}
-  .chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--crema);font-size:13px;font-weight:600;white-space:nowrap}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--crema);font-size:13px;font-weight:600;max-width:100%;overflow-wrap:anywhere}
   .chip.ok{background:#DDF3E5;color:#1C6B3F}.chip.mal{background:#FBE1DE;color:#9B2B20}.chip.aviso{background:#FFF0CC;color:#8A5A00}.chip.info{background:#E2ECF7;color:#1C4C7A}
   label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px}
   label small{font-weight:400;color:var(--gris)}
@@ -205,6 +205,8 @@ const nombreBarra = id => LOGOS_ANCHOS[id] && !(sede(id) || {}).logo ? '' : esc(
 function pieGlorin() {
   return PUB.glorin ? `<a class="glorin" href="${esc(PUB.glorin.url)}" target="_blank" rel="noopener"><img src="${LOGO_GLORIN}" alt="GLORIN Animaciones"><span>¿Cumpleaños o evento?<br><b>${esc(PUB.glorin.detalle)}</b></span></a>` : '';
 }
+// Los precios cargados son de EFECTIVO; transferencia y Mercado Pago pagan un % más
+const conTransf = (m, mp) => Math.round(m * (1 + (PUB.recargo || 0) / 100) * (mp ? 1 + (PUB.recargoMP || 0) / 100 : 1) / 100) * 100;
 const nGrupo = id => id === 'todos' ? 'Todos los grupos' : (grupo(id).emoji + ' ' + grupo(id).nombre);
 const foto = id => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1200';
 const wa = (tel, txt) => 'https://wa.me/' + String(tel || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(txt || '');
@@ -306,7 +308,7 @@ function vPuerta(id) {
   <div class="wrap">
     <div class="card" style="margin-top:16px;border:2px solid var(--c1)">
       <h2 class="serif" style="font-size:30px;margin:0">Inscribí a tu hijo</h2>
-      <p class="muted" style="margin:6px 0 12px">En 4 pasos desde el celular. Ves el precio al instante y pagás la seña con Mercado Pago o transferencia.</p>
+      <p class="muted" style="margin:6px 0 12px">En 4 pasos desde el celular. Ves el precio al instante y pagás la seña en efectivo (más barato), por transferencia o con Mercado Pago.</p>
       ${E.hasta ? `<p class="chip aviso" style="margin:0 0 12px">⏰ ${esc(E.nombre)}: precios hasta el ${fCorta(E.hasta)}</p>` : ''}
       <button class="btn full acento" onclick="empezar('${id}')">Inscribir a mi hijo</button>
     </div>
@@ -375,6 +377,7 @@ function vSede(id) {
         ${P.descuentoRenovacion ? `<span class="chip ok">🔁 Renovando ${P.descuentoRenovacion}% off</span>` : ''}
         ${etapaActual(s).hasta ? `<span class="chip aviso">⏰ ${esc(etapaActual(s).nombre)}: este precio vale hasta el ${fCorta(etapaActual(s).hasta)}</span>` : ''}
       </div>
+      <p class="banner" style="margin:12px 0 8px">💵 <b>Precios en efectivo.</b>${PUB.recargo ? ` Por transferencia o Mercado Pago: +${PUB.recargo}%.` : ''}</p>
       <p class="muted chico">Los días sueltos nunca cuestan más que la semana completa. Se reserva el lugar con una seña del ${P.senaPct}%.</p>
       <button class="btn full" onclick="empezar('${id}')">Calcular mi presupuesto</button>
     </div>
@@ -422,14 +425,15 @@ function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.can
 function htmlPresu(q, texto, accion) {
   const cant = Math.max(1, PL.cant);
   return `<div class="presu"><div class="crece"><small>${q.cantDias ? esc(q.detalleBase) + ' · ' + cant + (cant > 1 ? ' chicos' : ' chico') : 'Elegí cuándo viene'}</small>
-    <div class="monto">${pesos(q.total)}</div>${q.descuento ? `<small>Ahorrás ${pesos(q.descuento)}</small>` : ''}</div>
+    <div class="monto">${pesos(q.total)} <small style="display:inline;font-size:12px">en efectivo</small></div>${q.cantDias && PUB.recargo ? `<small>${pesos(conTransf(q.total))} por transferencia</small>` : ''}</div>
     <button class="btn acento" ${q.errores.length ? 'disabled' : ''} onclick="${accion}">${texto}</button></div>`;
 }
 function detallePresu(q, nombres) {
   return `<table class="t">${q.porChico.map((c, i) => `<tr><td>${esc(nombres[i] || 'Chico ' + (i + 1))}<div class="muted chico">${esc(q.detalleBase)} · ${esc(q.turno.nombre)}${q.extras.length ? ' · ' + q.extras.map(e => esc(e.nombre)).join(', ') : ''}${c.motivos.length ? '<br>Descuento: ' + esc(c.motivos.join(' + ')) : ''}</div></td>
     <td class="derecha">${c.descuento ? `<s class="muted">${pesos(c.subtotal)}</s><br>` : ''}<b>${pesos(c.total)}</b></td></tr>`).join('')}
-    <tr><td><b>Total</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
-    <tr><td>Seña para reservar (${q.senaPct}%)</td><td class="derecha"><b>${pesos(q.sena)}</b></td></tr></table>
+    <tr><td><b>💵 Total en efectivo</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
+    ${PUB.recargo ? `<tr><td>Por transferencia o Mercado Pago (+${PUB.recargo}%)</td><td class="derecha">${pesos(conTransf(q.total))}</td></tr>` : ''}
+    <tr><td>Seña para reservar (${q.senaPct}%)</td><td class="derecha"><b>${pesos(q.sena)}</b>${PUB.recargo ? `<br><span class="muted chico">${pesos(conTransf(q.sena))} por transferencia</span>` : ''}</td></tr></table>
     ${q.etapa && q.etapa.hasta ? `<p class="chip aviso" style="margin:8px 0 0">⏰ ${esc(q.etapa.nombre)}: este precio vale si te inscribís hasta el ${fCorta(q.etapa.hasta)}${q.proxima ? ', después pasa a ' + esc(q.proxima.nombre.toLowerCase()) : ''}</p>` : ''}
     <p class="muted chico">Del ${fLarga(q.dias[0] || '')} al ${fLarga(q.dias[q.dias.length - 1] || '')} · ${q.cantDias} días</p>`;
 }
@@ -554,7 +558,7 @@ function vListo(r) {
       <p class="muted">Te mandamos un mail con todo el detalle.</p>
     </div>
     <div class="card" style="border:2px solid var(--c1)"><h3>Para reservar el lugar: seña de ${pesos(r.sena)}</h3>
-      <p class="muted chico">Total ${pesos(r.total)}. El saldo lo pagás antes del primer día. El link para pagar también te llegó por mail.</p>
+      <p class="muted chico">Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}. El saldo, antes del primer día. El link para pagar también te llegó por mail.</p>
       <button class="btn full acento" style="margin-bottom:12px" onclick="vPagar('${esc(r.tokenPago)}')">💳 Pagar la seña ahora</button>
       ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
       <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>`
@@ -627,7 +631,7 @@ function vCuenta(tab) {
   <div class="wrap">${cuerpo}</div>
   <nav class="nav">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vCuenta('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
 }
-function inscDeChico(id) { return C.inscripciones.filter(i => i.chicoId === id && i.estado !== 'Cancelada').sort((a, b) => a.desde < b.desde ? -1 : 1); }
+function inscDeChico(id) { return C.inscripciones.filter(i => i.chicoId === id && i.estado !== 'Cancelada' && i.modalidad !== 'Evento').sort((a, b) => a.desde < b.desde ? -1 : 1); }
 function cInicio() {
   const hoy = C.hoy;
   const saldo = C.inscripciones.filter(i => i.estado !== 'Cancelada').reduce((a, i) => a + i.saldo, 0);
@@ -653,9 +657,10 @@ function cInicio() {
         <div class="derecha">${i.saldo > 0 ? `<span class="chip aviso">Debe ${pesos(i.saldo)}</span>` : '<span class="chip ok">Pago ✓</span>'}</div></div>`).join('')}
     </div>`;
   }).join('');
-  return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">Con Mercado Pago o transferencia (subís el comprobante desde la app).</div></div><button class="btn sm" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar</button></div></div>` : ''}
+  return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">En efectivo en la sede${PUB.recargo ? ', o ' + pesos(conTransf(saldo)) + ' por transferencia o Mercado Pago' : ''}.</div></div><button class="btn sm" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar</button></div></div>` : ''}
     ${cards || '<div class="vacio">Todavía no hay chicos cargados.</div>'}
     <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
+    ${cEventos()}
     ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}`;
 }
 function avisarModal(chicoId) {
@@ -696,24 +701,27 @@ function pintarPagos() {
   const logueado = !!LS.get('tok_familia') && PG_T === LS.get('tok_familia');
   const conf = id => PG.sedes.find(x => x.id === id) || {};
   const card = i => {
-    if (i.saldo <= 0) return `<div class="card"><div class="fila"><b class="crece">${esc(i.chico)}</b><span class="chip ok">✅ Pago completo</span></div><p class="muted chico" style="margin:6px 0 0">${esc(sede(i.sede).nombre)} · ${fCorta(i.desde)} al ${fCorta(i.hasta)} · ${pesos(i.total)}</p></div>`;
+    const titulo = (i.evento ? '🎉 ' + esc(i.evento) + ' · ' : '') + esc(i.chico);
+    const cuando = i.evento ? fLarga(i.desde) : fCorta(i.desde) + ' al ' + fCorta(i.hasta) + ' · ' + esc(i.turno);
+    if (i.saldo <= 0) return `<div class="card"><div class="fila"><b class="crece">${titulo}</b><span class="chip ok">✅ Pago completo</span></div><p class="muted chico" style="margin:6px 0 0">${esc(sede(i.sede).nombre)} · ${cuando}</p></div>`;
     const que = PG_QUE[i.id] || (i.sena > 0 && i.sena < i.saldo ? 'sena' : 'saldo'), monto = que === 'sena' ? i.sena : i.saldo, c = conf(i.sede);
     const enRevision = PG.comprobantes.filter(x => x.inscripcionId === i.id && x.estado === 'Pendiente');
-    return `<div class="card"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(i.chico)}</h3><div class="muted chico">${esc(sede(i.sede).nombre)} · ${fCorta(i.desde)} al ${fCorta(i.hasta)} · ${esc(i.turno)}</div></div><span class="chip aviso">Saldo ${pesos(i.saldo)}</span></div>
-      <table class="t" style="margin-top:8px"><tr><td>Total</td><td class="derecha">${pesos(i.total)}</td></tr><tr><td>Pagado</td><td class="derecha">${pesos(i.pagado)}</td></tr></table>
+    return `<div class="card"><div class="fila"><div class="crece"><h3 style="margin:0">${titulo}</h3><div class="muted chico">${esc(sede(i.sede).nombre)} · ${cuando}</div></div><span class="chip aviso">Saldo ${pesos(i.saldo)}</span></div>
+      <table class="t" style="margin-top:8px"><tr><td>Total (efectivo)</td><td class="derecha">${pesos(i.total)}</td></tr><tr><td>Pagado</td><td class="derecha">${pesos(i.pagado)}</td></tr></table>
+      <div class="banner" style="margin:12px 0 4px">💵 <b>En efectivo: ${pesos(monto)}</b> · lo pagás en la sede, a la administración.${PG.recargo ? `<br><span class="chico">Por transferencia o Mercado Pago sale ${pesos(conTransf(monto))} (+${PG.recargo}%).</span>` : ''}</div>
       ${i.sena > 0 && i.sena < i.saldo ? `<div class="monto-op seg"><button class="${que === 'sena' ? 'on' : ''}" onclick="PG_QUE['${i.id}']='sena';pintarPagos()">Seña ${pesos(i.sena)}</button><button class="${que === 'saldo' ? 'on' : ''}" onclick="PG_QUE['${i.id}']='saldo';pintarPagos()">Todo ${pesos(i.saldo)}</button></div>` : ''}
       ${enRevision.map(x => `<p class="chip info" style="margin:8px 0">🧾 Comprobante de ${pesos(x.monto)} en revisión</p>`).join('')}
-      ${c.mercadoPago ? `<button class="btn full" style="background:#009EE3;margin-top:8px" onclick="pagarMP(this,'${i.id}','${que}')">Pagar ${pesos(monto)} con Mercado Pago</button>
+      ${c.mercadoPago ? `<button class="btn full" style="background:#009EE3;margin-top:8px" onclick="pagarMP(this,'${i.id}','${que}')">Pagar ${pesos(conTransf(monto, true))} con Mercado Pago</button>
         <p class="muted chico" style="margin:6px 0 0;text-align:center">Tarjeta de débito, crédito o dinero en cuenta. Se acredita al instante.</p>` : ''}
-      <details style="margin-top:12px" ${c.mercadoPago ? '' : 'open'}><summary><b>Pagar por transferencia</b></summary>
+      <details style="margin-top:12px" ${c.mercadoPago ? '' : 'open'}><summary><b>Pagar por transferencia · ${pesos(conTransf(monto))}</b></summary>
         ${c.pago && c.pago.alias ? `<div class="banner" style="margin-top:10px"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:22px">${esc(c.pago.alias)}</b><br>${esc(c.pago.banco)} · ${esc(c.pago.titular)}${c.pago.cbu ? '<br>CBU ' + esc(c.pago.cbu) : ''}</div>
           <button class="btn xs claro" onclick="copiar('${esc(c.pago.alias)}')">Copiar alias</button>`
           : `<p class="chico">Pedinos los datos para transferir: <a target="_blank" href="${wa(c.whatsapp, '¡Hola! Me pasás los datos para transferir la escuela de verano de ' + i.chico + '?')}">escribinos por WhatsApp</a>.</p>`}
-        <button class="btn full claro" style="margin-top:10px" onclick="formComprobante('${i.id}',${monto})">🧾 Ya transferí: subir comprobante</button></details>
+        <button class="btn full claro" style="margin-top:10px" onclick="formComprobante('${i.id}',${conTransf(monto)})">🧾 Ya transferí: subir comprobante</button></details>
     </div>`;
   };
   pintar(`<header class="top">${sid && sede(sid) ? logoSede(sid) : ''}<div class="marca">Pagos</div>${logueado ? `<button onclick="vCuenta('inicio')">Mi cuenta</button>` : `<button onclick="${sid ? `vPuerta('${sid}')` : 'vElegirSede()'}">Inicio</button>`}</header>
-  <div class="wrap"><h2 class="serif" style="font-size:32px;margin-top:18px">Pagar la escuela de verano</h2>
+  <div class="wrap"><h2 class="serif" style="font-size:32px;margin-top:18px">Pagar</h2>
     ${items.length ? items.map(card).join('') : '<div class="vacio">No hay inscripciones para pagar.</div>'}
     ${logueado ? '' : `<p class="muted chico" style="text-align:center">¿Querés ver todo? <a href="#" onclick="irCuenta();return false">Entrá a Mi cuenta con tu mail</a>.</p>`}</div>`);
   scrollTo(0, 0);
@@ -744,6 +752,46 @@ function enviarComprobante(btn, id) {
     PG = await api('pagos', { t: PG_T }); pintarPagos();
   });
 }
+function cEventos() {
+  const evs = C.eventos || [];
+  if (!evs.length) return '';
+  const nom = id => (C.chicos.find(c => c.id === id) || {}).nombre || '';
+  return `<h3 style="margin-top:22px">🎉 Eventos</h3>` + evs.map(e => {
+    const libres = e.elegibles.filter(id => !e.anotadosMios.some(a => a.chicoId === id));
+    const debe = e.anotadosMios.reduce((a, x) => a + x.total - x.pagado, 0);
+    return `<div class="card"><h3 style="margin:0">${esc(e.emoji)} ${esc(e.nombre)}</h3>
+      <p class="muted chico" style="margin:4px 0">${fLarga(e.fecha)}${e.desde ? ' · ' + esc(e.desde) + (e.hasta ? ' a ' + esc(e.hasta) : '') + ' h' : ''}${e.lugar ? ' · ' + esc(e.lugar) : ''}</p>
+      ${e.descripcion ? `<p style="margin:6px 0">${esc(e.descripcion)}</p>` : ''}
+      <p class="chico" style="margin:6px 0"><b>${e.precioChico ? pesos(e.precioChico) + ' por chico en efectivo' : 'Sin costo'}</b>${e.precioChico && PUB.recargo ? ' (' + pesos(conTransf(e.precioChico)) + ' por transferencia)' : ''}${e.conAdultos ? ' · adultos: ' + (e.precioAdulto ? pesos(e.precioAdulto) : 'gratis') : ''}
+        ${e.lugares !== null ? `<br><span class="${e.lugares < 6 ? 'chip aviso' : 'muted'}">${e.lugares ? 'Quedan ' + e.lugares + ' lugares' : 'Sin lugares'}</span>` : ''}${e.cierre ? ' <span class="muted">· Anotate hasta el ' + fCorta(e.cierre) + '</span>' : ''}</p>
+      ${e.anotadosMios.map(a => `<span class="chip ok" style="margin:2px 4px 2px 0">✅ ${esc(nom(a.chicoId))}${a.adultos ? ' + ' + a.adultos + ' adultos' : ''}</span>`).join('')}
+      <div class="fila" style="margin-top:8px">${libres.length && e.abierto ? `<button class="btn sm" onclick="modalEvento('${e.id}')">Anotar${e.anotadosMios.length ? ' a otro' : 'me'}</button>` : ''}
+        ${debe > 0 ? `<button class="btn sm acento" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar ${pesos(debe)}</button>` : ''}${!e.abierto && !e.anotadosMios.length ? '<span class="muted chico">La inscripción está cerrada.</span>' : ''}</div></div>`;
+  }).join('');
+}
+function modalEvento(id) {
+  const e = C.eventos.find(x => x.id === id);
+  const libres = e.elegibles.filter(cid => !e.anotadosMios.some(a => a.chicoId === cid));
+  modal(`<h3>${esc(e.emoji)} ${esc(e.nombre)}</h3><p class="muted chico">${fLarga(e.fecha)}</p>
+    <label>¿A quién anotás?</label>${libres.map(cid => `<label class="opcion" style="margin:6px 0"><input type="checkbox" class="evC" value="${cid}" checked onchange="totalEvento('${id}')"><span>${esc((C.chicos.find(c => c.id === cid) || {}).nombre)}</span></label>`).join('')}
+    ${e.conAdultos ? `<label>¿Cuántos adultos vienen?</label><input type="number" id="evAd" value="0" min="0" max="10" inputmode="numeric" oninput="totalEvento('${id}')">` : ''}
+    <p id="evTot" class="banner" style="margin-top:12px"></p>
+    <button class="btn full" onclick="anotarEvento(this,'${id}')">Anotar</button>`);
+  totalEvento(id);
+}
+function totalEvento(id) {
+  const e = C.eventos.find(x => x.id === id), n = document.querySelectorAll('.evC:checked').length, ad = e.conAdultos ? Math.max(0, Number(val('evAd')) || 0) : 0;
+  const t = n * e.precioChico + ad * e.precioAdulto;
+  $('#evTot').innerHTML = t ? `💵 Total: <b>${pesos(t)}</b> en efectivo${PUB.recargo ? ' · ' + pesos(conTransf(t)) + ' por transferencia' : ''}` : '¡Sin costo!';
+}
+function anotarEvento(btn, id) {
+  const chicoIds = [...document.querySelectorAll('.evC:checked')].map(x => x.value);
+  conBoton(btn, async () => {
+    const r = await api('anotarEvento', { eventoId: id, chicoIds, adultos: val('evAd') }, 'familia');
+    cerrarModal(); toast('¡Anotado! ✓');
+    if (r.total > 0) vPagar(LS.get('tok_familia')); else cuentaCargar();
+  });
+}
 function verPago() {
   const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
   const s = sede(i ? i.sede : C.chicos[0].sede), p = s.pago;
@@ -759,8 +807,11 @@ function htmlPost(p) {
 }
 function verVideo(id) { modal('<div style="position:relative;padding-top:177%;margin-top:10px"><iframe src="https://drive.google.com/file/d/' + encodeURIComponent(id) + '/preview" allow="autoplay" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:14px"></iframe></div>'); }
 function cFotos() {
+  const dias = [];
+  C.publicaciones.forEach(p => { const d = p.fecha.slice(0, 10); let g = dias.find(x => x.d === d); if (!g) dias.push(g = { d, pubs: [], carpeta: '' }); g.pubs.push(p); if (p.carpeta) g.carpeta = p.carpeta; });
   return `<h2 class="serif" style="font-size:32px;margin-top:16px">Fotos y novedades</h2>
-    ${C.publicaciones.length ? C.publicaciones.map(htmlPost).join('') : '<div class="vacio">📸 Cuando los profes suban fotos del día, las vas a ver acá.</div>'}`;
+    ${dias.length ? dias.map(g => `<div class="fila" style="margin:18px 0 0"><b class="crece">${fLarga(g.d)}</b>${g.carpeta ? `<a class="btn xs claro" href="${esc(g.carpeta)}" target="_blank" rel="noopener">📁 Todas las fotos del día en Drive</a>` : ''}</div>` + g.pubs.map(htmlPost).join('')).join('')
+      : '<div class="vacio">📸 Cuando los profes suban fotos del día, las vas a ver acá.</div>'}`;
 }
 function cronoHtml(items, semanaId) {
   const delaSemana = items.filter(c => c.semana === semanaId);
@@ -1142,12 +1193,12 @@ async function adminCargar(tab) {
 }
 function vAdmin(tab) {
   aTab = tab;
-  const tabs = [['inicio', 'Inicio'], ['insc', 'Inscriptos'], ['cobros', 'Cobros'], ['profes', 'Equipo'], ['contenido', 'Contenido'], ['mails', 'Mails'], ['ajustes', 'Ajustes']];
+  const tabs = [['inicio', 'Inicio'], ['insc', 'Inscriptos'], ['cobros', 'Cobros'], ['eventos', 'Eventos'], ['profes', 'Equipo'], ['contenido', 'Contenido'], ['mails', 'Mails'], ['ajustes', 'Ajustes']];
   pintar(`<header class="top">${A.sede !== 'todas' ? logoSede(A.sede) : ''}<div class="marca">${A.sede !== 'todas' ? '' : '☀️ '}Admin <small>${A.sede === 'todas' ? 'las dos sedes' : esc(sede(A.sede).nombre)}</small></div>
     ${A.sesionSede === 'todas' ? `<select onchange="aSede=this.value;adminCargar()"><option value="todas">Todas</option>${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === A.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
     <button onclick="adminCargar()">↻</button></header>
   <div class="wrap"><div class="tabs">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vAdmin('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="adCuerpo"></div></div>`);
-  ({ inicio: aInicio, insc: aInsc, cobros: aCobros, profes: aProfes, contenido: aContenido, mails: aMails, ajustes: aAjustes })[tab]();
+  ({ inicio: aInicio, insc: aInsc, cobros: aCobros, eventos: aEventos, profes: aProfes, contenido: aContenido, mails: aMails, ajustes: aAjustes })[tab]();
 }
 const nomSede = id => id === 'ambas' ? 'Ambas' : (sede(id) ? sede(id).nombre : id);
 const sedesVis = () => PUB.sedes.filter(s => A.sede === 'todas' || s.id === A.sede);
@@ -1177,15 +1228,16 @@ function crearGrupo(btn, sedeId, base) {
   conBoton(btn, async () => { const g = await api('crearGrupo', { sede: sedeId, base }, 'admin'); PUB = Object.assign(PUB, { grupos: (await api('publico')).grupos }); toast('Grupo ' + g.nombre + ' creado ✓'); adminCargar(); });
 }
 function htmlDeuda(i) {
-  return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
+  return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.modalidad === 'Evento' ? '🎉 ' + esc(i.turno) + ' · ' : ''}${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
     <b>${pesos(i.saldo)}</b><div class="fila" style="gap:4px"><button class="btn xs" onclick="formPago('${i.id}')">Pago</button><a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WA</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','deuda')">Mail</button></div></div>`;
 }
 function recordar(btn, id, tipo) { conBoton(btn, async () => { await api('recordar', { inscripcionId: id, tipo }, 'admin'); toast('Mail enviado ✓'); }); }
 function formPago(id) {
   const i = A.inscripciones.find(x => x.id === id);
-  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)}</b></span></p>
+  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' ? '🎉 ' + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)} en efectivo</b></span></p>
     <div class="grid2"><div><label>Monto</label><input type="number" id="pgMonto" value="${i.saldo}" inputmode="numeric"></div><div><label>Fecha</label><input type="date" id="pgFecha" value="${A.hoy}"></div></div>
-    <label>Medio</label><select id="pgMedio"><option>Transferencia</option><option>Efectivo</option><option>Mercado Pago</option><option>Otro</option></select>
+    <label>Medio</label><select id="pgMedio" onchange="document.getElementById('pgMonto').value=this.value==='Efectivo'?${i.saldo}:${conTransf(i.saldo)}"><option>Efectivo</option><option>Transferencia</option><option>Mercado Pago</option><option>Otro</option></select>
+    <p class="muted chico" style="margin:4px 0 0">Poné la plata que entró. Si fue por transferencia (${pesos(conTransf(i.saldo))} el saldo completo), se descuenta el ${PUB.recargo}% de recargo y queda en cero.</p>
     <label>Nota</label><input type="text" id="pgNota">
     <label class="opcion on"><input type="checkbox" id="pgAvisar" checked><div>Mandarle a la familia el mail de “recibimos tu pago”</div></label>
     <button class="btn full" onclick="conBoton(this, async()=>{await api('registrarPago',{inscripcionId:'${id}',monto:val('pgMonto'),fecha:val('pgFecha'),medio:val('pgMedio'),nota:val('pgNota'),avisar:document.getElementById('pgAvisar').checked},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar()})">Guardar pago</button>`);
@@ -1259,6 +1311,58 @@ function aCobros() {
     <div class="card"><h3>Deben (${A.deudas.length})</h3><p class="muted chico">A los que ya empezaron o empiezan en 3 días les llega un recordatorio automático cada 3 días.</p>${A.deudas.map(htmlDeuda).join('') || '<p class="muted">Todo al día. 🎉</p>'}</div>
     <div class="card"><h3>Últimos pagos</h3>${A.pagos.slice(0, 60).map(p => `<div class="lista-item"><div class="crece"><b>${esc(p.chico)}</b><div class="muted chico">${fLarga(p.fecha)} · ${esc(p.medio)}${p.nota ? ' · ' + esc(p.nota) : ''}${A.sede === 'todas' ? ' · ' + esc(nomSede(p.sede)) : ''}</div></div><b>${pesos(p.monto)}</b></div>`).join('') || '<p class="muted">Todavía no hay pagos.</p>'}</div>`;
 }
+/* ---------- Eventos especiales (campamento, festejo, cierre…) ---------- */
+const EV_PRESETS = {
+  campamento: { emoji: '🏕️', nombre: 'Campamento', fecha: '2027-01-14', desde: '18:00', hasta: '10:00', lugar: '', descripcion: 'Noche de campamento: fogón, carpas y desayuno. Retiran al día siguiente a las 10.', conAdultos: false },
+  festejo: { emoji: '🎉', nombre: 'Festejo con las familias', fecha: '2027-01-30', desde: '17:00', hasta: '20:00', lugar: '', descripcion: 'Muestra de los chicos, juegos y merienda compartida con las familias.', conAdultos: true },
+  cierre: { emoji: '🏆', nombre: 'Cierre de temporada', fecha: '2027-02-19', desde: '17:00', hasta: '20:00', lugar: '', descripcion: 'Gran final de las Olimpíadas, entrega de medallas y fiesta de despedida.', conAdultos: true }
+};
+function aEventos() {
+  const evs = A.eventos;
+  $('#adCuerpo').innerHTML = `<div class="card"><h3>Crear un evento</h3><p class="muted chico">Se cobra aparte de la escuela de verano. Las familias se anotan desde su cuenta y pagan en efectivo, por transferencia o con Mercado Pago.</p>
+      <div class="fila"><button class="btn sm" onclick="formEvento('','campamento')">🏕️ Campamento</button><button class="btn sm" onclick="formEvento('','festejo')">🎉 Festejo con las familias</button>
+      <button class="btn sm" onclick="formEvento('','cierre')">🏆 Cierre de temporada</button><button class="btn sm claro" onclick="formEvento()">+ Otro evento</button></div></div>
+    ${evs.map(e => `<div class="card" style="${e.estado === 'Cancelado' ? 'opacity:.55' : ''}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(e.emoji)} ${esc(e.nombre)}</h3>
+        <div class="muted chico">${fLarga(e.fecha)}${e.desde ? ' · ' + esc(e.desde) + (e.hasta ? ' a ' + esc(e.hasta) : '') : ''}${e.lugar ? ' · ' + esc(e.lugar) : ''}${A.sede === 'todas' ? ' · ' + esc(nomSede(e.sede)) : ''}</div>
+        <div class="muted chico">${e.grupos.includes('todos') ? 'Todos los grupos' : e.grupos.map(nGrupo).join(', ')} · ${e.precioChico ? pesos(e.precioChico) + ' por chico' : 'sin costo'}${e.conAdultos ? ' · adultos ' + (e.precioAdulto ? pesos(e.precioAdulto) : 'gratis') : ''}${e.cierre ? ' · se anotan hasta el ' + fCorta(e.cierre) : ''}</div></div>
+        <span class="chip ${e.estado === 'Abierto' ? 'ok' : e.estado === 'Cancelado' ? 'mal' : ''}">${esc(e.estado)}</span></div>
+      <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><div class="kpi"><span>Chicos</span><b>${e.anotados}${e.cupo ? '<span style="font-size:13px">/' + e.cupo + '</span>' : ''}</b></div><div class="kpi"><span>Adultos</span><b>${e.adultos}</b></div>
+        <div class="kpi"><span>Cobrado</span><b style="color:var(--ok)">${pesos(e.cobrado)}</b></div><div class="kpi"><span>Falta</span><b style="color:${e.pendiente ? 'var(--mal)' : 'inherit'}">${pesos(e.pendiente)}</b></div></div>
+      <div class="fila"><button class="btn xs" onclick="verAnotados('${e.id}')">Ver anotados</button><button class="btn xs claro" onclick="formEvento('${e.id}')">Editar</button>
+        ${e.estado === 'Abierto' ? `<button class="btn xs claro" onclick="if(confirm('¿Mandar el mail del evento a las familias de esos grupos?'))conBoton(this, async()=>{const r=await api('avisarEvento',{id:'${e.id}'},'admin');toast('Mail enviado a '+r.enviados+' familias ✓')})">📬 Avisar a las familias</button>` : ''}</div></div>`).join('') || '<div class="vacio">Todavía no hay eventos. Creá el campamento, el festejo con las familias o el cierre.</div>'}`;
+}
+function formEvento(id, preset) {
+  const e = A.eventos.find(x => x.id === id) || Object.assign({ estado: 'Abierto', grupos: ['todos'], precioChico: '', precioAdulto: '', cupo: '', cierre: '', sede: A.sede !== 'todas' ? A.sede : PUB.sedes[0].id }, EV_PRESETS[preset] || { emoji: '🎉' });
+  const gs = gruposDe(e.sede);
+  modal(`<h3>${id ? 'Editar evento' : 'Nuevo evento'}</h3>
+    ${A.sesionSede === 'todas' ? `<label>Sede</label><select id="evSede">${PUB.sedes.map(s => `<option value="${s.id}" ${s.id === e.sede ? 'selected' : ''}>${esc(s.nombre)}</option>`).join('')}</select>` : ''}
+    <div class="grid2"><div><label>Nombre</label><input type="text" id="evNom" value="${esc(e.nombre || '')}"></div><div><label>Emoji</label><input type="text" id="evEmo" value="${esc(e.emoji || '')}" maxlength="4"></div></div>
+    <div class="grid2"><div><label>Fecha</label><input type="date" id="evFecha" value="${esc(e.fecha || '')}"></div><div><label>Lugar</label><input type="text" id="evLugar" value="${esc(e.lugar || '')}" placeholder="En la sede"></div></div>
+    <div class="grid2"><div><label>Desde</label><input type="time" id="evDesde" value="${esc(e.desde || '')}"></div><div><label>Hasta</label><input type="time" id="evHasta" value="${esc(e.hasta || '')}"></div></div>
+    <label>Descripción</label><textarea id="evDesc">${esc(e.descripcion || '')}</textarea>
+    <div class="grid2"><div><label>Precio por chico <small>(efectivo)</small></label><input type="number" id="evPrecio" value="${e.precioChico}" placeholder="0 = sin costo"></div><div><label>Cupo de chicos <small>(0 = sin límite)</small></label><input type="number" id="evCupo" value="${e.cupo}"></div></div>
+    <label class="opcion ${e.conAdultos ? 'on' : ''}"><input type="checkbox" id="evAdultos" ${e.conAdultos ? 'checked' : ''}><span>Pueden venir adultos de la familia</span></label>
+    <label>Precio por adulto <small>(efectivo, 0 = gratis)</small></label><input type="number" id="evPrecioA" value="${e.precioAdulto}">
+    <label>¿Para qué grupos?</label><div class="fila">${[{ id: 'todos', emoji: '', nombre: 'Todos' }].concat(gs).map(g => `<label class="opcion" style="margin:0;padding:8px 10px"><input type="checkbox" class="evG" value="${g.id}" ${e.grupos.includes(g.id) ? 'checked' : ''}><span>${g.emoji} ${esc(g.nombre)}</span></label>`).join('')}</div>
+    <div class="grid2"><div><label>Se anotan hasta</label><input type="date" id="evCierre" value="${esc(e.cierre || '')}"></div><div><label>Estado</label><select id="evEstado">${['Abierto', 'Cerrado', 'Cancelado'].map(x => `<option ${x === e.estado ? 'selected' : ''}>${x}</option>`).join('')}</select></div></div>
+    <button class="btn full" style="margin-top:14px" onclick="guardarEvento(this,'${id || ''}')">Guardar evento</button>`);
+}
+function guardarEvento(btn, id) {
+  const g = [...document.querySelectorAll('.evG:checked')].map(x => x.value);
+  conBoton(btn, async () => {
+    await api('guardarEvento', { id, sede: val('evSede'), nombre: val('evNom'), emoji: val('evEmo'), fecha: val('evFecha'), lugar: val('evLugar'), desde: val('evDesde'), hasta: val('evHasta'),
+      descripcion: val('evDesc'), precioChico: val('evPrecio'), cupo: val('evCupo'), conAdultos: document.getElementById('evAdultos').checked, precioAdulto: val('evPrecioA'),
+      grupos: g.includes('todos') ? [] : g, cierre: val('evCierre'), estado: val('evEstado') }, 'admin');
+    cerrarModal(); toast('Evento guardado ✓'); adminCargar('eventos');
+  });
+}
+function verAnotados(id) {
+  const e = A.eventos.find(x => x.id === id);
+  modal(`<h3>${esc(e.emoji)} ${esc(e.nombre)}</h3><p class="muted chico">${e.anotados} chicos · ${e.adultos} adultos · cobrado ${pesos(e.cobrado)} · falta ${pesos(e.pendiente)}</p>
+    ${e.lista.map(r => `<div class="lista-item"><div class="crece"><b>${esc(r.chico)}</b>${r.adultos ? ' <span class="chip">+' + r.adultos + ' adultos</span>' : ''}<div class="muted chico">${esc(nGrupo(r.grupo))} · ${esc(r.adulto)}</div></div>
+      <div class="derecha"><span class="chip ${r.estado === 'Pagada' ? 'ok' : 'aviso'}">${r.estado === 'Pagada' ? 'Pagó' : 'Debe ' + pesos(r.total - r.pagado)}</span>
+      <div class="fila" style="gap:4px;justify-content:flex-end;margin-top:4px">${r.estado !== 'Pagada' ? `<button class="btn xs" onclick="cerrarModal();formPago('${r.id}')">Pago</button>` : ''}${r.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(r.whatsapp, 'Hola ' + (r.adulto || '').split(' ')[0] + '! Te escribimos por ' + e.nombre + ' de ' + r.chico + '.')}">WA</a>` : ''}</div></div></div>`).join('') || '<p class="muted">Todavía no se anotó nadie.</p>'}`);
+}
 function revisarComp(btn, id, aprobar) {
   conBoton(btn, async () => { await api('revisarComprobante', { id, aprobar, monto: val('cm' + id) }, 'admin'); toast(aprobar ? 'Pago registrado y familia avisada ✓' : 'Comprobante rechazado'); adminCargar('cobros'); });
 }
@@ -1276,7 +1380,7 @@ function aProfes() {
     ${lista.map(p => `<div class="card" style="${p.activo ? '' : 'opacity:.55'}"><div class="fila"><div class="crece"><h3 style="margin:0">${esc(p.nombre)} ${p.adentro ? '<span class="chip ok">Adentro</span>' : ''}</h3>
       <div class="muted chico"><b>${esc(rolTxt(p.rol))}</b> · ${esc(nomSede(p.sede))} · ${esc(String(p.grupos || '').split(',').filter(Boolean).map(nGrupo).join(', ') || 'sin grupo')} · ${esc(PUB.formasPago[p.formaPago] || p.formaPago)} ${pesos(p.valor)}</div></div>
       <button class="btn xs claro" onclick="formProfe('${p.id}')">Editar</button></div>
-      <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span>${p.liq.forma === 'hora' ? 'Horas' : 'Días'}</span><b>${p.liq.forma === 'hora' ? String(p.liq.horas).replace('.', ',') : p.liq.dias}</b>${p.liq.feriados ? `<span style="text-transform:none">+${p.liq.feriados} feriado</span>` : ''}${p.liq.faltas ? `<span style="text-transform:none;color:var(--mal)">${p.liq.faltas} falta${p.liq.faltas > 1 ? 's' : ''}</span>` : ''}</div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(p.liq.pagado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
+      <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><div class="kpi"><span>${p.liq.forma === 'hora' ? 'Horas' : 'Días'}</span><b>${p.liq.forma === 'hora' ? String(p.liq.horas).replace('.', ',') : p.liq.dias}</b>${p.liq.feriados ? `<span style="text-transform:none">+${p.liq.feriados} feriado</span>` : ''}${p.liq.faltas ? `<span style="text-transform:none;color:var(--mal)">${p.liq.faltas} falta${p.liq.faltas > 1 ? 's' : ''}</span>` : ''}</div><div class="kpi"><span>Le toca</span><b>${pesos(p.liq.devengado)}</b></div><div class="kpi"><span>Pagado</span><b>${pesos(p.liq.pagado)}</b></div><div class="kpi"><span>Debemos</span><b style="color:${p.liq.saldo > 0 ? 'var(--mal)' : 'inherit'}">${pesos(p.liq.saldo)}</b></div></div>
       <div class="fila"><button class="btn xs" onclick="formPagoProfe('${p.id}')">Registrar pago</button><button class="btn xs claro" onclick="verTurnos('${p.id}')">Horas del mes</button><button class="btn xs claro" onclick="formMarcaje('${p.id}')">Marcaje a mano</button>
       ${p.whatsapp ? `<a class="btn xs wa" target="_blank" href="${wa(p.whatsapp, 'Hola ' + p.nombre.split(' ')[0] + '!')}">WhatsApp</a>` : ''}</div></div>`).join('') || '<div class="vacio">Sumá a cada persona del equipo con su mail: entran a la app con ese mail.</div>'}`;
   EQ = { rol: 'admin' }; eqCargar();
@@ -1354,7 +1458,7 @@ function ccPintar() {
         <div class="crece"><div class="muted chico">Semana ${i + 1} · ${fCorta(w.desde)} al ${fCorta(w.hasta)}</div><input type="text" id="tt${w.id}" value="${esc(t.titulo || '')}" placeholder="Título"><input type="text" id="td${w.id}" value="${esc(t.descripcion || '')}" placeholder="Descripción corta" style="margin-top:4px"></div>
         <button class="btn xs" onclick="conBoton(this, async()=>{await api(CC.act.tem,{sede:'${CT.sede}',semana:'${w.id}',emoji:val('te${w.id}'),titulo:val('tt${w.id}'),descripcion:val('td${w.id}')},CC.rol);toast('Guardado ✓')})">✓</button></div>`; }).join('')}
     </div>
-    ${CC.rol === 'admin' && A.carpetaFotos ? `<a class="btn claro full" target="_blank" href="${A.carpetaFotos}" style="margin:6px 0 4px">📁 Abrir en Drive todas las fotos y videos (una carpeta por sede y por día)</a>` : ''}
+    ${CC.rol === 'admin' && (A.marcas.find(m => m.id === CT.sede) || {}).carpeta ? `<a class="btn claro full" target="_blank" href="${A.marcas.find(m => m.id === CT.sede).carpeta}" style="margin:6px 0 4px">📁 Drive de fotos de ${esc(sede(CT.sede).nombre)} (equipo y familias, una carpeta por día)</a>` : ''}
     ${pubs ? `<div class="card"><h3>Fotos y publicaciones del equipo</h3>${pubs.map(p => (p.pendiente ? '<span class="chip aviso">⏳ Por aprobar</span>' : '') + htmlPost(p) + `<div class="derecha" style="margin:-6px 0 10px">${p.pendiente || !p.visible ? `<button class="btn xs" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:true},'admin');adminCargar('contenido')})">✓ Mostrar a las familias</button>` : ''}
       ${p.pendiente || p.visible ? `<button class="btn xs claro" onclick="conBoton(this, async()=>{await api('ocultarPublicacion',{id:'${p.id}',visible:false},'admin');adminCargar('contenido')})">🙈 Ocultar</button>` : ''}</div>`).join('') || '<p class="muted">Todavía no subieron nada.</p>'}</div>` : ''}`;
 }
@@ -1437,7 +1541,13 @@ function aAjustes() {
       <p class="muted chico" style="margin:0 0 6px">Pegá el <b>Access Token de producción</b> de la cuenta de Mercado Pago de esta sede (Mercado Pago → Tu negocio → Configuración → Credenciales). Los pagos se registran solos.</p>
       <div class="fila"><input type="password" id="mp${m.id}" class="crece" placeholder="APP_USR-…" autocomplete="off" style="flex:1 1 200px">
       <button class="btn sm" onclick="conBoton(this, async()=>{await api('guardarMP',{sede:'${m.id}',token:val('mp${m.id}')},'admin');toast('Mercado Pago conectado ✓');PUB=Object.assign(PUB,{sedes:(await api('publico')).sedes});adminCargar('ajustes')})">Guardar</button>
-      ${m.mercadoPago ? `<button class="btn sm claro" onclick="conBoton(this, async()=>{await api('guardarMP',{sede:'${m.id}',token:''},'admin');toast('Mercado Pago desconectado');adminCargar('ajustes')})">Desconectar</button>` : ''}</div></div>`).join('')}
+      ${m.mercadoPago ? `<button class="btn sm claro" onclick="conBoton(this, async()=>{await api('guardarMP',{sede:'${m.id}',token:''},'admin');toast('Mercado Pago desconectado');adminCargar('ajustes')})">Desconectar</button>` : ''}</div>
+      <label>📁 Drive de fotos</label>
+      <p class="muted chico" style="margin:0 0 6px">Cada sede tiene su carpeta: <b>Material del equipo</b> (todo lo que suben) y <b>Para las familias</b> (lo aprobado, una carpeta por día con link para compartir). A las 19 h le llega a cada familia el link con las fotos del día.</p>
+      <a class="btn sm claro" target="_blank" rel="noopener" href="${esc(m.carpeta)}">Abrir el Drive de ${esc(m.nombre)}</a>
+      <p class="muted chico" style="margin:10px 0 6px">${m.carpetaPropia ? 'Usa una carpeta propia de la sede.' : '¿La sede tiene su propio Drive? Creá una carpeta, compartila como Editor con la cuenta de la planilla y pegá el link:'}</p>
+      <div class="fila"><input type="text" id="cf${m.id}" class="crece" placeholder="https://drive.google.com/drive/folders/…" style="flex:1 1 200px">
+      <button class="btn sm" onclick="conBoton(this, async()=>{await api('guardarCarpeta',{sede:'${m.id}',link:val('cf${m.id}')},'admin');toast('Carpeta guardada ✓');adminCargar('ajustes')})">Usar esta carpeta</button></div></div>`).join('')}
     ${A.ubicaciones.map(u => `<div class="card"><h3>📍 Ubicación de ${esc(u.nombre)}</h3>
       <p class="muted chico">Los profes solo pueden marcar a menos de ${u.radio} m de este punto. Parate en el centro de la sede y tocá “Usar mi ubicación”.</p>
       <p>${u.lat ? `<b>${u.lat.toFixed(6)}, ${u.lng.toFixed(6)}</b> · <a target="_blank" href="https://maps.google.com/?q=${u.lat},${u.lng}">ver en el mapa</a>` : '<span class="chip mal">Sin cargar</span>'}</p>
@@ -1449,7 +1559,7 @@ function aAjustes() {
         [['💳 Pagos de las familias', A.url + '?p=pagar'], ['Familias · mi cuenta', A.url + '?p=cuenta'], ['Equipo', A.url + '?p=profes'], ['Administración', A.url + '?p=admin']]).map(([t, u]) => `<div class="lista-item"><div class="crece"><b>${t}</b><div class="muted chico" style="word-break:break-all">${esc(u)}</div></div><button class="btn xs claro" onclick="copiar('${esc(u)}')">Copiar</button></div>`).join('')}
       <a class="btn claro sm" style="margin-top:10px" target="_blank" href="${A.planilla}">Abrir la planilla</a></div>
     <div class="card"><h3>🔐 PIN y mails de la administración</h3>
-      ${Object.keys(aj).sort().map(k => `<label>${esc(k.replace('pin_', 'PIN · ').replace('email_', 'Mail de aviso · ').replace('pinGeneral', 'PIN general').replace('emailGeneral', 'Mail general').replace('aldea', 'Aldea de Valle').replace('colonia', 'Colonia Dewey'))}</label><input type="text" class="ajuste" data-k="${k}" value="${esc(aj[k])}">`).join('')}
+      ${Object.keys(aj).sort().map(k => `<label>${esc(k.replace('pin_', 'PIN · ').replace('email_', 'Mail de aviso · ').replace('pinGeneral', 'PIN general').replace('emailGeneral', 'Mail general').replace('aldea', 'Aldea de Valle').replace('colonia', 'Colonia Dewey').replace('recargoTransferenciaPct', '💵 Recargo por transferencia y Mercado Pago (%) · los precios cargados son de efectivo'))}</label><input type="text" class="ajuste" data-k="${k}" value="${esc(aj[k])}">`).join('')}
       <button class="btn" style="margin-top:12px" onclick="conBoton(this, async()=>{const v={};document.querySelectorAll('.ajuste').forEach(x=>v[x.dataset.k]=x.value);await api('guardarAjustes',{valores:v},'admin');toast('Guardado ✓')})">Guardar</button></div>
     <button class="btn claro full" onclick="salir('admin')">Cerrar sesión</button>`;
 }

@@ -45,7 +45,11 @@ const CONFIG = {
   fotoParaCerrarTurno: ['profe', 'auxiliar'],   // estos roles tienen que subir al menos una foto o video del día para marcar la salida
   maxVideoMB: 300,
   // Pagos online: cada sede conecta su cuenta de Mercado Pago desde Administración → Ajustes (el token queda guardado aparte, no en el código)
-  mercadoPagoRecargoPct: 0,     // % que se suma al pagar con Mercado Pago (para cubrir la comisión); 0 = sin recargo
+  mercadoPagoRecargoPct: 0,     // % extra SOLO para Mercado Pago, además del recargo por transferencia
+  // Efectivo: los precios cargados son los de EFECTIVO. Transferencia y Mercado Pago pagan este % más.
+  // (se cambia también desde Administración → Ajustes)
+  recargoTransferenciaPct: 10,  // ⚠️ de ejemplo: confirmar
+  mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día     // % que se suma al pagar con Mercado Pago (para cubrir la comisión); 0 = sin recargo
   glorin: { nombre: 'GLORIN Animaciones', detalle: 'Animación de cumpleaños y eventos',
             url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
   grupos: [
@@ -143,7 +147,8 @@ const HOJAS = {
   Chicos:        ['id', 'familiaId', 'nombre', 'nacimiento', 'dni', 'sede', 'grupo', 'obraSocial', 'alergias', 'medicacion', 'condiciones', 'sabeNadar', 'autorizaFotos', 'notas', 'creado'],
   Inscripciones: ['id', 'creado', 'familiaId', 'chicoId', 'chico', 'sede', 'grupo', 'modalidad', 'turno', 'extras', 'dias', 'cantDias', 'fechaInicio', 'fechaFin',
                   'subtotal', 'descuento', 'total', 'pagado', 'saldo', 'estado', 'avisoRenovacion', 'avisoDeuda', 'origen', 'notas'],
-  Pagos:         ['id', 'fecha', 'inscripcionId', 'familiaId', 'chico', 'sede', 'monto', 'medio', 'nota', 'cargadoPor'],
+  Pagos:         ['id', 'fecha', 'inscripcionId', 'familiaId', 'chico', 'sede', 'monto', 'medio', 'nota', 'cargadoPor', 'acredita'],
+  Eventos:       ['id', 'creado', 'sede', 'nombre', 'emoji', 'fecha', 'desde', 'hasta', 'lugar', 'descripcion', 'precioChico', 'conAdultos', 'precioAdulto', 'cupo', 'grupos', 'cierre', 'estado'],
   Profes:        ['id', 'nombre', 'email', 'whatsapp', 'sede', 'grupos', 'formaPago', 'valor', 'activo', 'notas', 'creado', 'rol'],
   Turnos:        ['id', 'sede', 'personaId', 'nombre', 'dias', 'desde', 'hasta', 'tarea'],
   AvisosFamilia: ['id', 'creado', 'fecha', 'sede', 'grupo', 'chicoId', 'chico', 'familiaId', 'tipo', 'detalle', 'estado'],
@@ -164,7 +169,7 @@ const COLS_TEXTO = {
   Familias: ['dni', 'whatsapp', 'emergenciaTel'], Chicos: ['nacimiento', 'dni'], Profes: ['whatsapp'],
   Inscripciones: ['dias', 'fechaInicio', 'fechaFin'], Asistencia: ['fecha', 'horaLlegada', 'horaRetiro'],
   Publicaciones: ['fecha'], Tematicas: ['semana'], Cronograma: ['semana', 'hora'], Config: ['valor'],
-  Turnos: ['dias', 'desde', 'hasta'], AvisosFamilia: ['fecha']
+  Turnos: ['dias', 'desde', 'hasta'], AvisosFamilia: ['fecha'], Eventos: ['fecha', 'desde', 'hasta', 'cierre']
 };
 const ESTADOS = ['Pendiente', 'Señada', 'Pagada', 'Cancelada'];
 const FORMAS_PAGO = { quincena: 'Fijo por quincena', dia: 'Por día (se pagan los feriados)', hora: 'Por hora' };
@@ -235,6 +240,7 @@ const ACCIONES = {
   renovar:         ['familia', accRenovar_],
   guardarChico:    ['familia', accGuardarChicoFamilia_],
   avisar:          ['familia', accAvisar_],
+  anotarEvento:    ['familia', accAnotarEvento_],
   anularAviso:     ['familia', accAnularAviso_],
   // profes
   profeInicio:     ['profe', accProfeInicio_],
@@ -269,6 +275,9 @@ const ACCIONES = {
   subirLogo:       ['admin', accSubirLogo_],
   guardarMP:       ['admin', accGuardarMP_],
   crearGrupo:      ['admin', accCrearGrupo_],
+  guardarEvento:   ['admin', accGuardarEvento_],
+  avisarEvento:    ['admin', accAvisarEvento_],
+  guardarCarpeta:  ['admin', accGuardarCarpeta_],
   equipoHoyAdmin:  ['admin', (d, s) => equipoHoy_(s.s, d.sede)],
   guardarTurnoAdmin: ['admin', accGuardarTurno_],
   borrarTurnoAdmin: ['admin', (d, s) => borrarFila_('Turnos', d.id, s)],
@@ -305,10 +314,11 @@ function configurarInicial() {
   if (!filas_('Tematicas').length) cargarTematicasEjemplo_();
 
   ScriptApp.getProjectTriggers().forEach(t => {
-    if (['tareaDiaria', 'tareaSemanal'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
+    if (['tareaDiaria', 'tareaSemanal', 'tareaFotosDelDia'].indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('tareaDiaria').timeBased().everyDays(1).atHour(CONFIG.horaAvisoDiario).create();
   ScriptApp.newTrigger('tareaSemanal').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(18).create();
+  ScriptApp.newTrigger('tareaFotosDelDia').timeBased().everyDays(1).atHour(19).create();
   carpetaFotos_();
   ss.toast('Listo. Los PIN de administración están en la hoja Config.', 'Escuela de Verano', 8);
 }
@@ -366,7 +376,7 @@ function accPublico_() {
     };
   });
   return {
-    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
+    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
     grupos: todosGrupos_(), sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(), periodos: periodosTemporada_(), periodoActual: periodoActual_(),
     cotizar: cotizarPuro_.toString(), formasPago: FORMAS_PAGO, estados: ESTADOS
   };
@@ -617,7 +627,7 @@ function sobrecupos_(scope) {
 function ocupacion_(sedeId) {
   const out = {};
   filas_('Inscripciones').forEach(i => {
-    if (i.sede !== sedeId || i.estado === 'Cancelada') return;
+    if (i.sede !== sedeId || i.estado === 'Cancelada' || esEvento_(i)) return;
     String(i.dias || '').split(',').filter(Boolean).forEach(dia => {
       out[i.grupo + '|' + dia] = (out[i.grupo + '|' + dia] || 0) + 1;
       out['chico|' + i.chicoId + '|' + dia] = 1;
@@ -733,6 +743,7 @@ function accMiCuenta_(d, sesion) {
     chicos: chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), sede: c.sede, grupo: c.grupo, obraSocial: c.obraSocial,
       alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos })),
     inscripciones: insc, publicaciones: pubs, asistencia: asis, cronograma: crono, pagos, hoy, tiposAviso: TIPOS_AVISO,
+    eventos: eventosFamilia_(chicos, insc, hoy),
     avisos: filas_('AvisosFamilia').filter(a => a.familiaId === fam.id && a.estado !== 'anulado' && iso_(a.fecha) >= hoy)
       .map(a => ({ id: a.id, fecha: iso_(a.fecha), chicoId: a.chicoId, chico: a.chico, tipo: a.tipo, detalle: a.detalle })).sort((a, b) => a.fecha < b.fecha ? -1 : 1)
   };
@@ -749,7 +760,7 @@ function accRenovar_(d, sesion) {
     chicos.forEach(c => { if (c.sede !== sede.id) { actualizar_('Chicos', c._fila, { sede: sede.id }); c.sede = sede.id; } });
     // Es renovación si el chico ya tiene una inscripción vigente o recién terminada
     const hoy = hoy_();
-    const renov = filas_('Inscripciones').some(i => chicos.some(c => c.id === i.chicoId) && i.estado !== 'Cancelada' && iso_(i.fechaFin) >= sumarDias_(hoy, -7));
+    const renov = filas_('Inscripciones').some(i => chicos.some(c => c.id === i.chicoId) && i.estado !== 'Cancelada' && !esEvento_(i) && iso_(i.fechaFin) >= sumarDias_(hoy, -7));
     const res = crearInscripciones_(fam, chicos, sede.id, d.plan, 'renovación', renov);
     mailInscripcion_(fam, res, sede);
     avisarAdmin_(sede.id, '🔁 ' + (renov ? 'Renovación' : 'Nueva inscripción') + ' · ' + res.items.map(i => i.chico).join(', '), mailAdminInscripcion_(fam, res, sede));
@@ -781,7 +792,8 @@ function inscPublica_(i) {
 function pubPublica_(p) {
   const f = p.fecha instanceof Date ? p.fecha : new Date(p.fecha);
   return { id: p.id, ts: f.getTime(), fecha: Utilities.formatDate(f, TZ, 'yyyy-MM-dd HH:mm'), sede: p.sede, grupo: p.grupo, profe: p.profe, texto: p.texto,
-    fotos: String(p.fotos || '').split(',').filter(Boolean), videos: String(p.videos || '').split(',').filter(Boolean), visible: esSi_(p.visible), pendiente: p.visible === 'Pendiente' };
+    fotos: String(p.fotos || '').split(',').filter(Boolean), videos: String(p.videos || '').split(',').filter(Boolean), visible: esSi_(p.visible), pendiente: p.visible === 'Pendiente',
+    carpeta: esSi_(p.visible) ? urlCarpetaDia_(p.sede, diaDe_(f)) : '' };
 }
 function cronoPublico_(c) {
   return { id: c.id, sede: c.sede, semana: iso_(c.semana), dia: c.dia, hora: horaTxt_(c.hora), grupo: c.grupo, actividad: c.actividad, lugar: c.lugar, profe: c.profe };
@@ -993,7 +1005,7 @@ function listaDelDia_(sede, fecha, grupo) {
   const asis = {}; filas_('Asistencia').forEach(a => { if (iso_(a.fecha) === fecha && a.sede === sede) asis[a.chicoId] = a; });
   const vistos = {}, out = [];
   filas_('Inscripciones').forEach(i => {
-    if (i.sede !== sede || i.estado === 'Cancelada' || vistos[i.chicoId]) return;
+    if (i.sede !== sede || i.estado === 'Cancelada' || vistos[i.chicoId] || esEvento_(i)) return;
     if (String(i.dias || '').split(',').indexOf(fecha) < 0) return;
     if (grupo !== 'todos' && (Array.isArray(grupo) ? grupo.indexOf(i.grupo) < 0 : i.grupo !== grupo)) return;
     vistos[i.chicoId] = 1;
@@ -1051,15 +1063,17 @@ function accPublicar_(d, sesion) {
   const fotos = (d.fotos || []).slice(0, 10);
   const videos = (d.videos || []).filter(v => /^[\w-]{10,}$/.test(v)).slice(0, 5);
   if (!fotos.length && !videos.length && !limpio_(d.texto)) throw new Error('Escribí algo o sumá una foto.');
-  const carpeta = carpetaFotos_(d.sede, hoy_());
+  const carpeta = carpetaFotos_(d.sede, hoy_(), false);
   const ids = fotos.map((f, i) => {
     const blob = Utilities.newBlob(Utilities.base64Decode(f.b64), f.tipo || 'image/jpeg', Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd_HHmm') + '_' + (i + 1) + '.jpg');
     const file = carpeta.createFile(blob);
     try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { /* cuentas de dominio pueden no permitirlo */ }
     return file.getId();
   });
-  agregar_('Publicaciones', { id: 'P' + uid_(), fecha: new Date(), sede: d.sede, grupo: d.grupo || 'todos', profe: p.nombre, texto: limpio_(d.texto), fotos: ids.join(','),
-    visible: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') ? 'Pendiente' : 'Sí', profeId: p.id, videos: videos.join(',') });
+  const pub = { id: 'P' + uid_(), fecha: new Date(), sede: d.sede, grupo: d.grupo || 'todos', profe: p.nombre, texto: limpio_(d.texto), fotos: ids.join(','),
+    visible: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') ? 'Pendiente' : 'Sí', profeId: p.id, videos: videos.join(',') };
+  agregar_('Publicaciones', pub);
+  if (pub.visible === 'Sí') moverArchivos_(pub, true);
   return { fotos: ids.length, videos: videos.length, pendiente: CONFIG.aprobarFotos && !puede_(p, 'aprobarFotos') };
 }
 
@@ -1072,7 +1086,7 @@ function accIniciarSubida_(d, sesion) {
   const total = Number(d.tamano) || 0, tipo = String(d.tipo || '');
   if (!/^video\//.test(tipo)) throw new Error('Ese archivo no es un video.');
   if (!total || total > CONFIG.maxVideoMB * 1024 * 1024) throw new Error('El video pesa más de ' + CONFIG.maxVideoMB + ' MB. Cortalo o mandalo en partes.');
-  const carpeta = carpetaFotos_(d.sede, hoy_());
+  const carpeta = carpetaFotos_(d.sede, hoy_(), false);
   const ext = (String(d.nombre || '').match(/\.\w{2,4}$/) || ['.mp4'])[0];
   const nombre = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd_HHmm') + '_' + p.nombre.split(' ')[0] + ext;
   const r = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true', {
@@ -1102,18 +1116,62 @@ function accSubirParte_(d, sesion) {
   return { listo: true, id: fileId };
 }
 
-function carpetaFotos_(sede, dia) {
+/**
+ * Drive de fotos de cada sede:
+ *   <carpeta de la sede>/Material del equipo/<día>   → todo lo que sube el equipo (privado)
+ *   <carpeta de la sede>/Para las familias/<día>     → lo aprobado, compartido con link para las familias
+ * Sin sede devuelve la carpeta general (logos).
+ */
+function carpetaFotos_(sede, dia, familias) {
   const props = PropertiesService.getScriptProperties();
-  let raizId = props.getProperty('CARPETA_FOTOS'), raiz;
-  try { raiz = raizId && DriveApp.getFolderById(raizId); } catch (e) { raiz = null; }
-  if (!raiz) { raiz = DriveApp.createFolder('Escuela de Verano — Fotos'); props.setProperty('CARPETA_FOTOS', raiz.getId()); }
-  if (!sede) return raiz;
-  const nombre = CONFIG.sedes[sede].nombre;
-  const it = raiz.getFoldersByName(nombre);
-  const carpetaSede = it.hasNext() ? it.next() : raiz.createFolder(nombre);
-  if (!dia) return carpetaSede;
-  const itD = carpetaSede.getFoldersByName(dia);   // una carpeta por día: material ordenado para redes
-  return itD.hasNext() ? itD.next() : carpetaSede.createFolder(dia);
+  if (!sede) {
+    let raiz;
+    try { raiz = props.getProperty('CARPETA_FOTOS') && DriveApp.getFolderById(props.getProperty('CARPETA_FOTOS')); } catch (e) { raiz = null; }
+    if (!raiz) { raiz = DriveApp.createFolder('Escuela de Verano — General'); props.setProperty('CARPETA_FOTOS', raiz.getId()); }
+    return raiz;
+  }
+  const base = subcarpeta_(carpetaRaizSede_(sede), familias ? 'Para las familias' : 'Material del equipo');
+  if (!dia) return base;
+  const clave = 'FAMDIA_' + sede + '_' + dia;
+  const f = subcarpeta_(base, dia);
+  if (familias && !props.getProperty(clave)) {
+    try { f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (e) { /* dominio */ }
+    props.setProperty(clave, f.getId());
+  }
+  return f;
+}
+function carpetaRaizSede_(sede) {
+  const props = PropertiesService.getScriptProperties();
+  const propia = config_()['carpetaFotos_' + sede];   // carpeta elegida por la sede (puede ser de su propio Drive, compartida con la cuenta dueña)
+  if (propia) { try { return DriveApp.getFolderById(propia); } catch (e) { /* sin acceso: usa la automática */ } }
+  let raiz;
+  try { raiz = props.getProperty('CARPETA_FOTOS_' + sede) && DriveApp.getFolderById(props.getProperty('CARPETA_FOTOS_' + sede)); } catch (e) { raiz = null; }
+  if (!raiz) { raiz = DriveApp.createFolder('Fotos ' + CONFIG.sedes[sede].nombre + ' — Escuela de Verano'); props.setProperty('CARPETA_FOTOS_' + sede, raiz.getId()); }
+  return raiz;
+}
+function subcarpeta_(padre, nombre) { const it = padre.getFoldersByName(nombre); return it.hasNext() ? it.next() : padre.createFolder(nombre); }
+/** Mueve las fotos y videos de una publicación a la carpeta de las familias (al aprobar) o a la del equipo (al ocultar). */
+function moverArchivos_(p, familias) {
+  const dia = diaDe_(p.fecha instanceof Date ? p.fecha : new Date(p.fecha));
+  const destino = carpetaFotos_(p.sede, dia, familias);
+  String(p.fotos || '').split(',').concat(String(p.videos || '').split(',')).filter(id => id && id.indexOf(':') < 0).forEach(id => {
+    try { DriveApp.getFileById(id).moveTo(destino); } catch (e) { Logger.log(e); }
+  });
+}
+function urlCarpetaDia_(sede, dia) {
+  const id = PropertiesService.getScriptProperties().getProperty('FAMDIA_' + sede + '_' + dia);
+  return id ? 'https://drive.google.com/drive/folders/' + id : '';
+}
+function accGuardarCarpeta_(d, sesion) {
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  const link = String(d.link || '').trim();
+  if (!link) { guardarConfig_('carpetaFotos_' + sede, ''); return { carpeta: carpetaRaizSede_(sede).getUrl() }; }
+  const id = (/folders\/([\w-]{10,})/.exec(link) || /^([\w-]{10,})$/.exec(link) || [])[1];
+  if (!id) throw new Error('Pegá el link de una carpeta de Google Drive.');
+  try { DriveApp.getFolderById(id).getName(); } catch (e) { throw new Error('No puedo entrar a esa carpeta. Compartila como "Editor" con ' + Session.getEffectiveUser().getEmail() + '.'); }
+  guardarConfig_('carpetaFotos_' + sede, id, 'Carpeta de Drive de las fotos de ' + CONFIG.sedes[sede].nombre);
+  return { carpeta: DriveApp.getFolderById(id).getUrl() };
 }
 
 // ======== EQUIPO: coordinación, turnos, salud y pileta ========
@@ -1226,16 +1284,17 @@ function accTablero_(d, sesion) {
     i.adulto = f.adulto || ''; i.email = f.email || ''; i.whatsapp = f.whatsapp || '';
   });
   const activas = insc.filter(i => i.estado !== 'Cancelada');
+  const escolares = activas.filter(i => !esEvento_(i));
   // Próximo día de inscripción por chico, para saber si ya renovó
   const ultimoDia = {};
-  activas.forEach(i => { if (!ultimoDia[i.chicoId] || i.hasta > ultimoDia[i.chicoId]) ultimoDia[i.chicoId] = i.hasta; });
+  escolares.forEach(i => { if (!ultimoDia[i.chicoId] || i.hasta > ultimoDia[i.chicoId]) ultimoDia[i.chicoId] = i.hasta; });
   const limite = sumarDias_(hoy, CONFIG.diasAvisoRenovacion + 2);
-  const vencen = activas.filter(i => i.hasta >= hoy && i.hasta <= limite && ultimoDia[i.chicoId] === i.hasta)
+  const vencen = escolares.filter(i => i.hasta >= hoy && i.hasta <= limite && ultimoDia[i.chicoId] === i.hasta)
     .map(i => Object.assign({}, i, { wa: linkWhatsApp_(i.whatsapp, mensajeRenovacion_(i)) }));
   const deudas = activas.filter(i => i.saldo > 0).sort((a, b) => a.desde < b.desde ? -1 : 1)
     .map(i => Object.assign({}, i, { vencida: i.desde <= hoy, wa: linkWhatsApp_(i.whatsapp, mensajeDeuda_(i)) }));
   const hoyEsperados = {}, hoyPresentes = {};
-  activas.forEach(i => { if (i.dias.indexOf(hoy) >= 0) hoyEsperados[i.sede] = (hoyEsperados[i.sede] || 0) + 1; });
+  escolares.forEach(i => { if (i.dias.indexOf(hoy) >= 0) hoyEsperados[i.sede] = (hoyEsperados[i.sede] || 0) + 1; });
   filas_('Asistencia').forEach(a => { if (iso_(a.fecha) === hoy && enSede_(sede, a.sede) && (a.estado === 'presente' || a.estado === 'tarde')) hoyPresentes[a.sede] = (hoyPresentes[a.sede] || 0) + 1; });
   const pagos = filas_('Pagos').filter(p => enSede_(sede, p.sede)).map(p => ({ id: p.id, fecha: iso_(p.fecha), chico: p.chico, sede: p.sede, monto: Number(p.monto) || 0, medio: p.medio, nota: p.nota, inscripcionId: p.inscripcionId }))
     .sort((a, b) => a.fecha < b.fecha ? 1 : -1);
@@ -1250,7 +1309,7 @@ function accTablero_(d, sesion) {
   });
   const porGrupo = {};
   const semana = semanaActual_(sede === 'todas' ? 'aldea' : sede, hoy);
-  activas.forEach(i => {
+  escolares.forEach(i => {
     if (!semana || !i.dias.some(x => semana.dias.indexOf(x) >= 0)) return;
     const k = i.sede + '|' + i.grupo; porGrupo[k] = (porGrupo[k] || 0) + 1;
   });
@@ -1263,7 +1322,7 @@ function accTablero_(d, sesion) {
       hoyEsperados, hoyPresentes, interesados: filas_('Interesados').filter(x => enSede_(sede, x.sede)).length,
       cuotaMail: MailApp.getRemainingDailyQuota(), comprobantes: filas_('Comprobantes').filter(c => c.estado === 'Pendiente' && enSede_(sede, c.sede)).length
     },
-    porGrupo, vencen, deudas, pagos: pagos.slice(0, 300), profes, sobrecupos: sobrecupos_(sede), carpetaFotos: carpetaFotos_().getUrl(),
+    porGrupo, vencen, deudas, pagos: pagos.slice(0, 300), profes, sobrecupos: sobrecupos_(sede), carpetaFotos: '',
     inscripciones: insc.sort((a, b) => b.creado - a.creado),
     familias: Object.keys(fams).map(k => fams[k]).filter(f => insc.some(i => i.familiaId === f.id)).map(f => ({ id: f.id, adulto: f.adulto, email: f.email, whatsapp: f.whatsapp,
       emergencia: (f.emergenciaNombre || '') + ' ' + (f.emergenciaTel || ''), autorizados: f.autorizadosRetiro, comoNosConocio: f.comoNosConocio })),
@@ -1276,7 +1335,9 @@ function accTablero_(d, sesion) {
     ajustes: ajustesPublicos_(sesion.s),
     comprobantes: filas_('Comprobantes').filter(c => enSede_(sede, c.sede)).map(c => ({ id: c.id, fecha: c.fecha instanceof Date ? Utilities.formatDate(c.fecha, TZ, 'yyyy-MM-dd HH:mm') : String(c.fecha),
       inscripcionId: c.inscripcionId, chico: c.chico, sede: c.sede, monto: Number(c.monto) || 0, archivo: c.archivo, estado: c.estado, nota: c.nota })).sort((a, b) => a.fecha < b.fecha ? 1 : -1).slice(0, 100),
-    marcas: Object.keys(CONFIG.sedes).filter(id => enSede_(sede, id)).map(id => ({ id, nombre: CONFIG.sedes[id].nombre, logo: logoSede_(id), mercadoPago: !!tokenMP_(id) })),
+    marcas: Object.keys(CONFIG.sedes).filter(id => enSede_(sede, id)).map(id => ({ id, nombre: CONFIG.sedes[id].nombre, logo: logoSede_(id), mercadoPago: !!tokenMP_(id),
+      carpeta: carpetaRaizSede_(id).getUrl(), carpetaPropia: !!config_()['carpetaFotos_' + id] })),
+    eventos: filas_('Eventos').filter(e => enSede_(sede, e.sede)).map(e => eventoPublico_(e, true)).sort((a, b) => a.fecha < b.fecha ? -1 : 1),
     roles: Object.keys(ROLES).map(k => ({ id: k, nombre: ROLES[k].nombre, emoji: ROLES[k].emoji })),
     avisosHoy: filas_('AvisosFamilia').filter(a => a.estado !== 'anulado' && iso_(a.fecha) === hoy && enSede_(sede, a.sede)).length,
     url: ScriptApp.getService().getUrl(), planilla: SpreadsheetApp.getActiveSpreadsheet().getUrl()
@@ -1302,8 +1363,9 @@ function accRegistrarPago_(d, sesion) {
     const i = filaInsc_(d.inscripcionId, sesion);
     const monto = Math.round(Number(String(d.monto).replace(/[^\d,-]/g, '').replace(',', '.')));
     if (!monto) throw new Error('Poné el monto.');
+    const medio = limpio_(d.medio) || 'Efectivo';
     agregar_('Pagos', { id: uid_(), fecha: d.fecha || hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
-      medio: limpio_(d.medio) || 'Transferencia', nota: limpio_(d.nota), cargadoPor: sesion.s });
+      medio, nota: limpio_(d.nota), cargadoPor: sesion.s, acredita: acreditaDe_(monto, medio, (Number(i.total) || 0) - (Number(i.pagado) || 0)) });
     const r = recalcularInsc_(i.id);
     if (d.avisar) {
       const f = filas_('Familias').filter(x => x.id === i.familiaId)[0];
@@ -1317,9 +1379,10 @@ function accRegistrarPago_(d, sesion) {
 
 function recalcularInsc_(id) {
   const i = filas_('Inscripciones').filter(x => x.id === id)[0];
-  const pagado = filas_('Pagos').filter(p => p.inscripcionId === id).reduce((a, p) => a + (Number(p.monto) || 0), 0);
+  // "pagado" se cuenta en pesos de efectivo: una transferencia cubre su monto menos el recargo
+  const pagado = filas_('Pagos').filter(p => p.inscripcionId === id).reduce((a, p) => a + ((p.acredita !== '' && p.acredita !== undefined ? Number(p.acredita) : Number(p.monto)) || 0), 0);
   const total = Number(i.total) || 0;
-  const estado = i.estado === 'Cancelada' ? 'Cancelada' : pagado >= total && total > 0 ? 'Pagada' : pagado > 0 ? 'Señada' : 'Pendiente';
+  const estado = i.estado === 'Cancelada' ? 'Cancelada' : pagado >= total ? 'Pagada' : pagado > 0 ? 'Señada' : 'Pendiente';
   actualizar_('Inscripciones', i._fila, { pagado, saldo: total - pagado, estado });
   return { pagado, saldo: total - pagado, estado };
 }
@@ -1447,7 +1510,9 @@ function accCopiarCrono_(d, sesion) {
 function accOcultarPublicacion_(d, sesion) {
   const p = filas_('Publicaciones').filter(x => x.id === d.id)[0];
   if (!p || (sesion.s !== 'todas' && p.sede !== sesion.s)) throw new Error('No encuentro la publicación.');
+  const antes = esSi_(p.visible);
   actualizar_('Publicaciones', p._fila, { visible: d.visible ? 'Sí' : 'No' });
+  if (!!d.visible !== antes) moverArchivos_(p, !!d.visible);   // lo aprobado pasa al Drive de las familias
   return { ok: true };
 }
 
@@ -1507,6 +1572,12 @@ function accFijarUbicacion_(d, sesion) {
 function accGuardarAjustes_(d, sesion) {
   const permitidas = sesion.s === 'todas' ? null : ['pin_' + sesion.s, 'email_' + sesion.s];
   Object.keys(d.valores || {}).forEach(k => {
+    if (k === 'recargoTransferenciaPct') {
+      if (permitidas) return;
+      const n = Number(d.valores[k]);
+      if (!(n >= 0 && n <= 50)) throw new Error('El recargo por transferencia tiene que ser un número entre 0 y 50.');
+      return guardarConfig_(k, n, '% más que pagan transferencia y Mercado Pago (los precios cargados son de efectivo)');
+    }
     if (!/^(pin|email)_|^(pinGeneral|emailGeneral)$/.test(k)) return;
     if (permitidas && permitidas.indexOf(k) < 0) return;
     const v = limpio_(d.valores[k]);
@@ -1518,6 +1589,7 @@ function accGuardarAjustes_(d, sesion) {
 function ajustesPublicos_(s) {
   const cfg = config_(), out = {};
   Object.keys(cfg).forEach(k => { if (/^(pin|email)/.test(k) && (s === 'todas' || k.slice(-s.length - 1) === '_' + s)) out[k] = cfg[k]; });
+  if (s === 'todas') out.recargoTransferenciaPct = recargoPct_();
   return out;
 }
 
@@ -1534,7 +1606,7 @@ function inscripcionesDeToken_(t) {
 }
 function montoAPagar_(i, que) {
   const total = Number(i.total) || 0, pagado = Number(i.pagado) || 0, saldo = total - pagado;
-  const sena = Math.round(total * CONFIG.sedes[i.sede].precios.senaPct / 100 / 100) * 100;
+  const sena = esEvento_(i) ? saldo : Math.round(total * CONFIG.sedes[i.sede].precios.senaPct / 100 / 100) * 100;
   return que === 'sena' ? Math.max(0, Math.min(saldo, sena - pagado)) : saldo;
 }
 function accPagos_(d) {
@@ -1544,7 +1616,8 @@ function accPagos_(d) {
   return {
     items: lista.map(i => ({ id: i.id, chico: i.chico, sede: i.sede, desde: iso_(i.fechaInicio), hasta: iso_(i.fechaFin), turno: i.turno,
       total: Number(i.total) || 0, pagado: Number(i.pagado) || 0, saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
-      sena: montoAPagar_(i, 'sena'), estado: i.estado })),
+      sena: montoAPagar_(i, 'sena'), estado: i.estado, evento: esEvento_(i) ? i.turno : '' })),
+    recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0,
     comprobantes: comp.map(c => ({ id: c.id, inscripcionId: c.inscripcionId, monto: Number(c.monto) || 0, estado: c.estado, fecha: c.fecha instanceof Date ? diaDe_(c.fecha) : String(c.fecha).slice(0, 10) })),
     sedes: Object.keys(CONFIG.sedes).map(id => ({ id, mercadoPago: !!tokenMP_(id), pago: CONFIG.sedes[id].pago, whatsapp: CONFIG.sedes[id].whatsapp }))
   };
@@ -1556,22 +1629,22 @@ function accPagarMP_(d) {
   if (!token) throw new Error('Esta sede todavía no tiene Mercado Pago. Pagá por transferencia.');
   let monto = montoAPagar_(i, d.que === 'sena' ? 'sena' : 'saldo');
   if (monto <= 0) throw new Error('No hay nada para pagar en esta inscripción.');
-  const recargo = Math.round(monto * (CONFIG.mercadoPagoRecargoPct || 0) / 100);
+  const precioMP = conRecargo_(monto, true);
   const url = ScriptApp.getService().getUrl(), sede = CONFIG.sedes[i.sede];
   const vuelta = url + '?p=pagar&sede=' + i.sede + '&t=' + encodeURIComponent(d.t);
   const f = filas_('Familias').filter(x => x.id === i.familiaId)[0] || {};
   const r = UrlFetchApp.fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + token },
     payload: JSON.stringify({
-      items: [{ title: 'Escuela de verano ' + sede.nombre + ' · ' + i.chico + (d.que === 'sena' ? ' (seña)' : ''), quantity: 1, currency_id: 'ARS', unit_price: monto + recargo }],
-      external_reference: i.id, payer: f.email ? { email: f.email } : undefined,
+      items: [{ title: 'Escuela de verano ' + sede.nombre + ' · ' + i.chico + (d.que === 'sena' ? ' (seña)' : ''), quantity: 1, currency_id: 'ARS', unit_price: precioMP }],
+      external_reference: i.id + '|' + monto, payer: f.email ? { email: f.email } : undefined,
       notification_url: url + '?mp=1&sede=' + i.sede,
       back_urls: { success: vuelta + '&mp=ok', pending: vuelta + '&mp=pendiente', failure: vuelta + '&mp=error' }, auto_return: 'approved'
     })
   });
   if (r.getResponseCode() >= 300) throw new Error('Mercado Pago no respondió (' + r.getResponseCode() + '). Probá de nuevo o pagá por transferencia.');
   const pref = JSON.parse(r.getContentText());
-  return { url: pref.init_point, monto: monto + recargo };
+  return { url: pref.init_point, monto: precioMP };
 }
 /** Consulta el pago en Mercado Pago y, si está aprobado, lo registra (una sola vez aunque llegue repetido). */
 function registrarPagoMP_(sedeId, paymentId) {
@@ -1586,11 +1659,14 @@ function registrarPagoMP_(sedeId, paymentId) {
   lock.waitLock(15000);
   try {
     if (filas_('Pagos').some(x => String(x.nota) === 'MP ' + paymentId)) return { estado: 'approved', yaRegistrado: true };
-    const i = filas_('Inscripciones').filter(x => x.id === pay.external_reference)[0];
+    const ref = String(pay.external_reference || '').split('|');
+    const i = filas_('Inscripciones').filter(x => x.id === ref[0])[0];
     if (!i || i.sede !== sedeId) return { estado: 'desconocido' };
-    const monto = Math.round(Number(pay.transaction_amount) || 0);
+    const monto = Math.round(Number(pay.transaction_amount) || 0), efectivo = Number(ref[1]) || 0;
+    // Si pagó el precio de Mercado Pago completo, cubre exactamente lo que se quiso pagar en pesos de efectivo
+    const acredita = efectivo && monto >= conRecargo_(efectivo, true) - 1 ? efectivo : acreditaDe_(monto, 'Mercado Pago', (Number(i.total) || 0) - (Number(i.pagado) || 0));
     agregar_('Pagos', { id: uid_(), fecha: hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
-      medio: 'Mercado Pago', nota: 'MP ' + paymentId, cargadoPor: 'Mercado Pago' });
+      medio: 'Mercado Pago', nota: 'MP ' + paymentId, cargadoPor: 'Mercado Pago', acredita });
     const res = recalcularInsc_(i.id);
     avisoPagoFamilia_(i, monto, res);
     avisarAdmin_(i.sede, '💳 Pago con Mercado Pago · ' + i.chico + ' · ' + pesos_(monto), '<p>Entró un pago de <b>' + pesos_(monto) + '</b> de ' + esc_(i.chico) + ' por Mercado Pago. Ya quedó registrado.</p>');
@@ -1641,12 +1717,179 @@ function accRevisarComprobante_(d, sesion) {
     const monto = Math.round(Number(d.monto) || Number(c.monto));
     const i = filas_('Inscripciones').filter(x => x.id === c.inscripcionId)[0];
     agregar_('Pagos', { id: uid_(), fecha: hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
-      medio: 'Transferencia', nota: 'Comprobante ' + c.id, cargadoPor: sesion.s });
+      medio: 'Transferencia', nota: 'Comprobante ' + c.id, cargadoPor: sesion.s, acredita: acreditaDe_(monto, 'Transferencia', (Number(i.total) || 0) - (Number(i.pagado) || 0)) });
     actualizar_('Comprobantes', c._fila, { estado: 'Aprobado', revisadoPor: sesion.s, monto });
     const r = recalcularInsc_(i.id);
     avisoPagoFamilia_(i, monto, r);
     return { estado: 'Aprobado', saldo: r.saldo };
   } finally { lock.releaseLock(); }
+}
+
+// ======== EFECTIVO / TRANSFERENCIA ========
+function recargoPct_() {
+  const v = config_().recargoTransferenciaPct;
+  return v !== undefined && v !== '' && isFinite(Number(v)) ? Number(v) : (CONFIG.recargoTransferenciaPct || 0);
+}
+/** Precio por transferencia (o por Mercado Pago si mp = true) de un monto en efectivo, redondeado a $100. */
+function conRecargo_(efectivo, mp) {
+  const f = (1 + recargoPct_() / 100) * (mp ? 1 + (CONFIG.mercadoPagoRecargoPct || 0) / 100 : 1);
+  return Math.round(efectivo * f / 100) * 100;
+}
+/** Cuánto descuenta del saldo (en pesos de efectivo) un pago hecho por ese medio. */
+function acreditaDe_(monto, medio, saldo) {
+  const f = /transfer/i.test(medio) ? 1 + recargoPct_() / 100 : /mercado/i.test(medio) ? (1 + recargoPct_() / 100) * (1 + (CONFIG.mercadoPagoRecargoPct || 0) / 100) : 1;
+  let base = monto / f;
+  if (saldo > 0 && Math.abs(base - saldo) <= 300) base = saldo;   // redondeos: si pagó "todo", queda en cero
+  return Math.round(base);
+}
+
+// ======== EVENTOS (campamento, festejo con las familias, cierre…) ========
+function esEvento_(i) { return String(i.modalidad) === 'Evento'; }
+function anotadosEvento_(evId) { return filas_('Inscripciones').filter(i => i.origen === 'evento:' + evId && i.estado !== 'Cancelada'); }
+function eventoPublico_(e, conPlata) {
+  const rows = anotadosEvento_(e.id);
+  const adultos = rows.reduce((a, r) => a + (parseInt(r.extras, 10) || 0), 0);
+  const cupo = Number(e.cupo) || 0;
+  const out = { id: e.id, sede: e.sede, nombre: e.nombre, emoji: e.emoji, fecha: iso_(e.fecha), desde: horaTxt_(e.desde), hasta: horaTxt_(e.hasta), lugar: e.lugar,
+    descripcion: e.descripcion, precioChico: Number(e.precioChico) || 0, conAdultos: esSi_(e.conAdultos), precioAdulto: Number(e.precioAdulto) || 0, cupo,
+    grupos: String(e.grupos || 'todos').split(',').filter(Boolean), cierre: iso_(e.cierre), estado: e.estado || 'Abierto',
+    anotados: rows.length, adultos, lugares: cupo ? Math.max(0, cupo - rows.length) : null };
+  if (conPlata) {
+    const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
+    out.facturado = rows.reduce((a, r) => a + (Number(r.total) || 0), 0);
+    out.cobrado = rows.reduce((a, r) => a + (Number(r.pagado) || 0), 0);
+    out.pendiente = out.facturado - out.cobrado;
+    out.lista = rows.map(r => { const f = fams[r.familiaId] || {}; return { id: r.id, chico: r.chico, grupo: r.grupo, adultos: parseInt(r.extras, 10) || 0, total: Number(r.total) || 0,
+      pagado: Number(r.pagado) || 0, estado: r.estado, adulto: f.adulto || '', whatsapp: f.whatsapp || '' }; });
+  }
+  return out;
+}
+function accGuardarEvento_(d, sesion) {
+  const sede = sesion.s === 'todas' ? d.sede : sesion.s;
+  sedeCfg_(sede);
+  if (!limpio_(d.nombre)) throw new Error('Poné el nombre del evento.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha || '')) throw new Error('Elegí la fecha del evento.');
+  const grupos = Array.isArray(d.grupos) && d.grupos.length ? d.grupos.join(',') : 'todos';
+  const datos = { sede, nombre: limpio_(d.nombre), emoji: limpio_(d.emoji) || '🎉', fecha: d.fecha, desde: limpio_(d.desde), hasta: limpio_(d.hasta), lugar: limpio_(d.lugar),
+    descripcion: limpio_(d.descripcion), precioChico: Math.max(0, Math.round(Number(d.precioChico) || 0)), conAdultos: d.conAdultos ? 'Sí' : 'No',
+    precioAdulto: d.conAdultos ? Math.max(0, Math.round(Number(d.precioAdulto) || 0)) : 0, cupo: Math.max(0, Math.round(Number(d.cupo) || 0)), grupos,
+    cierre: /^\d{4}-\d{2}-\d{2}$/.test(d.cierre || '') ? d.cierre : '', estado: ['Abierto', 'Cerrado', 'Cancelado'].indexOf(d.estado) >= 0 ? d.estado : 'Abierto' };
+  const ex = d.id && filas_('Eventos').filter(e => e.id === d.id)[0];
+  if (ex) {
+    if (sesion.s !== 'todas' && ex.sede !== sesion.s) throw new Error('Ese evento es de la otra sede.');
+    actualizar_('Eventos', ex._fila, datos);
+    return { id: ex.id };
+  }
+  const id = 'V' + uid_();
+  agregar_('Eventos', Object.assign({ id, creado: new Date() }, datos));
+  return { id };
+}
+/** Familias de la sede con chicos de los grupos del evento. */
+function familiasDelEvento_(e) {
+  const grupos = String(e.grupos || 'todos').split(',');
+  const fams = {};
+  filas_('Inscripciones').forEach(i => {
+    if (i.sede !== e.sede || i.estado === 'Cancelada' || esEvento_(i)) return;
+    if (grupos.indexOf('todos') < 0 && grupos.indexOf(i.grupo) < 0) return;
+    fams[i.familiaId] = 1;
+  });
+  return filas_('Familias').filter(f => fams[f.id]);
+}
+function accAvisarEvento_(d, sesion) {
+  const e = filas_('Eventos').filter(x => x.id === d.id)[0];
+  if (!e || (sesion.s !== 'todas' && e.sede !== sesion.s)) throw new Error('No encuentro el evento.');
+  const ev = eventoPublico_(e), fams = familiasDelEvento_(e).filter(f => f.email);
+  if (!fams.length) throw new Error('Todavía no hay familias inscriptas en esos grupos.');
+  if (fams.length > MailApp.getRemainingDailyQuota()) throw new Error('Hoy solo se pueden mandar ' + MailApp.getRemainingDailyQuota() + ' mails más (límite de Google).');
+  fams.forEach(f => {
+    try {
+      enviarMail_(f.email, (ev.emoji || '🎉') + ' ' + ev.nombre + ' · ' + fechaLarga_(ev.fecha),
+        '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '!</p><h2 style="margin:6px 0">' + esc_((ev.emoji || '') + ' ' + ev.nombre) + '</h2>' +
+        '<p>' + esc_(fechaLarga_(ev.fecha)) + (ev.desde ? ' · ' + esc_(ev.desde) + (ev.hasta ? ' a ' + esc_(ev.hasta) : '') + ' h' : '') + (ev.lugar ? ' · ' + esc_(ev.lugar) : '') + '</p>' +
+        (ev.descripcion ? '<p>' + esc_(ev.descripcion) + '</p>' : '') +
+        '<p><b>' + (ev.precioChico ? pesos_(ev.precioChico) + ' por chico en efectivo (' + pesos_(conRecargo_(ev.precioChico)) + ' por transferencia)' : 'Sin costo') + '</b>' +
+        (ev.conAdultos ? (ev.precioAdulto ? ' · ' + pesos_(ev.precioAdulto) + ' por adulto' : ' · los adultos no pagan') : '') + '</p>' +
+        (ev.cierre ? '<p style="color:#777">Anotate hasta el ' + fechaLarga_(ev.cierre) + (ev.cupo ? '. Cupos limitados.' : '.') + '</p>' : '') +
+        boton_(urlCuenta_(), 'Anotarme', colorSede_(ev.sede)), ev.sede);
+    } catch (err) { Logger.log(err); }
+  });
+  return { enviados: fams.length };
+}
+function eventosFamilia_(chicos, insc, hoy) {
+  const out = [];
+  filas_('Eventos').forEach(e => {
+    const ev = eventoPublico_(e);
+    if (ev.estado === 'Cancelado' || ev.fecha < hoy) return;
+    const mis = anotadosEvento_(e.id).filter(r => chicos.some(c => c.id === r.chicoId));
+    const elegibles = chicos.filter(c => insc.some(i => i.chicoId === c.id && i.sede === ev.sede && i.estado !== 'Cancelada' && !esEvento_(i)) &&
+      (ev.grupos.indexOf('todos') >= 0 || ev.grupos.indexOf(c.grupo) >= 0)).map(c => c.id);
+    if (!elegibles.length && !mis.length) return;
+    ev.elegibles = elegibles;
+    ev.anotadosMios = mis.map(r => ({ chicoId: r.chicoId, inscripcionId: r.id, total: Number(r.total) || 0, pagado: Number(r.pagado) || 0, adultos: parseInt(r.extras, 10) || 0 }));
+    ev.abierto = ev.estado === 'Abierto' && (!ev.cierre || hoy <= ev.cierre);
+    out.push(ev);
+  });
+  return out.sort((a, b) => a.fecha < b.fecha ? -1 : 1);
+}
+function accAnotarEvento_(d, sesion) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const fam = familiaDe_(sesion), hoy = hoy_();
+    const e = filas_('Eventos').filter(x => x.id === d.eventoId)[0];
+    if (!e) throw new Error('No encontramos ese evento.');
+    const ev = eventoPublico_(e);
+    if (ev.estado !== 'Abierto' || ev.fecha < hoy || (ev.cierre && hoy > ev.cierre)) throw new Error('La inscripción a este evento ya cerró.');
+    const chicos = filas_('Chicos').filter(c => c.familiaId === fam.id);
+    const insc = filas_('Inscripciones').filter(i => i.familiaId === fam.id).map(inscPublica_);
+    const elegibles = eventosFamilia_(chicos, insc, hoy).filter(x => x.id === ev.id).map(x => x.elegibles)[0] || [];
+    const ya = anotadosEvento_(ev.id).map(r => r.chicoId);
+    const sel = chicos.filter(c => (d.chicoIds || []).indexOf(c.id) >= 0 && elegibles.indexOf(c.id) >= 0 && ya.indexOf(c.id) < 0);
+    if (!sel.length) throw new Error('Elegí a quién anotás.');
+    if (ev.cupo && ev.anotados + sel.length > ev.cupo) throw new Error(ev.lugares ? 'Quedan solo ' + ev.lugares + ' lugares.' : 'No quedan lugares.');
+    const adultos = ev.conAdultos ? Math.max(0, Math.min(10, Math.round(Number(d.adultos) || 0))) : 0;
+    const items = sel.map((c, k) => {
+      const total = ev.precioChico + (k === 0 ? adultos * ev.precioAdulto : 0);
+      const fila = { id: 'E' + uid_(), creado: new Date(), familiaId: fam.id, chicoId: c.id, chico: c.nombre, sede: ev.sede, grupo: c.grupo, modalidad: 'Evento',
+        turno: ev.nombre, extras: k === 0 && adultos ? adultos + ' adultos' : '', dias: ev.fecha, cantDias: 1, fechaInicio: ev.fecha, fechaFin: ev.fecha,
+        subtotal: total, descuento: 0, total, pagado: 0, saldo: total, estado: total ? 'Pendiente' : 'Pagada', avisoRenovacion: '', avisoDeuda: '', origen: 'evento:' + ev.id, notas: '' };
+      agregar_('Inscripciones', fila);
+      return fila;
+    });
+    const total = items.reduce((a, i) => a + i.total, 0), tokenPago = tokenPago_(items.map(i => i.id));
+    try {
+      enviarMail_(fam.email, '✅ Anotado: ' + ev.nombre, '<p>¡Hola ' + esc_(primerNombre_(fam.adulto)) + '! Quedó anotado ' + esc_(items.map(i => i.chico).join(' y ')) +
+        (adultos ? ' y ' + adultos + ' adulto' + (adultos > 1 ? 's' : '') : '') + ' en <b>' + esc_(ev.nombre) + '</b> (' + fechaLarga_(ev.fecha) + ').</p>' +
+        (total ? '<p>Total: <b>' + pesos_(total) + '</b> en efectivo o ' + pesos_(conRecargo_(total)) + ' por transferencia.</p>' + boton_(urlPago_(tokenPago), '💳 Pagar', colorSede_(ev.sede)) : ''), ev.sede);
+    } catch (err) { Logger.log(err); }
+    avisarAdmin_(ev.sede, '🎉 ' + ev.nombre + ' · se anotó ' + items.map(i => i.chico).join(' y '), '<p>' + esc_(fam.adulto) + ' anotó a ' + esc_(items.map(i => i.chico).join(', ')) +
+      (adultos ? ' + ' + adultos + ' adultos' : '') + '. Total ' + pesos_(total) + '.</p>');
+    return { total, tokenPago, items: items.map(i => ({ id: i.id, chico: i.chico, total: i.total })) };
+  } finally { lock.releaseLock(); }
+}
+
+// ======== FOTOS DEL DÍA PARA LAS FAMILIAS (19 h) ========
+function tareaFotosDelDia() {
+  if (!CONFIG.mailFotosDelDia) return;
+  const hoy = hoy_();
+  Object.keys(CONFIG.sedes).forEach(sede => {
+    const url = urlCarpetaDia_(sede, hoy);
+    const pubs = filas_('Publicaciones').filter(p => p.sede === sede && esSi_(p.visible) && p.fecha instanceof Date && diaDe_(p.fecha) === hoy);
+    if (!url || !pubs.length) return;
+    const fueron = {};
+    filas_('Asistencia').forEach(a => { if (a.sede === sede && iso_(a.fecha) === hoy && (a.estado === 'presente' || a.estado === 'tarde')) fueron[a.chicoId] = 1; });
+    const chicos = {}; filas_('Chicos').forEach(c => { chicos[c.id] = c; });
+    const fams = {};
+    Object.keys(fueron).forEach(id => { if (chicos[id]) (fams[chicos[id].familiaId] = fams[chicos[id].familiaId] || []).push(chicos[id].nombre); });
+    filas_('Familias').filter(f => fams[f.id] && f.email).forEach(f => {
+      if (MailApp.getRemainingDailyQuota() < 5) return;
+      try {
+        enviarMail_(f.email, '📸 Las fotos de hoy en ' + CONFIG.sedes[sede].nombre,
+          '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Ya están las fotos y videos de hoy de ' + esc_(fams[f.id].join(' y ')) + '.</p>' +
+          boton_(url, '📁 Ver y descargar las fotos de hoy', colorSede_(sede)) + boton_(urlCuenta_(), 'Abrir la app', '#555'), sede);
+      } catch (e) { Logger.log(e); }
+    });
+  });
 }
 
 // ======== LOGOS ========
@@ -1681,7 +1924,7 @@ function tareaDiaria() {
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   const todas = filas_('Inscripciones').filter(i => i.estado !== 'Cancelada');
   const ultimoDia = {};
-  todas.forEach(i => { const h = iso_(i.fechaFin); if (!ultimoDia[i.chicoId] || h > ultimoDia[i.chicoId]) ultimoDia[i.chicoId] = h; });
+  todas.forEach(i => { if (esEvento_(i)) return; const h = iso_(i.fechaFin); if (!ultimoDia[i.chicoId] || h > ultimoDia[i.chicoId]) ultimoDia[i.chicoId] = h; });
   const porSede = {};
   Object.keys(CONFIG.sedes).forEach(id => { porSede[id] = { vencen: [], deudas: [], sinPagar: [] }; });
   const limite = sumarDias_(hoy, CONFIG.diasAvisoRenovacion);
@@ -1692,7 +1935,7 @@ function tareaDiaria() {
     const S = porSede[i.sede];
     if (!S) return;
     // 1) Se termina y no renovó → mail a la familia ofreciendo renovar
-    if (i.hasta >= hoy && i.hasta <= limite && ultimoDia[i.chicoId] === i.hasta) {
+    if (!esEvento_(fila) && i.hasta >= hoy && i.hasta <= limite && ultimoDia[i.chicoId] === i.hasta) {
       S.vencen.push(i);
       if (!fila.avisoRenovacion && f.email) {
         try { mailRenovacion_(f, i); actualizar_('Inscripciones', fila._fila, { avisoRenovacion: new Date() }); } catch (e) { Logger.log(e); }
@@ -1738,7 +1981,7 @@ function tareaSemanal() {
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   const envios = {};
   filas_('Inscripciones').forEach(i => {
-    if (i.estado === 'Cancelada' || !tem[i.sede]) return;
+    if (i.estado === 'Cancelada' || !tem[i.sede] || esEvento_(i)) return;
     const dias = String(i.dias || '').split(',');
     if (!dias.some(d => d >= proximo && d <= sumarDias_(proximo, 4))) return;
     const f = fams[i.familiaId];
@@ -1770,7 +2013,7 @@ function mensajeRenovacion_(i) {
 }
 function mensajeDeuda_(i) {
   return '¡Hola ' + primerNombre_(i.adulto) + '! Te escribimos de la escuela de verano de ' + CONFIG.sedes[i.sede].nombre + '. Te recordamos que queda un saldo de ' +
-    pesos_(i.saldo) + ' de ' + i.chico + '. ' + datosPagoTexto_(i.sede).replace(/\n/g, ' · ') + '. ¡Gracias!';
+    pesos_(i.saldo) + ' en efectivo (' + pesos_(conRecargo_(i.saldo)) + ' por transferencia) de ' + i.chico + '. ' + datosPagoTexto_(i.sede).replace(/\n/g, ' · ') + '. ¡Gracias!';
 }
 
 function mailInscripcion_(fam, res, sede) {
@@ -1778,8 +2021,9 @@ function mailInscripcion_(fam, res, sede) {
   enviarMail_(fam.email, '☀️ Recibimos la inscripción · ' + res.items.map(i => i.chico).join(' y '),
     '<p>¡Hola ' + esc_(primerNombre_(fam.adulto)) + '! Recibimos la inscripción a la escuela de verano de <b>' + esc_(sede.nombre) + '</b>.</p>' +
     '<p>' + esc_(res.detalle) + '<br>Del ' + fechaLarga_(res.desde) + ' al ' + fechaLarga_(res.hasta) + '</p>' +
-    '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr></table>' +
-    '<p>Para reservar el lugar necesitamos la seña de <b>' + pesos_(res.sena) + '</b> (' + sede.precios.senaPct + '%).</p>' +
+    '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total en efectivo</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr>' +
+    '<tr><td style="color:#777">Por transferencia o Mercado Pago</td><td style="color:#777">' + pesos_(conRecargo_(res.total)) + '</td></tr></table>' +
+    '<p>Para reservar el lugar necesitamos la seña de <b>' + pesos_(res.sena) + '</b> en efectivo (o ' + pesos_(conRecargo_(res.sena)) + ' por transferencia).</p>' +
     boton_(urlPago_(res.tokenPago), '💳 Pagar la seña' + (tokenMP_(sede.id) ? ' (Mercado Pago o transferencia)' : ''), sede.color) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(sede.id)) + '</pre>' +
     '<p style="color:#555">Si pagás por transferencia, subí el comprobante desde el mismo link y la administración lo confirma.</p>' +
@@ -1808,7 +2052,7 @@ function mailRenovacion_(f, i) {
 }
 function mailDeuda_(f, i) {
   enviarMail_(f.email, '💳 Saldo pendiente · escuela de verano de ' + i.chico,
-    '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Te recordamos que queda un saldo de <b>' + pesos_(i.saldo) + '</b> de la escuela de verano de ' + esc_(i.chico) + '.</p>' +
+    '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Te recordamos que queda un saldo de <b>' + pesos_(i.saldo) + '</b> en efectivo (' + pesos_(conRecargo_(i.saldo)) + ' por transferencia) de ' + (esEvento_(i) ? esc_(i.turno) + ' · ' : 'la escuela de verano de ') + esc_(i.chico) + '.</p>' +
     boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar ahora', colorSede_(i.sede)) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(i.sede)) + '</pre>' +
     '<p style="color:#777">Si ya pagaste, ignorá este mail: puede tardar un día en impactar.</p>', i.sede);
