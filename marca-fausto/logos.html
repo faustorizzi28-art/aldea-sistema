@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-900-italic.woff2);font-weight:900;font-style:italic}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-500-italic.woff2);font-weight:500;font-style:italic}
+@font-face{font-family:Serif;src:url(file:///home/user/aldea-sistema/videos/public/fonts/instrument-serif-latin-400-normal.woff2)}
+@font-face{font-family:Serif;src:url(file:///home/user/aldea-sistema/videos/public/fonts/instrument-serif-latin-400-italic.woff2);font-style:italic}
+@font-face{font-family:Arch;src:url(file:///home/user/aldea-sistema/videos/public/fonts/archivo-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:Arch;src:url(file:///home/user/aldea-sistema/videos/public/fonts/archivo-latin-500-normal.woff2);font-weight:500}
+body{margin:0;background:transparent}
+.pieza{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+</style></head><body>
+
+<!-- A · MOVIMIENTO: monograma FR en itálica con líneas de velocidad + nombre -->
+<div class="pieza" id="A" style="width:1600px;height:700px;gap:56px">
+  <svg width="420" height="420" viewBox="0 0 420 420">
+    <rect x="10" y="10" width="400" height="400" rx="96" fill="#D7263D"/>
+    <g fill="#FFC914"><rect x="44" y="150" width="78" height="16" rx="8"/><rect x="24" y="196" width="98" height="16" rx="8"/><rect x="58" y="242" width="64" height="16" rx="8"/></g>
+    <text x="242" y="292" text-anchor="middle" font-family="Mont" font-weight="900" font-style="italic" font-size="236" letter-spacing="-4" fill="#fff">FR</text>
+  </svg>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:500 italic 54px Mont;color:#D7263D;letter-spacing:.02em">profe</div>
+    <div style="font:900 italic 150px/0.9 Mont;color:#141414;letter-spacing:-.02em">FAUSTO<br>RIZZI</div>
+    <div style="display:flex;align-items:center;gap:18px;margin-top:14px"><span style="width:70px;height:12px;background:#FFC914;border-radius:6px"></span><span style="font:800 30px Mont;letter-spacing:.22em;color:#141414">ENTRENÁ · MOVETE · VIVÍ</span></div>
+  </div>
+</div>
+
+<!-- A oscuro · MOVIMIENTO: monograma FR en itálica con líneas de velocidad + nombre -->
+<div class="pieza" id="AD" style="width:1600px;height:700px;gap:56px">
+  <svg width="420" height="420" viewBox="0 0 420 420">
+    <rect x="10" y="10" width="400" height="400" rx="96" fill="#D7263D"/>
+    <g fill="#FFC914"><rect x="44" y="150" width="78" height="16" rx="8"/><rect x="24" y="196" width="98" height="16" rx="8"/><rect x="58" y="242" width="64" height="16" rx="8"/></g>
+    <text x="242" y="292" text-anchor="middle" font-family="Mont" font-weight="900" font-style="italic" font-size="236" letter-spacing="-4" fill="#fff">FR</text>
+  </svg>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:500 italic 54px Mont;color:#D7263D;letter-spacing:.02em">profe</div>
+    <div style="font:900 italic 150px/0.9 Mont;color:#fff;letter-spacing:-.02em">FAUSTO<br>RIZZI</div>
+    <div style="display:flex;align-items:center;gap:18px;margin-top:14px"><span style="width:70px;height:12px;background:#FFC914;border-radius:6px"></span><span style="font:800 30px Mont;letter-spacing:.22em;color:#fff">ENTRENÁ · MOVETE · VIVÍ</span></div>
+  </div>
+</div>
+
+<!-- B · SELLO: insignia circular con la frase -->
+<div class="pieza" id="B" style="width:1000px;height:1000px">
+  <svg width="940" height="940" viewBox="0 0 940 940">
+    <defs><path id="circ" d="M470,470 m-352,0 a352,352 0 1,1 704,0 a352,352 0 1,1 -704,0"/></defs>
+    <circle cx="470" cy="470" r="460" fill="#141414"/>
+    <circle cx="470" cy="470" r="290" fill="#D7263D"/>
+    <circle cx="470" cy="470" r="420" fill="none" stroke="#FFC914" stroke-width="6"/>
+    <text font-family="Mont" font-weight="800" font-size="52" fill="#fff"><textPath href="#circ" startOffset="0" textLength="2190" lengthAdjust="spacing">UN DÍA SIN MOVIMIENTO ES UN DÍA PERDIDO ★</textPath></text>
+    <text x="482" y="560" text-anchor="middle" font-family="Mont" font-weight="900" font-style="italic" font-size="270" letter-spacing="-4" fill="#fff">FR</text>
+    <text x="470" y="640" text-anchor="middle" font-family="Mont" font-weight="800" font-size="40" letter-spacing="14" fill="#FFC914">PROFE</text>
+  </svg>
+</div>
+
+<!-- C · PREMIUM: firma serif elegante -->
+<div class="pieza" id="C" style="width:1600px;height:620px;flex-direction:column;gap:10px">
+  <div style="font:800 30px Mont;letter-spacing:.5em;color:#D7263D;padding-left:.5em">PROFE</div>
+  <div style="font:400 210px/1 Serif;color:#141414;letter-spacing:-.01em">Fausto <i>Rizzi</i></div>
+  <div style="display:flex;align-items:center;gap:22px;margin-top:12px"><span style="width:120px;height:3px;background:#FFC914"></span><span style="font:500 30px Arch;letter-spacing:.32em;color:#141414">MOVIMIENTO · DISCIPLINA · VIDA</span><span style="width:120px;height:3px;background:#FFC914"></span></div>
+</div>
+
+<!-- Perfil: el sello A en cuadrado para foto de perfil -->
+<div class="pieza" id="P" style="width:1080px;height:1080px;background:#D7263D">
+  <svg width="900" height="900" viewBox="0 0 420 420">
+    <g fill="#FFC914"><rect x="34" y="150" width="88" height="16" rx="8"/><rect x="14" y="196" width="108" height="16" rx="8"/><rect x="48" y="242" width="74" height="16" rx="8"/></g>
+    <text x="242" y="292" text-anchor="middle" font-family="Mont" font-weight="900" font-style="italic" font-size="236" letter-spacing="-4" fill="#fff">FR</text>
+  </svg>
+</div>
+</body></html>
