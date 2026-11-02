@@ -588,6 +588,8 @@ function parsearConfirmados_(filas, hoy) {
     }
     if (mes < 0 || !col || !a) return;
     const g = function (n) { return col[n] === undefined ? '' : String(f[col[n]] || ''); };
+    // Fila con solo la fecha (sin nombre, hora ni motivo): está vacía, no bloquea
+    if (!g('NOMBRE').trim() && !g('HORA').trim() && !g('MOTIVO').trim()) return;
     const extra = g('CERRADO') + ' ' + g('OBSERVACIONES');
     if (/REPROGRAM|CANCELAD|SUSPENDID/i.test(extra)) return;
     const d = /(\d{1,2})(?:\s*[\/.\-]\s*\d{1,2}(?:\s*[\/.\-]\s*(\d{2,4}))?)?/.exec(a);
@@ -609,14 +611,14 @@ function parsearConfirmados_(filas, hoy) {
 // "16 a 18:30hs" · "19 a 2am" · "16:45 - 19:30" · "sunset" · "MEDIODIA". Si no hay hora, ocupa todo el día.
 function rangoHora_(txt) {
   const t = sinTildes_(txt).toLowerCase().replace(/\s+/g, ' ');
-  const m = /(\d{1,2})(?:[:.](\d{2}))?\s*(?:hs?)?\s*(?:a|-|al|hasta)\s*(\d{1,2})(?:[:.](\d{2}))?/.exec(t);
+  const m = /(\d{1,2})(?:[:.,;](\d{2}))?\s*(?:hs?)?\s*(?:a|-|al|hasta)\s*(\d{1,2})(?:[:.,;](\d{2}))?/.exec(t);
   if (m) {
     const ini = Number(m[1]) * 60 + Number(m[2] || 0);
     let fin = Number(m[3]) * 60 + Number(m[4] || 0);
     if (fin <= ini) fin += 1440;
     return [ini, fin];
   }
-  const uno = /(\d{1,2})(?:[:.](\d{2}))?\s*hs?/.exec(t);
+  const uno = /(\d{1,2})(?:[:.,;](\d{2}))?\s*hs?/.exec(t);
   if (uno) { const i = Number(uno[1]) * 60 + Number(uno[2] || 0); return [i, i + 240]; }
   if (/sunset|atardecer/.test(t)) return [17 * 60, 24 * 60];
   if (/mediodia/.test(t)) return [12 * 60, 17 * 60];
