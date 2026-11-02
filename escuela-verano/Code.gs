@@ -41,7 +41,7 @@ const CONFIG = {
   horasTurnoMax: 14,            // entrada sin salida más vieja que esto = olvidada
   avisarRetiroFamilia: false,   // true = mail a la familia cuando el profe registra quién retiró al chico
   aprobarFotos: true,           // true = las fotos de los profes las aprueba el coordinador antes de que las vean las familias
-  minutosTolerancia: 10,
+  minutosTolerancia: 10,        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
   fotoParaCerrarTurno: ['profe', 'auxiliar'],   // estos roles tienen que subir al menos una foto o video del día para marcar la salida
   maxVideoMB: 300,
   // Pagos online: cada sede conecta su cuenta de Mercado Pago desde Administración → Ajustes (el token queda guardado aparte, no en el código)
@@ -49,9 +49,10 @@ const CONFIG = {
   // Efectivo: los precios cargados son los de EFECTIVO. Transferencia y Mercado Pago pagan este % más.
   // (se cambia también desde Administración → Ajustes)
   recargoTransferenciaPct: 10,  // ⚠️ de ejemplo: confirmar
-  mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día     // % que se suma al pagar con Mercado Pago (para cubrir la comisión); 0 = sin recargo
+  mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día
+  transferenciaSinRecargoHasta: '2026-11-15',   // en preventa vale lo mismo en efectivo o transferencia (folleto)
   glorin: { nombre: 'GLORIN Animaciones', detalle: 'Animación de cumpleaños y eventos',
-            url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },        // pasados estos minutos del inicio del turno sin marcar, el coordinador lo ve como "no marcó"
+            url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },
   grupos: [
     { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 3,  edadMax: 4 },
     { id: 'exploradores', nombre: 'Exploradores', emoji: '🧭', edadMin: 5,  edadMax: 6 },
@@ -62,41 +63,50 @@ const CONFIG = {
     aldea: {
       id: 'aldea',
       nombre: 'Aldea de Valle',
-      color: '#2F4A38', acento: '#F2CA11',
+      color: '#1E7BC8', acento: '#F2CA11',   // azul pileta y amarillo de la campaña 2026-27
       direccion: 'República de China 1890, Valle Escondido, Córdoba',
       whatsapp: '5493515308489',
       lat: -31.364971, lng: -64.278477, radio: 150,
       inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
       feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
       cupoPorGrupo: 30,   // si se pasa, la inscripción entra igual y se avisa para abrir otro grupo
-      bajada: 'Naturaleza, deporte y pileta en el predio de Aldea, en Valle Escondido.',
-      ficha: [  // misma lista de renglones en las dos sedes: así se arma la comparación
-        ['Edades', 'De 3 a 13 años, en grupos por edad'],
-        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 16 h · Pre hora desde las 8 h'],
-        ['Pileta', 'Sí, con guardavidas y clases de natación'],
-        ['Comida', 'Merienda incluida · almuerzo opcional ($10.000 por día)'],
-        ['Actividades', 'Deportes, artes marciales, juegos en la naturaleza, talleres'],
-        ['Traslado', 'Sin traslado (a confirmar)']
+      bajada: 'Un verano en Aldea · Aldea de Valle × GLORIN Animaciones',
+      conGlorin: true,
+      actividades: ['Natación y pileta', 'Karate', 'Patín', 'Gimnasia', 'Fútbol', 'Arte', 'Música', 'Naturaleza'],
+      destacado: ['Viernes', 'Día temático con show de GLORIN'],
+      ficha: [
+        ['Edades', 'De 3 a 13 años, grupos por edad, cada grupo con sus profes'],
+        ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h'],
+        ['Opcionales', 'Pre-hora 8 a 9 h · Post-hora 13 a 14 h · Almuerzo $10.000/día (jornada completa)'],
+        ['Viernes', 'Día temático con show de GLORIN']
       ],
       pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Aldea: a confirmar (vacío = se pasa por WhatsApp)
       precios: {
-        // ⚠️ PRECIOS DE EJEMPLO: reemplazalos por los reales. 'semanas' = precio por cantidad de semanas (índice = semanas, hasta las 10 de la temporada).
+        // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
+        // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
         etapas: [
-          { id: 'preventa', nombre: 'Preventa',       hasta: '2026-11-15', dia: 25000, semanas: [0, 100000, 190000, 276000, 360000, 440000, 516000, 595000, 672000, 747000, 820000] },
-          { id: 'segunda',  nombre: 'Segunda etapa',  hasta: '2026-12-06', dia: 28000, semanas: [0, 110000, 209000, 304000, 396000, 484000, 568000, 654000, 739000, 822000, 902000] },
-          { id: 'oficial',  nombre: 'Precio oficial',                      dia: 30000, semanas: [0, 120000, 228000, 331000, 432000, 528000, 619000, 714000, 806000, 896000, 984000] }
+          { id: 'preventa', nombre: 'Preventa', hasta: '2026-11-15', inscripcion: 35000,
+            turnos: { manana:   { semana: 89000,  quincena: 170000, temporada: 714000,  dia: 27000 },    // dia: a confirmar
+                      tarde:    { semana: 80000,  quincena: 153000, temporada: 643000,  dia: 24000 },
+                      completa: { semana: 161000, quincena: 305000, temporada: 1285000, dia: 48000 } } },
+          { id: 'regular', nombre: 'Precio regular', inscripcion: 50000,                             // ⚠️ desde el 16/11: preventa / 0,85, a confirmar
+            turnos: { manana:   { semana: 105000, quincena: 200000, temporada: 840000,  dia: 32000 },
+                      tarde:    { semana: 94000,  quincena: 180000, temporada: 756000,  dia: 28000 },
+                      completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
         ],
         turnos: [
-          { id: 'manana',   nombre: 'Mañana (9 a 13 h)',            factor: 1 },
-          { id: 'completa', nombre: 'Jornada completa (9 a 16 h)',  factor: 1.5 }
+          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     color: '#FFA21F' },
+          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', color: '#F25FA8' },
+          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     color: '#6CC23A' }
         ],
         extras: [
-          { id: 'prehora',  nombre: 'Pre hora (desde las 8 h)', precioDia: 5000, detalle: 'Para dejarlo más temprano' },
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, detalle: 'Menú del día, avisá si hay alergias' }
+          { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
+          { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 30000, precioDia: 6000, turnos: ['manana'], detalle: 'Desde $30.000 por semana' },
+          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa' }
         ],
-        descuentoHermanos: 10,     // % a partir del segundo hijo
-        descuentoRenovacion: 5,    // % si renueva antes de que termine
-        senaPct: 30
+        descuentoHermanos: [0, 20, 30],   // % por hijo: el 2.º 20%, del 3.º en adelante 30%
+        descuentoRenovacion: 0,
+        senaPct: 50                       // seña = inscripción + 50%; congela el precio de preventa
       }
     },
     colonia: {
@@ -110,33 +120,39 @@ const CONFIG = {
       feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
       cupoPorGrupo: 30,   // si se pasa, la inscripción entra igual y se avisa para abrir otro grupo
       bajada: 'La colonia de siempre: pileta, juegos y amigos todo el verano.',
+      actividades: ['Pileta', 'Juegos', 'Deportes', 'Talleres'],   // ⚠️ a confirmar
       ficha: [
         ['Edades', 'De 3 a 13 años, en grupos por edad'],
-        ['Horario', 'Mañana 9 a 13 h · Jornada completa 9 a 16 h · Pre hora desde las 8 h'],
-        ['Pileta', 'Sí, con guardavidas (a confirmar)'],
-        ['Comida', 'Merienda incluida · almuerzo opcional ($10.000 por día)'],
-        ['Actividades', 'Juegos, deportes, campamento y talleres (a confirmar)'],
-        ['Traslado', 'A confirmar']
+        ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h (a confirmar)'],
+        ['Opcionales', 'Pre-hora, post-hora y almuerzo (a confirmar)']
       ],
       pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Colonia Dewey: a confirmar
       precios: {
-        // ⚠️ PRECIOS DE EJEMPLO: reemplazalos por los reales. 'semanas' = precio por cantidad de semanas (índice = semanas, hasta las 10 de la temporada).
+        // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
+        // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
         etapas: [
-          { id: 'preventa', nombre: 'Preventa',       hasta: '2026-11-15', dia: 25000, semanas: [0, 100000, 190000, 276000, 360000, 440000, 516000, 595000, 672000, 747000, 820000] },
-          { id: 'segunda',  nombre: 'Segunda etapa',  hasta: '2026-12-06', dia: 28000, semanas: [0, 110000, 209000, 304000, 396000, 484000, 568000, 654000, 739000, 822000, 902000] },
-          { id: 'oficial',  nombre: 'Precio oficial',                      dia: 30000, semanas: [0, 120000, 228000, 331000, 432000, 528000, 619000, 714000, 806000, 896000, 984000] }
+          { id: 'preventa', nombre: 'Preventa', hasta: '2026-11-15', inscripcion: 35000,
+            turnos: { manana:   { semana: 89000,  quincena: 170000, temporada: 714000,  dia: 27000 },    // dia: a confirmar
+                      tarde:    { semana: 80000,  quincena: 153000, temporada: 643000,  dia: 24000 },
+                      completa: { semana: 161000, quincena: 305000, temporada: 1285000, dia: 48000 } } },
+          { id: 'regular', nombre: 'Precio regular', inscripcion: 50000,                             // ⚠️ desde el 16/11: preventa / 0,85, a confirmar
+            turnos: { manana:   { semana: 105000, quincena: 200000, temporada: 840000,  dia: 32000 },
+                      tarde:    { semana: 94000,  quincena: 180000, temporada: 756000,  dia: 28000 },
+                      completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
         ],
         turnos: [
-          { id: 'manana',   nombre: 'Mañana (9 a 13 h)',            factor: 1 },
-          { id: 'completa', nombre: 'Jornada completa (9 a 16 h)',  factor: 1.5 }
+          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     color: '#FFA21F' },
+          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', color: '#F25FA8' },
+          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     color: '#6CC23A' }
         ],
         extras: [
-          { id: 'prehora',  nombre: 'Pre hora (desde las 8 h)', precioDia: 5000, detalle: 'Para dejarlo más temprano' },
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, detalle: 'Menú del día, avisá si hay alergias' }
+          { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
+          { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 30000, precioDia: 6000, turnos: ['manana'], detalle: 'Desde $30.000 por semana' },
+          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa' }
         ],
-        descuentoHermanos: 10,     // % a partir del segundo hijo
-        descuentoRenovacion: 5,    // % si renueva antes de que termine
-        senaPct: 30
+        descuentoHermanos: [0, 20, 30],   // % por hijo: el 2.º 20%, del 3.º en adelante 30%
+        descuentoRenovacion: 0,
+        senaPct: 50                       // seña = inscripción + 50%; congela el precio de preventa
       }
     }
   }
@@ -146,7 +162,8 @@ const HOJAS = {
   Familias:      ['id', 'creado', 'email', 'adulto', 'dni', 'whatsapp', 'direccion', 'emergenciaNombre', 'emergenciaTel', 'autorizadosRetiro', 'comoNosConocio', 'sede', 'notas'],
   Chicos:        ['id', 'familiaId', 'nombre', 'nacimiento', 'dni', 'sede', 'grupo', 'obraSocial', 'alergias', 'medicacion', 'condiciones', 'sabeNadar', 'autorizaFotos', 'notas', 'creado'],
   Inscripciones: ['id', 'creado', 'familiaId', 'chicoId', 'chico', 'sede', 'grupo', 'modalidad', 'turno', 'extras', 'dias', 'cantDias', 'fechaInicio', 'fechaFin',
-                  'subtotal', 'descuento', 'total', 'pagado', 'saldo', 'estado', 'avisoRenovacion', 'avisoDeuda', 'origen', 'notas'],
+                  'subtotal', 'descuento', 'total', 'pagado', 'saldo', 'estado', 'avisoRenovacion', 'avisoDeuda', 'origen', 'notas',
+                  'matricula', 'sena', 'etapa', 'totalRegular', 'senaRegular'],
   Pagos:         ['id', 'fecha', 'inscripcionId', 'familiaId', 'chico', 'sede', 'monto', 'medio', 'nota', 'cargadoPor', 'acredita'],
   Eventos:       ['id', 'creado', 'sede', 'nombre', 'emoji', 'fecha', 'desde', 'hasta', 'lugar', 'descripcion', 'precioChico', 'conAdultos', 'precioAdulto', 'cupo', 'grupos', 'cierre', 'estado'],
   Profes:        ['id', 'nombre', 'email', 'whatsapp', 'sede', 'grupos', 'formaPago', 'valor', 'activo', 'notas', 'creado', 'rol'],
@@ -372,7 +389,7 @@ function accPublico_() {
       bajada: s.bajada, ficha: s.ficha, inicio: s.inicio, fin: s.fin, precios: s.precios, cupoPorGrupo: s.cupoPorGrupo,
       pago: s.pago,
       semanas: semanas_(id).map(w => Object.assign(w, { tematica: temSede[w.id] || null })),
-      tieneUbicacion: !!geo_(id).lat, logo: logoSede_(id), mercadoPago: !!tokenMP_(id), recargoMP: CONFIG.mercadoPagoRecargoPct
+      tieneUbicacion: !!geo_(id).lat, actividades: s.actividades || [], destacado: s.destacado || null, conGlorin: !!s.conGlorin, logo: logoSede_(id), mercadoPago: !!tokenMP_(id), recargoMP: CONFIG.mercadoPagoRecargoPct
     };
   });
   return {
@@ -405,63 +422,77 @@ function semanas_(sedeId) {
  */
 function cotizarPuro_(sede, plan, cantChicos, ctx) {
   var P = sede.precios, hoy = ctx.hoy, errores = [];
-  // Etapa de precio vigente (preventa → segunda etapa → oficial), según el día en que se inscribe
+  // Etapa de precio vigente (preventa → regular) según el día de inscripción; ctx.etapaId la fuerza
   var E = P.etapas[P.etapas.length - 1], iE = P.etapas.length - 1;
-  for (var k = 0; k < P.etapas.length; k++) if (!P.etapas[k].hasta || hoy <= P.etapas[k].hasta) { E = P.etapas[k]; iE = k; break; }
+  for (var k = 0; k < P.etapas.length; k++) {
+    if (ctx.etapaId ? P.etapas[k].id === ctx.etapaId : (!P.etapas[k].hasta || hoy <= P.etapas[k].hasta)) { E = P.etapas[k]; iE = k; break; }
+  }
   var r100 = function (n) { return Math.round(n / 100) * 100; };
   var buscar = function (lista, id) { for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; };
+  var turno = buscar(P.turnos, plan.turno) || P.turnos[0];
+  var V = E.turnos[turno.id];
   var semanaDe = {}, dias = [], semanasSel = [];
   sede.semanas.forEach(function (s) { s.dias.forEach(function (d) { semanaDe[d] = s.id; }); });
   if (plan.modalidad === 'semanas') {
     sede.semanas.forEach(function (s) {
       if ((plan.semanas || []).indexOf(s.id) < 0) return;
-      if (s.dias[0] < hoy) { errores.push('La semana del ' + s.desde + ' ya empezó: elegí días sueltos.'); return; }
+      if (s.dias[0] < hoy && !ctx.etapaId) { errores.push('La semana del ' + s.desde + ' ya empezó: elegí días sueltos.'); return; }
       semanasSel.push(s.id); dias = dias.concat(s.dias);
     });
   } else {
-    (plan.dias || []).forEach(function (d) { if (semanaDe[d] && d >= hoy && dias.indexOf(d) < 0) dias.push(d); });
+    (plan.dias || []).forEach(function (d) { if (semanaDe[d] && (d >= hoy || ctx.etapaId) && dias.indexOf(d) < 0) dias.push(d); });
   }
   dias.sort();
   var base = 0, detalleBase = '';
   if (plan.modalidad === 'semanas') {
-    var n = semanasSel.length, t = E.semanas;
-    base = n < t.length ? t[n] : t[t.length - 1] + (n - (t.length - 1)) * (t[t.length - 1] - t[t.length - 2]);
-    detalleBase = n + (n === 1 ? ' semana' : ' semanas');
+    var n = semanasSel.length;
+    // quincenas + semana suelta; la temporada completa (o si conviene) sale el valor de temporada
+    base = n >= sede.semanas.length ? V.temporada : Math.min(V.temporada, Math.floor(n / 2) * V.quincena + (n % 2) * V.semana);
+    detalleBase = n >= sede.semanas.length ? 'Temporada completa' : n + (n === 1 ? ' semana' : ' semanas');
   } else {
     // días sueltos: nunca más caro que la semana completa
     var porSemana = {};
     dias.forEach(function (d) { porSemana[semanaDe[d]] = (porSemana[semanaDe[d]] || 0) + 1; });
-    Object.keys(porSemana).forEach(function (k) { base += Math.min(porSemana[k] * E.dia, E.semanas[1]); });
+    Object.keys(porSemana).forEach(function (k) { base += Math.min(porSemana[k] * V.dia, V.semana); });
     detalleBase = dias.length + (dias.length === 1 ? ' día' : ' días');
   }
-  var turno = buscar(P.turnos, plan.turno) || P.turnos[0];
-  base = r100(base * turno.factor);
-  var extras = (plan.extras || []).map(function (id) { return buscar(P.extras, id); }).filter(Boolean)
-    .map(function (e) { return { id: e.id, nombre: e.nombre, monto: e.precioDia * dias.length }; });
+  var extras = (plan.extras || []).map(function (id) { return buscar(P.extras, id); })
+    .filter(function (e) { return e && (!e.turnos || e.turnos.indexOf(turno.id) >= 0); })
+    .map(function (e) { return { id: e.id, nombre: e.nombre, monto: plan.modalidad === 'semanas' && e.precioSemana ? e.precioSemana * semanasSel.length : e.precioDia * dias.length }; });
   var extrasTotal = extras.reduce(function (a, e) { return a + e.monto; }, 0);
-  var porChico = [], subtotal = 0, descuento = 0;
+  var H = P.descuentoHermanos || [];
+  if (typeof H === 'number') H = [0, H];
+  var porChico = [], subtotal = 0, descuento = 0, matriculas = 0, sena = 0;
   for (var i = 0; i < Math.max(1, cantChicos); i++) {
     var sub = base + extrasTotal, pct = 0, motivos = [];
-    if (i > 0 && P.descuentoHermanos) { pct += P.descuentoHermanos; motivos.push('hermano ' + P.descuentoHermanos + '%'); }
+    var ph = H.length ? H[Math.min(i, H.length - 1)] : 0;
+    if (ph) { pct += ph; motivos.push((i + 1) + '.º hermano ' + ph + '%'); }
     if (ctx.renovacion && P.descuentoRenovacion) { pct += P.descuentoRenovacion; motivos.push('renovación ' + P.descuentoRenovacion + '%'); }
     var desc = r100(sub * pct / 100);
-    porChico.push({ subtotal: sub, descuento: desc, total: sub - desc, motivos: motivos });
-    subtotal += sub; descuento += desc;
+    var mat = ctx.sinMatricula && ctx.sinMatricula[i] ? 0 : (E.inscripcion || 0);
+    var senaChico = mat + r100((sub - desc) * P.senaPct / 100);
+    porChico.push({ subtotal: sub, descuento: desc, matricula: mat, total: sub - desc + mat, sena: senaChico, motivos: motivos });
+    subtotal += sub; descuento += desc; matriculas += mat; sena += senaChico;
   }
   if (!dias.length) errores.push(plan.modalidad === 'semanas' ? 'Elegí al menos una semana.' : 'Elegí al menos un día.');
-  var total = subtotal - descuento;
+  var total = subtotal - descuento + matriculas;
   return {
     dias: dias, cantDias: dias.length, semanas: semanasSel, turno: turno, extras: extras, base: base, detalleBase: detalleBase,
-    porChico: porChico, subtotal: subtotal, descuento: descuento, total: total,
-    sena: r100(total * P.senaPct / 100), senaPct: P.senaPct, errores: errores,
-    etapa: { nombre: E.nombre, hasta: E.hasta || '' }, proxima: P.etapas[iE + 1] ? { nombre: P.etapas[iE + 1].nombre } : null
+    porChico: porChico, subtotal: subtotal, descuento: descuento, matricula: matriculas, total: total,
+    sena: sena, senaPct: P.senaPct, errores: errores, etapaId: E.id,
+    etapa: { nombre: E.nombre, hasta: E.hasta || '', inscripcion: E.inscripcion || 0 },
+    proxima: P.etapas[iE + 1] ? { nombre: P.etapas[iE + 1].nombre, inscripcion: P.etapas[iE + 1].inscripcion || 0 } : null
   };
 }
 
-function cotizarServidor_(sedeId, plan, cant, renovacion) {
+function cotizarServidor_(sedeId, plan, cant, renovacion, extra) {
   const pub = accPublico_().sedes.filter(s => s.id === sedeId)[0];
   if (!pub) throw new Error('Elegí una sede.');
-  return cotizarPuro_(pub, plan || {}, cant, { hoy: hoy_(), renovacion: !!renovacion });
+  return cotizarPuro_(pub, plan || {}, cant, Object.assign({ hoy: hoy_(), renovacion: !!renovacion }, extra || {}));
+}
+/** La inscripción ($35.000 / $50.000) se cobra una vez por chico en la temporada. */
+function yaTieneMatricula_(chicoId) {
+  return !!chicoId && filas_('Inscripciones').some(i => i.chicoId === chicoId && i.estado !== 'Cancelada' && !esEvento_(i));
 }
 
 // ======== INSCRIPCIÓN ========
@@ -535,7 +566,11 @@ function guardarChico_(fam, c, sedeId) {
 }
 
 function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
-  const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion);
+  const sinMatricula = chicos.map(c => yaTieneMatricula_(c.id));
+  const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula });
+  // Precio regular del mismo paquete: si no señan antes de que termine la preventa, pasa a este valor
+  const etapas = CONFIG.sedes[sedeId].precios.etapas;
+  const qr = q.etapaId !== etapas[etapas.length - 1].id ? cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula, etapaId: etapas[etapas.length - 1].id }) : q;
   if (q.errores.length) throw new Error(q.errores[0]);
   const sede = sedeCfg_(sedeId);
   const asign = asignarGrupos_(sedeId, chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), grupo: c.grupo })), q.dias);
@@ -548,7 +583,8 @@ function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
       extras: q.extras.map(e => e.nombre).join(', '), dias: q.dias.join(','), cantDias: q.cantDias,
       fechaInicio: q.dias[0], fechaFin: q.dias[q.dias.length - 1], subtotal: p.subtotal, descuento: p.descuento, total: p.total,
       pagado: 0, saldo: p.total, estado: 'Pendiente', avisoRenovacion: '', avisoDeuda: '', origen,
-      notas: p.motivos.length ? 'Descuentos: ' + p.motivos.join(', ') : ''
+      notas: p.motivos.length ? 'Descuentos: ' + p.motivos.join(', ') : '',
+      matricula: p.matricula, sena: p.sena, etapa: q.etapa.nombre, totalRegular: qr.porChico[i].total, senaRegular: qr.porChico[i].sena
     };
     agregar_('Inscripciones', fila);
     return fila;
@@ -1606,7 +1642,7 @@ function inscripcionesDeToken_(t) {
 }
 function montoAPagar_(i, que) {
   const total = Number(i.total) || 0, pagado = Number(i.pagado) || 0, saldo = total - pagado;
-  const sena = esEvento_(i) ? saldo : Math.round(total * CONFIG.sedes[i.sede].precios.senaPct / 100 / 100) * 100;
+  const sena = esEvento_(i) ? saldo : (Number(i.sena) || Math.round(total * CONFIG.sedes[i.sede].precios.senaPct / 100 / 100) * 100);
   return que === 'sena' ? Math.max(0, Math.min(saldo, sena - pagado)) : saldo;
 }
 function accPagos_(d) {
@@ -1725,8 +1761,27 @@ function accRevisarComprobante_(d, sesion) {
   } finally { lock.releaseLock(); }
 }
 
+/** "La seña congela tu precio": inscripciones de preventa que no señaron a tiempo pasan al precio regular. */
+function pasarAPrecioRegular_(hoy) {
+  const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
+  filas_('Inscripciones').forEach(i => {
+    if (i.estado === 'Cancelada' || esEvento_(i) || i.etapa !== 'Preventa' || !Number(i.totalRegular)) return;
+    const pre = CONFIG.sedes[i.sede].precios.etapas.filter(e => e.id === 'preventa')[0];
+    if (!pre || hoy <= pre.hasta || (Number(i.pagado) || 0) >= (Number(i.sena) || 0)) return;
+    actualizar_('Inscripciones', i._fila, { total: Number(i.totalRegular), sena: Number(i.senaRegular), etapa: 'Precio regular',
+      notas: (i.notas ? i.notas + ' · ' : '') + 'Pasó a precio regular: no señó antes del ' + fechaCorta_(pre.hasta) });
+    const r = recalcularInsc_(i.id), f = fams[i.familiaId];
+    if (f && f.email) try {
+      enviarMail_(f.email, 'Terminó la preventa · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! La preventa terminó el ' + fechaLarga_(pre.hasta) +
+        ' y la inscripción de ' + esc_(i.chico) + ' no tenía la seña, así que pasó al precio regular: <b>' + pesos_(i.totalRegular) + '</b>.</p>' +
+        boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar la seña', colorSede_(i.sede)), i.sede);
+    } catch (e) { Logger.log(e); }
+  });
+}
+
 // ======== EFECTIVO / TRANSFERENCIA ========
 function recargoPct_() {
+  if (CONFIG.transferenciaSinRecargoHasta && hoy_() <= CONFIG.transferenciaSinRecargoHasta) return 0;
   const v = config_().recargoTransferenciaPct;
   return v !== undefined && v !== '' && isFinite(Number(v)) ? Number(v) : (CONFIG.recargoTransferenciaPct || 0);
 }
@@ -1953,6 +2008,7 @@ function tareaDiaria() {
     if (i.pagado === 0 && i.creado && Date.now() - i.creado > 48 * 3600000) S.sinPagar.push(i);
   });
 
+  pasarAPrecioRegular_(hoy);
   const cfg = config_();
   const partes = Object.keys(porSede).map(id => resumenSedeHtml_(id, porSede[id], hoy));
   Object.keys(porSede).forEach((id, n) => {

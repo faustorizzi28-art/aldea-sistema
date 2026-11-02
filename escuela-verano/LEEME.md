@@ -74,7 +74,7 @@ Tiene **tres puertas** con el mismo link:
 - **Aldea de Valle:** el logo de la web de Aldea.
 - **Colonia Dewey:** ya está cargado, en sus dos versiones (en `logos/`): en color sobre fondo claro (la tarjeta para elegir escuela) y en blanco sobre las barras de la sede. La sede usa los colores del logo, rojo y celeste. Si algún día cambia, cada administración sube el nuevo desde **Administración → Ajustes → Logo**.
 - **GLORIN Animaciones:** aparece al pie, con link a las reservas de cumpleaños.
-- **Tipografía:** Baloo 2 en los títulos y Nunito en el texto. Se cambia en dos variables al principio de `Index.html` (`--f-titulo` y `--f-texto`).
+- **Tipografía:** Lilita One en los títulos y Archivo en el texto, como el folleto. Se cambia en dos variables al principio de `Index.html` (`--f-titulo` y `--f-texto`).
 
 ## Qué hace
 
@@ -94,24 +94,37 @@ Tiene **tres puertas** con el mismo link:
   - **renovar** o sumar días en un minuto
 - Formulario para “quiero recibir novedades”, para las familias que todavía no se deciden.
 
-### Datos de la temporada 2026-27 (definidos por Fausto, 23/10/2026)
-- **Fechas:** del lunes 14/12 al viernes 19/2, 10 semanas de lunes a viernes. No hay escuela el 25/12, el 1/1 ni en Carnaval (8 y 9/2).
-- **Campamento:** la semana del 11 al 15 de enero (semana 5), a mitad de mes, en las dos sedes. Las demás temáticas se cambian desde Administración → Contenido.
-- **Horarios para las familias:**
-  - Mañana, de 9 a 13 h.
-  - Jornada completa, de 9 a 16 h.
-  - Pre hora desde las 8 h, que se cobra como extra.
-  - Almuerzo, a **$10.000 por día**.
-- **Precio en 3 etapas:** **preventa**, después **segunda etapa** y después **precio oficial**. La familia paga el precio de la etapa del día en que se inscribe, y la web muestra hasta cuándo vale. ⚠️ Los montos cargados son **de ejemplo**: se cambian en `CONFIG → precios → etapas` de cada sede.
-- **Grupos de 30 chicos.** Si un grupo se llena, la inscripción **entra igual** y la administración recibe un aviso: con un botón se abre otro grupo de la misma edad (Aventureros B, por ejemplo) y las siguientes inscripciones van solas ahí.
-- **Colonia Dewey:** Etruria 7755, Villa Rivera Indarte. El **alias de cada sede está a confirmar**. Mientras esté vacío, la web le dice a la familia que le pasamos los datos por WhatsApp.
-- **Equipo:**
-  - Horario de 9 a 13 h, con pre hora desde las 8 para algunos, y turno tarde de 13 a 16 h, de lunes a viernes.
-  - Se **paga por quincena**, del 1 al 15 y del 16 a fin de mes. **Los guardavidas cobran solo por hora.**
-  - Profes y auxiliares pueden cobrar **fijo por quincena** o **por día**. Por día, **se pagan los feriados no trabajados** en los que les tocaba trabajar.
-  - En la primera y la última quincena, que la temporada no cubre entera, el fijo se paga proporcional a los días hábiles.
-  - Los pagos se cargan a la quincena que corresponde aunque se hagan después.
-- **Fotos y videos obligatorios:** un profe o auxiliar **no puede marcar la salida** si ese día no subió al menos una foto o un video de los chicos y las actividades. Los videos se suben en partes directo a Drive (hasta 300 MB). Todo queda ordenado en `Escuela de Verano — Fotos / <sede> / <día>`, para tener material actualizado para redes.
+### Datos de la temporada 2026-27 (folleto "Escuela de Verano ALDEA", 2/11/2026)
+- **Fechas:** del lunes 14/12 al viernes 19/2: 10 semanas, de lunes a viernes. No hay escuela el 25/12, el 1/1 ni en Carnaval (8 y 9/2).
+- **Edades:** de 3 a 13 años, en grupos por edad, cada uno con sus profes. Hasta 30 chicos por grupo; si un grupo se llena, la inscripción entra igual y se abre otro.
+- **Campamento:** la semana del 11 al 15 de enero (semana 5), en las dos sedes.
+- **Aldea de Valle × GLORIN Animaciones.** Todos los días: natación y pileta, karate, patín, gimnasia, fútbol, arte, música y naturaleza. **Viernes: día temático con show de GLORIN.**
+- **Horarios:** Mañana de 9 a 13 h · Tarde de 13:30 a 17 h · Completa de 9 a 17 h.
+- **Opcionales:**
+  - Pre-hora (8 a 9 h): desde $30.000 por semana.
+  - Post-hora (13 a 14 h, solo turno mañana): desde $30.000 por semana.
+  - Almuerzo: $10.000 por día, solo jornada completa.
+- **Valores de preventa por chico** (hasta el 15/11, en efectivo o transferencia):
+
+| | Semana | Quincena | Temporada (10 semanas) |
+|---|---|---|---|
+| Mañana | $89.000 | $170.000 | $714.000 |
+| Tarde | $80.000 | $153.000 | $643.000 |
+| Completa | $161.000 | $305.000 | $1.285.000 |
+
+  - Las semanas que no son quincena se arman como quincenas + semana, y nunca superan el valor de la temporada.
+  - **Inscripción:** $35.000 en preventa; desde el 16/11 pasa a $50.000. Se cobra una vez por chico en la temporada.
+  - **Hermanos:** 20% al 2.º y 30% del 3.º en adelante (no se aplica sobre la inscripción).
+  - **Cómo reservar:**
+    1. Completar el formulario.
+    2. Pagar la inscripción y la seña del 50% antes del 15/11.
+    3. Pagar el saldo antes de empezar.
+  - **La seña congela el precio.** Si al 16/11 una inscripción de preventa no tiene la seña, pasa sola al precio regular (con la inscripción a $50.000) y le llega un mail a la familia. Las semanas que se suman después se pagan al valor vigente.
+  - ⚠️ **Precio regular desde el 16/11:** el folleto solo dice que "los valores aumentan". Cargué la preventa sin el 15% (Mañana $105.000 / $200.000 / $840.000; Tarde $94.000 / $180.000 / $756.000; Completa $189.000 / $359.000 / $1.512.000). Hay que confirmarlo.
+  - ⚠️ **Días sueltos:** el folleto no los tiene. Quedaron a $27.000 (Mañana), $24.000 (Tarde) y $48.000 (Completa) de preventa, a confirmar.
+  - ⚠️ **Colonia Dewey:** usa los mismos valores hasta que pasen los suyos.
+- **Efectivo y transferencia:** en preventa valen lo mismo, como dice el folleto. Desde el 16/11, transferencia y Mercado Pago pagan el recargo que se ponga en Ajustes.
+- **Estética:** la de la campaña. Azul pileta, azul marino, tarjetas blancas con borde marino y los colores de "VERANO". Títulos en **Lilita One** y texto en **Archivo**.
 
 ### Roles del equipo
 Cada persona se carga una vez en **Administración → Equipo** con su mail, sede y **rol**. Cuando entra a la app, ve solo lo que le corresponde:
