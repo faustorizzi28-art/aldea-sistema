@@ -163,6 +163,10 @@
   .eleccion button{display:flex;align-items:center;gap:16px;text-align:left;border:0;border-radius:22px;padding:18px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.08);cursor:pointer;color:var(--tinta);font:inherit;border-left:8px solid var(--c)}
   .eleccion button:focus-visible,.rol:focus-visible{outline:3px solid var(--c1);outline-offset:2px}
   .eleccion .logo{width:72px;height:72px}
+  .logo-chapa{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;background:#1F8F4E;color:var(--amarillo);border:2.5px solid var(--marino);border-radius:16px;padding:9px 12px 9px 10px;transform:rotate(-3deg);box-shadow:3px 3px 0 var(--marino)}
+  .logo-chapa svg{height:38px;width:auto}
+  .logo-chapa b{display:block;font:var(--w-titulo) 25px/0.95 var(--f-titulo)!important;color:var(--amarillo);letter-spacing:.02em}
+  .logo-chapa small{display:block;font:var(--w-titulo) 12.5px/1 var(--f-titulo);letter-spacing:.12em;color:#fff;margin-top:2px}
   .eleccion b{display:block;font:var(--w-titulo) 30px/1.05 var(--f-titulo)}
   .eleccion .flecha{margin-left:auto;font-size:24px;color:var(--c)}
   .roles{display:grid;gap:12px}
@@ -361,7 +365,7 @@ function vElegirSede(destino) {
     <p style="margin:14px auto 0;font-weight:700">${destino === 'inscribir' ? '¿En qué escuela querés inscribir a tu hijo?' : '¿De qué escuela de verano sos?'}</p>
   </div></section>
   <div class="wrap">
-    <div class="eleccion">${s.map(x => `<button style="--c:${x.color}" onclick="elegirSede('${x.id}','${destino || ''}')">${x.id === 'aldea' && !x.logo ? `<span class="logo" style="width:72px;height:72px;background:#1F8F4E;color:var(--amarillo);padding:13px;border:2.5px solid var(--marino)">${CARPA}</span>` : logoSede(x.id, 72, true)}
+    <div class="eleccion">${s.map(x => `<button style="--c:${x.color}" onclick="elegirSede('${x.id}','${destino || ''}')">${x.id === 'aldea' && !x.logo ? `<span class="logo-chapa">${CARPA}<span><b>ALDEA</b><small>DE VALLE</small></span></span>` : logoSede(x.id, 72, true)}
       <span><b>${esc(x.nombre)}</b><span class="muted chico">${esc(x.direccion)}</span></span><span class="flecha" aria-hidden="true">→</span></button>`).join('')}</div>
   </div>
   <div class="pie">${pieGlorin()}</div>`);
