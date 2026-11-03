@@ -294,6 +294,7 @@ google.script.url.getLocation(loc => {
   PARAMS = loc.parameter || {};
   PAGINA = PARAMS.p || '';
   HASH = loc.hash || '';
+  setTimeout(() => { if (!PUB) pintar('<div class="cargando" style="font-size:20px;line-height:1.4;padding:0 20px">Está tardando más de lo normal 😕<br><small style="font:500 15px var(--f-texto)">Recargá la página. Si estás con varias cuentas de Google abiertas, probá en una ventana de incógnito.</small><br><button class="btn" style="margin-top:14px" onclick="location.reload()">Recargar</button></div>'); }, 20000);
   api('publico').then(d => {
     PUB = d;
     cotizar = new Function('return ' + d.cotizar)();
