@@ -342,6 +342,8 @@ function contactoAdmin(s, txt) {
   return `<div class="card" style="text-align:center"><h3 style="margin:0 0 4px">¿Dudas o consultas?</h3><p class="muted chico" style="margin:0 0 10px">Escribile a la administración de ${esc(s.nombre)}</p>
     <a class="btn wa full" target="_blank" rel="noopener" href="${wa(s.whatsapp, txt || '¡Hola! Tengo una consulta por la escuela de verano de ' + s.nombre + '.')}">💬 ${esc(s.telefono || 'WhatsApp de la administración')}</a></div>`;
 }
+const soloT = () => !!(PUB && PUB.soloTransf);
+const efDesde = () => fCorta(PUB.efectivoDesde);
 function tablaPrecios(s, E) {
   const L = s.precios.etapas, R = E.hasta ? L[L.indexOf(E) + 1] : null;
   return `<div class="scroll-x"><table class="precios"><tr><th style="background:none;text-align:left;font:700 12px var(--f-texto);letter-spacing:.06em;color:var(--c1)">POR CHICO</th><th>Semana</th><th>Quincena</th><th>Temporada<small>${s.semanas.length} semanas</small></th></tr>
@@ -454,6 +456,7 @@ function vSede(id) {
       </div>
       ${P.extras.map(e => `<div class="franja marino" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b style="font:var(--w-titulo) 17px var(--f-titulo);text-transform:uppercase;color:var(--rosa)">${esc(e.nombre)}</b><span>${e.precioSemana ? 'desde ' + pesos(e.precioSemana) + ' por semana' : pesos(e.precioDia) + ' por día'}${e.turnos ? ' · ' + e.turnos.map(t => (P.turnos.find(x => x.id === t) || {}).nombre).join(' / ').toLowerCase() : ''}</span></div>`).join('')}
       ${etapaActual(s).hasta && P.etapas[P.etapas.indexOf(etapaActual(s)) + 1] ? `<div class="franja coral" style="text-align:center"><b class="t" style="display:block;margin:0">Desde el ${fCorta(sumarDias(etapaActual(s).hasta, 1))} los valores aumentan</b>y la inscripción pasa a ${pesos(P.etapas[P.etapas.indexOf(etapaActual(s)) + 1].inscripcion)}</div>` : ''}
+      ${soloT() ? `<p class="banner" style="margin:12px 0 8px">💳 <b>Hasta el ${fCorta(sumarDias(PUB.efectivoDesde, -1))} se paga por transferencia</b>, sin recargo. En efectivo, desde el ${efDesde()} en la sede.</p>` : ''}
       ${PUB.recargo ? `<p class="banner" style="margin:12px 0 8px">💵 <b>Precios en efectivo.</b> Por transferencia o Mercado Pago: +${PUB.recargo}%.</p>` : ''}
       <p class="muted chico">Los días sueltos nunca cuestan más que la semana completa.</p>
     </div>
@@ -517,13 +520,13 @@ function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.can
 function htmlPresu(q, texto, accion) {
   const cant = Math.max(1, PL.cant);
   return `<div class="presu"><div class="crece"><small>${q.cantDias ? esc(q.detalleBase) + ' · ' + cant + (cant > 1 ? ' chicos' : ' chico') : 'Elegí cuándo viene'}</small>
-    <div class="monto">${q.cantDias ? pesos(q.total) + ' <small style="display:inline;font-size:12px">en efectivo</small>' : '—'}</div>${q.cantDias && PUB.recargo ? `<small>${pesos(conTransf(q.total))} por transferencia</small>` : ''}</div>
+    <div class="monto">${q.cantDias ? pesos(q.total) + (PUB.recargo ? ' <small style="display:inline;font-size:12px">en efectivo</small>' : '') : '—'}</div>${q.cantDias && PUB.recargo ? `<small>${pesos(conTransf(q.total))} por transferencia</small>` : ''}</div>
     <button class="btn acento" ${q.errores.length ? 'disabled' : ''} onclick="${accion}">${texto}</button></div>`;
 }
 function detallePresu(q, nombres) {
   return `<table class="t">${q.porChico.map((c, i) => `<tr><td>${esc(nombres[i] || 'Chico ' + (i + 1))}<div class="muted chico">${esc(q.detalleBase)} · ${esc(q.turno.nombre)}${q.extras.length ? ' · ' + q.extras.map(e => esc(e.nombre)).join(', ') : ''}${c.motivos.length ? '<br>Descuento: ' + esc(c.motivos.join(' + ')) : ''}</div></td>
     <td class="derecha">${c.descuento ? `<s class="muted">${pesos(c.subtotal)}</s><br>` : ''}<b>${pesos(c.total - (c.matricula || 0))}</b>${c.matricula ? `<br><span class="muted chico">+ inscripción ${pesos(c.matricula)}</span>` : ''}</td></tr>`).join('')}
-    <tr><td><b>💵 Total en efectivo</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
+    <tr><td><b>💵 Total${PUB.recargo ? ' en efectivo' : ''}</b></td><td class="derecha"><b style="font-size:20px">${pesos(q.total)}</b></td></tr>
     ${PUB.recargo ? `<tr><td>Por transferencia o Mercado Pago (+${PUB.recargo}%)</td><td class="derecha">${pesos(conTransf(q.total))}</td></tr>` : ''}
     <tr><td>Para reservar: ${q.matricula ? 'inscripción + ' : ''}seña del ${q.senaPct}%</td><td class="derecha"><b>${pesos(q.sena)}</b>${PUB.recargo ? `<br><span class="muted chico">${pesos(conTransf(q.sena))} por transferencia</span>` : ''}</td></tr></table>
     ${q.etapa && q.etapa.hasta ? `<p class="chip aviso" style="margin:8px 0 0">⏰ ${esc(q.etapa.nombre)}: pagando la seña antes del ${fCorta(q.etapa.hasta)} congelás este precio${q.proxima ? '. Después rige el ' + esc(q.proxima.nombre.toLowerCase()) + ' y la inscripción pasa a ' + pesos(q.proxima.inscripcion) : ''}.</p>` : ''}
@@ -647,7 +650,7 @@ function vListo(r) {
       <p class="muted">Te mandamos un mail con todo el detalle.</p>
     </div>
     <div class="card" style="border:2px solid var(--c1)"><h3>Para reservar el lugar: seña de ${pesos(r.sena)}</h3>
-      <p class="muted chico">Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}. El saldo, antes del primer día. El link para pagar también te llegó por mail.</p>
+      <p class="muted chico">${soloT() ? `Total ${pesos(r.total)}. La seña se paga por transferencia (en efectivo cobramos desde el ${efDesde()}).` : `Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}.`} El saldo, antes del primer día. El link para pagar también te llegó por mail.</p>
       <button class="btn full acento" style="margin-bottom:12px" onclick="vPagar('${esc(r.tokenPago)}')">💳 Pagar la seña ahora</button>
       ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
       <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>`
@@ -749,7 +752,7 @@ function cInicio() {
         <div class="derecha">${i.saldo > 0 ? `<span class="chip aviso">Debe ${pesos(i.saldo)}</span>` : '<span class="chip ok">Pago ✓</span>'}</div></div>`).join('')}
     </div>`;
   }).join('');
-  return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">En efectivo en la sede${PUB.recargo ? ', o ' + pesos(conTransf(saldo)) + ' por transferencia o Mercado Pago' : ''}.</div></div><button class="btn sm" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar</button></div></div>` : ''}
+  return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">${soloT() ? 'Por transferencia (en efectivo, desde el ' + efDesde() + ' en la sede)' : 'En efectivo en la sede'}${PUB.recargo ? ', o ' + pesos(conTransf(saldo)) + ' por transferencia o Mercado Pago' : ''}.</div></div><button class="btn sm" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar</button></div></div>` : ''}
     ${cards || '<div class="vacio">Todavía no hay chicos cargados.</div>'}
     <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
     <a class="btn full claro" style="margin-top:10px" target="_blank" rel="noopener" href="${wa((sede((C.chicos[0] || {}).sede) || PUB.sedes[0]).whatsapp, '¡Hola! Quiero pedir un cambio de turno o de semana para ' + C.chicos.map(c => c.nombre.split(' ')[0]).join(' y ') + ': ')}">🔄 Pedir cambio de turno o semana</a>
@@ -802,16 +805,16 @@ function pintarPagos() {
     const que = PG_QUE[i.id] || (i.sena > 0 && i.sena < i.saldo ? 'sena' : 'saldo'), monto = que === 'sena' ? i.sena : i.saldo, c = conf(i.sede);
     const enRevision = PG.comprobantes.filter(x => x.inscripcionId === i.id && x.estado === 'Pendiente');
     return `<div class="card"><div class="fila"><div class="crece"><h3 style="margin:0">${titulo}</h3><div class="muted chico">${esc(sede(i.sede).nombre)} · ${cuando}</div></div><span class="chip aviso">Saldo ${pesos(i.saldo)}</span></div>
-      <table class="t" style="margin-top:8px"><tr><td>Total (efectivo)</td><td class="derecha">${pesos(i.total)}</td></tr><tr><td>Pagado</td><td class="derecha">${pesos(i.pagado)}</td></tr></table>
-      <div class="banner" style="margin:12px 0 4px">💵 <b>En efectivo: ${pesos(monto)}</b> · lo pagás en la sede, a la administración.${PG.recargo ? `<br><span class="chico">Por transferencia o Mercado Pago sale ${pesos(conTransf(monto))} (+${PG.recargo}%).</span>` : ''}</div>
+      <table class="t" style="margin-top:8px"><tr><td>Total${PG.recargo ? ' (efectivo)' : ''}</td><td class="derecha">${pesos(i.total)}</td></tr><tr><td>Pagado</td><td class="derecha">${pesos(i.pagado)}</td></tr></table>
+      <div class="banner" style="margin:12px 0 4px">${PG.soloTransf ? `💳 <b>A pagar: ${pesos(monto)}</b> por transferencia.<br><span class="chico">En efectivo se cobra desde el ${fCorta(PG.efectivoDesde)}, en la sede.</span>` : `💵 <b>En efectivo: ${pesos(monto)}</b> · lo pagás en la sede, a la administración.`}${PG.recargo ? `<br><span class="chico">Por transferencia o Mercado Pago sale ${pesos(conTransf(monto))} (+${PG.recargo}%).</span>` : ''}</div>
       ${i.sena > 0 && i.sena < i.saldo ? `<div class="monto-op seg"><button class="${que === 'sena' ? 'on' : ''}" onclick="PG_QUE['${i.id}']='sena';pintarPagos()">Seña ${pesos(i.sena)}</button><button class="${que === 'saldo' ? 'on' : ''}" onclick="PG_QUE['${i.id}']='saldo';pintarPagos()">Todo ${pesos(i.saldo)}</button></div>` : ''}
       ${enRevision.map(x => `<p class="chip info" style="margin:8px 0">🧾 Comprobante de ${pesos(x.monto)} en revisión</p>`).join('')}
       ${c.mercadoPago ? `<button class="btn full" style="background:#009EE3;margin-top:8px" onclick="pagarMP(this,'${i.id}','${que}')">Pagar ${pesos(conTransf(monto, true))} con Mercado Pago</button>
         <p class="muted chico" style="margin:6px 0 0;text-align:center">Tarjeta de débito, crédito o dinero en cuenta. Se acredita al instante.</p>` : ''}
-      <details style="margin-top:12px" ${c.mercadoPago ? '' : 'open'}><summary><b>Pagar por transferencia · ${pesos(conTransf(monto))}</b></summary>
+      <details style="margin-top:12px" ${c.mercadoPago && !PG.soloTransf ? '' : 'open'}><summary><b>Pagar por transferencia · ${pesos(conTransf(monto))}</b></summary>
         ${c.pago && c.pago.alias ? `<div class="banner" style="margin-top:10px"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:22px">${esc(c.pago.alias)}</b><br>${esc(c.pago.banco)} · ${esc(c.pago.titular)}${c.pago.cbu ? '<br>CBU ' + esc(c.pago.cbu) : ''}</div>
           <button class="btn xs claro" onclick="copiar('${esc(c.pago.alias)}')">Copiar alias</button>`
-          : `<p class="chico">Pedinos los datos para transferir: <a target="_blank" href="${wa(c.whatsapp, '¡Hola! Me pasás los datos para transferir la escuela de verano de ' + i.chico + '?')}">escribinos por WhatsApp</a>.</p>`}
+          : `<p class="chico">Pedile los datos para transferir a la administración: <a target="_blank" href="${wa(c.whatsapp, '¡Hola! Me pasás los datos para transferir la escuela de verano de ' + i.chico + '?')}">escribile por WhatsApp</a>.</p>`}
         <button class="btn full claro" style="margin-top:10px" onclick="formComprobante('${i.id}',${conTransf(monto)})">🧾 Ya transferí: subir comprobante</button></details>
     </div>`;
   };
@@ -857,7 +860,7 @@ function cEventos() {
     return `<div class="card"><h3 style="margin:0">${esc(e.emoji)} ${esc(e.nombre)}</h3>
       <p class="muted chico" style="margin:4px 0">${fLarga(e.fecha)}${e.desde ? ' · ' + esc(e.desde) + (e.hasta ? ' a ' + esc(e.hasta) : '') + ' h' : ''}${e.lugar ? ' · ' + esc(e.lugar) : ''}</p>
       ${e.descripcion ? `<p style="margin:6px 0">${esc(e.descripcion)}</p>` : ''}
-      <p class="chico" style="margin:6px 0"><b>${e.precioChico ? pesos(e.precioChico) + ' por chico en efectivo' : 'Sin costo'}</b>${e.precioChico && PUB.recargo ? ' (' + pesos(conTransf(e.precioChico)) + ' por transferencia)' : ''}${e.conAdultos ? ' · adultos: ' + (e.precioAdulto ? pesos(e.precioAdulto) : 'gratis') : ''}
+      <p class="chico" style="margin:6px 0"><b>${e.precioChico ? pesos(e.precioChico) + ' por chico' + (PUB.recargo ? ' en efectivo' : '') : 'Sin costo'}</b>${e.precioChico && PUB.recargo ? ' (' + pesos(conTransf(e.precioChico)) + ' por transferencia)' : ''}${e.conAdultos ? ' · adultos: ' + (e.precioAdulto ? pesos(e.precioAdulto) : 'gratis') : ''}
         ${e.lugares !== null ? `<br><span class="${e.lugares < 6 ? 'chip aviso' : 'muted'}">${e.lugares ? 'Quedan ' + e.lugares + ' lugares' : 'Sin lugares'}</span>` : ''}${e.cierre ? ' <span class="muted">· Anotate hasta el ' + fCorta(e.cierre) + '</span>' : ''}</p>
       ${e.anotadosMios.map(a => `<span class="chip ok" style="margin:2px 4px 2px 0">✅ ${esc(nom(a.chicoId))}${a.adultos ? ' + ' + a.adultos + ' adultos' : ''}</span>`).join('')}
       <div class="fila" style="margin-top:8px">${libres.length && e.abierto ? `<button class="btn sm" onclick="modalEvento('${e.id}')">Anotar${e.anotadosMios.length ? ' a otro' : 'me'}</button>` : ''}
@@ -877,7 +880,7 @@ function modalEvento(id) {
 function totalEvento(id) {
   const e = C.eventos.find(x => x.id === id), n = document.querySelectorAll('.evC:checked').length, ad = e.conAdultos ? Math.max(0, Number(val('evAd')) || 0) : 0;
   const t = n * e.precioChico + ad * e.precioAdulto;
-  $('#evTot').innerHTML = t ? `💵 Total: <b>${pesos(t)}</b> en efectivo${PUB.recargo ? ' · ' + pesos(conTransf(t)) + ' por transferencia' : ''}` : '¡Sin costo!';
+  $('#evTot').innerHTML = t ? `💵 Total: <b>${pesos(t)}</b>${PUB.recargo ? ' en efectivo' : ''}${PUB.recargo ? ' · ' + pesos(conTransf(t)) + ' por transferencia' : ''}` : '¡Sin costo!';
 }
 function anotarEvento(btn, id) {
   const chicoIds = [...document.querySelectorAll('.evC:checked')].map(x => x.value);
@@ -1345,10 +1348,10 @@ function htmlDeuda(i) {
 function recordar(btn, id, tipo) { conBoton(btn, async () => { await api('recordar', { inscripcionId: id, tipo }, 'admin'); toast('Mail enviado ✓'); }); }
 function formPago(id) {
   const i = A.inscripciones.find(x => x.id === id);
-  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' || i.modalidad === 'Cargo' ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)} en efectivo</b></span></p>
+  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' || i.modalidad === 'Cargo' ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)}${PUB.recargo ? ' en efectivo' : ''}</b></span></p>
     <div class="grid2"><div><label>Monto</label><input type="number" id="pgMonto" value="${i.saldo}" inputmode="numeric"></div><div><label>Fecha</label><input type="date" id="pgFecha" value="${A.hoy}"></div></div>
-    <label>Medio</label><select id="pgMedio" onchange="document.getElementById('pgMonto').value=this.value==='Efectivo'?${i.saldo}:${conTransf(i.saldo)}"><option>Efectivo</option><option>Transferencia</option><option>Mercado Pago</option><option>Otro</option></select>
-    <p class="muted chico" style="margin:4px 0 0">Poné la plata que entró. Si fue por transferencia (${pesos(conTransf(i.saldo))} el saldo completo), se descuenta el ${PUB.recargo}% de recargo y queda en cero.</p>
+    <label>Medio</label><select id="pgMedio" onchange="document.getElementById('pgMonto').value=this.value==='Efectivo'?${i.saldo}:${conTransf(i.saldo)}">${soloT() ? '<option>Transferencia</option><option>Efectivo</option>' : '<option>Efectivo</option><option>Transferencia</option>'}<option>Mercado Pago</option><option>Otro</option></select>
+    <p class="muted chico" style="margin:4px 0 0">Poné la plata que entró.${PUB.recargo ? ` Si fue por transferencia (${pesos(conTransf(i.saldo))} el saldo completo), se descuenta el ${PUB.recargo}% de recargo y queda en cero.` : ''}</p>
     <label>Nota</label><input type="text" id="pgNota">
     <label class="opcion on"><input type="checkbox" id="pgAvisar" checked><div>Mandarle a la familia el mail de “recibimos tu pago”</div></label>
     <button class="btn full" onclick="conBoton(this, async()=>{await api('registrarPago',{inscripcionId:'${id}',monto:val('pgMonto'),fecha:val('pgFecha'),medio:val('pgMedio'),nota:val('pgNota'),avisar:document.getElementById('pgAvisar').checked},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar()})">Guardar pago</button>`);

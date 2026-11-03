@@ -50,7 +50,8 @@ const CONFIG = {
   // (se cambia también desde Administración → Ajustes)
   recargoTransferenciaPct: 10,  // ⚠️ de ejemplo: confirmar
   mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día
-  transferenciaSinRecargoHasta: '2026-11-15',
+  efectivoDesde: '2026-12-14',             // hasta el 13/12 se cobra solo por transferencia (sin recargo); el efectivo arranca el 14/12 en la sede
+  transferenciaSinRecargoHasta: '2026-12-13',
   salidaTemprana: { '2026-12-24': '14:00', '2026-12-31': '14:00' },   // reglamento: esos días la salida es hasta las 14 h
   toleranciaRetiroMin: 15,      // reglamento: pasados 15 minutos de la salida se cobra la post-hora
   cobrarRetiroTarde: true,
@@ -69,7 +70,7 @@ const CONFIG = {
       'Preventa: los valores publicados ya tienen el 15% de descuento. No se vuelve a descontar al momento de pagar.',
       'Los campamentos, salidas y actividades extras no están incluidos en la cuota: se pagan por separado.',
       'Hermanos: 20% en la cuota del 2.º hermano y 30% desde el 3.º. No se suma a otros descuentos: se aplica el mayor.',
-      'Forma de pago: hasta el 15/11, mismo precio en efectivo o transferencia. Desde el 16/11 rige el valor vigente para cada forma de pago.',
+      'Forma de pago: hasta el 13/12 se paga por transferencia, sin recargo. Desde el 14/12 también en efectivo en la sede (la transferencia y Mercado Pago pueden tener recargo).',
       'Cada pago lleva su comprobante. Lo señado mantiene su precio.'] },
     { n: 4, titulo: 'Asistencia, faltas y cambios', destacado: 'Las semanas pagadas son fijas: las faltas no se recuperan ni se descuentan.', items: [
       'Esto vale también para las faltas por enfermedad o viaje.', 'Cambios de turno o de semana: por WhatsApp a la administración, con 48 h de anticipación y según cupo.',
@@ -435,7 +436,7 @@ function accPublico_() {
     };
   });
   return {
-    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, reglamento: CONFIG.reglamento, salidaTemprana: CONFIG.salidaTemprana, recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
+    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, reglamento: CONFIG.reglamento, salidaTemprana: CONFIG.salidaTemprana, recargo: recargoPct_(), soloTransf: soloTransferencia_(), efectivoDesde: CONFIG.efectivoDesde || '', recargoMP: CONFIG.mercadoPagoRecargoPct || 0, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
     grupos: todosGrupos_(), sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(), periodos: periodosTemporada_(), periodoActual: periodoActual_(),
     cotizar: cotizarPuro_.toString(), formasPago: FORMAS_PAGO, estados: ESTADOS
   };
@@ -1448,7 +1449,7 @@ function accRegistrarPago_(d, sesion) {
     const i = filaInsc_(d.inscripcionId, sesion);
     const monto = Math.round(Number(String(d.monto).replace(/[^\d,-]/g, '').replace(',', '.')));
     if (!monto) throw new Error('Poné el monto.');
-    const medio = limpio_(d.medio) || 'Efectivo';
+    const medio = limpio_(d.medio) || (soloTransferencia_() ? 'Transferencia' : 'Efectivo');
     agregar_('Pagos', { id: uid_(), fecha: d.fecha || hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
       medio, nota: limpio_(d.nota), cargadoPor: sesion.s, acredita: acreditaDe_(monto, medio, (Number(i.total) || 0) - (Number(i.pagado) || 0)) });
     const r = recalcularInsc_(i.id);
@@ -1702,7 +1703,7 @@ function accPagos_(d) {
     items: lista.map(i => ({ id: i.id, chico: i.chico, sede: i.sede, desde: iso_(i.fechaInicio), hasta: iso_(i.fechaFin), turno: i.turno,
       total: Number(i.total) || 0, pagado: Number(i.pagado) || 0, saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
       sena: montoAPagar_(i, 'sena'), estado: i.estado, evento: esEvento_(i) ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + i.turno : '' })),
-    recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0,
+    recargo: recargoPct_(), soloTransf: soloTransferencia_(), efectivoDesde: CONFIG.efectivoDesde || '', recargoMP: CONFIG.mercadoPagoRecargoPct || 0,
     comprobantes: comp.map(c => ({ id: c.id, inscripcionId: c.inscripcionId, monto: Number(c.monto) || 0, estado: c.estado, fecha: c.fecha instanceof Date ? diaDe_(c.fecha) : String(c.fecha).slice(0, 10) })),
     sedes: Object.keys(CONFIG.sedes).map(id => ({ id, mercadoPago: !!tokenMP_(id), pago: CONFIG.sedes[id].pago, whatsapp: CONFIG.sedes[id].whatsapp }))
   };
@@ -1829,7 +1830,15 @@ function pasarAPrecioRegular_(hoy) {
 }
 
 // ======== EFECTIVO / TRANSFERENCIA ========
+/** Antes de que arranque el cobro en efectivo, solo se paga por transferencia (y sin recargo). */
+function soloTransferencia_() { return !!CONFIG.efectivoDesde && hoy_() < CONFIG.efectivoDesde; }
+/** Texto de un precio para mails y WhatsApp según la forma de pago vigente. */
+function precioTxt_(m, cosa) {
+  return soloTransferencia_() || !recargoPct_() ? pesos_(m) + (cosa || '') + (soloTransferencia_() ? ' por transferencia' : '')
+    : pesos_(m) + (cosa || '') + ' en efectivo (' + pesos_(conRecargo_(m)) + ' por transferencia)';
+}
 function recargoPct_() {
+  if (soloTransferencia_()) return 0;
   if (CONFIG.transferenciaSinRecargoHasta && hoy_() <= CONFIG.transferenciaSinRecargoHasta) return 0;
   const v = config_().recargoTransferenciaPct;
   return v !== undefined && v !== '' && isFinite(Number(v)) ? Number(v) : (CONFIG.recargoTransferenciaPct || 0);
@@ -1992,7 +2001,7 @@ function accAvisarEvento_(d, sesion) {
         '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '!</p><h2 style="margin:6px 0">' + esc_((ev.emoji || '') + ' ' + ev.nombre) + '</h2>' +
         '<p>' + esc_(fechaLarga_(ev.fecha)) + (ev.desde ? ' · ' + esc_(ev.desde) + (ev.hasta ? ' a ' + esc_(ev.hasta) : '') + ' h' : '') + (ev.lugar ? ' · ' + esc_(ev.lugar) : '') + '</p>' +
         (ev.descripcion ? '<p>' + esc_(ev.descripcion) + '</p>' : '') +
-        '<p><b>' + (ev.precioChico ? pesos_(ev.precioChico) + ' por chico en efectivo (' + pesos_(conRecargo_(ev.precioChico)) + ' por transferencia)' : 'Sin costo') + '</b>' +
+        '<p><b>' + (ev.precioChico ? precioTxt_(ev.precioChico, ' por chico') : 'Sin costo') + '</b>' +
         (ev.conAdultos ? (ev.precioAdulto ? ' · ' + pesos_(ev.precioAdulto) + ' por adulto' : ' · los adultos no pagan') : '') + '</p>' +
         (ev.cierre ? '<p style="color:#777">Anotate hasta el ' + fechaLarga_(ev.cierre) + (ev.cupo ? '. Cupos limitados.' : '.') + '</p>' : '') +
         boton_(urlCuenta_(), 'Anotarme', colorSede_(ev.sede)), ev.sede);
@@ -2045,7 +2054,7 @@ function accAnotarEvento_(d, sesion) {
     try {
       enviarMail_(fam.email, '✅ Anotado: ' + ev.nombre, '<p>¡Hola ' + esc_(primerNombre_(fam.adulto)) + '! Quedó anotado ' + esc_(items.map(i => i.chico).join(' y ')) +
         (adultos ? ' y ' + adultos + ' adulto' + (adultos > 1 ? 's' : '') : '') + ' en <b>' + esc_(ev.nombre) + '</b> (' + fechaLarga_(ev.fecha) + ').</p>' +
-        (total ? '<p>Total: <b>' + pesos_(total) + '</b> en efectivo o ' + pesos_(conRecargo_(total)) + ' por transferencia.</p>' + boton_(urlPago_(tokenPago), '💳 Pagar', colorSede_(ev.sede)) : ''), ev.sede);
+        (total ? '<p>Total: <b>' + precioTxt_(total) + '</b>.</p>' + boton_(urlPago_(tokenPago), '💳 Pagar', colorSede_(ev.sede)) : ''), ev.sede);
     } catch (err) { Logger.log(err); }
     avisarAdmin_(ev.sede, '🎉 ' + ev.nombre + ' · se anotó ' + items.map(i => i.chico).join(' y '), '<p>' + esc_(fam.adulto) + ' anotó a ' + esc_(items.map(i => i.chico).join(', ')) +
       (adultos ? ' + ' + adultos + ' adultos' : '') + '. Total ' + pesos_(total) + '.</p>');
@@ -2200,7 +2209,7 @@ function mensajeRenovacion_(i) {
 }
 function mensajeDeuda_(i) {
   return '¡Hola ' + primerNombre_(i.adulto) + '! Te escribimos de la escuela de verano de ' + CONFIG.sedes[i.sede].nombre + '. Te recordamos que queda un saldo de ' +
-    pesos_(i.saldo) + ' en efectivo (' + pesos_(conRecargo_(i.saldo)) + ' por transferencia) de ' + i.chico + '. ' + datosPagoTexto_(i.sede).replace(/\n/g, ' · ') + '. ¡Gracias!';
+    precioTxt_(i.saldo) + ' de ' + i.chico + '. ' + datosPagoTexto_(i.sede).replace(/\n/g, ' · ') + '. ¡Gracias!';
 }
 
 function mailInscripcion_(fam, res, sede) {
@@ -2208,9 +2217,9 @@ function mailInscripcion_(fam, res, sede) {
   enviarMail_(fam.email, '☀️ Recibimos la inscripción · ' + res.items.map(i => i.chico).join(' y '),
     '<p>¡Hola ' + esc_(primerNombre_(fam.adulto)) + '! Recibimos la inscripción a la escuela de verano de <b>' + esc_(sede.nombre) + '</b>.</p>' +
     '<p>' + esc_(res.detalle) + '<br>Del ' + fechaLarga_(res.desde) + ' al ' + fechaLarga_(res.hasta) + '</p>' +
-    '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total en efectivo</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr>' +
-    '<tr><td style="color:#777">Por transferencia o Mercado Pago</td><td style="color:#777">' + pesos_(conRecargo_(res.total)) + '</td></tr></table>' +
-    '<p>Para reservar el lugar necesitamos la seña de <b>' + pesos_(res.sena) + '</b> en efectivo (o ' + pesos_(conRecargo_(res.sena)) + ' por transferencia).</p>' +
+    '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total' + (recargoPct_() ? ' en efectivo' : '') + '</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr>' +
+    (recargoPct_() ? '<tr><td style="color:#777">Por transferencia o Mercado Pago</td><td style="color:#777">' + pesos_(conRecargo_(res.total)) + '</td></tr>' : '') + '</table>' +
+    '<p>Para reservar el lugar necesitamos la seña de <b>' + precioTxt_(res.sena) + '</b>.' + (soloTransferencia_() ? ' Hasta el ' + fechaLarga_(sumarDias_(CONFIG.efectivoDesde, -1)) + ' cobramos solo por transferencia.' : '') + '</p>' +
     boton_(urlPago_(res.tokenPago), '💳 Pagar la seña' + (tokenMP_(sede.id) ? ' (Mercado Pago o transferencia)' : ''), sede.color) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(sede.id)) + '</pre>' +
     '<p style="color:#555">Si pagás por transferencia, subí el comprobante desde el mismo link y la administración lo confirma.</p>' +
@@ -2239,7 +2248,7 @@ function mailRenovacion_(f, i) {
 }
 function mailDeuda_(f, i) {
   enviarMail_(f.email, '💳 Saldo pendiente · escuela de verano de ' + i.chico,
-    '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Te recordamos que queda un saldo de <b>' + pesos_(i.saldo) + '</b> en efectivo (' + pesos_(conRecargo_(i.saldo)) + ' por transferencia) de ' + (esEvento_(i) ? esc_(i.turno) + ' · ' : 'la escuela de verano de ') + esc_(i.chico) + '.</p>' +
+    '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Te recordamos que queda un saldo de <b>' + precioTxt_(i.saldo) + '</b> de ' + (esEvento_(i) ? esc_(i.turno) + ' · ' : 'la escuela de verano de ') + esc_(i.chico) + '.</p>' +
     boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar ahora', colorSede_(i.sede)) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(i.sede)) + '</pre>' +
     '<p style="color:#777">Si ya pagaste, ignorá este mail: puede tardar un día en impactar.</p>', i.sede);

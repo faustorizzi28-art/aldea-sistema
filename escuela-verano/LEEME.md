@@ -36,6 +36,8 @@ Tiene **tres puertas** con el mismo link:
 - Los recordatorios de deuda también traen el botón **Pagar ahora**.
 
 ### Efectivo y transferencia
+- **Hasta el 13/12 se cobra solo por transferencia, sin recargo.** Hasta esa fecha, la app no ofrece efectivo en la web, en los mails ni en los mensajes de WhatsApp. Al registrar un pago, la opción por defecto es **Transferencia**.
+- **Desde el 14/12 se suma el efectivo** en la sede. Desde ese día rige el recargo por transferencia que esté en Ajustes. La fecha se cambia en `CONFIG.efectivoDesde`.
 - La mayoría de los pagos van a ser en **efectivo**, que es el precio más barato. **Los precios cargados en `CONFIG` son los de efectivo.**
 - **Transferencia y Mercado Pago** pagan un **% más**: 10% de ejemplo, a confirmar. Lo cambia la administración general en **Ajustes → Recargo por transferencia**. Si querés, `mercadoPagoRecargoPct` suma un extra solo para Mercado Pago.
 - La familia ve los dos precios en todos lados: presupuesto, inscripción, mails y pagos. Ejemplo: *$100.000 en efectivo · $110.000 por transferencia*.
