@@ -87,6 +87,7 @@
   table.precios th small{display:block;font:600 10px var(--f-texto);text-transform:none}
   table.precios td{background:#FFF6CF;border-radius:8px;padding:11px 2px;text-align:center;font-weight:800;color:var(--marino);font-size:13px;white-space:nowrap}
   table.precios .turno-et{font-size:16px}
+  table.precios td s{display:block;font:600 10.5px var(--f-texto);color:#7d8aa8;margin-top:2px}
   table.precios td.et{background:none;text-align:left;padding-left:0}
   table.precios td.et small{display:block;font-weight:600;font-size:11px;color:var(--gris)}
   .badge-preventa{margin:22px auto -6px;width:156px;height:156px;border-radius:50%;background:var(--amarillo);border:3px solid var(--marino);color:var(--marino);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-8deg);box-shadow:0 5px 0 var(--marino)}
@@ -332,10 +333,15 @@ function vReglamento(id) {
 function etapaActual(s) { const E = s.precios.etapas; return E.find(e => !e.hasta || PUB.hoy <= e.hasta) || E[E.length - 1]; }
 function precioDesde(s) { const T = etapaActual(s).turnos; return Math.min(...Object.keys(T).map(k => T[k].semana)); }
 const descHermanos = s => { const h = s.precios.descuentoHermanos; return Array.isArray(h) ? h : [0, h || 0]; };
+function sumarDiaIso(iso) { const f = new Date(iso + 'T12:00:00'); f.setDate(f.getDate() + 1); return f.toISOString().slice(0, 10); }
 function tablaPrecios(s, E) {
+  const L = s.precios.etapas, R = E.hasta ? L[L.indexOf(E) + 1] : null;
   return `<div class="scroll-x"><table class="precios"><tr><th style="background:none;text-align:left;font:700 12px var(--f-texto);letter-spacing:.06em;color:var(--c1)">POR CHICO</th><th>Semana</th><th>Quincena</th><th>Temporada<small>${s.semanas.length} semanas</small></th></tr>
-    ${s.precios.turnos.map(t => { const v = E.turnos[t.id] || {}; return `<tr><td class="et"><span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><small>${esc(t.horario)}</small></td>
-      <td>${pesos(v.semana)}</td><td>${pesos(v.quincena)}</td><td>${pesos(v.temporada)}</td></tr>`; }).join('')}</table></div>`;
+    ${s.precios.turnos.map(t => { const v = E.turnos[t.id] || {}, r = (R && R.turnos[t.id]) || {};
+      const celda = k => `<td>${pesos(v[k])}${R && r[k] > v[k] ? `<s>${pesos(r[k])}</s>` : ''}</td>`;
+      return `<tr><td class="et"><span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><small>${esc(t.horario)}</small></td>
+      ${celda('semana')}${celda('quincena')}${celda('temporada')}</tr>`; }).join('')}</table></div>
+    ${R ? `<p class="muted chico" style="margin:6px 0 0">Tachado: el valor desde el ${fCorta(sumarDiaIso(E.hasta))}.</p>` : ''}`;
 }
 
 function vInicio() { vElegirSede(); }
