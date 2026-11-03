@@ -50,7 +50,46 @@ const CONFIG = {
   // (se cambia también desde Administración → Ajustes)
   recargoTransferenciaPct: 10,  // ⚠️ de ejemplo: confirmar
   mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día
-  transferenciaSinRecargoHasta: '2026-11-15',   // en preventa vale lo mismo en efectivo o transferencia (folleto)
+  transferenciaSinRecargoHasta: '2026-11-15',
+  salidaTemprana: { '2026-12-24': '14:00', '2026-12-31': '14:00' },   // reglamento: esos días la salida es hasta las 14 h
+  toleranciaRetiroMin: 15,      // reglamento: pasados 15 minutos de la salida se cobra la post-hora
+  cobrarRetiroTarde: true,
+  diasAvisoApto: 7,             // recordar el apto físico a las familias que empiezan en los próximos 7 días
+  // Reglamento 2026-27 (se muestra al inscribirse y en la app; la familia lo acepta al completar el formulario)
+  reglamento: [
+    { n: 1, titulo: 'Datos generales', destacado: 'De lunes a viernes, del 14/12/2026 al 19/02/2027, para chicos y chicas de 3 a 13 años.', items: [
+      'Opcionales: pre-hora de 8 a 9 h y post-hora de 13 a 14 h.', 'No hay actividad los feriados: 25/12, 1/1 y Carnaval (8 y 9/2).',
+      'Los 24 y 31 de diciembre la salida es hasta las 14 h.', 'Grupos por edad, cada uno con sus profes.', 'Los chicos de 3 años tienen que tener control de esfínteres.'] },
+    { n: 2, titulo: 'Inscripción y reserva', destacado: 'El lugar queda reservado con el formulario completo, la inscripción y la seña del 50%.', items: [
+      'Completá el formulario de inscripción: uno por cada chico.', 'Pagá la inscripción: $35.000 hasta el 15/11 y $50.000 desde el 16/11. Se paga una vez por temporada.',
+      'Pagá la seña del 50% del paquete elegido.', 'Aboná el saldo antes de empezar la primera semana reservada.',
+      'La seña congela el precio de lo señado. Si después sumás semanas, se pagan al valor vigente.', 'La inscripción y la seña no se devuelven si la familia cancela.'] },
+    { n: 3, titulo: 'Valores y descuentos', destacado: 'Los descuentos son solo sobre la cuota (semanal, quincenal o de temporada).', items: [
+      'Inscripción, almuerzo ($10.000 por día), pre y post-hora, campamentos y salidas especiales no tienen descuento.',
+      'Preventa: los valores publicados ya tienen el 15% de descuento. No se vuelve a descontar al momento de pagar.',
+      'Los campamentos, salidas y actividades extras no están incluidos en la cuota: se pagan por separado.',
+      'Hermanos: 20% en la cuota del 2.º hermano y 30% desde el 3.º. No se suma a otros descuentos: se aplica el mayor.',
+      'Forma de pago: hasta el 15/11, mismo precio en efectivo o transferencia. Desde el 16/11 rige el valor vigente para cada forma de pago.',
+      'Cada pago lleva su comprobante. Lo señado mantiene su precio.'] },
+    { n: 4, titulo: 'Asistencia, faltas y cambios', destacado: 'Las semanas pagadas son fijas: las faltas no se recuperan ni se descuentan.', items: [
+      'Esto vale también para las faltas por enfermedad o viaje.', 'Cambios de turno o de semana: por WhatsApp, con 48 h de anticipación y según cupo.',
+      'Avisá por WhatsApp (o desde la app) cuando el chico no va a venir.'] },
+    { n: 5, titulo: 'Salud', destacado: 'Ningún chico puede empezar sin el apto físico entregado.', items: [
+      'Completá en el formulario obra social, alergias, medicación y un contacto de emergencia.', 'Solo damos medicación con receta médica y autorización firmada.',
+      'Con fiebre, vómitos o una enfermedad contagiosa, el chico se queda en casa.', 'Ante un accidente o malestar, actuamos con el servicio de emergencias y avisamos enseguida a la familia.'] },
+    { n: 6, titulo: 'Pileta y seguridad', destacado: 'A la pileta se entra solo con guardavidas presentes y con su grupo.', items: [
+      'Natación todos los días, por grupo de edad y con profes en el agua.', 'Los que no saben nadar usan elementos de flotación en el sector bajo.',
+      'Prohibido correr alrededor de la pileta o entrar sin autorización del profe.'] },
+    { n: 7, titulo: 'Ingreso y retiro', destacado: 'Solo retiran los adultos autorizados en el formulario, con DNI.', items: [
+      'Respetá los horarios: después de 15 minutos de tolerancia se cobra la post-hora.', 'Si lo retira otra persona, avisá antes por WhatsApp (o desde la app) con nombre y DNI.'] },
+    { n: 8, titulo: 'Mochila y convivencia', destacado: 'Todo con nombre, por favor.', items: [
+      'Mochila: malla, toalla, ojotas, gorra, protector solar (puesto desde casa), botella de agua y ropa de cambio.',
+      'Merienda: cada chico trae la suya. El almuerzo es opcional para jornada completa.',
+      'No traer celulares, juguetes ni objetos de valor: no nos hacemos responsables por pérdidas.',
+      'Respeto entre chicos, profes y familias. Las conductas que pongan en riesgo a otros se hablan con la familia y pueden llevar a suspender la asistencia.',
+      'Fotos y videos: se publican en las redes de Aldea y GLORIN solo si la familia lo autorizó en el formulario.'] },
+    { n: 9, titulo: 'Aceptación', destacado: 'Al completar el formulario de inscripción, la familia acepta este reglamento.', items: [] }
+  ],   // en preventa vale lo mismo en efectivo o transferencia (folleto)
   glorin: { nombre: 'GLORIN Animaciones', detalle: 'Animación de cumpleaños y eventos',
             url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },
   grupos: [
@@ -95,9 +134,9 @@ const CONFIG = {
                       completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
         ],
         turnos: [
-          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     color: '#FFA21F' },
-          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', color: '#F25FA8' },
-          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     color: '#6CC23A' }
+          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     fin: '13:00', color: '#FFA21F' },
+          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', fin: '17:00', color: '#F25FA8' },
+          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     fin: '17:00', color: '#6CC23A' }
         ],
         extras: [
           { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
@@ -141,9 +180,9 @@ const CONFIG = {
                       completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
         ],
         turnos: [
-          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     color: '#FFA21F' },
-          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', color: '#F25FA8' },
-          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     color: '#6CC23A' }
+          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     fin: '13:00', color: '#FFA21F' },
+          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', fin: '17:00', color: '#F25FA8' },
+          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     fin: '17:00', color: '#6CC23A' }
         ],
         extras: [
           { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
@@ -160,7 +199,8 @@ const CONFIG = {
 
 const HOJAS = {
   Familias:      ['id', 'creado', 'email', 'adulto', 'dni', 'whatsapp', 'direccion', 'emergenciaNombre', 'emergenciaTel', 'autorizadosRetiro', 'comoNosConocio', 'sede', 'notas'],
-  Chicos:        ['id', 'familiaId', 'nombre', 'nacimiento', 'dni', 'sede', 'grupo', 'obraSocial', 'alergias', 'medicacion', 'condiciones', 'sabeNadar', 'autorizaFotos', 'notas', 'creado'],
+  Chicos:        ['id', 'familiaId', 'nombre', 'nacimiento', 'dni', 'sede', 'grupo', 'obraSocial', 'alergias', 'medicacion', 'condiciones', 'sabeNadar', 'autorizaFotos', 'notas', 'creado',
+                  'controlEsfinteres', 'aptoFisico', 'aptoArchivo', 'aptoFecha', 'avisoApto'],
   Inscripciones: ['id', 'creado', 'familiaId', 'chicoId', 'chico', 'sede', 'grupo', 'modalidad', 'turno', 'extras', 'dias', 'cantDias', 'fechaInicio', 'fechaFin',
                   'subtotal', 'descuento', 'total', 'pagado', 'saldo', 'estado', 'avisoRenovacion', 'avisoDeuda', 'origen', 'notas',
                   'matricula', 'sena', 'etapa', 'totalRegular', 'senaRegular'],
@@ -252,6 +292,7 @@ const ACCIONES = {
   pagarMP:         ['publico', accPagarMP_],
   confirmarMP:     ['publico', d => registrarPagoMP_(d.sede, String(d.payment_id || ''))],
   subirComprobante: ['publico', accSubirComprobante_],
+  subirApto:       ['familia', accSubirApto_],
   // familias
   miCuenta:        ['familia', accMiCuenta_],
   renovar:         ['familia', accRenovar_],
@@ -295,6 +336,7 @@ const ACCIONES = {
   guardarEvento:   ['admin', accGuardarEvento_],
   avisarEvento:    ['admin', accAvisarEvento_],
   guardarCarpeta:  ['admin', accGuardarCarpeta_],
+  aptoEstado:      ['admin', accAptoEstado_],
   equipoHoyAdmin:  ['admin', (d, s) => equipoHoy_(s.s, d.sede)],
   guardarTurnoAdmin: ['admin', accGuardarTurno_],
   borrarTurnoAdmin: ['admin', (d, s) => borrarFila_('Turnos', d.id, s)],
@@ -393,7 +435,7 @@ function accPublico_() {
     };
   });
   return {
-    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
+    marca: CONFIG.marca, temporada: CONFIG.temporada, glorin: CONFIG.glorin, reglamento: CONFIG.reglamento, salidaTemprana: CONFIG.salidaTemprana, recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0, edadMin: CONFIG.edadMin, edadMax: CONFIG.edadMax,
     grupos: todosGrupos_(), sedes, hoy: hoy_(), url: ScriptApp.getService().getUrl(), periodos: periodosTemporada_(), periodoActual: periodoActual_(),
     cotizar: cotizarPuro_.toString(), formasPago: FORMAS_PAGO, estados: ESTADOS
   };
@@ -464,11 +506,12 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   if (typeof H === 'number') H = [0, H];
   var porChico = [], subtotal = 0, descuento = 0, matriculas = 0, sena = 0;
   for (var i = 0; i < Math.max(1, cantChicos); i++) {
+    // Reglamento: el descuento es solo sobre la cuota (no inscripción, almuerzo ni pre/post-hora) y no se suman: va el mayor
     var sub = base + extrasTotal, pct = 0, motivos = [];
-    var ph = H.length ? H[Math.min(i, H.length - 1)] : 0;
-    if (ph) { pct += ph; motivos.push((i + 1) + '.º hermano ' + ph + '%'); }
-    if (ctx.renovacion && P.descuentoRenovacion) { pct += P.descuentoRenovacion; motivos.push('renovación ' + P.descuentoRenovacion + '%'); }
-    var desc = r100(sub * pct / 100);
+    var ph = H.length ? H[Math.min(i, H.length - 1)] : 0, pr = ctx.renovacion ? (P.descuentoRenovacion || 0) : 0;
+    if (ph && ph >= pr) { pct = ph; motivos.push((i + 1) + '.º hermano ' + ph + '% sobre la cuota'); }
+    else if (pr) { pct = pr; motivos.push('renovación ' + pr + '% sobre la cuota'); }
+    var desc = r100(base * pct / 100);
     var mat = ctx.sinMatricula && ctx.sinMatricula[i] ? 0 : (E.inscripcion || 0);
     var senaChico = mat + r100((sub - desc) * P.senaPct / 100);
     porChico.push({ subtotal: sub, descuento: desc, matricula: mat, total: sub - desc + mat, sena: senaChico, motivos: motivos });
@@ -545,6 +588,7 @@ function validarChico_(c, sede) {
   const edad = edadEn_(c.nacimiento, sede.inicio);
   if (edad < CONFIG.edadMin) throw new Error(c.nombre + ' tiene que tener al menos ' + CONFIG.edadMin + ' años al empezar la temporada.');
   if (edad > CONFIG.edadMax + 1) throw new Error('La escuela es hasta los ' + CONFIG.edadMax + ' años. Escribinos por WhatsApp para ver si hay lugar para ' + c.nombre + '.');
+  if (edad <= 3 && !esSi_(c.controlEsfinteres)) throw new Error('Para los chicos de 3 años hace falta que tengan control de esfínteres (reglamento). Confirmalo en el formulario de ' + c.nombre + '.');
 }
 
 function guardarChico_(fam, c, sedeId) {
@@ -553,7 +597,8 @@ function guardarChico_(fam, c, sedeId) {
   const datos = {
     nombre: limpio_(c.nombre), nacimiento: c.nacimiento, dni: limpio_(c.dni), obraSocial: limpio_(c.obraSocial),
     alergias: limpio_(c.alergias), medicacion: limpio_(c.medicacion), condiciones: limpio_(c.condiciones),
-    sabeNadar: limpio_(c.sabeNadar), autorizaFotos: c.autorizaFotos === false || c.autorizaFotos === 'No' ? 'No' : 'Sí', notas: limpio_(c.notas)
+    sabeNadar: limpio_(c.sabeNadar), autorizaFotos: c.autorizaFotos === false || c.autorizaFotos === 'No' ? 'No' : 'Sí', notas: limpio_(c.notas),
+    controlEsfinteres: esSi_(c.controlEsfinteres) ? 'Sí' : ''
   };
   const existente = filas_('Chicos').filter(x => x.familiaId === fam.id && normNombre_(x.nombre) === normNombre_(datos.nombre))[0];
   if (existente) {
@@ -777,7 +822,8 @@ function accMiCuenta_(d, sesion) {
   return {
     familia: { adulto: fam.adulto, email: fam.email, whatsapp: fam.whatsapp, autorizadosRetiro: fam.autorizadosRetiro, emergenciaNombre: fam.emergenciaNombre, emergenciaTel: fam.emergenciaTel },
     chicos: chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), sede: c.sede, grupo: c.grupo, obraSocial: c.obraSocial,
-      alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos })),
+      alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos,
+      apto: c.aptoFisico || '', aptoArchivo: !!c.aptoArchivo })),
     inscripciones: insc, publicaciones: pubs, asistencia: asis, cronograma: crono, pagos, hoy, tiposAviso: TIPOS_AVISO,
     eventos: eventosFamilia_(chicos, insc, hoy),
     avisos: filas_('AvisosFamilia').filter(a => a.familiaId === fam.id && a.estado !== 'anulado' && iso_(a.fecha) >= hoy)
@@ -1049,7 +1095,7 @@ function listaDelDia_(sede, fecha, grupo) {
     out.push({
       chicoId: i.chicoId, nombre: i.chico, grupo: i.grupo, turno: i.turno, extras: i.extras, edad: c.nacimiento ? edadEn_(iso_(c.nacimiento), fecha) : '',
       alergias: c.alergias || '', medicacion: c.medicacion || '', condiciones: c.condiciones || '', sabeNadar: c.sabeNadar || '', autorizaFotos: c.autorizaFotos || 'Sí',
-      obraSocial: c.obraSocial || '', adulto: f.adulto || '', whatsapp: f.whatsapp || '', autorizados: f.autorizadosRetiro || '',
+      obraSocial: c.obraSocial || '', adulto: f.adulto || '', whatsapp: f.whatsapp || '', autorizados: f.autorizadosRetiro || '', apto: c.aptoFisico || '',
       emergencia: (f.emergenciaNombre || '') + ' ' + (f.emergenciaTel || ''), saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
       estado: a.estado || '', llegada: horaTxt_(a.horaLlegada), retiradoPor: a.retiradoPor || '', retiro: horaTxt_(a.horaRetiro), nota: a.nota || '',
       avisos: avisos[i.chicoId] || []
@@ -1079,6 +1125,7 @@ function accGuardarAsistencia_(d, sesion) {
       if (prev) actualizar_('Asistencia', prev._fila, datos); else agregar_('Asistencia', Object.assign({ id: uid_() }, datos));
       n++;
       if (CONFIG.avisarRetiroFamilia && datos.retiradoPor && (!prev || !prev.retiradoPor)) avisarRetiro_(it.chicoId, datos);
+      if (datos.horaRetiro && (!prev || !horaTxt_(prev.horaRetiro))) cargoRetiroTarde_(d.sede, fecha, it.chicoId, datos.horaRetiro);
     });
     return { guardados: n };
   } finally { lock.releaseLock(); }
@@ -1363,7 +1410,9 @@ function accTablero_(d, sesion) {
     familias: Object.keys(fams).map(k => fams[k]).filter(f => insc.some(i => i.familiaId === f.id)).map(f => ({ id: f.id, adulto: f.adulto, email: f.email, whatsapp: f.whatsapp,
       emergencia: (f.emergenciaNombre || '') + ' ' + (f.emergenciaTel || ''), autorizados: f.autorizadosRetiro, comoNosConocio: f.comoNosConocio })),
     chicos: Object.keys(chicos).map(k => chicos[k]).filter(c => enSede_(sede, c.sede)).map(c => ({ id: c.id, familiaId: c.familiaId, nombre: c.nombre, nacimiento: iso_(c.nacimiento),
-      sede: c.sede, grupo: c.grupo, alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, obraSocial: c.obraSocial, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos })),
+      sede: c.sede, grupo: c.grupo, alergias: c.alergias, medicacion: c.medicacion, condiciones: c.condiciones, obraSocial: c.obraSocial, sabeNadar: c.sabeNadar, autorizaFotos: c.autorizaFotos,
+      apto: c.aptoFisico || '', aptoArchivo: c.aptoArchivo || '' })),
+    sinApto: sinApto_(sede, hoy),
     tematicas: filas_('Tematicas').filter(t => enSede_(sede, t.sede)).map(t => ({ id: t.id, sede: t.sede, semana: iso_(t.semana), titulo: t.titulo, descripcion: t.descripcion, emoji: t.emoji })),
     cronograma: filas_('Cronograma').filter(c => enSede_(sede, c.sede)).map(cronoPublico_),
     publicaciones: filas_('Publicaciones').filter(p => enSede_(sede, p.sede)).map(pubPublica_).sort((a, b) => b.ts - a.ts).slice(0, 40),
@@ -1652,7 +1701,7 @@ function accPagos_(d) {
   return {
     items: lista.map(i => ({ id: i.id, chico: i.chico, sede: i.sede, desde: iso_(i.fechaInicio), hasta: iso_(i.fechaFin), turno: i.turno,
       total: Number(i.total) || 0, pagado: Number(i.pagado) || 0, saldo: (Number(i.total) || 0) - (Number(i.pagado) || 0),
-      sena: montoAPagar_(i, 'sena'), estado: i.estado, evento: esEvento_(i) ? i.turno : '' })),
+      sena: montoAPagar_(i, 'sena'), estado: i.estado, evento: esEvento_(i) ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + i.turno : '' })),
     recargo: recargoPct_(), recargoMP: CONFIG.mercadoPagoRecargoPct || 0,
     comprobantes: comp.map(c => ({ id: c.id, inscripcionId: c.inscripcionId, monto: Number(c.monto) || 0, estado: c.estado, fecha: c.fecha instanceof Date ? diaDe_(c.fecha) : String(c.fecha).slice(0, 10) })),
     sedes: Object.keys(CONFIG.sedes).map(id => ({ id, mercadoPago: !!tokenMP_(id), pago: CONFIG.sedes[id].pago, whatsapp: CONFIG.sedes[id].whatsapp }))
@@ -1799,7 +1848,88 @@ function acreditaDe_(monto, medio, saldo) {
 }
 
 // ======== EVENTOS (campamento, festejo con las familias, cierre…) ========
-function esEvento_(i) { return String(i.modalidad) === 'Evento'; }
+function esEvento_(i) { return String(i.modalidad) === 'Evento' || String(i.modalidad) === 'Cargo'; }
+
+/** Hora de salida del chico ese día según su turno (y la post-hora si la contrató); los días de salida temprana, 14 h. */
+function salidaDe_(i, fecha) {
+  const P = CONFIG.sedes[i.sede].precios;
+  const t = P.turnos.filter(x => x.nombre === i.turno || x.id === i.turno)[0] || P.turnos[0];
+  let fin = t.fin || '17:00';
+  if (t.id === 'manana' && /post-hora/i.test(String(i.extras || ''))) fin = '14:00';
+  const temprana = (CONFIG.salidaTemprana || {})[fecha];
+  return temprana && temprana < fin ? temprana : fin;
+}
+/** Reglamento: pasados 15 minutos de la salida se cobra la post-hora (un cargo por chico y por día). */
+function cargoRetiroTarde_(sede, fecha, chicoId, horaRetiro) {
+  if (!CONFIG.cobrarRetiroTarde) return;
+  const i = filas_('Inscripciones').filter(x => x.chicoId === chicoId && x.sede === sede && x.estado !== 'Cancelada' && !esEvento_(x) && String(x.dias || '').split(',').indexOf(fecha) >= 0)[0];
+  if (!i) return;
+  const fin = salidaDe_(i, fecha), h = String(horaRetiro).split(':').map(Number), f = fin.split(':').map(Number);
+  if (h[0] * 60 + h[1] <= f[0] * 60 + f[1] + CONFIG.toleranciaRetiroMin) return;
+  if (filas_('Inscripciones').some(x => x.origen === 'cargo:retiro:' + fecha && x.chicoId === chicoId)) return;
+  const post = CONFIG.sedes[sede].precios.extras.filter(e => e.id === 'posthora')[0] || { precioDia: 0 };
+  agregar_('Inscripciones', { id: 'K' + uid_(), creado: new Date(), familiaId: i.familiaId, chicoId, chico: i.chico, sede, grupo: i.grupo, modalidad: 'Cargo',
+    turno: 'Post-hora por retiro fuera de horario', extras: '', dias: fecha, cantDias: 1, fechaInicio: fecha, fechaFin: fecha, subtotal: post.precioDia, descuento: 0,
+    total: post.precioDia, pagado: 0, saldo: post.precioDia, estado: post.precioDia ? 'Pendiente' : 'Pagada', avisoRenovacion: '', avisoDeuda: '', origen: 'cargo:retiro:' + fecha,
+    notas: 'Retiró ' + horaRetiro + ' h; la salida era ' + fin + ' h (+' + CONFIG.toleranciaRetiroMin + ' min de tolerancia)' });
+}
+
+// ======== APTO FÍSICO (reglamento: nadie empieza sin el apto entregado) ========
+function accSubirApto_(d, sesion) {
+  const fam = familiaDe_(sesion);
+  const c = filas_('Chicos').filter(x => x.id === d.chicoId && x.familiaId === fam.id)[0];
+  if (!c) throw new Error('No encontramos a ese chico.');
+  if (!d.b64) throw new Error('Adjuntá la foto o el PDF del apto físico.');
+  const tipo = /pdf/.test(d.tipo || '') ? 'application/pdf' : 'image/jpeg';
+  const props = PropertiesService.getScriptProperties();
+  let raiz;
+  try { raiz = props.getProperty('CARPETA_APTOS') && DriveApp.getFolderById(props.getProperty('CARPETA_APTOS')); } catch (e) { raiz = null; }
+  if (!raiz) { raiz = DriveApp.createFolder('Escuela de Verano — Aptos físicos'); props.setProperty('CARPETA_APTOS', raiz.getId()); }
+  const file = subcarpeta_(raiz, CONFIG.sedes[c.sede] ? CONFIG.sedes[c.sede].nombre : 'Sin sede')
+    .createFile(Utilities.newBlob(Utilities.base64Decode(d.b64), tipo, 'Apto ' + c.nombre + (tipo === 'application/pdf' ? '.pdf' : '.jpg')));
+  actualizar_('Chicos', c._fila, { aptoFisico: 'Para revisar', aptoArchivo: file.getUrl(), aptoFecha: new Date() });
+  avisarAdmin_(c.sede, '🩺 Apto físico para revisar · ' + c.nombre, '<p>La familia de ' + esc_(c.nombre) + ' subió el apto físico.</p>' + boton_(file.getUrl(), 'Ver apto', '#16306A') +
+    '<p>Marcalo como entregado desde Administración → Inicio.</p>');
+  return { apto: 'Para revisar' };
+}
+function accAptoEstado_(d, sesion) {
+  const c = filas_('Chicos').filter(x => x.id === d.chicoId)[0];
+  if (!c || (sesion.s !== 'todas' && c.sede !== sesion.s)) throw new Error('No encuentro a ese chico.');
+  actualizar_('Chicos', c._fila, { aptoFisico: d.estado === 'Entregado' ? 'Entregado' : '', aptoFecha: new Date() });
+  return { apto: d.estado === 'Entregado' ? 'Entregado' : '' };
+}
+/** Chicos sin apto entregado que empiezan en los próximos días (o ya empezaron). */
+function sinApto_(scope, hoy) {
+  const limite = sumarDias_(hoy, CONFIG.diasAvisoApto), chicos = {}, out = [];
+  filas_('Chicos').forEach(c => { chicos[c.id] = c; });
+  const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
+  const visto = {};
+  filas_('Inscripciones').forEach(i => {
+    if (i.estado === 'Cancelada' || esEvento_(i) || !enSede_(scope, i.sede) || visto[i.chicoId]) return;
+    const dias = String(i.dias || '').split(',').filter(x => x >= hoy).sort();
+    const c = chicos[i.chicoId];
+    if (!dias.length || dias[0] > limite || !c || c.aptoFisico === 'Entregado') return;
+    visto[i.chicoId] = 1;
+    const f = fams[i.familiaId] || {};
+    out.push({ chicoId: c.id, chico: c.nombre, sede: i.sede, empieza: dias[0], estado: c.aptoFisico || 'Falta', archivo: c.aptoArchivo || '', adulto: f.adulto || '',
+      wa: linkWhatsApp_(f.whatsapp, '¡Hola ' + primerNombre_(f.adulto) + '! Te recordamos que para que ' + c.nombre + ' empiece la escuela de verano necesitamos el apto físico. Lo podés subir desde la app: ' + urlCuenta_()) });
+  });
+  return out.sort((a, b) => a.empieza < b.empieza ? -1 : 1);
+}
+function recordarAptos_(hoy) {
+  const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
+  sinApto_('todas', hoy).filter(x => x.estado === 'Falta').forEach(x => {
+    const c = filas_('Chicos').filter(k => k.id === x.chicoId)[0], f = c && fams[c.familiaId];
+    const ult = c && c.avisoApto instanceof Date ? diaDe_(c.avisoApto) : '';
+    if (!f || !f.email || (ult && ult > sumarDias_(hoy, -3))) return;
+    try {
+      enviarMail_(f.email, '🩺 Falta el apto físico de ' + c.nombre, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! ' + esc_(c.nombre) + ' empieza el ' + fechaLarga_(x.empieza) +
+        ' y todavía no tenemos su <b>apto físico</b>. Según el reglamento, ningún chico puede empezar sin el apto entregado.</p>' +
+        boton_(urlCuenta_(), 'Subir el apto desde la app', colorSede_(x.sede)), x.sede);
+      actualizar_('Chicos', c._fila, { avisoApto: new Date() });
+    } catch (e) { Logger.log(e); }
+  });
+}
 function anotadosEvento_(evId) { return filas_('Inscripciones').filter(i => i.origen === 'evento:' + evId && i.estado !== 'Cancelada'); }
 function eventoPublico_(e, conPlata) {
   const rows = anotadosEvento_(e.id);
@@ -2009,6 +2139,7 @@ function tareaDiaria() {
   });
 
   pasarAPrecioRegular_(hoy);
+  recordarAptos_(hoy);
   const cfg = config_();
   const partes = Object.keys(porSede).map(id => resumenSedeHtml_(id, porSede[id], hoy));
   Object.keys(porSede).forEach((id, n) => {

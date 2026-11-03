@@ -315,6 +315,20 @@ function arrancar() {
 }
 
 /* ================= FAMILIAS · público ================= */
+function htmlReglamento(abiertas) {
+  return (PUB.reglamento || []).map(r => `<details class="card" style="padding:14px 16px;margin:10px 0" ${abiertas ? 'open' : ''}><summary style="cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center">
+    <span style="flex:0 0 30px;height:30px;border-radius:50%;background:var(--amarillo);border:2px solid var(--marino);display:flex;align-items:center;justify-content:center;font:var(--w-titulo) 16px var(--f-titulo)">${r.n}</span>
+    <b style="font:var(--w-titulo) 20px var(--f-titulo)">${esc(r.titulo)}</b></summary>
+    <p style="font-weight:700;margin:10px 0 6px">${esc(r.destacado)}</p>${r.items.length ? `<ul style="margin:0;padding-left:20px">${r.items.map(x => `<li style="margin:4px 0">${esc(x)}</li>`).join('')}</ul>` : ''}</details>`).join('');
+}
+function vReglamento(id) {
+  const s = sede(id); tema(id);
+  pintar(`<header class="top"><button onclick="vPuerta('${id}')">←</button>${logoSede(id)}<div class="marca">${nombreBarra(id)}</div><button onclick="empezar('${id}')">Inscribir</button></header>
+  <section class="hero" style="text-align:center;padding-bottom:26px"><div class="ceja">Escuela de verano ${esc(PUB.temporada.replace('-20', '–'))}</div><h1 style="margin-top:8px">REGLAMENTO</h1>
+    <span class="temporada-pill" style="background:var(--amarillo);color:var(--marino);border:2px solid var(--marino);font:700 14px var(--f-texto)">${fLarga(s.inicio).replace(/^\S+ /, '')} al ${fLarga(s.fin).replace(/^\S+ /, '')} · de ${PUB.edadMin} a ${PUB.edadMax} años</span></section>
+  <div class="wrap">${htmlReglamento(true)}<button class="btn full acento" style="margin:8px 0 20px" onclick="empezar('${id}')">Inscribite acá</button></div>`);
+  scrollTo(0, 0);
+}
 function etapaActual(s) { const E = s.precios.etapas; return E.find(e => !e.hasta || PUB.hoy <= e.hasta) || E[E.length - 1]; }
 function precioDesde(s) { const T = etapaActual(s).turnos; return Math.min(...Object.keys(T).map(k => T[k].semana)); }
 const descHermanos = s => { const h = s.precios.descuentoHermanos; return Array.isArray(h) ? h : [0, h || 0]; };
@@ -354,7 +368,7 @@ function vPuerta(id) {
     <h1 style="margin-top:18px">UN VERANO<br>EN ${esc((s.nombre.split(' ').pop() === 'Valle' ? 'Aldea' : s.nombre.split(' ').pop()).toUpperCase())}</h1>
     <p style="margin:6px 0 0;font-weight:700">${fLarga(s.inicio).replace(/^\S+ /, '')} al ${fLarga(s.fin).replace(/^\S+ /, '')} · de ${PUB.edadMin} a ${PUB.edadMax} años</p>
     ${s.conGlorin ? '<p class="chico" style="margin:2px 0 0;font-weight:600;opacity:.95">Aldea de Valle × GLORIN Animaciones</p>' : ''}
-    ${E.hasta ? `<div class="badge-preventa"><b>${esc(E.nombre.toUpperCase())}</b><small>hasta el ${fCorta(E.hasta)}</small>${(s.precios.etapas.length > 1 && E === s.precios.etapas[0]) ? '<i>−15%</i>' : ''}<small>+ inscripción ${pesos(E.inscripcion)}</small></div>` : ''}
+    ${E.hasta ? `<div class="badge-preventa"><b>${esc(E.nombre.toUpperCase())}</b><small>hasta el ${fCorta(E.hasta)}</small>${(s.precios.etapas.length > 1 && E === s.precios.etapas[0]) ? '<i>15% OFF</i><small>ya aplicado en todos los precios</small>' : ''}<small>+ inscripción ${pesos(E.inscripcion)}</small></div>` : ''}
   </div></section>
   <div class="wrap">
     <div class="card" style="margin-top:16px;border:2px solid var(--c1)">
@@ -373,6 +387,7 @@ function vPuerta(id) {
           <button class="btn sm claro" onclick="irCuenta()">Mi cuenta</button>
           <button class="btn sm claro" onclick="irPagar()">Pagar</button>
           <button class="btn sm claro" onclick="vSede('${id}')">Información y precios</button>
+          <button class="btn sm claro" onclick="vReglamento('${id}')">📋 Reglamento</button>
         </div></div></div>
       <a class="rol" href="${PUB.url}?p=profes&sede=${id}"><span class="ico" aria-hidden="true">🧑‍🏫</span><div><b>Soy del equipo</b>
         <div class="muted chico">Profes, auxiliares de área, coordinación y guardavidas: marcar entrada, asistencia y fotos.</div></div></a>
@@ -416,7 +431,7 @@ function vSede(id) {
         ${w.hasta < hoy ? '<span class="chip">Terminó</span>' : ''}</div>`).join('')}
     </div>
     <div class="card"><h3>${etapaActual(s).hasta ? 'Valores de ' + esc(etapaActual(s).nombre.toLowerCase()) : 'Valores'}</h3>
-      ${etapaActual(s).hasta ? `<p style="margin:0 0 6px"><span class="temporada-pill" style="font:700 13px var(--f-texto);padding:6px 14px">Hasta el ${fCorta(etapaActual(s).hasta)} · efectivo${PUB.recargo ? '' : ' o transferencia'}</span></p>` : ''}
+      ${etapaActual(s).hasta ? `<p style="margin:0 0 6px"><span class="temporada-pill" style="font:700 13px var(--f-texto);padding:6px 14px">Precios con el 15% OFF ya aplicado · hasta el ${fCorta(etapaActual(s).hasta)}</span></p>` : ''}
       ${tablaPrecios(s, etapaActual(s))}
       <div class="info2" style="margin-top:10px">
         <div><b>Inscripción</b>${pesos(etapaActual(s).inscripcion)}${etapaActual(s).hasta ? ' en ' + esc(etapaActual(s).nombre.toLowerCase()) : ''}</div>
@@ -454,7 +469,7 @@ function htmlPlan() {
     if (p.modalidad === 'semanas') {
       const on = p.semanas.includes(w.id);
       return `<label class="opcion ${on ? 'on' : ''} ${empezo ? 'off' : ''}"><input type="checkbox" ${on ? 'checked' : ''} ${empezo ? 'disabled' : ''} onchange="plTogg('semanas','${w.id}')">
-        <div class="crece"><b>Semana ${i + 1}</b> · ${fCorta(w.desde)} al ${fCorta(w.hasta)} ${w.dias.length < 5 ? '<span class="chip">' + w.dias.length + ' días</span>' : ''}
+        <div class="crece"><b>Semana ${i + 1}</b> · ${fCorta(w.desde)} al ${fCorta(w.hasta)} ${w.dias.length < 5 ? '<span class="chip">' + w.dias.length + ' días</span>' : ''}${w.dias.filter(d => (PUB.salidaTemprana || {})[d]).map(d => ' <span class="chip aviso">' + fCorta(d) + ' salida ' + PUB.salidaTemprana[d].replace(':00', '') + ' h</span>').join('')}
         <div class="muted chico">${w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : ''}${empezo ? ' · ya empezó (elegí días sueltos)' : ''}</div></div></label>`;
     }
     if (termino) return '';
@@ -501,7 +516,7 @@ function detallePresu(q, nombres) {
 
 /* ---------- Inscripción paso a paso ---------- */
 let W = null;
-const chicoVacio = () => ({ nombre: '', nacimiento: '', dni: '', obraSocial: '', alergias: '', medicacion: '', condiciones: '', sabeNadar: '', autorizaFotos: 'Sí' });
+const chicoVacio = () => ({ controlEsfinteres: '', nombre: '', nacimiento: '', dni: '', obraSocial: '', alergias: '', medicacion: '', condiciones: '', sabeNadar: '', autorizaFotos: 'Sí' });
 function empezar(id) {
   const b = LS.get('borrador');
   W = b && b.sede === id ? b : { sede: id, paso: 1, plan: planNuevo(id), chicos: [chicoVacio()], adulto: {}, acepta: false };
@@ -520,14 +535,9 @@ function vWizard() {
   if (W.paso === 4) {
     const q = plCotizar();
     cuerpo = `<div class="card"><h3>${esc(s.nombre)}</h3>${detallePresu(q, W.chicos.map(c => c.nombre))}</div>
-      <div class="card"><h3>Reglamento</h3><ul class="chico" style="padding-left:18px;margin:0">
-        <li>El lugar queda reservado con la seña. El saldo se paga antes del primer día.</li>
-        <li>Solo retiran a los chicos los adultos autorizados (con DNI).</li>
-        <li>Avisanos cualquier cambio de salud, alergia o medicación.</li>
-        <li>Los días que el chico falta no se recuperan ni se devuelven, salvo con certificado médico.</li>
-        <li>Traer: malla, toalla, protector solar, gorra, ojotas y botella de agua, todo con nombre.</li>
-      </ul>
-      <label class="opcion ${W.acepta ? 'on' : ''}" style="margin-top:12px"><input type="checkbox" ${W.acepta ? 'checked' : ''} onchange="W.acepta=this.checked;guardarW();vWizard()"><div>Leí y acepto el reglamento. Los datos de salud son verdaderos.</div></label></div>`;
+      <h3 style="margin:18px 0 0">Reglamento</h3><p class="muted chico" style="margin:4px 0 0">Tocá cada punto para leerlo.</p>
+      ${htmlReglamento(false)}
+      <div class="card"><label class="opcion ${W.acepta ? 'on' : ''}" style="margin:0"><input type="checkbox" ${W.acepta ? 'checked' : ''} onchange="W.acepta=this.checked;guardarW();vWizard()"><div><b>Leí y acepto el reglamento.</b> Los datos de salud son verdaderos y voy a entregar el apto físico antes de que empiece.</div></label><button class="btn sm claro" style="margin-top:10px" onclick="modal('<h3>📋 Reglamento</h3>'+htmlReglamento(false))">📋 Leer el reglamento</button></div>`;
   }
   const q = plCotizar();
   pintar(`
@@ -552,16 +562,17 @@ function htmlChico(c, i) {
     <div><label>DNI</label><input type="tel" id="ch${i}_dni" value="${esc(c.dni)}" inputmode="numeric"></div></div>
     ${g ? `<p style="margin:8px 0 0"><span class="chip info">${g.emoji} Grupo ${esc(g.nombre)} · ${edad} años al empezar</span></p>` : ''}
     ${edad !== null && edad < PUB.edadMin ? `<p class="chip mal" style="margin-top:6px">Es desde los ${PUB.edadMin} años</p>` : ''}
+    ${edad !== null && edad <= 3 && edad >= PUB.edadMin ? `<label class="opcion ${c.controlEsfinteres ? 'on' : ''}" style="margin-top:10px"><input type="checkbox" id="ch${i}_controlEsfinteres" ${c.controlEsfinteres ? 'checked' : ''}><div><b>Confirmo que tiene control de esfínteres</b><div class="muted chico">Es requisito para los chicos de 3 años (reglamento).</div></div></label>` : ''}
     <label>Obra social / prepaga <small>y número de afiliado</small></label><input type="text" id="ch${i}_obraSocial" value="${esc(c.obraSocial)}">
     <label>Alergias <small>(alimentos, picaduras, remedios…)</small></label><input type="text" id="ch${i}_alergias" value="${esc(c.alergias)}" placeholder="Ninguna">
-    <label>Medicación que toma</label><input type="text" id="ch${i}_medicacion" value="${esc(c.medicacion)}" placeholder="Ninguna">
+    <label>Medicación que toma <small>(solo damos medicación con receta médica y autorización firmada)</small></label><input type="text" id="ch${i}_medicacion" value="${esc(c.medicacion)}" placeholder="Ninguna">
     <label>¿Algo que tengamos que saber? <small>(condición de salud, miedos, necesidades)</small></label><textarea id="ch${i}_condiciones">${esc(c.condiciones)}</textarea>
     <div class="grid2"><div><label>¿Sabe nadar?</label>${sel('ch' + i + '_sabeNadar', c.sabeNadar, ['', 'Sí', 'Un poco', 'No'])}</div>
-    <div><label>¿Puede salir en las fotos?</label>${sel('ch' + i + '_autorizaFotos', c.autorizaFotos, ['Sí', 'No'])}</div></div>
+    <div><label>¿Puede salir en fotos y videos? <small>(redes de Aldea y GLORIN)</small></label>${sel('ch' + i + '_autorizaFotos', c.autorizaFotos, ['Sí', 'No'])}</div></div>
   </div>`;
 }
 function leerChicos() {
-  W.chicos = W.chicos.map((c, i) => { const o = {}; Object.keys(chicoVacio()).forEach(k => { const el = document.getElementById('ch' + i + '_' + k); o[k] = el ? el.value.trim() : c[k]; }); return o; });
+  W.chicos = W.chicos.map((c, i) => { const o = {}; Object.keys(chicoVacio()).forEach(k => { const el = document.getElementById('ch' + i + '_' + k); o[k] = el ? (el.type === 'checkbox' ? (el.checked ? 'Sí' : '') : el.value.trim()) : c[k]; }); return o; });
 }
 function htmlAdulto(a) {
   const campo = (k, lab, tipo, extra) => `<label>${lab}</label><input type="${tipo || 'text'}" id="ad_${k}" value="${esc(a[k] || '')}" ${extra || ''}>`;
@@ -586,6 +597,7 @@ function pasoSig() {
       if (!c.nombre) return toast('Falta el nombre de cada chico.', true);
       if (!c.nacimiento) return toast('Falta la fecha de nacimiento de ' + c.nombre + '.', true);
       if (edadEn(c.nacimiento, s.inicio) < PUB.edadMin) return toast(c.nombre + ' tiene que tener al menos ' + PUB.edadMin + ' años.', true);
+      if (edadEn(c.nacimiento, s.inicio) <= 3 && !c.controlEsfinteres) return toast('Para los chicos de 3 años confirmá que tienen control de esfínteres.', true);
     }
   }
   if (W.paso === 3) {
@@ -692,7 +704,7 @@ function vCuenta(tab) {
   <div class="wrap">${cuerpo}</div>
   <nav class="nav">${tabs.map(t => `<button class="${t[0] === tab ? 'on' : ''}" onclick="vCuenta('${t[0]}');scrollTo(0,0)"><i>${t[1]}</i>${t[2]}</button>`).join('')}</nav>`);
 }
-function inscDeChico(id) { return C.inscripciones.filter(i => i.chicoId === id && i.estado !== 'Cancelada' && i.modalidad !== 'Evento').sort((a, b) => a.desde < b.desde ? -1 : 1); }
+function inscDeChico(id) { return C.inscripciones.filter(i => i.chicoId === id && i.estado !== 'Cancelada' && i.modalidad !== 'Evento' && i.modalidad !== 'Cargo').sort((a, b) => a.desde < b.desde ? -1 : 1); }
 function cInicio() {
   const hoy = C.hoy;
   const saldo = C.inscripciones.filter(i => i.estado !== 'Cancelada').reduce((a, i) => a + i.saldo, 0);
@@ -708,6 +720,9 @@ function cInicio() {
     return `<div class="card">
       <div class="fila"><div class="crece"><h3 style="margin:0">${esc(c.nombre)}</h3><div class="muted chico">${esc(nGrupo(c.grupo))} · ${esc(s.nombre)}</div></div>
       ${vaHoy ? (hoyA ? `<span class="chip ${hoyA.estado === 'ausente' ? 'mal' : 'ok'}">${hoyA.retiradoPor ? '👋 Retirado ' + esc(hoyA.retiro) : hoyA.estado === 'ausente' ? 'Ausente hoy' : '✅ Llegó ' + esc(hoyA.llegada || '')}</span>` : '<span class="chip info">Hoy viene</span>') : ''}</div>
+      ${vigentes.length && c.apto !== 'Entregado' ? `<div class="banner" style="background:${c.apto ? '#E2ECF7' : '#FBE1DE'};color:${c.apto ? '#1C4C7A' : '#9B2B20'};margin:10px 0">🩺 ${c.apto ? '<b>Apto físico en revisión.</b> Te avisamos cuando quede registrado.' : '<b>Falta el apto físico.</b> Sin el apto no puede empezar (reglamento).'}
+        <label class="btn xs claro" style="margin-top:8px;cursor:pointer">📎 ${c.apto ? 'Volver a subir' : 'Subir apto físico'}<input type="file" accept="image/*,application/pdf" hidden onchange="subirApto(this,'${c.id}')"></label></div>` : ''}
+      ${vigentes.flatMap(i => i.dias).filter(d => d >= hoy && d <= sumarDias(hoy, 7) && (PUB.salidaTemprana || {})[d]).filter((d, k, a) => a.indexOf(d) === k).map(d => `<p class="chip aviso" style="margin:6px 0">⏰ El ${fLarga(d)} la salida es a las ${PUB.salidaTemprana[d].replace(':00', '')} h</p>`).join('')}
       ${vigentes.length ? `<p style="margin:10px 0 4px">Le ${restantes === 1 ? 'queda <b>1 día</b>' : 'quedan <b>' + restantes + ' días</b>'} · hasta el ${fLarga(ultimo)}</p>
         <div class="barra"><i style="width:${Math.min(100, Math.round(100 * (1 - restantes / Math.max(1, vigentes.reduce((a, i) => a + i.dias.length, 0)))))}%"></i></div>` : `<p class="muted">No tiene días por delante.</p>`}
       ${(vigentes.length && restantes <= 3) || (!vigentes.length && ins.length) ? `<div class="banner"><b>${vigentes.length ? '⏳ Se le termina pronto' : '☀️ ¿Vuelve?'}</b><br>${pct && vigentes.length ? 'Renovando antes de que termine tenés <b>' + pct + '% off</b>. ' : ''}Sumá semanas o días en un minuto.
@@ -721,6 +736,8 @@ function cInicio() {
   return `${saldo > 0 ? `<div class="card" style="border-left:5px solid var(--aviso)"><div class="fila"><div class="crece"><b>Saldo pendiente: ${pesos(saldo)}</b><div class="muted chico">En efectivo en la sede${PUB.recargo ? ', o ' + pesos(conTransf(saldo)) + ' por transferencia o Mercado Pago' : ''}.</div></div><button class="btn sm" onclick="vPagar(LS.get('tok_familia'))">💳 Pagar</button></div></div>` : ''}
     ${cards || '<div class="vacio">Todavía no hay chicos cargados.</div>'}
     <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
+    <a class="btn full claro" style="margin-top:10px" target="_blank" rel="noopener" href="${wa((sede((C.chicos[0] || {}).sede) || PUB.sedes[0]).whatsapp, '¡Hola! Quiero pedir un cambio de turno o de semana para ' + C.chicos.map(c => c.nombre.split(' ')[0]).join(' y ') + ': ')}">🔄 Pedir cambio de turno o semana</a>
+    <p class="muted chico" style="text-align:center;margin:4px 0 0">Por WhatsApp, con 48 h de anticipación y según cupo. Las faltas no se recuperan ni se descuentan.</p>
     ${cEventos()}
     ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}`;
 }
@@ -762,7 +779,7 @@ function pintarPagos() {
   const logueado = !!LS.get('tok_familia') && PG_T === LS.get('tok_familia');
   const conf = id => PG.sedes.find(x => x.id === id) || {};
   const card = i => {
-    const titulo = (i.evento ? '🎉 ' + esc(i.evento) + ' · ' : '') + esc(i.chico);
+    const titulo = (i.evento ? esc(i.evento) + ' · ' : '') + esc(i.chico);
     const cuando = i.evento ? fLarga(i.desde) : fCorta(i.desde) + ' al ' + fCorta(i.hasta) + ' · ' + esc(i.turno);
     if (i.saldo <= 0) return `<div class="card"><div class="fila"><b class="crece">${titulo}</b><span class="chip ok">✅ Pago completo</span></div><p class="muted chico" style="margin:6px 0 0">${esc(sede(i.sede).nombre)} · ${cuando}</p></div>`;
     const que = PG_QUE[i.id] || (i.sena > 0 && i.sena < i.saldo ? 'sena' : 'saldo'), monto = que === 'sena' ? i.sena : i.saldo, c = conf(i.sede);
@@ -852,6 +869,18 @@ function anotarEvento(btn, id) {
     cerrarModal(); toast('¡Anotado! ✓');
     if (r.total > 0) vPagar(LS.get('tok_familia')); else cuentaCargar();
   });
+}
+function subirApto(input, id) {
+  const f = input.files[0]; if (!f) return;
+  (async () => {
+    try {
+      const pdf = /pdf/.test(f.type);
+      if (pdf && f.size > 10 * 1048576) throw new Error('El PDF pesa mucho. Mandá una foto.');
+      toast('Subiendo el apto…');
+      await api('subirApto', { chicoId: id, b64: pdf ? await b64De(f) : await achicar(f), tipo: pdf ? 'application/pdf' : 'image/jpeg' }, 'familia');
+      toast('¡Listo! Lo revisamos y te avisamos ✓'); cuentaCargar();
+    } catch (e) { toast(e.message, true); }
+  })();
 }
 function verPago() {
   const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
@@ -1052,13 +1081,13 @@ function pintarLista() {
     ${faltan.length && pres ? `<details class="card" style="padding:10px 14px"><summary><b>⏳ Faltan llegar ${faltan.length}</b> <span class="muted chico">(sin aviso de la familia)</span></summary>
       ${faltan.map(c => `<div class="lista-item"><span class="crece">${esc(c.nombre)} <span class="muted chico">${esc(nGrupo(c.grupo))}</span></span><a class="btn xs wa" target="_blank" href="${wa(c.whatsapp, 'Hola ' + (c.adulto || '').split(' ')[0] + ', te escribimos de la escuela de verano. ¿' + c.nombre.split(' ')[0] + ' viene hoy?')}">Preguntar</a></div>`).join('')}</details>` : ''}
     <div class="card" style="padding:4px 14px">${L.map(c => { const it = itemAs(c);
-      const badges = [c.alergias && !/^ningun/i.test(c.alergias) ? '⚠️' : '', c.medicacion && !/^ningun/i.test(c.medicacion) ? '💊' : '', c.condiciones ? '❗' : '', c.sabeNadar === 'No' ? '🚫🏊' : c.sabeNadar === 'Un poco' ? '🏊?' : '', c.autorizaFotos === 'No' ? '📵' : '', c.saldo > 0 ? '💸' : ''].filter(Boolean).join(' ');
+      const badges = [c.alergias && !/^ningun/i.test(c.alergias) ? '⚠️' : '', c.medicacion && !/^ningun/i.test(c.medicacion) ? '💊' : '', c.condiciones ? '❗' : '', c.sabeNadar === 'No' ? '🚫🏊' : c.sabeNadar === 'Un poco' ? '🏊?' : '', c.autorizaFotos === 'No' ? '📵' : '', c.saldo > 0 ? '💸' : ''].filter(Boolean).join(' ') + (c.apto === 'Entregado' ? '' : ' <span class="chip mal" style="padding:1px 7px;font-size:11px">🩺 sin apto</span>');
       const avs = (c.avisos || []).map(a => `<span class="chip ${a.tipo === 'No va' ? 'info' : 'aviso'}" style="margin-top:4px">🏠 ${esc(a.tipo)}${a.detalle ? ': ' + esc(a.detalle) : ''}</span>`).join(' ');
       return `<div class="lista-item"><div class="crece" onclick="fichaChico('${c.chicoId}')" style="cursor:pointer"><b>${esc(c.nombre)}</b> <span class="chico">${badges}</span>
         <div class="muted chico">${c.edad} años · ${esc(c.turno)}${it.llegada ? ' · llegó ' + esc(it.llegada) : ''}${it.retiradoPor ? ' · 👋 ' + esc(it.retiradoPor) + ' ' + esc(it.retiro) : ''}</div>${avs}</div>
         <div class="asis">${[['p', 'presente', 'P'], ['t', 'tarde', 'T'], ['a', 'ausente', 'A']].map(([cl, e, l]) => `<button class="${cl} ${it.estado === e ? 'on' : ''}" onclick="marcarAs('${c.chicoId}','${e}')">${l}</button>`).join('')}
         <button title="Retiro" onclick="retiro('${c.chicoId}')">👋</button></div></div>`; }).join('')}</div>
-    <p class="muted chico">⚠️ alergia · 💊 medicación · ❗ a tener en cuenta · 🚫🏊 no sabe nadar · 📵 sin fotos${puede('plata') ? ' · 💸 saldo pendiente' : ''} · 🏠 aviso de la familia. Tocá el nombre para ver la ficha.</p>
+    <p class="muted chico">🩺 sin apto físico entregado · ⚠️ alergia · 💊 medicación · ❗ a tener en cuenta · 🚫🏊 no sabe nadar · 📵 sin fotos${puede('plata') ? ' · 💸 saldo pendiente' : ''} · 🏠 aviso de la familia. Tocá el nombre para ver la ficha.</p>
     <div style="height:10px"></div>
     <div class="presu"><div class="crece"><small>${pend ? pend + ' cambios sin guardar' : 'Todo guardado'}</small><div class="monto">${pres}/${L.length}</div></div><button class="btn acento" ${pend ? '' : 'disabled'} onclick="guardarAs(this)">Guardar</button></div>`;
 }
@@ -1273,6 +1302,10 @@ function aInicio() {
     <div class="kpis"><div class="kpi"><span>Chicos</span><b>${K.chicos}</b></div><div class="kpi"><span>Facturado</span><b>${pesos(K.facturado)}</b></div>
     <div class="kpi"><span>Cobrado</span><b style="color:var(--ok)">${pesos(K.cobrado)}</b></div><div class="kpi"><span>Por cobrar</span><b style="color:var(--mal)">${pesos(K.pendiente)}</b></div>
     <div class="kpi"><span>Avisos de familias hoy</span><b>${A.avisosHoy}</b></div><div class="kpi"><span>Interesados</span><b>${K.interesados}</b></div><div class="kpi"><span>Mails disponibles hoy</span><b>${K.cuotaMail}</b></div></div>
+    ${(A.sinApto || []).length ? `<div class="card" style="border-color:var(--mal)"><h3>🩺 Sin apto físico (${A.sinApto.length})</h3><p class="muted chico" style="margin:0 0 6px">Empiezan en los próximos 7 días. Sin apto no pueden empezar. A las familias les llega un recordatorio cada 3 días.</p>
+      ${A.sinApto.map(x => `<div class="lista-item"><div class="crece"><b>${esc(x.chico)}</b> <span class="muted chico">${esc(x.adulto)}</span><div class="muted chico">Empieza ${fLarga(x.empieza)}${A.sede === 'todas' ? ' · ' + esc(nomSede(x.sede)) : ''}
+        · ${x.estado === 'Para revisar' ? '<b style="color:var(--aviso)">subió el apto</b>' : 'no lo entregó'}${x.archivo ? ` · <a href="${esc(x.archivo)}" target="_blank" rel="noopener">ver ↗</a>` : ''}</div></div>
+        <div class="fila" style="gap:4px;flex-direction:column"><button class="btn xs" onclick="conBoton(this, async()=>{await api('aptoEstado',{chicoId:'${x.chicoId}',estado:'Entregado'},'admin');toast('Apto registrado ✓');adminCargar()})">✓ Entregado</button><a class="btn xs wa" target="_blank" href="${esc(x.wa)}">WA</a></div></div>`).join('')}</div>` : ''}
     ${A.kpis.comprobantes ? `<div class="banner">🧾 Hay <b>${A.kpis.comprobantes}</b> comprobante${A.kpis.comprobantes > 1 ? 's' : ''} de transferencia para revisar. <button class="btn xs" onclick="vAdmin('cobros')">Revisar</button></div>` : ''}
     ${A.sobrecupos.map(o => `<div class="card" style="border-left:5px solid var(--aviso)"><h3>⚠️ ${esc(nGrupo(o.grupo))} pasó los ${sede(o.sede).cupoPorGrupo} chicos</h3>
       <p class="muted chico">${esc(nomSede(o.sede))} · hasta ${o.max} chicos · ${o.dias.length} día${o.dias.length > 1 ? 's' : ''} (desde el ${fCorta(o.dias[0])}). Las inscripciones nuevas de esa edad van solas al grupo nuevo; a los que ya están los movés desde Inscriptos.</p>
@@ -1289,13 +1322,13 @@ function crearGrupo(btn, sedeId, base) {
   conBoton(btn, async () => { const g = await api('crearGrupo', { sede: sedeId, base }, 'admin'); PUB = Object.assign(PUB, { grupos: (await api('publico')).grupos }); toast('Grupo ' + g.nombre + ' creado ✓'); adminCargar(); });
 }
 function htmlDeuda(i) {
-  return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.modalidad === 'Evento' ? '🎉 ' + esc(i.turno) + ' · ' : ''}${i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
+  return `<div class="lista-item"><div class="crece"><b>${esc(i.chico)}</b> <span class="muted chico">${esc(i.adulto)}</span><div class="muted chico">${i.modalidad === 'Evento' || i.modalidad === 'Cargo' ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + esc(i.turno) + ' · ' : ''}${i.modalidad === 'Cargo' ? 'del ' + fCorta(i.desde) : i.vencida ? '<b style="color:var(--mal)">ya empezó</b>' : 'empieza ' + fCorta(i.desde)} · ${esc(nomSede(i.sede))} · ${esc(i.estado)}</div></div>
     <b>${pesos(i.saldo)}</b><div class="fila" style="gap:4px"><button class="btn xs" onclick="formPago('${i.id}')">Pago</button><a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WA</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','deuda')">Mail</button></div></div>`;
 }
 function recordar(btn, id, tipo) { conBoton(btn, async () => { await api('recordar', { inscripcionId: id, tipo }, 'admin'); toast('Mail enviado ✓'); }); }
 function formPago(id) {
   const i = A.inscripciones.find(x => x.id === id);
-  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' ? '🎉 ' + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)} en efectivo</b></span></p>
+  modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' || i.modalidad === 'Cargo' ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)} en efectivo</b></span></p>
     <div class="grid2"><div><label>Monto</label><input type="number" id="pgMonto" value="${i.saldo}" inputmode="numeric"></div><div><label>Fecha</label><input type="date" id="pgFecha" value="${A.hoy}"></div></div>
     <label>Medio</label><select id="pgMedio" onchange="document.getElementById('pgMonto').value=this.value==='Efectivo'?${i.saldo}:${conTransf(i.saldo)}"><option>Efectivo</option><option>Transferencia</option><option>Mercado Pago</option><option>Otro</option></select>
     <p class="muted chico" style="margin:4px 0 0">Poné la plata que entró. Si fue por transferencia (${pesos(conTransf(i.saldo))} el saldo completo), se descuenta el ${PUB.recargo}% de recargo y queda en cero.</p>
@@ -1330,13 +1363,14 @@ function fichaAdmin(id) {
   const r = (k, v) => v ? `<tr><td class="muted" style="width:130px">${k}</td><td>${esc(v)}</td></tr>` : '';
   modal(`<h3>${esc(i.chico)}</h3><p class="muted chico">${esc(i.id)} · ${esc(nomSede(i.sede))} · ${esc(i.modalidad)} · ${esc(i.turno)}${i.extras ? ' · ' + esc(i.extras) : ''}<br>${i.dias.map(fCorta).join(', ')}</p>
     <table class="t">${r('Total', pesos(i.total))}${r('Pagado', pesos(i.pagado))}${r('Saldo', pesos(i.saldo))}${r('Estado', i.estado)}${r('Notas', i.notas)}
-    ${r('Nacimiento', fLarga(c.nacimiento || ''))}${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Obra social', c.obraSocial)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos)}
+    ${r('Nacimiento', fLarga(c.nacimiento || ''))}${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Obra social', c.obraSocial)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos)}${r('Apto físico', c.apto || 'Falta entregar')}${c.aptoArchivo ? `<tr><td></td><td><a href="${esc(c.aptoArchivo)}" target="_blank" rel="noopener">Ver apto ↗</a></td></tr>` : ''}
     ${r('Adulto', f.adulto)}${r('Mail', f.email)}${r('WhatsApp', f.whatsapp)}${r('Emergencia', f.emergencia)}${r('Retiran', f.autorizados)}${r('Nos conoció por', f.comoNosConocio)}</table>
     <label>Grupo</label><select id="fgGrupo">${gruposDe(i.sede).map(g => `<option value="${g.id}" ${g.id === i.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div class="grid2"><div><label>Total (corregir precio)</label><input type="number" id="fgTotal" value="${i.total}"></div><div><label>Notas</label><input type="text" id="fgNotas" value="${esc(i.notas || '')}"></div></div>
     <div class="fila" style="margin-top:14px">
       <button class="btn" onclick="guardarFicha(this,'${id}')">Guardar</button>
       <button class="btn claro" onclick="cerrarModal();formPago('${id}')">Registrar pago</button>
+      ${c.id && c.apto !== 'Entregado' ? `<button class="btn claro" onclick="conBoton(this, async()=>{await api('aptoEstado',{chicoId:'${c.id}',estado:'Entregado'},'admin');cerrarModal();toast('Apto registrado ✓');adminCargar()})">🩺 Apto entregado</button>` : ''}
       <a class="btn wa" target="_blank" href="${wa(f.whatsapp, 'Hola ' + (f.adulto || '').split(' ')[0] + '! Te escribimos de la escuela de verano por ' + i.chico + '.')}">WhatsApp</a>
       ${i.estado === 'Cancelada' ? `<button class="btn claro" onclick="estadoInsc(this,'${id}','Pendiente')">Reactivar</button>` : `<button class="btn mal" onclick="if(confirm('¿Cancelar esta inscripción? Libera el cupo.'))estadoInsc(this,'${id}','Cancelada')">Cancelar</button>`}
     </div>`);

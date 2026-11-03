@@ -114,7 +114,7 @@ Tiene **tres puertas** con el mismo link:
 
   - Las semanas que no son quincena se arman como quincenas + semana, y nunca superan el valor de la temporada.
   - **Inscripción:** $35.000 en preventa; desde el 16/11 pasa a $50.000. Se cobra una vez por chico en la temporada.
-  - **Hermanos:** 20% al 2.º y 30% del 3.º en adelante (no se aplica sobre la inscripción).
+  - **Hermanos:** 20% al 2.º y 30% del 3.º en adelante. Según el reglamento se aplica **solo sobre la cuota**: no sobre la inscripción, los opcionales ni los eventos, y no se suma a otras promociones (vale la mejor).
   - **Cómo reservar:**
     1. Completar el formulario.
     2. Pagar la inscripción y la seña del 50% antes del 15/11.
@@ -125,6 +125,19 @@ Tiene **tres puertas** con el mismo link:
   - ⚠️ **Colonia Dewey:** usa los mismos valores hasta que pasen los suyos.
 - **Efectivo y transferencia:** en preventa valen lo mismo, como dice el folleto. Desde el 16/11, transferencia y Mercado Pago pagan el recargo que se ponga en Ajustes.
 - **Estética:** la de la campaña. Azul pileta, azul marino, tarjetas blancas con borde marino y los colores de "VERANO". Títulos en **Lilita One** y texto en **Archivo**.
+
+### Reglamento e Info Familias (aplicados en la app)
+- **Reglamento a la vista:** en la página de cada sede hay un botón **📋 Reglamento** con las 9 secciones del PDF. Antes de inscribir hay que aceptarlo. El texto está en `CONFIG.reglamento` (Code.gs), por si cambia algo.
+- **Chicos de 3 años:** el formulario pide confirmar el **control de esfínteres**. Sin eso, la inscripción no avanza.
+- **Apto físico:** ningún chico empieza sin el apto.
+  - La familia lo sube desde **Mi cuenta** (foto o PDF). Se guarda en Drive, en "Escuela de Verano — Aptos físicos/<sede>", y a la administración le llega un mail.
+  - En **Administración → Inicio** aparece la tarjeta **🩺 Sin apto físico**, con los chicos que empiezan en los próximos 7 días. Cada uno tiene el botón **Entregado** y otro de WhatsApp. El apto también se puede marcar desde la ficha del chico, si lo traen en papel.
+  - El aviso de las 8 h le manda un recordatorio a la familia cada 3 días mientras falte.
+- **Salida temprana:** el 24 y el 31/12 la salida es a las 14 h. Se ve al elegir el plan y en el reglamento. Se cambia en `CONFIG.salidaTemprana`.
+- **Retiro fuera de horario:** si en la asistencia se anota un retiro más de **15 minutos** después de la salida del chico, se genera solo un cargo de **post-hora del día** ($6.000, a confirmar). Se carga una sola vez por chico y por día.
+  - La salida es 13 h para Mañana, 14 h si contrató post-hora, 17 h para Tarde y Completa, y 14 h los días de salida temprana.
+  - El cargo aparece en Cobros como "⏰ Post-hora por retiro fuera de horario", y la familia lo ve para pagar.
+  - Se apaga con `CONFIG.cobrarRetiroTarde: false`. La tolerancia se cambia en `toleranciaRetiroMin`.
 
 ### Roles del equipo
 Cada persona se carga una vez en **Administración → Equipo** con su mail, sede y **rol**. Cuando entra a la app, ve solo lo que le corresponde:
