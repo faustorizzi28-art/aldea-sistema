@@ -72,8 +72,8 @@ const CONFIG = {
       'Forma de pago: hasta el 15/11, mismo precio en efectivo o transferencia. Desde el 16/11 rige el valor vigente para cada forma de pago.',
       'Cada pago lleva su comprobante. Lo señado mantiene su precio.'] },
     { n: 4, titulo: 'Asistencia, faltas y cambios', destacado: 'Las semanas pagadas son fijas: las faltas no se recuperan ni se descuentan.', items: [
-      'Esto vale también para las faltas por enfermedad o viaje.', 'Cambios de turno o de semana: por WhatsApp, con 48 h de anticipación y según cupo.',
-      'Avisá por WhatsApp (o desde la app) cuando el chico no va a venir.'] },
+      'Esto vale también para las faltas por enfermedad o viaje.', 'Cambios de turno o de semana: por WhatsApp a la administración, con 48 h de anticipación y según cupo.',
+      'Avisá por WhatsApp a la administración (o desde la app) cuando el chico no va a venir.'] },
     { n: 5, titulo: 'Salud', destacado: 'Ningún chico puede empezar sin el apto físico entregado.', items: [
       'Completá en el formulario obra social, alergias, medicación y un contacto de emergencia.', 'Solo damos medicación con receta médica y autorización firmada.',
       'Con fiebre, vómitos o una enfermedad contagiosa, el chico se queda en casa.', 'Ante un accidente o malestar, actuamos con el servicio de emergencias y avisamos enseguida a la familia.'] },
@@ -81,7 +81,7 @@ const CONFIG = {
       'Natación todos los días, por grupo de edad y con profes en el agua.', 'Los que no saben nadar usan elementos de flotación en el sector bajo.',
       'Prohibido correr alrededor de la pileta o entrar sin autorización del profe.'] },
     { n: 7, titulo: 'Ingreso y retiro', destacado: 'Solo retiran los adultos autorizados en el formulario, con DNI.', items: [
-      'Respetá los horarios: después de 15 minutos de tolerancia se cobra la post-hora.', 'Si lo retira otra persona, avisá antes por WhatsApp (o desde la app) con nombre y DNI.'] },
+      'Respetá los horarios: después de 15 minutos de tolerancia se cobra la post-hora.', 'Si lo retira otra persona, avisá antes por WhatsApp a la administración (o desde la app) con nombre y DNI.'] },
     { n: 8, titulo: 'Mochila y convivencia', destacado: 'Todo con nombre, por favor.', items: [
       'Mochila: malla, toalla, ojotas, gorra, protector solar (puesto desde casa), botella de agua y ropa de cambio.',
       'Merienda: cada chico trae la suya. El almuerzo es opcional para jornada completa.',
@@ -104,7 +104,7 @@ const CONFIG = {
       nombre: 'Aldea de Valle',
       color: '#1E7BC8', acento: '#F2CA11',   // azul pileta y amarillo de la campaña 2026-27
       direccion: 'República de China 1890, Valle Escondido, Córdoba',
-      whatsapp: '5493515308489',
+      whatsapp: '5493515308489', telefono: '+54 9 3515 30-8489',   // administración de Aldea: dudas y consultas
       lat: -31.364971, lng: -64.278477, radio: 150,
       inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
       feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
@@ -153,7 +153,7 @@ const CONFIG = {
       nombre: 'Colonia Dewey',
       color: '#C41E3A', acento: '#6CCDF2',   // rojo y celeste del logo de Colonia Dewey
       direccion: 'Etruria 7755, Villa Rivera Indarte, Córdoba',
-      whatsapp: '5493515308489',
+      whatsapp: '5493512799950', telefono: '+54 9 3512 79-9950',   // administración de Colonia Dewey: dudas y consultas
       lat: null, lng: null, radio: 150,   // fijala desde Administración → Ajustes → "Usar mi ubicación"
       inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
       feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
@@ -427,7 +427,7 @@ function accPublico_() {
     const temSede = {};
     tem.filter(t => t.sede === id).forEach(t => { temSede[iso_(t.semana)] = { titulo: t.titulo, descripcion: t.descripcion, emoji: t.emoji }; });
     return {
-      id, nombre: s.nombre, color: s.color, acento: s.acento, direccion: s.direccion, whatsapp: s.whatsapp,
+      id, nombre: s.nombre, color: s.color, acento: s.acento, direccion: s.direccion, whatsapp: s.whatsapp, telefono: s.telefono || '',
       bajada: s.bajada, ficha: s.ficha, inicio: s.inicio, fin: s.fin, precios: s.precios, cupoPorGrupo: s.cupoPorGrupo,
       pago: s.pago,
       semanas: semanas_(id).map(w => Object.assign(w, { tematica: temSede[w.id] || null })),
@@ -587,7 +587,7 @@ function validarChico_(c, sede) {
   if (!limpio_(c.nacimiento) || !/^\d{4}-\d{2}-\d{2}$/.test(c.nacimiento)) throw new Error('Falta la fecha de nacimiento de ' + c.nombre + '.');
   const edad = edadEn_(c.nacimiento, sede.inicio);
   if (edad < CONFIG.edadMin) throw new Error(c.nombre + ' tiene que tener al menos ' + CONFIG.edadMin + ' años al empezar la temporada.');
-  if (edad > CONFIG.edadMax + 1) throw new Error('La escuela es hasta los ' + CONFIG.edadMax + ' años. Escribinos por WhatsApp para ver si hay lugar para ' + c.nombre + '.');
+  if (edad > CONFIG.edadMax + 1) throw new Error('La escuela es hasta los ' + CONFIG.edadMax + ' años. Escribile a la administración por WhatsApp para ver si hay lugar para ' + c.nombre + '.');
   if (edad <= 3 && !esSi_(c.controlEsfinteres)) throw new Error('Para los chicos de 3 años hace falta que tengan control de esfínteres (reglamento). Confirmalo en el formulario de ' + c.nombre + '.');
 }
 
@@ -2257,7 +2257,9 @@ function marcoMail_(sede, cuerpo) {
   const s = CONFIG.sedes[sede];
   return '<div style="font-family:Arial,sans-serif;font-size:15px;color:#222;max-width:580px">' +
     '<div style="background:' + (s ? s.color : '#2F4A38') + ';color:#fff;padding:14px 18px;border-radius:12px 12px 0 0;font-size:18px"><b>☀️ ' + esc_(CONFIG.marca) + '</b>' +
-    (s ? ' · ' + esc_(s.nombre) : '') + '</div><div style="padding:16px 18px;border:1px solid #eee;border-top:0;border-radius:0 0 12px 12px">' + cuerpo + '</div></div>';
+    (s ? ' · ' + esc_(s.nombre) : '') + '</div><div style="padding:16px 18px;border:1px solid #eee;border-top:0;border-radius:0 0 12px 12px">' + cuerpo +
+    (s && s.whatsapp ? '<p style="margin:18px 0 0;padding-top:12px;border-top:1px solid #eee;font-size:13px;color:#555">¿Dudas o consultas? Escribile a la <b>administración de ' + esc_(s.nombre) + '</b> por WhatsApp: ' +
+      '<a href="' + esc_(linkWhatsApp_(s.whatsapp, '¡Hola! Tengo una consulta por la escuela de verano.')) + '" style="color:#128C7E;font-weight:bold">' + esc_(s.telefono || s.whatsapp) + '</a></p>' : '') + '</div></div>';
 }
 function boton_(url, texto, color) {
   return '<p><a href="' + esc_(url) + '" style="display:inline-block;background:' + color + ';color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:bold">' + esc_(texto) + '</a></p>';

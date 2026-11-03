@@ -334,6 +334,10 @@ function etapaActual(s) { const E = s.precios.etapas; return E.find(e => !e.hast
 function precioDesde(s) { const T = etapaActual(s).turnos; return Math.min(...Object.keys(T).map(k => T[k].semana)); }
 const descHermanos = s => { const h = s.precios.descuentoHermanos; return Array.isArray(h) ? h : [0, h || 0]; };
 function sumarDiaIso(iso) { const f = new Date(iso + 'T12:00:00'); f.setDate(f.getDate() + 1); return f.toISOString().slice(0, 10); }
+function contactoAdmin(s, txt) {
+  return `<div class="card" style="text-align:center"><h3 style="margin:0 0 4px">¿Dudas o consultas?</h3><p class="muted chico" style="margin:0 0 10px">Escribile a la administración de ${esc(s.nombre)}</p>
+    <a class="btn wa full" target="_blank" rel="noopener" href="${wa(s.whatsapp, txt || '¡Hola! Tengo una consulta por la escuela de verano de ' + s.nombre + '.')}">💬 ${esc(s.telefono || 'WhatsApp de la administración')}</a></div>`;
+}
 function tablaPrecios(s, E) {
   const L = s.precios.etapas, R = E.hasta ? L[L.indexOf(E) + 1] : null;
   return `<div class="scroll-x"><table class="precios"><tr><th style="background:none;text-align:left;font:700 12px var(--f-texto);letter-spacing:.06em;color:var(--c1)">POR CHICO</th><th>Semana</th><th>Quincena</th><th>Temporada<small>${s.semanas.length} semanas</small></th></tr>
@@ -357,7 +361,7 @@ function vElegirSede(destino) {
     <p style="margin:14px auto 0;font-weight:700">${destino === 'inscribir' ? '¿En qué escuela querés inscribir a tu hijo?' : '¿De qué escuela de verano sos?'}</p>
   </div></section>
   <div class="wrap">
-    <div class="eleccion">${s.map(x => `<button style="--c:${x.color}" onclick="elegirSede('${x.id}','${destino || ''}')">${x.id === 'aldea' && !x.logo ? `<span class="logo" style="width:72px;height:72px;background:${x.color};color:#fff;padding:13px;border:2.5px solid var(--marino)">${CARPA}</span>` : logoSede(x.id, 72, true)}
+    <div class="eleccion">${s.map(x => `<button style="--c:${x.color}" onclick="elegirSede('${x.id}','${destino || ''}')">${x.id === 'aldea' && !x.logo ? `<span class="logo" style="width:72px;height:72px;background:#1F8F4E;color:var(--amarillo);padding:13px;border:2.5px solid var(--marino)">${CARPA}</span>` : logoSede(x.id, 72, true)}
       <span><b>${esc(x.nombre)}</b><span class="muted chico">${esc(x.direccion)}</span></span><span class="flecha" aria-hidden="true">→</span></button>`).join('')}</div>
   </div>
   <div class="pie">${pieGlorin()}</div>`);
@@ -400,9 +404,10 @@ function vPuerta(id) {
       <a class="rol" href="${PUB.url}?p=admin&sede=${id}"><span class="ico" aria-hidden="true">🗂️</span><div><b>Soy de la administración</b>
         <div class="muted chico">Inscripciones, cobros, equipo y pagos.</div></div></a>
     </div>
+    ${contactoAdmin(s)}
   </div>
   <div class="pie">${pieGlorin()}</div>
-  <a class="wa-flota" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>`);
+  <a class="wa-flota" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank" rel="noopener" aria-label="WhatsApp de la administración" title="Consultas: administración">💬</a>`);
   scrollTo(0, 0);
 }
 function irPagar() { location.href = PUB.url + '?p=pagar'; }
@@ -419,7 +424,7 @@ function vSede(id) {
     <div class="ceja">Escuela de verano ${esc(PUB.temporada.replace('-20', '–'))}</div><h1 style="margin-top:8px">${esc(s.nombre.toUpperCase())}</h1><p>${esc(s.bajada)}</p>
     <p class="chico">📍 ${esc(s.direccion)}<br>📅 Del ${fLarga(s.inicio)} al ${fLarga(s.fin)} · lunes a viernes</p>
     <div class="fila"><button class="btn acento" onclick="empezar('${id}')">Inscribirme</button>
-    <a class="btn wa" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank">💬 WhatsApp</a></div>
+    <a class="btn wa" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank">💬 Consultas</a></div>
   </div></section>
   <div class="wrap">
     <div class="card"><h3>Cómo es</h3>
@@ -460,8 +465,9 @@ function vSede(id) {
       <div class="grid2"><div><label>Nombre</label><input type="text" id="intNom"></div><div><label>Mail</label><input type="email" id="intMail" inputmode="email"></div></div>
       <button class="btn claro" style="margin-top:12px" onclick="conBoton(this, async () => { await api('interesado', {sede:'${id}', nombre:val('intNom'), email:val('intMail')}); toast('¡Listo! Te vamos a escribir ☀️'); })">Quiero recibir novedades</button>
     </div>
+    ${contactoAdmin(s)}
   </div>
-  <a class="wa-flota" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank">💬</a>`);
+  <a class="wa-flota" href="${wa(s.whatsapp, '¡Hola! Quiero consultar por la escuela de verano de ' + s.nombre + '.')}" target="_blank" rel="noopener" aria-label="WhatsApp de la administración" title="Consultas: administración">💬</a>`);
   scrollTo(0, 0);
 }
 
@@ -743,9 +749,10 @@ function cInicio() {
     ${cards || '<div class="vacio">Todavía no hay chicos cargados.</div>'}
     <button class="btn full acento" onclick="vRenovar()">+ Sumar semanas, días o hermanos</button>
     <a class="btn full claro" style="margin-top:10px" target="_blank" rel="noopener" href="${wa((sede((C.chicos[0] || {}).sede) || PUB.sedes[0]).whatsapp, '¡Hola! Quiero pedir un cambio de turno o de semana para ' + C.chicos.map(c => c.nombre.split(' ')[0]).join(' y ') + ': ')}">🔄 Pedir cambio de turno o semana</a>
-    <p class="muted chico" style="text-align:center;margin:4px 0 0">Por WhatsApp, con 48 h de anticipación y según cupo. Las faltas no se recuperan ni se descuentan.</p>
+    <p class="muted chico" style="text-align:center;margin:4px 0 0">Por WhatsApp a la administración, con 48 h de anticipación y según cupo. Las faltas no se recuperan ni se descuentan.</p>
     ${cEventos()}
-    ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}`;
+    ${C.publicaciones.length ? `<h3 style="margin-top:22px">Lo último</h3>${htmlPost(C.publicaciones[0])}<button class="btn claro full" onclick="vCuenta('fotos')">Ver todas las fotos</button>` : ''}
+    <div style="margin-top:22px">${contactoAdmin(sede((C.chicos[0] || {}).sede) || PUB.sedes[0], '¡Hola! Soy ' + (C.familia.adulto || '') + ', tengo una consulta por ' + C.chicos.map(c => c.nombre.split(' ')[0]).join(' y ') + ': ')}</div>`;
 }
 function avisarModal(chicoId) {
   const c = C.chicos.find(x => x.id === chicoId);

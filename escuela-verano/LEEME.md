@@ -126,6 +126,12 @@ Tiene **tres puertas** con el mismo link:
 - **Efectivo y transferencia:** en preventa valen lo mismo, como dice el folleto. Desde el 16/11, transferencia y Mercado Pago pagan el recargo que se ponga en Ajustes.
 - **Estética:** la de la campaña. Azul pileta, azul marino, tarjetas blancas con borde marino y los colores de "VERANO". Títulos en **Lilita One** y texto en **Archivo**.
 
+### Contacto: todo pasa por la administración
+- Aldea de Valle: **+54 9 3515 30-8489** · Colonia Dewey: **+54 9 3512 79-9950** (WhatsApp).
+- La tarjeta **"¿Dudas o consultas?"** con el número de la sede está en la entrada, en la página de la sede y en Mi cuenta. El botón 💬 flotante también va a la administración.
+- Todos los mails terminan con el WhatsApp de la administración de esa sede.
+- Los números se cambian en `CONFIG.sedes.<sede>.whatsapp` (solo dígitos) y `telefono` (como se muestra).
+
 ### Reglamento e Info Familias (aplicados en la app)
 - **Reglamento a la vista:** en la página de cada sede hay un botón **📋 Reglamento** con las 9 secciones del PDF. Antes de inscribir hay que aceptarlo. El texto está en `CONFIG.reglamento` (Code.gs), por si cambia algo.
 - **Chicos de 3 años:** el formulario pide confirmar el **control de esfínteres**. Sin eso, la inscripción no avanza.
