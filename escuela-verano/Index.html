@@ -741,7 +741,7 @@ function cInicio() {
       <div class="fila"><div class="crece"><h3 style="margin:0">${esc(c.nombre)}</h3><div class="muted chico">${esc(nGrupo(c.grupo))} · ${esc(s.nombre)}</div></div>
       ${vaHoy ? (hoyA ? `<span class="chip ${hoyA.estado === 'ausente' ? 'mal' : 'ok'}">${hoyA.retiradoPor ? '👋 Retirado ' + esc(hoyA.retiro) : hoyA.estado === 'ausente' ? 'Ausente hoy' : '✅ Llegó ' + esc(hoyA.llegada || '')}</span>` : '<span class="chip info">Hoy viene</span>') : ''}</div>
       ${vigentes.length && c.apto !== 'Entregado' ? `<div class="banner" style="background:${c.apto ? '#E2ECF7' : '#FBE1DE'};color:${c.apto ? '#1C4C7A' : '#9B2B20'};margin:10px 0">🩺 ${c.apto ? '<b>Apto físico en revisión.</b> Te avisamos cuando quede registrado.' : '<b>Falta el apto físico.</b> Sin el apto no puede empezar (reglamento).'}
-        <label class="btn xs claro" style="margin-top:8px;cursor:pointer">📎 ${c.apto ? 'Volver a subir' : 'Subir apto físico'}<input type="file" accept="image/*,application/pdf" hidden onchange="subirApto(this,'${c.id}')"></label></div>` : ''}
+        <label class="btn xs claro" style="margin-top:8px;cursor:pointer">📎 ${c.apto ? 'Volver a subir' : 'Subir apto físico'}<input type="file" accept="image/&#42;,application/pdf" hidden onchange="subirApto(this,'${c.id}')"></label></div>` : ''}
       ${vigentes.flatMap(i => i.dias).filter(d => d >= hoy && d <= sumarDias(hoy, 7) && (PUB.salidaTemprana || {})[d]).filter((d, k, a) => a.indexOf(d) === k).map(d => `<p class="chip aviso" style="margin:6px 0">⏰ El ${fLarga(d)} la salida es a las ${PUB.salidaTemprana[d].replace(':00', '')} h</p>`).join('')}
       ${vigentes.length ? `<p style="margin:10px 0 4px">Le ${restantes === 1 ? 'queda <b>1 día</b>' : 'quedan <b>' + restantes + ' días</b>'} · hasta el ${fLarga(ultimo)}</p>
         <div class="barra"><i style="width:${Math.min(100, Math.round(100 * (1 - restantes / Math.max(1, vigentes.reduce((a, i) => a + i.dias.length, 0)))))}%"></i></div>` : `<p class="muted">No tiene días por delante.</p>`}
@@ -835,7 +835,7 @@ function pagarMP(btn, id, que) {
 function formComprobante(id, monto) {
   modal(`<h3>Subir comprobante</h3><p class="muted chico">Una captura o el PDF de la transferencia. La administración lo revisa y te llega un mail cuando queda registrado.</p>
     <label>¿Cuánto transferiste?</label><input type="number" id="cpMonto" value="${monto}" inputmode="numeric">
-    <label>Comprobante</label><input type="file" id="cpArch" accept="image/*,application/pdf">
+    <label>Comprobante</label><input type="file" id="cpArch" accept="image/&#42;,application/pdf">
     <label>Nota <small>(opcional)</small></label><input type="text" id="cpNota" placeholder="Transferí desde la cuenta de mi pareja…">
     <button class="btn full" style="margin-top:14px" onclick="enviarComprobante(this,'${id}')">Enviar comprobante</button>`);
 }
@@ -1163,7 +1163,7 @@ function pSubir() {
     <label>Para</label><select onchange="SUB.grupo=this.value;avisoFotos()"><option value="todos">Todos los grupos</option>${gruposDe(SUB.sede).map(g => `<option value="${g.id}" ${g.id === SUB.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div id="avisoFotos"></div>
     <label>Texto</label><textarea id="pubTxt" placeholder="Hoy hicimos la búsqueda del tesoro 🏴‍☠️…"></textarea>
-    <label>Fotos y videos <small>(hasta 10 fotos y 5 videos de ${PR.maxVideoMB} MB)</small></label><input type="file" accept="image/*,video/*" multiple onchange="elegirFotos(this.files)">
+    <label>Fotos y videos <small>(hasta 10 fotos y 5 videos de ${PR.maxVideoMB} MB)</small></label><input type="file" accept="image/&#42;,video/&#42;" multiple onchange="elegirFotos(this.files)">
     <div class="fotos" id="prevFotos"></div>
     <div id="progVideo"></div>
     <button class="btn full" style="margin-top:16px" onclick="publicar(this)">Publicar</button>
