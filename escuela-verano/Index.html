@@ -199,6 +199,8 @@
   .codigo{letter-spacing:10px;font-size:26px!important;text-align:center;font-weight:700}
   .sep{height:1px;background:var(--linea);margin:14px 0}
   .derecha{text-align:right}
+  .fecha3{display:grid;grid-template-columns:1fr 1.6fr 1.2fr;gap:6px}
+  .fecha3 select{padding-left:8px;padding-right:4px;min-width:0}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -578,9 +580,9 @@ function htmlChico(c, i) {
   const sel = (id, v, ops) => `<select id="${id}">${ops.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
   return `<div class="card"><div class="fila"><h3 class="crece">${i ? 'Hijo/a ' + (i + 1) : 'Hijo/a'}</h3>${W.chicos.length > 1 ? `<button class="btn xs claro" onclick="leerChicos();W.chicos.splice(${i},1);guardarW();vWizard()">Quitar</button>` : ''}</div>
     <label>Nombre y apellido</label><input type="text" id="ch${i}_nombre" value="${esc(c.nombre)}" autocomplete="off">
-    <div class="grid2"><div><label>Fecha de nacimiento</label><input type="date" id="ch${i}_nacimiento" value="${esc(c.nacimiento)}" onchange="leerChicos();guardarW();vWizard()"></div>
-    <div><label>DNI</label><input type="tel" id="ch${i}_dni" value="${esc(c.dni)}" inputmode="numeric"></div></div>
+    <label>Fecha de nacimiento</label>${selFecha(i, c.nacimiento, s)}
     ${g ? `<p style="margin:8px 0 0"><span class="chip info">${g.emoji} Grupo ${esc(g.nombre)} · ${edad} años al empezar</span></p>` : ''}
+    <label>DNI</label><input type="tel" id="ch${i}_dni" value="${esc(c.dni)}" inputmode="numeric">
     ${edad !== null && edad < PUB.edadMin ? `<p class="chip mal" style="margin-top:6px">Es desde los ${PUB.edadMin} años</p>` : ''}
     ${edad !== null && edad <= 3 && edad >= PUB.edadMin ? `<label class="opcion ${c.controlEsfinteres ? 'on' : ''}" style="margin-top:10px"><input type="checkbox" id="ch${i}_controlEsfinteres" ${c.controlEsfinteres ? 'checked' : ''}><div><b>Confirmo que tiene control de esfínteres</b><div class="muted chico">Es requisito para los chicos de 3 años (reglamento).</div></div></label>` : ''}
     <label>Obra social / prepaga <small>y número de afiliado</small></label><input type="text" id="ch${i}_obraSocial" value="${esc(c.obraSocial)}">
@@ -590,6 +592,26 @@ function htmlChico(c, i) {
     <div class="grid2"><div><label>¿Sabe nadar?</label>${sel('ch' + i + '_sabeNadar', c.sabeNadar, ['', 'Sí', 'Un poco', 'No'])}</div>
     <div><label>¿Puede salir en fotos y videos? <small>(redes de Aldea y GLORIN)</small></label>${sel('ch' + i + '_autorizaFotos', c.autorizaFotos, ['Sí', 'No'])}</div></div>
   </div>`;
+}
+/** Fecha de nacimiento con tres listas (día, mes, año): más fácil que el calendario del navegador y sin años imposibles. */
+function selFecha(i, v, s) {
+  const [a, m, d] = /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v.split('-') : ['', '', ''];
+  const y0 = +String(s.inicio).slice(0, 4), anios = [];
+  for (let y = y0 - PUB.edadMin; y >= y0 - PUB.edadMax - 1; y--) anios.push(y);
+  const op = (val, txt, sel) => `<option value="${val}" ${sel ? 'selected' : ''}>${txt}</option>`;
+  const ch = `onchange="fechaNac(${i})"`;
+  return `<div class="fecha3"><select id="fn${i}_d" aria-label="Día" ${ch}>${op('', 'Día', !d)}${Array.from({ length: 31 }, (_, k) => op(String(k + 1).padStart(2, '0'), k + 1, +d === k + 1)).join('')}</select>
+    <select id="fn${i}_m" aria-label="Mes" ${ch}>${op('', 'Mes', !m)}${MESES.map((n, k) => op(String(k + 1).padStart(2, '0'), n, +m === k + 1)).join('')}</select>
+    <select id="fn${i}_a" aria-label="Año" ${ch}>${op('', 'Año', !a)}${anios.map(y => op(y, y, +a === y)).join('')}</select></div>
+    <input type="hidden" id="ch${i}_nacimiento" value="${esc(v || '')}">`;
+}
+function fechaNac(i) {
+  const d = val('fn' + i + '_d'), m = val('fn' + i + '_m'), a = val('fn' + i + '_a');
+  if (!d || !m || !a) return;
+  const f = new Date(+a, +m - 1, +d);
+  if (f.getMonth() !== +m - 1) return toast('Esa fecha no existe: revisá el día.', true);
+  document.getElementById('ch' + i + '_nacimiento').value = a + '-' + m + '-' + d;
+  leerChicos(); guardarW(); vWizard();
 }
 function leerChicos() {
   W.chicos = W.chicos.map((c, i) => { const o = {}; Object.keys(chicoVacio()).forEach(k => { const el = document.getElementById('ch' + i + '_' + k); o[k] = el ? (el.type === 'checkbox' ? (el.checked ? 'Sí' : '') : el.value.trim()) : c[k]; }); return o; });
