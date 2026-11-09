@@ -563,10 +563,19 @@
         <button onclick="$('nd-premio').value=12000">2 horas · $12.000</button>
       </div>
       <input id="nd-premio" type="number" inputmode="numeric" min="0"/></div>
+    <div class="field"><label>¿Para quién?</label><select id="nd-para"></select></div>
     <div class="grid2">
-      <div class="field"><label>¿Para quién?</label><select id="nd-para"></select></div>
+      <div class="field"><label>Se publica el</label><input id="nd-desde" type="date"/></div>
       <div class="field"><label>Vale hasta</label><input id="nd-vence" type="date"/></div>
     </div>
+    <div class="field"><label>¿Repetir?</label>
+      <select id="nd-semanas">
+        <option value="1">No, una sola vez</option>
+        <option value="2">Cada semana, 2 semanas</option>
+        <option value="4">Cada semana, 4 semanas (un mes)</option>
+        <option value="8">Cada semana, 8 semanas</option>
+      </select>
+      <div class="ayuda">Aparece solo en la app el día que se publica. Si lo repetís, se programa igual las semanas siguientes.</div></div>
     <div class="field"><label>¿Cuántas personas lo pueden hacer?</label><input id="nd-veces" type="number" min="1" max="10" value="1"/>
       <div class="ayuda">1 = lo hace el primero que lo toma. Si ponés 2, lo pueden hacer dos personas y cada una cobra el premio.</div></div>
     <div class="grid2">
@@ -1312,8 +1321,9 @@ function pintarDesafiosAdm(){
     <div class="it">${x.foto?`<a href="${esc(x.foto)}" target="_blank"><img class="foto-mini" src="${esc(x.foto)}" alt="foto"/></a>`:'<span class="tag">sin foto</span>'}
       <span style="flex:1;"><b style="display:inline;">${esc(x.nombre)}</b> · ${esc(x.titulo)} · <b style="display:inline;">+${fmt(x.premio)}</b></span>
       <span style="display:flex;flex-direction:column;gap:4px;"><button class="btn chico" onclick="revisarDesafio('${x.id}',true)">Aprobar</button><button class="btn chico ghost" onclick="revisarDesafio('${x.id}',false)">No</button></span></div>`).join('')}</div>` : '';
-  const activos = ds.filter(x=>x.estado==='abierto'||x.estado==='tomado');
-  $('ds-activos').innerHTML = activos.length ? activos.map(x=>`<div class="marc"><span><b>${esc(x.titulo)}</b> · +${fmt(x.premio)}<br/><span class="sub">Para: ${esc(paraTxt(x.para))}${x.vence?' · hasta '+new Date(x.vence+'T12:00:00').toLocaleDateString('es-AR'):''} · ${x.estado==='tomado'?'🏃 lo está haciendo '+esc(x.nombre):'esperando que alguien lo tome'}</span></span><button class="x" onclick="borrarDesafio('${x.id}')">🗑</button></div>`).join('')
+  const hoyISO = localInput(new Date()).slice(0,10);
+  const activos = ds.filter(x=>x.estado==='abierto'||x.estado==='tomado').sort((a,b)=>(a.desde||'').localeCompare(b.desde||''));
+  $('ds-activos').innerHTML = activos.length ? activos.map(x=>`<div class="marc"><span><b>${esc(x.titulo)}</b> · +${fmt(x.premio)}<br/><span class="sub">Para: ${esc(paraTxt(x.para))}${x.vence?' · hasta '+new Date(x.vence+'T12:00:00').toLocaleDateString('es-AR'):''} · ${x.estado==='tomado'?'🏃 lo está haciendo '+esc(x.nombre):x.desde&&x.desde>hoyISO?'📅 se publica solo el '+new Date(x.desde+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'numeric'}):'esperando que alguien lo tome'}</span></span><button class="x" onclick="borrarDesafio('${x.id}')">🗑</button></div>`).join('')
     : '<div class="sub">No hay desafíos activos. Publicá uno: aparece de sorpresa en la app de quien corresponda.</div>';
   const hist = ds.filter(x=>(x.estado==='aprobado'||x.estado==='rechazado') && x.mes===adm.mes);
   $('ds-historial').innerHTML = hist.length ? hist.map(x=>`<div class="marc"><span>${x.estado==='aprobado'?'✅':'❌'} <b>${esc(x.nombre)}</b> · ${esc(x.titulo)}</span><b>${x.estado==='aprobado'?'+'+fmt(x.premio):''}</b></div>`).join('') : '<div class="sub">Todavía nada este mes.</div>';
@@ -1325,7 +1335,9 @@ function abrirNuevoDesafio(){
   $('nd-ideas').innerHTML = IDEAS_DESAFIOS.map((d,i)=>`<button onclick="usarIdea(${i})">${d[0]==='Cantina'?'🍔':d[0]==='Limpieza'?'🧹':'🔧'} ${esc(d[1])}</button>`).join('');
   ['nd-titulo','nd-detalle','nd-premio'].forEach(id=>$(id).value='');
   $('nd-veces').value = 1;
+  const hoyD = new Date(); $('nd-desde').value = localInput(hoyD).slice(0,10);
   const v = new Date(); v.setDate(v.getDate() + (7 - v.getDay()) % 7); $('nd-vence').value = localInput(v).slice(0,10);
+  $('nd-semanas').value = '1';
   msg('nd-msg','');
   $('m-desafio').classList.remove('oculto');
 }
@@ -1336,7 +1348,10 @@ function usarIdea(i){
   if(op) $('nd-para').value = op.value;
 }
 async function guardarDesafio(){
-  const desafio = { titulo:$('nd-titulo').value, detalle:$('nd-detalle').value, premio:$('nd-premio').value, para:$('nd-para').value, vence:$('nd-vence').value, veces:$('nd-veces').value };
+  const hoyISO = localInput(new Date()).slice(0,10);
+  const desde = $('nd-desde').value;
+  const desafio = { titulo:$('nd-titulo').value, detalle:$('nd-detalle').value, premio:$('nd-premio').value, para:$('nd-para').value,
+    desde: desde && desde > hoyISO ? desde : '', vence:$('nd-vence').value, veces:$('nd-veces').value, semanas:$('nd-semanas').value };
   msg('nd-msg','Publicando…','info');
   try{ await apiAdm('guardarDesafio', {desafio}); cerrarModal('m-desafio'); await cargarAdmin(); tab('desafios'); }
   catch(e){ msg('nd-msg', e.message, 'err'); }

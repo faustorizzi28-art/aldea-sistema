@@ -21,7 +21,7 @@ const HOJAS = {
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
   Pagos:     ['id', 'mes', 'fecha', 'empleadoId', 'nombre', 'tipo', 'monto', 'nota', 'creado'],
   Tareas:    ['id', 'fecha', 'empleadoId', 'nombre', 'hechas', 'pendientes', 'creado'],
-  Desafios:  ['id', 'titulo', 'detalle', 'premio', 'para', 'vence', 'estado', 'empleadoId', 'nombre', 'tomado', 'hecho', 'foto', 'mes', 'creado'],
+  Desafios:  ['id', 'titulo', 'detalle', 'premio', 'para', 'vence', 'estado', 'empleadoId', 'nombre', 'tomado', 'hecho', 'foto', 'mes', 'creado', 'desde'],
 };
 
 const FORMAS_PAGO = {
@@ -788,6 +788,7 @@ function desafios_() {
     tomado: x.tomado instanceof Date ? x.tomado.toISOString() : String(x.tomado || ''),
     hecho: x.hecho instanceof Date ? x.hecho.toISOString() : String(x.hecho || ''),
     foto: String(x.foto || ''), mes: x.mes instanceof Date ? Utilities.formatDate(x.mes, TZ, 'yyyy-MM') : String(x.mes || ''),
+    desde: fecha(x.desde),
   }));
   return _desafios;
 }
@@ -806,7 +807,7 @@ function desafiosDe_(e) {
   const hoy = diaDe_(new Date());
   const mes = mesActual_();
   return desafios_().filter(x =>
-    (x.estado === 'abierto' && paraEmpleado_(x, e) && (!x.vence || x.vence >= hoy)) ||
+    (x.estado === 'abierto' && paraEmpleado_(x, e) && (!x.desde || x.desde <= hoy) && (!x.vence || x.vence >= hoy)) ||
     (x.empleadoId === e.id && (x.estado === 'tomado' || x.estado === 'hecho' || (x.mes === mes && (x.estado === 'aprobado' || x.estado === 'rechazado')))))
     .map(x => ({ id: x.id, titulo: x.titulo, detalle: x.detalle, premio: x.premio, vence: x.vence, estado: x.estado, mio: x.empleadoId === e.id }));
 }
@@ -889,12 +890,21 @@ function accGuardarDesafio_(d) {
   if (!(premio > 0)) return { ok: false, error: 'Poné el premio.' };
   const para = /^(todos|area:.+|emp:.+)$/.test(String(x.para || '')) ? String(x.para) : 'todos';
   const vence = /^\d{4}-\d{2}-\d{2}$/.test(x.vence || '') ? x.vence : '';
+  // Fecha en que aparece en la app (vacía = ya). Con "semanas" se programa repetido, una vez por semana.
+  const desde = /^\d{4}-\d{2}-\d{2}$/.test(x.desde || '') ? x.desde : '';
+  if (desde && vence && vence < desde) return { ok: false, error: '"Vale hasta" tiene que ser después de "Se publica el".' };
+  const semanas = Math.min(Math.max(Number(x.semanas) || 1, 1), 12);
   const sh = hojaOCrear_('Desafios');
+  columna_(sh, 'desde');
   const veces = Math.min(Math.max(Number(x.veces) || 1, 1), 10);   // el mismo desafío para varias personas
-  for (let i = 0; i < veces; i++) {
-    sh.appendRow([uid_(), titulo, String(x.detalle || '').trim(), premio, para, vence ? "'" + vence : '', 'abierto', '', '', '', '', '', '', new Date()]);
+  for (let w = 0; w < semanas; w++) {
+    const d0 = desde ? sumarDias_(desde, 7 * w) : (w ? sumarDias_(diaDe_(new Date()), 7 * w) : '');
+    const v0 = vence ? sumarDias_(vence, 7 * w) : '';
+    for (let i = 0; i < veces; i++) {
+      sh.appendRow([uid_(), titulo, String(x.detalle || '').trim(), premio, para, v0 ? "'" + v0 : '', 'abierto', '', '', '', '', '', '', new Date(), d0 ? "'" + d0 : '']);
+    }
   }
-  return { ok: true };
+  return { ok: true, creados: semanas * veces };
 }
 
 function accBorrarDesafio_(d) { return borrarPorId_('Desafios', d.id); }
