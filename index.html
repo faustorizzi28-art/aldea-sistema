@@ -1994,7 +1994,7 @@ function renderPrecios(){
   `;
 }
 
-function agregarProductoNuevo(){
+async function agregarProductoNuevo(){
   const cat = document.getElementById('np-cat').value;
   const nombre = document.getElementById('np-nombre').value.trim();
   const precio = parseFloat(document.getElementById('np-precio').value)||0;
@@ -2002,16 +2002,14 @@ function agregarProductoNuevo(){
   carta[cat].push([nombre, precio]);
   document.getElementById('np-nombre').value=''; document.getElementById('np-precio').value='';
   renderPrecios();
-  document.getElementById('precios-msg').textContent = 'Agregado. No te olvides de tocar "💾 Guardar precios" para que se suba a todos los dispositivos.';
-  document.getElementById('precios-msg').className = 'msg';
+  await persistirCarta('Agregado');
 }
 
-function borrarProducto(cat, idx){
+async function borrarProducto(cat, idx){
   if(!confirm(`¿Eliminar "${carta[cat][idx][0]}" de la carta?`)) return;
   carta[cat].splice(idx,1);
   renderPrecios();
-  document.getElementById('precios-msg').textContent = 'Eliminado. No te olvides de tocar "💾 Guardar precios" para confirmar el cambio.';
-  document.getElementById('precios-msg').className = 'msg';
+  await persistirCarta('Eliminado');
 }
 
 async function guardarTodosLosPrecios(){
@@ -2019,23 +2017,33 @@ async function guardarTodosLosPrecios(){
     const cat = inp.dataset.cat, idx = parseInt(inp.dataset.idx);
     if(carta[cat] && carta[cat][idx]) carta[cat][idx][1] = parseFloat(inp.value)||0;
   });
-  const remota = await traerCartaRemota();
-  if(remota) traerStockDe(remota);
+  document.querySelectorAll('#precios-cats input.modificado').forEach(i=>i.classList.remove('modificado'));
+  await persistirCarta(null, true);
+}
+
+/* Guarda la carta actual en localStorage y en Sheets, para que un producto
+   recién agregado/borrado no se pierda si la pestaña se recarga sola antes
+   de que alguien toque "Guardar precios" a mano (pasaba seguido en celulares). */
+async function persistirCarta(prefijoMsg, conStock){
+  if(conStock){
+    const remota = await traerCartaRemota();
+    if(remota) traerStockDe(remota);
+  }
   localStorage.setItem('aldea_carta', JSON.stringify(carta));
   localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
-  document.querySelectorAll('#precios-cats input.modificado').forEach(i=>i.classList.remove('modificado'));
 
   const msgEl = document.getElementById('precios-msg');
-  msgEl.textContent='⏳ Guardando para todos los dispositivos…'; msgEl.className='msg';
+  const base = prefijoMsg ? prefijoMsg+'. ' : '';
+  msgEl.textContent = base+'⏳ Guardando para todos los dispositivos…'; msgEl.className='msg';
   const url = getUrl();
-  if(!url){ msgEl.textContent='✅ Guardado en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar)'; msgEl.className='msg ok'; return; }
+  if(!url){ msgEl.textContent = base+'✅ Guardado en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar)'; msgEl.className='msg ok'; return; }
   try{
     const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
     const j = await r.json();
-    msgEl.textContent = j.ok ? '✅ Precios guardados para todos' : '❌ '+j.error;
+    msgEl.textContent = base+(j.ok ? '✅ Guardado para todos' : '❌ '+j.error);
     msgEl.className = j.ok ? 'msg ok' : 'msg err';
     if(j.ok) renderPrecios();
-  }catch(e){ msgEl.textContent='⚠️ Guardado local, sin conexión con Sheets'; msgEl.className='msg err'; }
+  }catch(e){ msgEl.textContent = base+'⚠️ Guardado en este dispositivo, sin conexión con Sheets'; msgEl.className='msg err'; }
 }
 
 async function cargarPreciosDesdeSheets(){
