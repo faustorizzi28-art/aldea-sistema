@@ -41,30 +41,34 @@ const CONFIG = {
 
 function abrirSheet_() { return SpreadsheetApp.openById(CONFIG.sheetId); }
 
-function doGet(e) {
-  const prm = (e && e.parameter) || {};
-  if (!prm.accion) {
-    return HtmlService.createHtmlOutputFromFile('Index')
-      .setTitle('Aldea del Valle · Reservá tu cancha')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  }
-  try {
-    if (prm.accion === 'disponibilidad') {
-      if (!prm.fecha) throw new Error('Falta la fecha');
-      return responder_({ ok: true, ocupados: ocupadosDelDia_(prm.fecha) });
-    }
-    return responder_({ ok: true, config: configPublica_() });
-  } catch (err) {
-    return responder_({ ok: false, error: err.message });
-  }
+/**
+ * Las funciones "api*" de acá abajo son las que de verdad hacen el trabajo.
+ * Se pueden llamar de dos formas (la página elige sola cuál usar, ver
+ * Index.html):
+ *   1) google.script.run.apiConfig() — cuando esta misma página la sirve
+ *      este Apps Script (es el caso normal, "Implementar → Aplicación web").
+ *      Las páginas de Apps Script corren adentro de un iframe especial de
+ *      Google y NO pueden pedirse datos a sí mismas con fetch() normal, por
+ *      eso hace falta este puente (google.script.run) en vez de fetch().
+ *   2) fetch(url, ...) con doGet/doPost — solo para el caso de publicar
+ *      index.html aparte (otro hosting), donde sí funciona fetch() normal.
+ */
+function apiConfig() {
+  try { return { ok: true, config: configPublica_() }; }
+  catch (err) { return { ok: false, error: err.message }; }
 }
 
-function doPost(e) {
+function apiDisponibilidad(fecha) {
+  try {
+    if (!fecha) throw new Error('Falta la fecha');
+    return { ok: true, ocupados: ocupadosDelDia_(fecha) };
+  } catch (err) { return { ok: false, error: err.message }; }
+}
+
+function apiReservar(d) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
-    const d = JSON.parse(e.postData.contents);
     validarReserva_(d);
 
     const ocupados = ocupadosDelDia_(d.fecha);
@@ -103,14 +107,37 @@ function doPost(e) {
     const waComprobante = linkWhatsApp_(CONFIG.whatsapp,
       'Hola! Te mando el comprobante de la seña de mi reserva: ' + d.cancha + ' el ' + fechaLarga_(d.fecha) + ' ' + horario + '.');
 
-    return responder_({
+    return {
       ok: true,
       horario: horario,
       sena: CONFIG.sena,
       resto: resto,
       pago: { alias: 'faustorizzi', banco: 'Brubank', titular: 'Fausto Rizzi' },
       whatsappComprobante: waComprobante,
-    });
+    };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet(e) {
+  const prm = (e && e.parameter) || {};
+  if (!prm.accion) {
+    return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Aldea del Valle · Reservá tu cancha')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  if (prm.accion === 'disponibilidad') return responder_(apiDisponibilidad(prm.fecha));
+  return responder_(apiConfig());
+}
+
+function doPost(e) {
+  try {
+    const d = JSON.parse(e.postData.contents);
+    return responder_(apiReservar(d));
   } catch (err) {
     return responder_({ ok: false, error: err.message });
   } finally {

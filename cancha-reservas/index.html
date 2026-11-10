@@ -96,20 +96,36 @@
 <script>
 // Si publicás esta página aparte (no servida por el propio Apps Script),
 // pegá acá la URL /exec. Si la sirve el mismo Apps Script (Implementar →
-// Aplicación web), dejalo vacío: usa su propia URL sola.
+// Aplicación web, el caso normal), dejalo vacío.
 const API_URL_FIJA = '';
 
 let CFG = null;
 let fechaSel = null, canchaSel = null, horaSel = null;
 let ocupadosCache = {};
 
-function apiUrl(){ return API_URL_FIJA || window.location.href.split('?')[0]; }
+// Esta página normalmente la sirve el propio Apps Script (HtmlService),
+// que la corre adentro de un iframe especial de Google: ahí fetch() NO
+// puede pedirse datos a sí mismo. Por eso, cuando existe google.script.run
+// (significa que estamos corriendo adentro de Apps Script) lo usamos; si no
+// —porque la página se publicó aparte, en otro hosting— caemos a fetch()
+// contra doGet/doPost. Misma idea que usa GLORIN para este mismo problema.
+const EN_APPS_SCRIPT = !!(window.google && window.google.script && window.google.script.run);
 
-async function api(metodo, params, body){
-  const url = apiUrl() + (params ? ('?' + new URLSearchParams(params).toString()) : '');
-  const opts = metodo === 'POST' ? { method:'POST', body: JSON.stringify(body) } : {};
-  const r = await fetch(url, opts);
-  return r.json();
+function llamar(fn, arg){
+  return new Promise((resolve)=>{
+    if(EN_APPS_SCRIPT){
+      const run = google.script.run.withSuccessHandler(resolve).withFailureHandler(err=>resolve({ok:false, error: err.message||String(err)}));
+      arg === undefined ? run[fn]() : run[fn](arg);
+      return;
+    }
+    const url = API_URL_FIJA || window.location.href.split('?')[0];
+    if(fn === 'apiReservar'){
+      fetch(url, { method:'POST', body: JSON.stringify(arg) }).then(r=>r.json()).then(resolve);
+    } else {
+      const params = fn === 'apiDisponibilidad' ? {accion:'disponibilidad', fecha: arg} : {accion:'config'};
+      fetch(url + '?' + new URLSearchParams(params).toString()).then(r=>r.json()).then(resolve);
+    }
+  });
 }
 
 function diasArray(n){
@@ -125,7 +141,7 @@ function yyyymmdd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart
 function fmtMiles(n){ return '$ '+Math.round(n).toLocaleString('es-AR'); }
 
 async function init(){
-  const r = await api('GET', {accion:'config'});
+  const r = await llamar('apiConfig');
   if(!r.ok){ document.getElementById('cargando').textContent = 'No se pudo cargar la configuración.'; return; }
   CFG = r.config;
   document.getElementById('cargando').classList.add('oculto');
@@ -155,7 +171,7 @@ function elegirCancha(c, el){
   ocultarDatos();
 }
 async function cargarOcupados(){
-  const r = await api('GET', {accion:'disponibilidad', fecha: fechaSel});
+  const r = await llamar('apiDisponibilidad', fechaSel);
   ocupadosCache = r.ok ? r.ocupados : {};
 }
 function pintarSlots(){
@@ -198,7 +214,7 @@ async function reservar(){
   btn.disabled = true; btn.textContent = 'Reservando…';
   msgEl.textContent = ''; msgEl.className = 'msg';
 
-  const r = await api('POST', null, { nombre, tel, mesa, fecha: fechaSel, cancha: canchaSel, hora: horaSel });
+  const r = await llamar('apiReservar', { nombre, tel, mesa, fecha: fechaSel, cancha: canchaSel, hora: horaSel });
   btn.disabled = false; btn.textContent = 'Reservar';
 
   if(!r.ok){ msgEl.textContent = r.error || 'No se pudo reservar.'; msgEl.className = 'msg err'; return; }
