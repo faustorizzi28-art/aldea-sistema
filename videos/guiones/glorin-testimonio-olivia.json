@@ -1,0 +1,253 @@
+{
+ "titulo": "GLORIN – Testimonio de la familia de Olivia",
+ "video": "glorin-testimonio.mp4",
+ "segundos": 17.95,
+ "frases": [
+  {
+   "texto": "Bueno, familia, ¿qué les pareció?",
+   "inicio": 0.2,
+   "fin": 2.4,
+   "palabras": [
+    {
+     "p": "Bueno,",
+     "i": 0.2,
+     "f": 0.66
+    },
+    {
+     "p": "familia,",
+     "i": 0.66,
+     "f": 1.26
+    },
+    {
+     "p": "¿qué",
+     "i": 1.26,
+     "f": 1.57
+    },
+    {
+     "p": "les",
+     "i": 1.57,
+     "f": 1.79
+    },
+    {
+     "p": "pareció?",
+     "i": 1.79,
+     "f": 2.4
+    }
+   ]
+  },
+  {
+   "texto": "Bueno, la verdad, espectacular.",
+   "inicio": 3.0,
+   "fin": 5.0,
+   "palabras": [
+    {
+     "p": "Bueno,",
+     "i": 3.0,
+     "f": 3.43
+    },
+    {
+     "p": "la",
+     "i": 3.43,
+     "f": 3.57
+    },
+    {
+     "p": "verdad,",
+     "i": 3.57,
+     "f": 4.07
+    },
+    {
+     "p": "espectacular.",
+     "i": 4.07,
+     "f": 5.0
+    }
+   ]
+  },
+  {
+   "texto": "Los chicos súper entretenidos, divertidos todo el tiempo,",
+   "inicio": 5.0,
+   "fin": 8.4,
+   "palabras": [
+    {
+     "p": "Los",
+     "i": 5.0,
+     "f": 5.2
+    },
+    {
+     "p": "chicos",
+     "i": 5.2,
+     "f": 5.61
+    },
+    {
+     "p": "súper",
+     "i": 5.61,
+     "f": 5.95
+    },
+    {
+     "p": "entretenidos,",
+     "i": 5.95,
+     "f": 6.84
+    },
+    {
+     "p": "divertidos",
+     "i": 6.84,
+     "f": 7.52
+    },
+    {
+     "p": "todo",
+     "i": 7.52,
+     "f": 7.79
+    },
+    {
+     "p": "el",
+     "i": 7.79,
+     "f": 7.92
+    },
+    {
+     "p": "tiempo,",
+     "i": 7.92,
+     "f": 8.4
+    }
+   ]
+  },
+  {
+   "texto": "así que es un servicio híper recomendable.",
+   "inicio": 8.4,
+   "fin": 11.0,
+   "palabras": [
+    {
+     "p": "así",
+     "i": 8.4,
+     "f": 8.62
+    },
+    {
+     "p": "que",
+     "i": 8.62,
+     "f": 8.83
+    },
+    {
+     "p": "es",
+     "i": 8.83,
+     "f": 8.98
+    },
+    {
+     "p": "un",
+     "i": 8.98,
+     "f": 9.12
+    },
+    {
+     "p": "servicio",
+     "i": 9.12,
+     "f": 9.7
+    },
+    {
+     "p": "híper",
+     "i": 9.7,
+     "f": 10.06
+    },
+    {
+     "p": "recomendable.",
+     "i": 10.06,
+     "f": 11.0
+    }
+   ]
+  },
+  {
+   "texto": "Así que fue muy bueno.",
+   "inicio": 13.5,
+   "fin": 15.1,
+   "palabras": [
+    {
+     "p": "Así",
+     "i": 13.5,
+     "f": 13.77
+    },
+    {
+     "p": "que",
+     "i": 13.77,
+     "f": 14.03
+    },
+    {
+     "p": "fue",
+     "i": 14.03,
+     "f": 14.3
+    },
+    {
+     "p": "muy",
+     "i": 14.3,
+     "f": 14.57
+    },
+    {
+     "p": "bueno.",
+     "i": 14.57,
+     "f": 15.1
+    }
+   ]
+  },
+  {
+   "texto": "¡Muchas gracias!",
+   "inicio": 15.5,
+   "fin": 17.4,
+   "palabras": [
+    {
+     "p": "¡Muchas",
+     "i": 15.5,
+     "f": 16.39
+    },
+    {
+     "p": "gracias!",
+     "i": 16.39,
+     "f": 17.4
+    }
+   ]
+  }
+ ],
+ "acento": "#D7263D",
+ "destacados": [
+  {
+   "inicio": 0.2,
+   "fin": 2.6,
+   "arriba": "le preguntamos a la familia",
+   "grande": "¿QUÉ TAL?"
+  },
+  {
+   "inicio": 3.3,
+   "fin": 5.0,
+   "arriba": "la verdad,",
+   "grande": "¡ESPECTACULAR!"
+  },
+  {
+   "inicio": 9.2,
+   "fin": 11.2,
+   "arriba": "un servicio",
+   "grande": "HÍPER",
+   "abajo": "recomendable"
+  }
+ ],
+ "apoyos": [
+  {
+   "inicio": 5.1,
+   "fin": 6.8,
+   "video": "glorin-inflable.mp4",
+   "desde": 0.0
+  },
+  {
+   "inicio": 6.8,
+   "fin": 8.6,
+   "video": "glorin-coreo.mp4",
+   "desde": 0.3
+  },
+  {
+   "inicio": 11.2,
+   "fin": 13.3,
+   "video": "glorin-pinata.mp4",
+   "desde": 0.3
+  },
+  {
+   "inicio": 13.3,
+   "fin": 15.3,
+   "video": "glorin-torta.mp4",
+   "desde": 0.4
+  }
+ ],
+ "musica": null
+}
