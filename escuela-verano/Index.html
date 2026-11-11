@@ -199,6 +199,7 @@
   .codigo{letter-spacing:10px;font-size:26px!important;text-align:center;font-weight:700}
   .sep{height:1px;background:var(--linea);margin:14px 0}
   .derecha{text-align:right}
+  .num-paso{flex:0 0 32px;height:32px;border-radius:50%;background:var(--amarillo);border:2px solid var(--marino);display:flex;align-items:center;justify-content:center;font:var(--w-titulo) 17px var(--f-titulo);color:var(--marino)}
   .fecha3{display:grid;grid-template-columns:1fr 1.6fr 1.2fr;gap:6px}
   .fecha3 select{padding-left:8px;padding-right:4px;min-width:0}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -662,7 +663,8 @@ function enviarInscripcion(btn) {
 function vListo(r) {
   const p = r.pago;
   const alias = p.alias;
-  const sid = (r.items[0] || {}).sede;
+  const sid = (r.items[0] || {}).sede, s = sede(sid) || {};
+  const paso = (n, t) => `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span class="num-paso">${n}</span><h3 style="margin:0;flex:1;min-width:0;overflow-wrap:anywhere">${t}</h3></div>`;
   pintar(`
   <header class="top">${logoSede(sid)}<div class="marca">${esc(r.sede)}</div></header>
   <div class="wrap">
@@ -670,18 +672,24 @@ function vListo(r) {
       <div style="font-size:54px">🎉</div>
       <h2 class="serif" style="font-size:34px">¡Inscripción recibida!</h2>
       <p>${esc(r.items.map(i => i.chico).join(' y '))} · ${esc(r.detalle)}<br>Del ${fLarga(r.desde)} al ${fLarga(r.hasta)}</p>
-      <p class="muted">Te mandamos un mail con todo el detalle.</p>
+      <p class="chip aviso" style="display:inline-block">⏳ Falta un paso: la inscripción se confirma con la seña</p>
+      <p class="muted chico" style="margin:8px 0 0">📧 Te mandamos un mail con todo el detalle y el link para pagar.</p>
     </div>
-    <div class="card" style="border:2px solid var(--c1)"><h3>Para reservar el lugar: seña de ${pesos(r.sena)}</h3>
-      <p class="muted chico">${soloT() ? `Total ${pesos(r.total)}. La seña se paga por transferencia (en efectivo cobramos desde el ${efDesde()}).` : `Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}.`} El saldo, antes del primer día. El link para pagar también te llegó por mail.</p>
-      <button class="btn full acento" style="margin-bottom:12px" onclick="vPagar('${esc(r.tokenPago)}')">💳 Pagar la seña ahora</button>
-      ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
+    <div class="card">${paso(1, 'Avisale a la administración')}
+      <p class="muted chico" style="margin:0 0 10px">Se abre WhatsApp con el resumen de la inscripción ya escrito. Solo tocá enviar.</p>
+      <a class="btn wa full" href="${esc(r.waResumen || r.waComprobante)}" target="_blank" rel="noopener">📲 Enviar resumen por WhatsApp${s.telefono ? ' · ' + esc(s.telefono) : ''}</a>
+    </div>
+    <div class="card" style="border:2px solid var(--c1)">${paso(2, 'Pagá la seña de ' + pesos(r.sena) + ' para confirmar')}
+      <p class="muted chico">${soloT() ? `Total ${pesos(r.total)}. La seña se paga por transferencia${(s.mercadoPago ? ' o Mercado Pago' : '')} (en efectivo cobramos desde el ${efDesde()}).` : `Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}.`} El saldo, antes del primer día.</p>
+      <button class="btn full acento" style="margin-bottom:12px" onclick="vPagar('${esc(r.tokenPago)}')">💳 Pagar la seña ahora${s.mercadoPago ? ' (Mercado Pago o transferencia)' : ''}</button>
+      ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias para transferir</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
       <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>`
-      : `<div class="banner">Te pasamos los datos para transferir por WhatsApp.</div><a class="btn wa full" href="${esc(r.waComprobante.replace(/Te%20mando%20el%20comprobante/, 'Me%20pasás%20los%20datos%20para%20la%20seña'))}" target="_blank">💬 Pedir datos de pago</a>`}
+      : `<div class="banner">Te pasamos el alias para transferir por WhatsApp.</div><a class="btn wa full" href="${esc(r.waComprobante.replace(/Te%20mando%20el%20comprobante/, 'Me%20pasás%20los%20datos%20para%20la%20seña'))}" target="_blank">💬 Pedir el alias</a>`}
+      <p class="muted chico" style="margin:10px 0 0">Cuando se acredita la seña te llega un mail: <b>🎉 Inscripción confirmada</b>.</p>
     </div>
-    <div class="card"><h3>¿Y ahora?</h3>
-      <p>Entrá a <b>Mi cuenta</b> con tu mail para ver las fotos del día, la asistencia, el cronograma de la semana y el saldo.</p>
-      <button class="btn full" onclick="irCuenta()">Entrar a mi cuenta</button>
+    <div class="card"><h3>¿Y después?</h3>
+      <p>Entrá a <b>Mi cuenta</b> con tu mail para subir el apto físico, ver las fotos del día, la asistencia y el saldo.</p>
+      <button class="btn full claro" onclick="irCuenta()">Entrar a mi cuenta</button>
     </div>
   </div>`);
   scrollTo(0, 0);

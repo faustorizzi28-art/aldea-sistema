@@ -611,6 +611,21 @@ function guardarChico_(fam, c, sedeId) {
   return nuevo;
 }
 
+/** Texto del resumen que la familia le manda por WhatsApp a la administración al terminar de inscribir. */
+function resumenWhatsApp_(fam, chicos, items, q, sede) {
+  const L = ['¡Hola! Acabo de inscribir en la escuela de verano de ' + sede.nombre + ' ☀️', ''];
+  items.forEach((it, k) => {
+    const c = chicos[k] || {};
+    L.push('👧 ' + it.chico + ' · ' + nombreGrupo_(it.grupo) + (c.nacimiento ? ' · nació el ' + iso_(c.nacimiento).split('-').reverse().join('/') : ''));
+    const salud = [c.alergias && 'alergias: ' + c.alergias, c.medicacion && 'medicación: ' + c.medicacion, c.condiciones].filter(Boolean).join(' · ');
+    if (salud) L.push('   ⚕️ ' + salud);
+  });
+  L.push('', '📅 ' + q.detalleBase + ' · ' + q.turno.nombre + ' (del ' + fechaCorta_(q.dias[0]) + ' al ' + fechaCorta_(q.dias[q.dias.length - 1]) + ')');
+  L.push('💲 Total ' + pesos_(q.total) + ' · seña para reservar ' + pesos_(q.sena));
+  L.push('', '👤 ' + fam.adulto + (fam.whatsapp ? ' · ' + fam.whatsapp : '') + (fam.email ? ' · ' + fam.email : ''));
+  L.push('N.º de inscripción: ' + items.map(i => i.id).join(', '));
+  return L.join('\n');
+}
 function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
   const sinMatricula = chicos.map(c => yaTieneMatricula_(c.id));
   const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula });
@@ -639,7 +654,8 @@ function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
     items, total: q.total, sena: q.sena, detalle: q.detalleBase + ' · ' + q.turno.nombre + ' · ' + q.etapa.nombre, sobrecupo: asign.filter(a => a.sobrecupo), desde: q.dias[0], hasta: q.dias[q.dias.length - 1],
     pago: sede.pago, sede: sede.nombre, whatsapp: sede.whatsapp,
     tokenPago: tokenPago_(items.map(i => i.id)),
-    waComprobante: linkWhatsApp_(sede.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano de ' + items.map(i => i.chico).join(' y ') + ' (' + items.map(i => i.id).join(', ') + ').')
+    waComprobante: linkWhatsApp_(sede.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano de ' + items.map(i => i.chico).join(' y ') + ' (' + items.map(i => i.id).join(', ') + ').'),
+    waResumen: linkWhatsApp_(sede.whatsapp, resumenWhatsApp_(fam, chicos, items, q, sede))
   };
 }
 
@@ -1453,12 +1469,7 @@ function accRegistrarPago_(d, sesion) {
     agregar_('Pagos', { id: uid_(), fecha: d.fecha || hoy_(), inscripcionId: i.id, familiaId: i.familiaId, chico: i.chico, sede: i.sede, monto,
       medio, nota: limpio_(d.nota), cargadoPor: sesion.s, acredita: acreditaDe_(monto, medio, (Number(i.total) || 0) - (Number(i.pagado) || 0)) });
     const r = recalcularInsc_(i.id);
-    if (d.avisar) {
-      const f = filas_('Familias').filter(x => x.id === i.familiaId)[0];
-      if (f && f.email) MailApp.sendEmail({ to: f.email, name: CONFIG.marca, subject: '✅ Recibimos tu pago · ' + i.chico,
-        htmlBody: marcoMail_(i.sede, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Registramos tu pago de <b>' + pesos_(monto) + '</b> para ' + esc_(i.chico) + '.</p>' +
-          '<p>' + (r.saldo > 0 ? 'Te queda un saldo de <b>' + pesos_(r.saldo) + '</b>.' : '¡Está todo pago! 🎉') + '</p>' + boton_(urlCuenta_(), 'Ver mi cuenta', colorSede_(i.sede))) });
-    }
+    if (d.avisar) avisoPagoFamilia_(i, monto, r);
     return r;
   } finally { lock.releaseLock(); }
 }
@@ -1763,7 +1774,10 @@ function avisoPagoFamilia_(i, monto, r) {
   const f = filas_('Familias').filter(x => x.id === i.familiaId)[0];
   if (!f || !f.email) return;
   try {
-    enviarMail_(f.email, '✅ Recibimos tu pago · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Registramos tu pago de <b>' + pesos_(monto) + '</b> para ' + esc_(i.chico) + '.</p>' +
+    const sena = Number(i.sena) || 0, antes = Number(i.pagado) || 0;
+    const confirma = !esEvento_(i) && sena > 0 && antes < sena && r.pagado >= sena;
+    enviarMail_(f.email, (confirma ? '🎉 Inscripción confirmada · ' : '✅ Recibimos tu pago · ') + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Registramos tu pago de <b>' + pesos_(monto) + '</b> para ' + esc_(i.chico) + '.</p>' +
+      (confirma ? '<p><b>¡La inscripción quedó confirmada y el lugar de ' + esc_(i.chico) + ' está reservado!</b> 🎉</p>' : '') +
       '<p>' + (r.saldo > 0 ? 'Te queda un saldo de <b>' + pesos_(r.saldo) + '</b>.' : '¡Está todo pago! 🎉') + '</p>' + boton_(urlCuenta_(), 'Ver mi cuenta', colorSede_(i.sede)), i.sede);
   } catch (e) { Logger.log(e); }
 }
@@ -2219,7 +2233,7 @@ function mailInscripcion_(fam, res, sede) {
     '<p>' + esc_(res.detalle) + '<br>Del ' + fechaLarga_(res.desde) + ' al ' + fechaLarga_(res.hasta) + '</p>' +
     '<table style="border-collapse:collapse;margin:10px 0">' + filas + '<tr><td style="padding-top:8px">Total' + (recargoPct_() ? ' en efectivo' : '') + '</td><td style="padding-top:8px"><b>' + pesos_(res.total) + '</b></td></tr>' +
     (recargoPct_() ? '<tr><td style="color:#777">Por transferencia o Mercado Pago</td><td style="color:#777">' + pesos_(conRecargo_(res.total)) + '</td></tr>' : '') + '</table>' +
-    '<p>Para reservar el lugar necesitamos la seña de <b>' + precioTxt_(res.sena) + '</b>.' + (soloTransferencia_() ? ' Hasta el ' + fechaLarga_(sumarDias_(CONFIG.efectivoDesde, -1)) + ' cobramos solo por transferencia.' : '') + '</p>' +
+    '<p>⏳ <b>La inscripción se confirma con la seña.</b> Para reservar el lugar necesitamos <b>' + precioTxt_(res.sena) + '</b>.' + (soloTransferencia_() ? ' Hasta el ' + fechaLarga_(sumarDias_(CONFIG.efectivoDesde, -1)) + ' cobramos solo por transferencia.' : '') + '</p>' +
     boton_(urlPago_(res.tokenPago), '💳 Pagar la seña' + (tokenMP_(sede.id) ? ' (Mercado Pago o transferencia)' : ''), sede.color) +
     '<pre style="font-family:inherit;background:#F4EFE3;padding:12px;border-radius:8px">' + esc_(datosPagoTexto_(sede.id)) + '</pre>' +
     '<p style="color:#555">Si pagás por transferencia, subí el comprobante desde el mismo link y la administración lo confirma.</p>' +
