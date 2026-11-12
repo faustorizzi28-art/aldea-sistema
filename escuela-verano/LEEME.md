@@ -10,6 +10,8 @@ Tiene **tres puertas** con el mismo link:
 | Equipo (profes, auxiliares de área, guardavidas, coordinación, administración) | `…/exec?p=profes` | Con su mail y un código. La administración los da de alta con su rol. |
 | Administración | `…/exec?p=admin` | Con PIN. Cada sede tiene el suyo y hay un PIN general que ve las dos. |
 
+> **Noviembre 2026:** Colonia Dewey se dio de baja. La app quedó solo para **Aldea de Valle** y abre directo en su página. Para sumar otra escuela más adelante se agrega su bloque en `CONFIG.sedes`, y la pantalla para elegir escuela vuelve a aparecer sola.
+
 ## Cómo se entra (definido por Fausto, 1/11/2026)
 1. **¿De qué escuela de verano sos?** La primera pantalla muestra las dos sedes con su logo: **Aldea de Valle** o **Colonia Dewey**. La app recuerda la elección: la próxima vez entra directo a esa sede, con un botón para cambiarla.
 2. **¿Quién sos?** Dentro de cada sede, con su logo y sus colores:

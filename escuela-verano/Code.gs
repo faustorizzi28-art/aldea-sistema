@@ -1,5 +1,5 @@
 /**
- * Escuela de Verano — Aldea de Valle + Colonia Dewey
+ * Escuela de Verano — Aldea de Valle
  * ------------------------------------------------------------
  * Una sola app web (Google Apps Script pegado en una planilla) con tres puertas:
  *
@@ -148,52 +148,6 @@ const CONFIG = {
         descuentoRenovacion: 0,
         senaPct: 50                       // seña = inscripción + 50%; congela el precio de preventa
       }
-    },
-    colonia: {
-      id: 'colonia',
-      nombre: 'Colonia Dewey',
-      color: '#C41E3A', acento: '#6CCDF2',   // rojo y celeste del logo de Colonia Dewey
-      direccion: 'Etruria 7755, Villa Rivera Indarte, Córdoba',
-      whatsapp: '5493512799950', telefono: '+54 9 3512 79-9950',   // administración de Colonia Dewey: dudas y consultas
-      lat: null, lng: null, radio: 150,   // fijala desde Administración → Ajustes → "Usar mi ubicación"
-      inicio: '2026-12-14', fin: '2027-02-19',        // 10 semanas, de lunes 14/12 a viernes 19/2
-      feriados: ['2026-12-25', '2027-01-01', '2027-02-08', '2027-02-09'],   // Navidad, Año Nuevo y Carnaval
-      cupoPorGrupo: 30,   // si se pasa, la inscripción entra igual y se avisa para abrir otro grupo
-      bajada: 'La colonia de siempre: pileta, juegos y amigos todo el verano.',
-      actividades: ['Pileta', 'Juegos', 'Deportes', 'Talleres'],   // ⚠️ a confirmar
-      ficha: [
-        ['Edades', 'De 3 a 13 años, en grupos por edad'],
-        ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h (a confirmar)'],
-        ['Opcionales', 'Pre-hora, post-hora y almuerzo (a confirmar)']
-      ],
-      pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Colonia Dewey: a confirmar
-      precios: {
-        // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
-        // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
-        etapas: [
-          { id: 'preventa', nombre: 'Preventa', hasta: '2026-11-15', inscripcion: 35000,
-            turnos: { manana:   { semana: 89000,  quincena: 170000, temporada: 714000,  dia: 27000 },    // dia: a confirmar
-                      tarde:    { semana: 80000,  quincena: 153000, temporada: 643000,  dia: 24000 },
-                      completa: { semana: 161000, quincena: 305000, temporada: 1285000, dia: 48000 } } },
-          { id: 'regular', nombre: 'Precio regular', inscripcion: 50000,                             // ⚠️ desde el 16/11: preventa / 0,85, a confirmar
-            turnos: { manana:   { semana: 105000, quincena: 200000, temporada: 840000,  dia: 32000 },
-                      tarde:    { semana: 94000,  quincena: 180000, temporada: 756000,  dia: 28000 },
-                      completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
-        ],
-        turnos: [
-          { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     fin: '13:00', color: '#FFA21F' },
-          { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', fin: '17:00', color: '#F25FA8' },
-          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     fin: '17:00', color: '#6CC23A' }
-        ],
-        extras: [
-          { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
-          { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 30000, precioDia: 6000, turnos: ['manana'], detalle: 'Desde $30.000 por semana' },
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa' }
-        ],
-        descuentoHermanos: [0, 20, 30],   // % por hijo: el 2.º 20%, del 3.º en adelante 30%
-        descuentoRenovacion: 0,
-        senaPct: 50                       // seña = inscripción + 50%; congela el precio de preventa
-      }
     }
   }
 };
@@ -247,7 +201,7 @@ function doGet(e) {
   const p = String((e && e.parameter && e.parameter.p) || '');
   const titulos = { profes: 'Profes · Escuela de Verano', admin: 'Administración · Escuela de Verano' };
   return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle(titulos[p] || 'Escuela de Verano · Aldea de Valle y Colonia Dewey')
+    .setTitle(titulos[p] || 'Escuela de Verano · Aldea de Valle')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -1685,7 +1639,7 @@ function accGuardarAjustes_(d, sesion) {
 }
 function ajustesPublicos_(s) {
   const cfg = config_(), out = {};
-  Object.keys(cfg).forEach(k => { if (/^(pin|email)/.test(k) && (s === 'todas' || k.slice(-s.length - 1) === '_' + s)) out[k] = cfg[k]; });
+  Object.keys(cfg).forEach(k => { const sk = (/^(?:pin|email)_(.+)$/.exec(k) || [])[1]; if (/^(pin|email)/.test(k) && (!sk || CONFIG.sedes[sk]) && (s === 'todas' || k.slice(-s.length - 1) === '_' + s)) out[k] = cfg[k]; });   // sin sedes dadas de baja
   if (s === 'todas') out.recargoTransferenciaPct = recargoPct_();
   return out;
 }
