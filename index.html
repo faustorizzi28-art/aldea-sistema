@@ -786,6 +786,13 @@
       <button class="btn btn-cantina" id="btn-import-promos-agregados" onclick="importarPromosAgregados()">Cargar combos + agregado</button>
       <div class="msg" id="import-promos-agregados-msg"></div>
     </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Actualizar precio de las Coca Cola (+$500)</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Sube $500 el precio de Coca Cola/Zero 500ml ($4.300), 1,25lt ($5.000), 1,5lt ($6.000) y 2,5lt ($6.800) — y lo guarda para todos los dispositivos.</div>
+      <button class="btn btn-cantina" id="btn-actualizar-cocas" onclick="actualizarPreciosCoca()">Actualizar precio de las Coca Cola</button>
+      <div class="msg" id="actualizar-cocas-msg"></div>
+    </div>
     </details>
   </div>
 
@@ -1655,6 +1662,46 @@ async function importarPromosAgregados(){
   btn.disabled = false;
 }
 
+const PRECIOS_ACTUALIZADOS_COCA = [
+  ['Sin alcohol','Coca Cola / Zero 500ml',4300],
+  ['Sin alcohol','Coca Cola / Zero 1,25lt',5000],
+  ['Sin alcohol','Coca Cola / Zero 1,5lt',6000],
+  ['Sin alcohol','Coca Cola 2,5lt',6800],
+];
+
+async function actualizarPreciosCoca(){
+  const msgEl = document.getElementById('actualizar-cocas-msg');
+  const btn = document.getElementById('btn-actualizar-cocas');
+  if(!confirm('Se va a subir $500 el precio de las Coca Cola (500ml, 1,25lt, 1,5lt y 2,5lt) para todos los dispositivos. ¿Continuar?')) return;
+  btn.disabled = true;
+  msgEl.textContent = '⏳ Actualizando…'; msgEl.className = 'msg';
+
+  let actualizadas = 0;
+  PRECIOS_ACTUALIZADOS_COCA.forEach(([cat, nombre, precioNuevo])=>{
+    const items = carta[cat];
+    if(!items) return;
+    const item = items.find(([n])=> n.toLowerCase()===nombre.toLowerCase());
+    if(item){ item[1] = precioNuevo; actualizadas++; }
+  });
+  localStorage.setItem('aldea_carta', JSON.stringify(carta));
+  localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+  if(document.getElementById('v-precios')?.classList.contains('active')) renderPrecios();
+  if(document.getElementById('v-cantina')?.classList.contains('active')) renderComandaMesas();
+
+  const url = getUrl();
+  if(!url){
+    msgEl.textContent = `✅ ${actualizadas} precio(s) actualizado(s) en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar).`;
+    msgEl.className = 'msg ok'; btn.disabled = false; return;
+  }
+  try{
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
+    const j = await r.json();
+    msgEl.textContent = j.ok ? `✅ ${actualizadas} precio(s) actualizado(s) para todos los dispositivos.` : '❌ '+j.error;
+    msgEl.className = j.ok ? 'msg ok' : 'msg err';
+  }catch(e){ msgEl.textContent = '⚠️ Actualizado local, sin conexión con Sheets — probá de nuevo cuando tengas señal.'; msgEl.className = 'msg err'; }
+  btn.disabled = false;
+}
+
 /* ═══════════════════════════════════════════════
    SEMANA DE CANCHA — grilla combinada: turnos fijos + reservas puntuales
    ═══════════════════════════════════════════════ */
@@ -1963,8 +2010,8 @@ const CARTA_DEFAULT = {
     ['Café chico',2700],['Café grande',3500],['Medialuna',1000],['Ficha de Metegol',1000],
   ],
   'Sin alcohol': [
-    ['Coca Cola / Zero 500ml',3800],['Fanta / Sprite 500ml',3800],['Gatorade (azul/manzana/roja) 500ml',3800],['Speed 473ml',5000],
-    ['Coca Cola / Zero 1,25lt',4500],['Sprite 1,5lt',5300],['Coca Cola / Zero 1,5lt',5500],['Coca Cola 2,5lt',6300],['Pritty 3lt',6500],
+    ['Coca Cola / Zero 500ml',4300],['Fanta / Sprite 500ml',3800],['Gatorade (azul/manzana/roja) 500ml',3800],['Speed 473ml',5000],
+    ['Coca Cola / Zero 1,25lt',5000],['Sprite 1,5lt',5300],['Coca Cola / Zero 1,5lt',6000],['Coca Cola 2,5lt',6800],['Pritty 3lt',6500],
     ['Agua 500ml',2600],['Agua 2lt',4300],['Soda 500ml',2600],['Cepita 1lt',4500],
     ['Levite 500ml (nar/man/pom)',3500],['Levite 1,5lt (nar/man/pom)',4500],['Levite 2,25lt (nar/man/pom)',5300],
   ],
