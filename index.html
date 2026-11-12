@@ -779,6 +779,13 @@
       <button class="btn btn-cantina" id="btn-import-promos" onclick="importarPromosNuevas()">Cargar promos nuevas</button>
       <div class="msg" id="import-promos-msg"></div>
     </div>
+
+    <div class="config-box" style="margin-top:16px;">
+      <h3 style="font-size:14px;font-weight:700;margin-bottom:6px;">📥 Cargar combos + cerveza/gaseosa</h3>
+      <div style="font-size:12px;color:var(--gris);margin-bottom:14px;">Agrega a "Promos" de Cantina la opción de sumar cerveza (+$9.000) o gaseosa (+$3.000) a cada combo (2 Hamburguesas, 2 Lomos, 2 Pizzas, Tabla de empanadas, Papas grandes), más el combo nuevo "Lomitón (rinde 8 porciones)" — y lo guarda para todos los dispositivos.</div>
+      <button class="btn btn-cantina" id="btn-import-promos-agregados" onclick="importarPromosAgregados()">Cargar combos + agregado</button>
+      <div class="msg" id="import-promos-agregados-msg"></div>
+    </div>
     </details>
   </div>
 
@@ -1575,6 +1582,15 @@ const PROMOS_NUEVAS = [
   ['Promo 2 Pizzas',28000],['Promo Tabla de empanadas',30000],['Promo Papas grandes',8000],
 ];
 
+const PROMOS_AGREGADOS = [
+  ['Promo 2 Hamburguesas + Cerveza',34000],['Promo 2 Hamburguesas + Gaseosa',28000],
+  ['Promo 2 Lomos completos + Cerveza',43000],['Promo 2 Lomos completos + Gaseosa',37000],
+  ['Promo 2 Pizzas + Cerveza',37000],['Promo 2 Pizzas + Gaseosa',31000],
+  ['Promo Tabla de empanadas + Cerveza',39000],['Promo Tabla de empanadas + Gaseosa',33000],
+  ['Promo Papas grandes + Cerveza',17000],['Promo Papas grandes + Gaseosa',11000],
+  ['Promo Lomitón (rinde 8 porciones)',48000],['Promo Lomitón + Cerveza',57000],['Promo Lomitón + Gaseosa',51000],
+];
+
 async function importarPromosNuevas(){
   const msgEl = document.getElementById('import-promos-msg');
   const btn = document.getElementById('btn-import-promos');
@@ -1602,6 +1618,38 @@ async function importarPromosNuevas(){
     const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
     const j = await r.json();
     msgEl.textContent = j.ok ? `✅ ${agregadas} promo(s) nueva(s) guardadas para todos los dispositivos.` : '❌ '+j.error;
+    msgEl.className = j.ok ? 'msg ok' : 'msg err';
+  }catch(e){ msgEl.textContent = '⚠️ Agregado local, sin conexión con Sheets — probá de nuevo cuando tengas señal.'; msgEl.className = 'msg err'; }
+  btn.disabled = false;
+}
+
+async function importarPromosAgregados(){
+  const msgEl = document.getElementById('import-promos-agregados-msg');
+  const btn = document.getElementById('btn-import-promos-agregados');
+  if(!confirm(`Se van a agregar ${PROMOS_AGREGADOS.length} opciones nuevas (combos + cerveza/gaseosa) a "Promos" de Cantina, para todos los dispositivos. ¿Continuar?`)) return;
+  btn.disabled = true;
+  msgEl.textContent = '⏳ Agregando…'; msgEl.className = 'msg';
+
+  if(!carta['Promos']) carta['Promos'] = [];
+  let agregadas = 0;
+  PROMOS_AGREGADOS.forEach(([nombre, precio])=>{
+    const yaExiste = carta['Promos'].some(([n])=> n.toLowerCase()===nombre.toLowerCase());
+    if(!yaExiste){ carta['Promos'].push([nombre, precio]); agregadas++; }
+  });
+  localStorage.setItem('aldea_carta', JSON.stringify(carta));
+  localStorage.setItem('aldea_carta_version', String(CARTA_VERSION));
+  if(document.getElementById('v-precios')?.classList.contains('active')) renderPrecios();
+  if(document.getElementById('v-cantina')?.classList.contains('active')) renderComandaMesas();
+
+  const url = getUrl();
+  if(!url){
+    msgEl.textContent = `✅ ${agregadas} opción(es) agregada(s) en este dispositivo (configurá Sheets en ⚙️ Config para sincronizar).`;
+    msgEl.className = 'msg ok'; btn.disabled = false; return;
+  }
+  try{
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ tipo:'precios', cartaJSON: JSON.stringify(carta) }) });
+    const j = await r.json();
+    msgEl.textContent = j.ok ? `✅ ${agregadas} opción(es) nueva(s) guardadas para todos los dispositivos.` : '❌ '+j.error;
     msgEl.className = j.ok ? 'msg ok' : 'msg err';
   }catch(e){ msgEl.textContent = '⚠️ Agregado local, sin conexión con Sheets — probá de nuevo cuando tengas señal.'; msgEl.className = 'msg err'; }
   btn.disabled = false;
@@ -1933,6 +1981,12 @@ const CARTA_DEFAULT = {
     ['Promo Vodka Skyy Frutos Rojos',47000],['Promo Vodka Smirnoff Frutos Rojos',47000],['Promo Vodka Smirnoff Manzana Verde',47000],
     ['Promo 2 Hamburguesas',25000],['Promo 2 Lomos completos',34000],['Promo El Milton (lomo pizza)',48000],
     ['Promo 2 Pizzas',28000],['Promo Tabla de empanadas',30000],['Promo Papas grandes',8000],
+    ['Promo 2 Hamburguesas + Cerveza',34000],['Promo 2 Hamburguesas + Gaseosa',28000],
+    ['Promo 2 Lomos completos + Cerveza',43000],['Promo 2 Lomos completos + Gaseosa',37000],
+    ['Promo 2 Pizzas + Cerveza',37000],['Promo 2 Pizzas + Gaseosa',31000],
+    ['Promo Tabla de empanadas + Cerveza',39000],['Promo Tabla de empanadas + Gaseosa',33000],
+    ['Promo Papas grandes + Cerveza',17000],['Promo Papas grandes + Gaseosa',11000],
+    ['Promo Lomitón (rinde 8 porciones)',48000],['Promo Lomitón + Cerveza',57000],['Promo Lomitón + Gaseosa',51000],
   ],
   'Para comer': [['Empanadas árabes (c/u)',3000],['PBT Salame',4000],['PBT Jamón',4000]],
   'Extras': [['Cubiertos',2500],['Hielo',0],['Carbón',7000],['Leña',7000]],
