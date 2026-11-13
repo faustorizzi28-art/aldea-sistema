@@ -39,7 +39,7 @@
 const CONFIG = {
   marca: 'GLORIN Animaciones',
   nombreCalendario: 'GLORIN',
-  whatsapp: '5493516197928',          // número que recibe los mensajes (formato internacional, sin + ni espacios)
+  whatsapp: '5493512799950',          // número que recibe los mensajes (formato internacional, sin + ni espacios)
   instagram: '',                       // opcional, ej: 'glorinanimaciones'
   emailAviso: '',                      // vacío = te llega al mail de la cuenta dueña del script
   invitarFamilia: true,                // si la familia deja mail, la invitamos al evento del calendario
