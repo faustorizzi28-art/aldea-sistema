@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-500-italic.woff2);font-weight:500;font-style:italic}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-300-italic.woff2);font-weight:300;font-style:italic}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-900-italic.woff2);font-weight:900;font-style:italic}
+@font-face{font-family:ISerif;src:url(file:///home/user/aldea-sistema/videos/public/fonts/instrument-serif-latin-400-normal.woff2)}
+@font-face{font-family:ISerif;src:url(file:///home/user/aldea-sistema/videos/public/fonts/instrument-serif-latin-400-italic.woff2);font-style:italic}
+@page maqueta{size:297mm 210mm;margin:0}
+@page chapa{size:200mm 150mm;margin:0}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0}
+.p1{page:maqueta;width:297mm;height:210mm;background:#ECEAE4;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6mm;page-break-after:always}
+.p2{page:chapa;width:200mm;height:150mm;position:relative}
+/* marco */
+.marco{width:250mm;height:178mm;background:#121212;padding:9mm;box-shadow:0 4mm 10mm rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+.oro1{width:100%;height:100%;padding:3.2mm;background:linear-gradient(135deg,#7a5a14,#f3d27a 25%,#a77c22 50%,#f6dc8c 75%,#8a6418);
+  -webkit-mask:none;position:relative}
+.oro1::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,.35) 0 1mm,transparent 1mm 2.2mm);mix-blend-mode:multiply;pointer-events:none}
+.negro{width:100%;height:100%;background:#151515;padding:4mm;position:relative}
+.oro2{width:100%;height:100%;border:1.6mm solid #c9a24a;outline:.5mm dotted #e8c86e;outline-offset:-2.6mm;background:#1b1b1b;display:flex;align-items:center;justify-content:center}
+/* chapa dorada */
+.chapa{position:relative;width:200mm;height:150mm;color:#1a1a1a;
+  background:linear-gradient(115deg,#b8902e 0%,#f2d98a 22%,#c9a243 42%,#f7e3a0 58%,#b88d2c 78%,#e9cd7c 100%)}
+.chapa .brillo{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 .12mm,rgba(0,0,0,.025) .12mm .24mm)}
+.en-marco .chapa{transform:scale(.8);box-shadow:0 1mm 3mm rgba(0,0,0,.5)}
+.borde{position:absolute;inset:6mm;border:.5mm solid #1a1a1a;border-radius:1mm}
+.borde2{position:absolute;inset:7.5mm;border:.25mm solid #1a1a1a}
+.cont{position:absolute;inset:12mm 14mm 10mm;display:flex;flex-direction:column;align-items:center;text-align:center}
+.cab{width:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{height:27mm;filter:brightness(0)}
+.marca{font:400 13mm/1 ISerif;letter-spacing:.2mm;text-align:right}
+.marca small{display:block;font:800 3mm Mont;letter-spacing:1.3mm;margin-top:2mm}
+.frase{font:900 italic 4.8mm/1.4 Mont;margin-top:8mm;max-width:160mm}
+.nombre{font:800 7.4mm/1.1 Mont;letter-spacing:.2mm;margin-top:7mm;white-space:nowrap}
+.texto{font:500 italic 4.4mm/1.55 Mont;margin-top:6mm;max-width:165mm}
+.fecha{position:absolute;right:4mm;bottom:2mm;font:400 5.2mm ISerif}
+.nota{font:500 italic 4mm Mont;color:#555}
+</style></head><body>
+<div class="p1">
+  <div class="marco"><div class="oro1"><div class="negro"><div class="oro2 en-marco"><div class="chapa" id="c1"></div></div></div></div></div>
+  <div class="nota">Maqueta de referencia · Chapa dorada de 20 x 15 cm en marco negro con guarda dorada (como el modelo)</div>
+</div>
+<div class="p2"><div class="chapa" id="c2"></div></div>
+<template id="t">
+  <div class="brillo"></div><div class="borde"></div><div class="borde2"></div>
+  <div class="cont">
+    <div class="cab"><img class="logo" src="logo-aldea.png"><div class="marca">Aldea de Valle<small>RECONOCIMIENTO</small></div></div>
+    <div class="frase">“El esfuerzo de cada día siempre vale la pena: lo que se hace con amor deja huella”</div>
+    <div class="nombre">RODRÍGUEZ GÓMEZ, MARÍA MILAGROS</div>
+    <div class="texto">Con gratitud y orgullo te felicitamos por tu entrega en el patín de Aldea de Valle y por tu gran trabajo y trayectoria como administrativa: nuestra mano derecha para que Aldea siga creciendo. ¡Y felicitaciones por la llegada de tu nueva niña, Olivia!</div>
+    <div class="fecha">Noviembre 2026</div>
+  </div>
+</template>
+<script>for(const id of ['c1','c2'])document.getElementById(id).append(document.getElementById('t').content.cloneNode(true));</script>
+</body></html>
