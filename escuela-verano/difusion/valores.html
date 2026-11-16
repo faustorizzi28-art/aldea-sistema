@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Lilita One';src:url(fonts/fontsource-lilita-one-5.3.0/files/lilita-one-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:700;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:800;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-800-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:900;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-900-normal.woff2) format('woff2');}
+:root{--azul:#1E7BC8;--marino:#16306A;--amarillo:#F2CA11;--coral:#FF6B5B;--verde:#6CC23A;--naranja:#FFA21F;--rosa:#F25FA8;--crema:#E8F4FC}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1350px;overflow:hidden;font-family:'Archivo',sans-serif;color:var(--marino);
+  background:radial-gradient(circle at 50% 0%,#3FA2E6 0,#1E7BC8 55%,#1766AE 100%)}
+.ondas{position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 18%,rgba(255,255,255,.07) 0 34px,transparent 34px 68px)}
+.rayos{position:absolute;top:-180px;right:-180px;width:540px;height:540px;border-radius:50%;background:repeating-conic-gradient(#FFD93B 0 7deg,transparent 7deg 22deg)}
+.sol{position:absolute;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:var(--amarillo);border:6px solid var(--marino);box-shadow:inset -30px -30px 0 rgba(0,0,0,.06)}
+.wrap{position:relative;padding:50px 64px 0}
+.marcas{display:flex;align-items:center;gap:22px}
+.aldea{display:inline-flex;align-items:center;gap:12px;background:#1F8F4E;border:5px solid var(--marino);border-radius:22px;padding:10px 20px 10px 14px;transform:rotate(-3deg);box-shadow:6px 6px 0 var(--marino)}
+.aldea svg{height:56px;width:auto;color:var(--amarillo)}
+.aldea b{display:block;font:40px/0.9 'Lilita One';color:var(--amarillo)}
+.aldea small{display:block;font:19px/1 'Lilita One';color:#fff;letter-spacing:.12em;margin-top:4px}
+.ceja{margin-top:34px;font:800 30px 'Archivo';letter-spacing:.24em;color:#fff;text-transform:uppercase}
+.titulo{font:112px/0.9 'Lilita One';color:var(--amarillo);-webkit-text-stroke:7px var(--marino);paint-order:stroke fill;text-shadow:0 8px 0 var(--marino);margin-top:4px}
+.sub{font:800 28px/1.2 'Archivo';color:#fff;margin-top:14px}
+.tabla{margin-top:26px;background:#fff;border:5px solid var(--marino);border-radius:28px;box-shadow:8px 8px 0 var(--marino);padding:14px 18px 10px}
+table{width:100%;border-collapse:separate;border-spacing:6px}
+th{background:var(--amarillo);border-radius:12px;padding:10px 4px;font:26px 'Lilita One';text-transform:uppercase}
+th small{display:block;font:700 15px 'Archivo';text-transform:none}
+th.vacio{background:none}
+td{background:#FFF6CF;border-radius:12px;padding:14px 4px;text-align:center;font:900 31px 'Archivo';font-variant-numeric:tabular-nums}
+td.et{background:none;text-align:left;padding-left:4px}
+td.et b{display:block;font:34px/1 'Lilita One';text-transform:uppercase}
+td.et span{font:800 19px 'Archivo'}
+.m b{color:var(--naranja)}.t b{color:var(--rosa)}.c b{color:#3E9A1F}
+.fila{display:flex;gap:14px;margin-top:22px}
+.box{flex:1;background:var(--marino);color:#fff;border:4px solid #fff;border-radius:22px;padding:14px 18px}
+.box h3{font:28px/1 'Lilita One';color:var(--amarillo);text-transform:uppercase;margin-bottom:8px}
+.box p{font:800 22px/1.35 'Archivo'}
+.box p b{color:var(--amarillo)}
+.pie{position:absolute;left:0;right:0;bottom:0;background:var(--marino);color:#fff;padding:26px 64px 30px;display:flex;align-items:center;gap:26px}
+.cta{flex:1}
+.cta .grande{font:52px/0.95 'Lilita One';color:var(--amarillo)}
+.cta .chico{font:700 24px/1.25 'Archivo';margin-top:8px}
+.wa{display:inline-flex;gap:10px;background:#25D366;color:#fff;border:4px solid #fff;border-radius:999px;padding:7px 20px;font:800 26px 'Archivo';margin-top:12px}
+.herm{background:var(--verde);border:5px solid #fff;border-radius:50%;width:200px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-8deg);flex:0 0 auto;box-shadow:0 0 0 6px var(--marino)}
+.herm b{font:58px/0.9 'Lilita One';color:#fff;-webkit-text-stroke:3px var(--marino);paint-order:stroke fill}
+.herm span{font:800 20px/1.1 'Archivo';color:var(--marino);margin-top:4px}
+</style></head><body>
+<div class="ondas"></div><div class="rayos"></div><div class="sol"></div>
+<div class="wrap">
+  <div class="marcas"><div class="aldea">CARPA<div><b>ALDEA</b><small>DE VALLE</small></div></div></div>
+  <div class="ceja">Escuela de verano 2026-27</div>
+  <div class="titulo">VALORES</div>
+  <div class="sub">14/12 al 19/2 · de 3 a 13 años · por chico</div>
+  <div class="tabla"><table>
+    <tr><th class="vacio"></th><th>Semana</th><th>Quincena</th><th>Temporada<small>10 semanas</small></th></tr>
+    <tr><td class="et m"><b>Mañana</b><span>9 a 13 h</span></td><td>$105.000</td><td>$200.000</td><td>$840.000</td></tr>
+    <tr><td class="et t"><b>Tarde</b><span>13:30 a 17 h</span></td><td>$94.000</td><td>$180.000</td><td>$756.000</td></tr>
+    <tr><td class="et c"><b>Completa</b><span>9 a 17 h</span></td><td>$189.000</td><td>$359.000</td><td>$1.512.000</td></tr>
+  </table></div>
+  <div class="fila">
+    <div class="box"><h3>Inscripción</h3><p><b>$50.000</b> por chico, una vez por temporada.<br>Reservás con inscripción + <b>50% de seña</b>.</p></div>
+    <div class="box"><h3>Opcionales</h3><p>Pre-hora 8 h · <b>$30.000</b>/sem<br>Post-hora 14 h · <b>$30.000</b>/sem<br>Almuerzo · <b>$10.000</b>/día</p></div>
+  </div>
+</div>
+<div class="pie">
+  <div class="cta">
+    <div class="grande">¡INSCRIBITE ONLINE!</div>
+    <div class="chico">Armá tu presupuesto en 5 minutos 👇 link en el mensaje</div>
+    <div class="wa">📲 351 530-8489</div>
+  </div>
+  <div class="herm"><b>20%<br>OFF</b><span>2.º hermano<br>30% el 3.º</span></div>
+</div>
+</body></html>
