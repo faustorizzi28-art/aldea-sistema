@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Lilita One';src:url(fonts/fontsource-lilita-one-5.3.0/files/lilita-one-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:400;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:700;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:800;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-800-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:900;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-900-normal.woff2) format('woff2');}
+:root{--azul:#1E7BC8;--pileta:#5CB9EE;--marino:#16306A;--amarillo:#F2CA11;--coral:#FF6B5B;--verde:#6CC23A;--naranja:#FFA21F;--rosa:#F25FA8;--crema:#E8F4FC}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1350px;overflow:hidden;font-family:'Archivo',sans-serif;color:var(--marino);
+  background:radial-gradient(circle at 50% 0%,#3FA2E6 0,#1E7BC8 55%,#1766AE 100%)}
+.ondas{position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 18%,rgba(255,255,255,.07) 0 34px,transparent 34px 68px)}
+.sol{position:absolute;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:var(--amarillo);border:6px solid var(--marino);box-shadow:inset -30px -30px 0 rgba(0,0,0,.06)}
+.rayos{position:absolute;top:-180px;right:-180px;width:540px;height:540px;border-radius:50%;
+  background:repeating-conic-gradient(#FFD93B 0 7deg,transparent 7deg 22deg)}
+.wrap{position:relative;padding:44px 64px 0}
+.marcas{display:flex;align-items:center;gap:22px}
+.aldea{display:inline-flex;align-items:center;gap:12px;background:#1F8F4E;border:5px solid var(--marino);border-radius:22px;padding:12px 20px 12px 14px;transform:rotate(-3deg);box-shadow:6px 6px 0 var(--marino)}
+.aldea svg{height:64px;width:auto;color:var(--amarillo)}
+.aldea b{display:block;font:44px/0.9 'Lilita One';color:var(--amarillo)}
+.aldea small{display:block;font:21px/1 'Lilita One';color:#fff;letter-spacing:.12em;margin-top:4px}
+.x{font:44px 'Lilita One';color:#fff}
+.glorin{background:#fff;border:5px solid var(--marino);border-radius:22px;padding:8px 16px;transform:rotate(2deg);box-shadow:6px 6px 0 var(--marino)}
+.glorin img{height:78px;display:block}
+.ceja{margin-top:26px;font:800 40px 'Archivo';letter-spacing:.3em;color:#fff;text-transform:uppercase}
+.titulo{font:168px/0.86 'Lilita One';margin-top:6px;letter-spacing:.01em}
+.titulo span{display:inline-block;-webkit-text-stroke:7px var(--marino);paint-order:stroke fill;text-shadow:0 9px 0 var(--marino)}
+.l1{color:var(--amarillo)}.l2{color:var(--coral)}.l3{color:var(--verde)}.l4{color:var(--naranja)}.l5{color:var(--rosa)}.l6{color:#fff}
+.sub{font:50px/1 'Lilita One';color:#fff;-webkit-text-stroke:5px var(--marino);paint-order:stroke fill;text-shadow:0 6px 0 var(--marino);margin-top:16px}
+.datos{display:flex;gap:16px;margin-top:24px}
+.dato{background:#fff;border:5px solid var(--marino);border-radius:24px;padding:14px 20px;box-shadow:6px 6px 0 var(--marino);flex:1}
+.dato b{display:block;font:40px/1 'Lilita One';color:var(--azul)}
+.dato span{display:block;font:700 23px/1.2 'Archivo';margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{font:28px/1 'Lilita One';text-transform:uppercase;padding:11px 18px;border:4px solid var(--marino);border-radius:999px;background:#fff}
+.chip.pileta{background:var(--amarillo)}
+.viernes{margin-top:22px;background:var(--coral);border:5px solid var(--marino);border-radius:26px;padding:16px 24px;box-shadow:6px 6px 0 var(--marino);color:#fff;display:flex;align-items:center;gap:18px}
+.viernes b{font:46px/1 'Lilita One';color:var(--amarillo);-webkit-text-stroke:3px var(--marino);paint-order:stroke fill}
+.viernes span{font:800 30px/1.15 'Archivo'}
+.horarios{display:flex;gap:12px;margin-top:22px}
+.h{flex:1;border:4px solid var(--marino);border-radius:20px;background:var(--crema);padding:10px 12px;text-align:center}
+.h b{display:block;font:30px/1 'Lilita One';text-transform:uppercase}
+.h span{font:800 24px 'Archivo'}
+.m b{color:var(--naranja)}.t b{color:var(--rosa)}.c b{color:#3E9A1F}
+.extra{display:flex;gap:12px;margin-top:20px}
+.ex{flex:1;font:800 23px/1.2 'Archivo';color:#fff;background:rgba(22,48,106,.55);border:3px solid rgba(255,255,255,.6);border-radius:18px;padding:12px 16px}
+.ex b{color:var(--amarillo);font-weight:900}
+.pie{position:absolute;left:0;right:0;bottom:0;background:var(--marino);color:#fff;padding:30px 64px 34px;display:flex;align-items:center;gap:26px}
+.cta{flex:1}
+.cta .grande{font:58px/0.95 'Lilita One';color:var(--amarillo)}
+.cta .chico{font:700 26px/1.25 'Archivo';margin-top:10px}
+.herm{background:var(--verde);border:5px solid #fff;border-radius:50%;width:210px;height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-8deg);flex:0 0 auto;box-shadow:0 0 0 6px var(--marino)}
+.herm b{font:62px/0.9 'Lilita One';color:#fff;-webkit-text-stroke:3px var(--marino);paint-order:stroke fill}
+.herm span{font:800 21px/1.1 'Archivo';color:var(--marino);margin-top:4px}
+.wa{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;border:4px solid #fff;border-radius:999px;padding:8px 20px;font:800 28px 'Archivo';margin-top:16px}
+</style></head><body>
+<div class="ondas"></div><div class="rayos"></div><div class="sol"></div>
+<div class="wrap">
+  <div class="marcas">
+    <div class="aldea">CARPA<div><b>ALDEA</b><small>DE VALLE</small></div></div>
+    <div class="x">×</div>
+    <div class="glorin"><img src="glorin.png" alt="GLORIN"></div>
+  </div>
+  <div class="ceja">Escuela de</div>
+  <div class="titulo"><span class="l1">V</span><span class="l2">E</span><span class="l3">R</span><span class="l4">A</span><span class="l5">N</span><span class="l1">O</span></div>
+  <div class="sub">2026-27 · ¡EL MEJOR VERANO ES EN ALDEA!</div>
+  <div class="datos">
+    <div class="dato"><b>14/12 al 19/2</b><span>de lunes a viernes</span></div>
+    <div class="dato"><b>3 a 13 años</b><span>en grupos por edad</span></div>
+  </div>
+  <div class="chips">
+    <span class="chip pileta">🏊 Pileta todos los días</span><span class="chip">Karate</span><span class="chip">Patín</span><span class="chip">Gimnasia</span>
+    <span class="chip">Fútbol</span><span class="chip">Arte</span><span class="chip">Música</span><span class="chip">Naturaleza</span>
+  </div>
+  <div class="viernes"><b>VIERNES</b><span>Día temático con show de GLORIN 🎭</span></div>
+  <div class="horarios">
+    <div class="h m"><b>Mañana</b><span>9 a 13 h</span></div>
+    <div class="h t"><b>Tarde</b><span>13:30 a 17 h</span></div>
+    <div class="h c"><b>Completa</b><span>9 a 17 h</span></div>
+  </div>
+  <div class="extra">
+    <div class="ex"><b>Opcionales:</b> pre-hora 8 h · post-hora hasta 14 h · almuerzo</div>
+    <div class="ex"><b>¡Cupos limitados!</b> 30 chicos por grupo</div>
+  </div>
+</div>
+<div class="pie">
+  <div class="cta">
+    <div class="grande">¡INSCRIPCIONES ABIERTAS!</div>
+    <div class="chico">Armá tu presupuesto e inscribite online en 5 minutos 👇 link en el mensaje</div>
+    <div class="wa">📲 351 530-8489</div>
+  </div>
+  <div class="herm"><b>20%<br>OFF</b><span>2.º hermano<br>30% el 3.º</span></div>
+</div>
+</body></html>
