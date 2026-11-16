@@ -199,6 +199,11 @@
   .codigo{letter-spacing:10px;font-size:26px!important;text-align:center;font-weight:700}
   .sep{height:1px;background:var(--linea);margin:14px 0}
   .derecha{text-align:right}
+  .opcion.tenue{opacity:.6}
+  .turno-btn{border-width:3px}
+  .turno-btn.on{border-color:var(--marino);background:#FFF6CF;box-shadow:0 0 0 3px var(--amarillo)}
+  .turno-btn .elegido{margin-top:4px;font:800 12px var(--f-texto);padding:3px 10px;border-radius:999px;background:#EAF2FB;color:var(--c1)}
+  .turno-btn.on .elegido{background:var(--marino);color:#fff}
   .num-paso{flex:0 0 32px;height:32px;border-radius:50%;background:var(--amarillo);border:2px solid var(--marino);display:flex;align-items:center;justify-content:center;font:var(--w-titulo) 17px var(--f-titulo);color:var(--marino)}
   .fecha3{display:grid;grid-template-columns:1fr 1.6fr 1.2fr;gap:6px}
   .fecha3 select{padding-left:8px;padding-right:4px;min-width:0}
@@ -505,16 +510,22 @@ function htmlPlan() {
   const extrasOk = e => !e.turnos || e.turnos.includes(p.turno);
   p.extras = p.extras.filter(id => extrasOk(s.precios.extras.find(e => e.id === id) || {}));
   return `
-    <label style="margin-top:0">Horario</label>
-    <div class="fila" style="gap:8px">${T.map(t => { const v = E.turnos[t.id] || {}; return `<button class="opcion ${p.turno === t.id ? 'on' : ''}" style="flex:1 1 100px;margin:0;flex-direction:column;align-items:center;gap:2px;text-align:center" onclick="plSet('turno','${t.id}')">
-      <span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><span class="chico" style="font-weight:700">${esc(t.horario)}</span><span class="muted chico">semana ${pesos(v.semana)}</span></button>`; }).join('')}</div>
-    <label>¿Cuándo viene?</label>
+    <label style="margin-top:0">1. Elegí el horario <small>(tocá uno)</small></label>
+    <div class="fila" style="gap:8px">${T.map(t => { const v = E.turnos[t.id] || {}; return `<button class="opcion turno-btn ${p.turno === t.id ? 'on' : ''}" style="flex:1 1 100px;margin:0;flex-direction:column;align-items:center;gap:2px;text-align:center" onclick="plSet('turno','${t.id}')">
+      <span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><span class="chico" style="font-weight:700">${esc(t.horario)}</span><span class="muted chico">semana ${pesos(v.semana)}</span>
+      <span class="elegido">${p.turno === t.id ? '✓ Elegido' : 'Elegir'}</span></button>`; }).join('')}</div>
+    <label>2. ¿Qué semanas viene?</label>
     <div class="seg"><button class="${p.modalidad === 'semanas' ? 'on' : ''}" onclick="plSet('modalidad','semanas')">Por semana</button><button class="${p.modalidad === 'dias' ? 'on' : ''}" onclick="plSet('modalidad','dias')">Días sueltos</button></div>
     ${p.modalidad === 'semanas' ? `<div class="fila" style="margin-top:10px"><button class="btn xs claro" onclick="plTodas()">Elegir todas las que quedan</button>${p.semanas.length ? `<button class="btn xs claro" onclick="plSet('semanas',[])">Borrar</button>` : ''}</div>` : `<p class="muted chico">Tocá los días que viene. Si elegís muchos de una misma semana, nunca pagás más que la semana completa.</p>`}
     ${semanasHtml}
-    ${s.precios.extras.length ? '<label>Opcionales</label>' + s.precios.extras.map(e => { const ok = extrasOk(e);
-      return `<label class="opcion ${p.extras.includes(e.id) ? 'on' : ''} ${ok ? '' : 'off'}"><input type="checkbox" ${p.extras.includes(e.id) ? 'checked' : ''} ${ok ? '' : 'disabled'} onchange="plTogg('extras','${e.id}')"><div><b>${esc(e.nombre)}</b> · ${e.precioSemana && p.modalidad === 'semanas' ? pesos(e.precioSemana) + ' por semana' : pesos(e.precioDia) + ' por día'}
-        <div class="muted chico">${ok ? esc(e.detalle || '') : 'Solo con horario ' + e.turnos.map(t => (T.find(x => x.id === t) || {}).nombre).join(' o ').toLowerCase()}</div></div></label>`; }).join('') : ''}`;
+    ${s.precios.extras.length ? '<label>3. Opcionales <small>(si los necesitás)</small></label>' + s.precios.extras.map(e => { const ok = extrasOk(e);
+      return `<label class="opcion ${p.extras.includes(e.id) ? 'on' : ''} ${ok ? '' : 'tenue'}"><input type="checkbox" ${p.extras.includes(e.id) ? 'checked' : ''} onchange="${ok ? `plTogg('extras','${e.id}')` : `plExtraOtroTurno('${e.id}','${e.turnos[0]}')`}"><div><b>${esc(e.nombre)}</b> · ${e.precioSemana && p.modalidad === 'semanas' ? pesos(e.precioSemana) + ' por semana' : pesos(e.precioDia) + ' por día'}
+        <div class="muted chico">${ok ? esc(e.detalle || '') : 'Es para horario ' + e.turnos.map(t => (T.find(x => x.id === t) || {}).nombre).join(' o ').toLowerCase() + ': tocalo y lo cambiamos'}</div></div></label>`; }).join('') : ''}`;
+}
+function plExtraOtroTurno(extra, turno) {
+  const t = sede(PL.sede).precios.turnos.find(x => x.id === turno) || {};
+  PL.plan.turno = turno; if (!PL.plan.extras.includes(extra)) PL.plan.extras.push(extra);
+  PL.alCambiar(); toast('Cambiamos el horario a ' + (t.nombre || turno) + ' (' + (t.horario || '') + ') ✓');
 }
 function plSet(k, v) { PL.plan[k] = v; PL.alCambiar(); }
 function plTogg(k, v) { const a = PL.plan[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); PL.alCambiar(); }
