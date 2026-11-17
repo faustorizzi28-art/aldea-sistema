@@ -118,6 +118,7 @@ const CONFIG = {
         ['Edades', 'De 3 a 13 años, grupos por edad, cada grupo con sus profes'],
         ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h'],
         ['Opcionales', 'Pre-hora 8 a 9 h · Post-hora 13 a 14 h · Almuerzo $10.000/día (jornada completa)'],
+        ['Comidas', 'Desayuno y merienda: los traen o los compran en Aldea · Almuerzo $10.000 por día'],
         ['Viernes', 'Día temático con show de GLORIN']
       ],
       pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Aldea: a confirmar (vacío = se pasa por WhatsApp)
@@ -142,7 +143,7 @@ const CONFIG = {
         extras: [
           { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
           { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 30000, precioDia: 6000, turnos: ['manana'], detalle: 'Desde $30.000 por semana' },
-          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa' }
+          { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa. Desayuno y merienda: los traen o los compran en Aldea' }
         ],
         descuentoHermanos: [0, 20, 30],   // % por hijo: el 2.º 20%, del 3.º en adelante 30%
         descuentoRenovacion: 0,
