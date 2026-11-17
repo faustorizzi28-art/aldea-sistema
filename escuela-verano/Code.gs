@@ -119,6 +119,7 @@ const CONFIG = {
         ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h'],
         ['Opcionales', 'Pre-hora 8 a 9 h · Post-hora 13 a 14 h · Almuerzo $10.000/día (jornada completa)'],
         ['Comidas', 'Desayuno y merienda: los traen o los compran en Aldea · Almuerzo $10.000 por día'],
+        ['Lluvia', 'No se suspende: si llueve hay actividad igual'],
         ['Viernes', 'Día temático con show de GLORIN']
       ],
       pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Aldea: a confirmar (vacío = se pasa por WhatsApp)
