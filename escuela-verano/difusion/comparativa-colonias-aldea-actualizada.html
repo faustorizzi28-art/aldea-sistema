@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colonias de verano 2026–27: comparativa para las familias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#EEF6F9; --surface:#FFFFFF; --ink:#0E2B3D; --muted:#55697A; --line:#CBDCE4;
+  --water:#0F7699; --water-soft:#D3EAF2; --sun:#F0B429;
+  --yes:#1F7446; --yes-bg:#DCF0E3; --no:#A8352C; --no-bg:#F7E0DC;
+  --ni:#66798A; --ni-bg:#E6EDF1; --op:#7E5300; --op-bg:#FCEDC8;
+  --group:#FFF6DA;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#0B1E2A; --surface:#11293A; --ink:#E6F1F6; --muted:#9DB3C2; --line:#24435A;
+    --water:#56B9DA; --water-soft:#173B50; --sun:#F2C14E;
+    --yes:#7FD4A2; --yes-bg:#163828; --no:#F09A90; --no-bg:#3A1D1A;
+    --ni:#A3B4C0; --ni-bg:#1D3445; --op:#F5CD72; --op-bg:#3A2E10;
+    --group:#2A2A14;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.1;margin:0}
+a{color:var(--water)}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* Encabezado */
+header{background:var(--water);color:#fff;padding:40px 0 0;position:relative;overflow:hidden}
+@media (prefers-color-scheme: dark){header{background:#0E4D66}}
+header h1{font-size:clamp(2rem,6vw,3.6rem);font-weight:800;max-width:14ch;letter-spacing:-.01em}
+header p{max-width:62ch;margin:14px 0 0;font-size:1.05rem;color:#E4F4FA}
+.lanes{margin-top:30px;height:22px;background:
+  repeating-linear-gradient(90deg,#F0B429 0 18px,#fff 18px 36px,#D9433A 36px 54px,#fff 54px 72px) top/100% 5px no-repeat,
+  repeating-linear-gradient(90deg,#F0B429 0 18px,#fff 18px 36px,#D9433A 36px 54px,#fff 54px 72px) bottom/100% 5px no-repeat}
+nav.jump{display:flex;flex-wrap:wrap;gap:8px 18px;padding:14px 0;font-size:.95rem}
+nav.jump a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--sun)}
+
+section{padding:28px 0}
+h2{font-size:clamp(1.5rem,3.5vw,2.1rem);font-weight:800;margin-bottom:8px}
+.lead{color:var(--muted);max-width:70ch;margin:0 0 16px}
+
+/* Leyenda y filtros */
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 14px;font-size:.92rem;color:var(--muted)}
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filters strong{margin-right:4px}
+.chip{font:inherit;font-size:.92rem;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--water);border-color:var(--water);color:#fff}
+@media (prefers-color-scheme: dark){.chip[aria-pressed="true"]{color:#0B1E2A}}
+.filters label{display:flex;gap:6px;align-items:center;font-size:.92rem}
+.filters select{font:inherit;font-size:.92rem;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.count{margin-left:auto;font-size:.9rem;color:var(--muted)}
+.btn-reset{font:inherit;font-size:.9rem;background:none;border:none;color:var(--water);text-decoration:underline;cursor:pointer;padding:4px}
+
+/* Badges */
+.b{display:inline-block;font-weight:700;font-size:.85rem;padding:2px 9px;border-radius:6px;white-space:nowrap}
+.si{background:var(--yes-bg);color:var(--yes)}
+.no{background:var(--no-bg);color:var(--no)}
+.ni{background:var(--ni-bg);color:var(--ni);font-weight:400}
+.op{background:var(--op-bg);color:var(--op)}
+.note{display:block;font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.35}
+
+/* Tabla */
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-top:14px}
+table{border-collapse:separate;border-spacing:0;min-width:2300px;font-size:.9rem}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+thead th{background:var(--ink);color:var(--bg);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;font-size:.88rem;line-height:1.25}
+thead th:first-child{position:sticky;left:0;z-index:3}
+tbody th{position:sticky;left:0;z-index:2;background:var(--surface);min-width:170px;max-width:190px;font-weight:700;box-shadow:2px 0 0 var(--line)}
+tbody th a{color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.05rem;text-decoration-color:var(--sun);text-underline-offset:3px}
+tbody th small{display:block;font-weight:400;color:var(--muted);font-size:.8rem;margin-top:4px;line-height:1.3}
+tr.group td{background:var(--group);font-weight:700;font-size:.95rem;border-right:none;position:sticky;left:0}
+tr.top th{box-shadow:inset 5px 0 0 var(--sun),2px 0 0 var(--line)}
+td.money{white-space:nowrap}
+td.money span{display:block}
+td.wide{min-width:190px}
+.hl{font-weight:700;color:var(--water)}
+
+/* Barras de costo */
+.lanes-chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 18px}
+.lane{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:6px 16px;padding:14px 0;border-bottom:3px dashed var(--line);align-items:center}
+.lane:last-child{border-bottom:none}
+.lane h3{font-size:1.1rem}
+.lane .sched{display:block;font-size:.85rem;color:var(--muted);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-weight:400;margin-top:3px}
+.track{background:var(--water-soft);border-radius:999px;height:30px;position:relative}
+.bar{background:var(--water);height:100%;border-radius:999px;min-width:44px;position:relative}
+.bar::after{content:"";position:absolute;right:6px;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:var(--sun)}
+.lane .val{font-weight:700;font-size:1.15rem}
+.lane .breakdown{grid-column:2;font-size:.86rem;color:var(--muted);margin:0}
+.na-list{margin:14px 0 0;font-size:.92rem;color:var(--muted)}
+
+/* Fechas */
+.dates{list-style:none;margin:0;padding:0;border-left:3px solid var(--water);max-width:760px}
+.dates li{position:relative;padding:8px 0 14px 22px}
+.dates li::before{content:"";position:absolute;left:-9px;top:13px;width:15px;height:15px;border-radius:50%;background:var(--sun);border:3px solid var(--bg)}
+.dates li.past::before{background:var(--ni)}
+.dates time{font-weight:700;display:block}
+.dates li.past time{color:var(--muted);text-decoration:line-through}
+
+/* Fichas */
+.fichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.ficha{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;scroll-margin-top:12px}
+.ficha.top{border-top:6px solid var(--sun)}
+.ficha h3{font-size:1.45rem;font-weight:800}
+.ficha .where{color:var(--muted);margin:4px 0 12px;font-size:.92rem}
+.ficha dl{margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+.ficha dt{font-weight:700;font-size:.92rem;color:var(--water)}
+.ficha dd{margin:2px 0 0;font-size:.93rem}
+.ficha ul{margin:2px 0 0;padding-left:18px}
+.mini{border-collapse:collapse;font-size:.86rem;margin-top:4px;min-width:0}
+.mini th,.mini td{border:1px solid var(--line);padding:4px 8px}
+.mini th{background:var(--water-soft);color:var(--ink);font-family:inherit;font-weight:700;position:static}
+.alert{background:var(--op-bg);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:.9rem;margin-top:12px}
+
+footer{padding:26px 0 40px;color:var(--muted);font-size:.88rem;border-top:1px solid var(--line);margin-top:20px}
+[hidden]{display:none !important}
+
+@media (max-width:640px){
+  .lane{grid-template-columns:1fr}
+  .lane .breakdown{grid-column:1}
+  .count{margin-left:0;width:100%}
+  .fichas{grid-template-columns:1fr}
+}
+@media print{
+  header{background:none;color:#000;padding-top:0}
+  header p{color:#000}
+  .lanes,nav.jump,.filters,.btn-reset{display:none}
+  .table-scroll{overflow:visible;border:none}
+  table{min-width:0;font-size:7pt}
+  th,td{padding:3px 4px}
+  tbody th{position:static}
+  section{break-inside:auto}
+  .ficha{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Colonias de verano 2026–27</h1>
+    <p>Comparativa de 11 propuestas para elegir entre familias. Primero aparecen las que permiten dejar a los chicos desde las 8 hasta las 14 o 15 hs, o que tienen jornada doble; después las de media jornada y al final las que no informaron horario. Los datos son los que mandó cada colonia, relevados al 16 de noviembre de 2026. Datos de Aldea de Valle actualizados el 17/11.</p>
+  </div>
+  <div class="lanes" aria-hidden="true"></div>
+</header>
+
+<div class="wrap">
+  <nav class="jump" aria-label="Secciones">
+    <a href="#tabla">Tabla comparativa</a>
+    <a href="#costos">Cuánto sale de 8 a 14/15 hs</a>
+    <a href="#fechas">Fechas límite y promos</a>
+    <a href="#detalle">Detalle de cada colonia</a>
+  </nav>
+</div>
+
+<main class="wrap">
+
+<section id="tabla">
+  <h2>Tabla comparativa</h2>
+  <p class="lead">Deslizá la tabla hacia los costados para ver todas las columnas; el nombre de la colonia queda fijo a la izquierda. Tocá el nombre para ir al detalle completo. Las de borde amarillo cubren de 8 a 14/15 hs o tienen jornada doble.</p>
+
+  <div class="legend">
+    <span class="b si">Sí</span> lo ofrece o lo incluye
+    <span class="b no">No</span> no lo ofrece o no lo incluye
+    <span class="b op">Opcional</span> se paga aparte o hay que consultar
+    <span class="b ni">No informado</span> la colonia no lo aclaró
+  </div>
+
+  <div class="filters" role="group" aria-label="Filtros">
+    <strong>Mostrar solo:</strong>
+    <button class="chip" data-filter="cubre" aria-pressed="false">De 8 a 14/15 hs</button>
+    <button class="chip" data-filter="pileta" aria-pressed="false">Con pileta</button>
+    <button class="chip" data-filter="almuerzo" aria-pressed="false">Almuerzo incluido</button>
+    <button class="chip" data-filter="lluvia" aria-pressed="false">No se suspende por lluvia</button>
+    <label>Edad del chico
+      <select id="edad">
+        <option value="">Cualquiera</option>
+        <option value="2.5">2 y medio</option>
+        <option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+        <option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        <option>13</option><option>14</option><option>15</option>
+      </select>
+    </label>
+    <button class="btn-reset" id="reset">Quitar filtros</button>
+    <span class="count" id="count" aria-live="polite">Mostrando las 11 colonias</span>
+  </div>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Colonia</th>
+        <th scope="col">Edades</th>
+        <th scope="col">Fechas y ciclos</th>
+        <th scope="col">Días</th>
+        <th scope="col">Media jornada</th>
+        <th scope="col">Jornada completa</th>
+        <th scope="col">Horario más amplio posible</th>
+        <th scope="col">Hora extra</th>
+        <th scope="col">Desayuno / merienda</th>
+        <th scope="col">Almuerzo</th>
+        <th scope="col">Pileta</th>
+        <th scope="col">¿Se suspende por lluvia?</th>
+        <th scope="col">Inscripción</th>
+        <th scope="col">Por día</th>
+        <th scope="col">Por semana</th>
+        <th scope="col">Por quincena (2 semanas)</th>
+        <th scope="col">Por mes o ciclo largo</th>
+        <th scope="col">Descuento hermanos</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="group"><td colspan="18">Cubren de 8 a 14/15 hs o tienen jornada doble</td></tr>
+
+      <!-- PAYANA -->
+      <tr class="top" data-id="payana" data-cubre="1" data-pileta="ni" data-almuerzo="si" data-lluvia="si" data-min="" data-max="">
+        <th scope="row"><a href="#f-payana">Payana</a><small>Ubicación no informada</small></th>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">Diciembre: inicio a coordinar según demanda<br>Enero: 4/1 al 29/1<br>Febrero: 1/2 al 26/2</td>
+        <td>Lunes a viernes</td>
+        <td class="wide">Mañana 8 a 12<br>Tarde 14 a 18 <span class="note">El turno tarde solo figura para enero.</span></td>
+        <td><span class="b si">Sí</span> 8 a 15</td>
+        <td class="hl">8 a 15 hs</td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b si">Sí</span><span class="note">Desayuno en turno mañana y jornada completa; merienda en turno tarde.</span></td>
+        <td><span class="b si">Sí</span><span class="note">En jornada completa.</span></td>
+        <td><span class="b ni">No informado</span><span class="note">Juegos con agua, deslizador inflable acuático.</span></td>
+        <td><span class="b si">No, sigue</span></td>
+        <td class="money">$100.000</td>
+        <td><span class="b op">Consultar</span></td>
+        <td><span class="b op">Consultar</span></td>
+        <td><span class="b op">Consultar</span></td>
+        <td class="money"><span>Media: $400.000</span><span>Completa: $550.000</span><span class="note">Mismo valor en enero y febrero.</span></td>
+        <td><span class="b ni">No informado</span></td>
+      </tr>
+
+      <!-- REVOLUCION COSMO -->
+      <tr class="top" data-id="cosmo" data-cubre="1" data-pileta="ni" data-almuerzo="no" data-lluvia="ni" data-min="" data-max="">
+        <th scope="row"><a href="#f-cosmo">Revolución Cosmo</a><small>La Torrecilla, a 7 cuadras de La Mujer Urbana</small></th>
+        <td><span class="b ni">No informado</span><span class="note">Acepta chicos con pañales.</span></td>
+        <td class="wide">14/12 al 26/2 (53 jornadas)<br>Cerrado 25/12 y 1/1<br>Ciclo 1 de 8 días; ciclos 2 a 5 de 10 días</td>
+        <td>Lunes a viernes</td>
+        <td class="wide">Mañana 9 a 12<br>Tarde 13 a 16</td>
+        <td><span class="b si">Sí</span> 9 a 16<span class="note">Incluye la hora de almuerzo de 12 a 13.</span></td>
+        <td class="hl">8 a 17 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Pre-hora 8 a 9, almuerzo 12 a 13, post-hora 16 a 17. Hora suelta $12.000; pack 10 h $110.000; 20 h $200.000; 40 h $360.000.</span></td>
+        <td><span class="b no">No</span><span class="note">Se lleva desayuno o merienda para compartir.</span></td>
+        <td><span class="b no">No</span><span class="note">Se lleva; hay microondas y heladera.</span></td>
+        <td><span class="b ni">No informado</span><span class="note">Juegos con agua.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$35.000<span class="note">Incluye mochila de regalo.</span></td>
+        <td class="money"><span>Simple: $32.000</span><span>Completa: $65.000</span><span class="note">También packs de 2 y 3 días.</span></td>
+        <td class="money"><span>Simple: $135.000</span><span>Completa: $260.750</span></td>
+        <td class="money"><span>Simple: $230.000</span><span>Completa: $462.000</span><span class="note">Ciclo de 10 días. Ciclo 1 (8 días): $198.000 / $392.000.</span></td>
+        <td class="money"><span>Simple: $420.000</span><span>Completa: $790.000</span><span class="note">20 días.</span></td>
+        <td>2.º hijo 10%<br>3.º hijo 20%</td>
+      </tr>
+
+      <!-- CLARET -->
+      <tr class="top" data-id="claret" data-cubre="1" data-pileta="si" data-almuerzo="ni" data-lluvia="ni" data-min="3" data-max="">
+        <th scope="row"><a href="#f-claret">Padre Claret</a><small>Ubicación no informada</small></th>
+        <td>Desde 3 años</td>
+        <td class="wide">Ciclo 1: 14/12 al 1/1 (3 sem.)<br>Ciclo 2: 4/1 al 15/1 (2 sem.)<br>Ciclo 3: 18/1 al 29/1 (2 sem.)<br>Ciclo 4: 1/2 al 19/2 (3 sem.)</td>
+        <td>Lunes a viernes, o lunes a sábado<span class="note">Los sábados solo turno mañana.</span></td>
+        <td class="wide">Mañana 9 a 13<br>Tarde 14 a 18</td>
+        <td><span class="b si">Sí</span> 9 a 18<span class="note">No se cobra la hora de almuerzo.</span></td>
+        <td class="hl">8 a 18 hs</td>
+        <td><span class="b si">Sí</span><span class="note">8 a 9 y 13 a 14 (almuerzo). Por ciclo: C1 $52.000; C2 y C3 $47.500; C4 $61.000.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b si">Sí</span><span class="note">Natación.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$40.000<span class="note">Única vez.</span></td>
+        <td><span class="b no">No</span><span class="note">Solo por ciclo.</span></td>
+        <td><span class="b no">No</span><span class="note">Solo por ciclo.</span></td>
+        <td class="money"><span>Media: $190.000</span><span>Completa: $380.000</span><span class="note">Ciclos 2 y 3, lunes a viernes.</span></td>
+        <td class="money"><span>Ciclo 1 (3 sem.): $208.000 / $416.000</span><span>Ciclo 4 (3 sem.): $247.000 / $494.000</span><span class="note">Media / completa, lunes a viernes. Ciclo 4 de lunes a sábado: $307.000 / $554.000.</span></td>
+        <td>1.º hermano 13%<br>2.º hermano 18%<span class="note">No aplica a inscripción ni hora extra.</span></td>
+      </tr>
+
+      <!-- ALDEA DE VALLE -->
+      <tr class="top" data-id="aldea" data-cubre="1" data-pileta="si" data-almuerzo="op" data-lluvia="ni" data-min="3" data-max="13">
+        <th scope="row"><a href="#f-aldea">Aldea de Valle × Glorin</a><small>Valle Escondido</small></th>
+        <td>3 a 13 años<span class="note">Grupos por edad, hasta 30 chicos por grupo.</span></td>
+        <td class="wide">14/12 al 19/2 (10 semanas)<br>Se elige por semana o por días sueltos<span class="note">Sin actividad el 25/12, 1/1 y Carnaval (8 y 9/2).</span></td>
+        <td>Lunes a viernes</td>
+        <td class="wide">Mañana 9 a 13<br>Tarde 13:30 a 17</td>
+        <td><span class="b si">Sí</span> 9 a 17</td>
+        <td class="hl">8 a 17 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Pre-hora 8 a 9 y post-hora 13 a 14 (turno mañana): $30.000 por semana cada una.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b op">Opcional</span><span class="note">$10.000 por día, en jornada completa.</span></td>
+        <td><span class="b si">Sí</span><span class="note">Natación todos los días.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$50.000<span class="note">Una vez por temporada. Se reserva con inscripción + 50% de seña.</span></td>
+        <td class="money"><span>Mañana: $32.000</span><span>Tarde: $28.000</span><span>Completa: $56.000</span><span class="note">Nunca más que la semana.</span></td>
+        <td class="money"><span>Mañana: $105.000</span><span>Tarde: $94.000</span><span>Completa: $189.000</span></td>
+        <td class="money"><span>Mañana: $200.000</span><span>Tarde: $180.000</span><span>Completa: $359.000</span></td>
+        <td class="money"><span>4 semanas: $400.000 / $360.000 / $718.000</span><span>Temporada (10 sem.): $840.000 / $756.000 / $1.512.000</span><span class="note">Mañana / tarde / completa.</span></td>
+        <td>2.º hijo 20%<br>3.º hijo 30%<span class="note">Sobre la cuota, no sobre la inscripción.</span></td>
+      </tr>
+
+      <!-- PEÑA -->
+      <tr class="top" data-id="pena" data-cubre="1" data-pileta="si" data-almuerzo="no" data-lluvia="si" data-min="3" data-max="15">
+        <th scope="row"><a href="#f-pena">Colegio Peña</a><small>Ingreso por calle Pedroni, entre la iglesia y el jardín</small></th>
+        <td>3 (sin pañal) a 15 años</td>
+        <td class="wide">Ciclo 1: 21/12 al 15/1<br>Ciclo 2: 18/1 al 12/2<br>4 semanas cada uno</td>
+        <td>Lunes a viernes</td>
+        <td class="wide">Mañana 9 a 12<br>Tarde 14 a 17</td>
+        <td><span class="b si">Sí</span> ambos turnos<span class="note">Con permanencia al mediodía: de 9 a 17 corrido.</span></td>
+        <td class="hl">8 a 17 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Ingreso 1 h antes: $100.000 por ciclo. Permanencia 12 a 14: $50.000 por ciclo.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span><span class="note">Al mediodía se lleva vianda.</span></td>
+        <td><span class="b si">Sí</span><span class="note">Techada y climatizada.</span></td>
+        <td><span class="b si">No, sigue</span></td>
+        <td class="money">$50.000<span class="note">Incluye matrícula, seguro y gorra.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$50.000<span class="note">3 semanas: $150.000.</span></td>
+        <td class="money">$100.000</td>
+        <td class="money"><span>Un turno: $150.000</span><span>Ambos turnos: $300.000</span><span class="note">Ciclo de 4 semanas.</span></td>
+        <td>Precio por grupo familiar<span class="note">2 hermanos: $285.000 un turno / $585.000 ambos.</span></td>
+      </tr>
+
+      <!-- COLEGIO ALEMÁN -->
+      <tr class="top" data-id="aleman" data-cubre="1" data-pileta="ni" data-almuerzo="si" data-lluvia="ni" data-min="3" data-max="12">
+        <th scope="row"><a href="#f-aleman">Colegio Alemán</a><small>Neper 6275</small></th>
+        <td>3 a 12 años<span class="note">Ingresantes a sala de 3 de 2027: solo alumnos del colegio.</span></td>
+        <td class="wide">21/12 al 29/1<br>Paquetes de 2, 4 o 6 semanas</td>
+        <td>Lunes a viernes</td>
+        <td><span class="b no">No</span><span class="note">Jornada única.</span></td>
+        <td><span class="b si">Sí</span> 9 a 14<span class="note">Con comedor.</span></td>
+        <td class="hl">8 a 15 hs</td>
+        <td><span class="b si">Sí</span><span class="note">8 a 9 y/o 14 a 15. Cada extensión: 2 sem. $76.570 (dic. $66.590); 4 sem. $153.140; 6 sem. $208.740.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b si">Sí</span><span class="note">Comedor incluido.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span></td>
+        <td><span class="b no">No</span></td>
+        <td class="money">$399.600<span class="note">2 semanas de diciembre: $347.480.</span></td>
+        <td class="money"><span>4 semanas: $799.190</span><span>6 semanas: $1.089.330</span></td>
+        <td>2.º hijo 15%<br>3.º hijo 20%</td>
+      </tr>
+
+      <!-- COSTA WARCALDE -->
+      <tr class="top" data-id="cw" data-cubre="1" data-pileta="ni" data-almuerzo="si" data-lluvia="ni" data-min="2.5" data-max="13">
+        <th scope="row"><a href="#f-cw">Costa Warcalde</a><small>Eguía Zanón 9630, Villa Warcalde</small></th>
+        <td>2 y medio a 13 años</td>
+        <td><span class="b ni">No informado</span><span class="note">Se contrata por quincena o mes.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">10 a 13</td>
+        <td><span class="b si">Sí</span> 10 a 15<span class="note">Solo de 4 a 13 años.</span></td>
+        <td class="hl">8:30 a 15 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Pre-hora de 1 h 30: $110.000 (4 a 13 años); $140.000 (2 y medio a 3). No aclara el período.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b si">Sí</span><span class="note">En jornada completa. En media jornada se agrega por $95.000 la quincena.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$55.000<span class="note">Incluye kit de verano y revisación médica.</span></td>
+        <td><span class="b no">No</span></td>
+        <td><span class="b no">No</span></td>
+        <td class="money"><span>Media: $235.000</span><span>Completa: $415.000</span><span class="note">Promo hasta 01/12 (completa sin promo $470.000). 2 y medio a 3 años, media: $300.000.</span></td>
+        <td class="money"><span>Media: $405.000</span><span>Completa: $760.000</span><span class="note">Promo hasta 01/12 (completa sin promo $835.000). 2 y medio a 3 años, media: $520.000.</span></td>
+        <td>5%<span class="note">También 5% en efectivo, 5% Briskbox y 10% convenio Rosarito.</span></td>
+      </tr>
+
+      <!-- ALOUETTE -->
+      <tr class="top" data-id="alouette" data-cubre="1" data-pileta="ni" data-almuerzo="ni" data-lluvia="si" data-min="" data-max="">
+        <th scope="row"><a href="#f-alouette">Alouette</a><small>Ubicación no informada</small></th>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">Diciembre: 14/12 al 1/1<br>Enero: 4/1 al 29/1<br>Febrero: 1/2 al 26/2</td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">10 a 13</td>
+        <td><span class="b op">Consultar</span> 8 a 14<span class="note">Jornada extendida, precio a consultar.</span></td>
+        <td class="hl">8 a 14 hs</td>
+        <td><span class="b op">Consultar</span><span class="note">Jornada extendida 8 a 14.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b si">No, sigue</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money"><span>Diciembre: $250.000</span><span>Enero: $350.000</span><span>Febrero: $367.000</span><span class="note">Horario 10 a 13.</span></td>
+        <td><span class="b ni">No informado</span></td>
+      </tr>
+
+      <tr class="group"><td colspan="18">Solo media jornada por la mañana</td></tr>
+
+      <!-- CASTELFRANCO -->
+      <tr data-id="castel" data-cubre="0" data-pileta="ni" data-almuerzo="ni" data-lluvia="ni" data-min="3" data-max="13">
+        <th scope="row"><a href="#f-castel">Castelfranco (Verano del Castel)</a><small>Círculo de Oficiales de la Policía, Enrique Cavendish 5810 esq. Av. Gauss</small></th>
+        <td>3 a 13 años</td>
+        <td class="wide">14/12 al 29/1</td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">9 a 13</td>
+        <td><span class="b no">No</span></td>
+        <td class="hl">8 a 13 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Pre-hora 8 a 9: $31.000 (no aclara el período).</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span><span class="note">No acepta alumnos por día.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$228.000<span class="note">Alumnos del colegio: $200.000.</span></td>
+        <td class="money">$392.000<span class="note">Alumnos del colegio: $346.500.</span></td>
+        <td>2.º hijo 10%<br>3.º hijo 15%<br>4.º hijo 20%</td>
+      </tr>
+
+      <!-- ENGLISH IN COLOURS -->
+      <tr data-id="eic" data-cubre="0" data-pileta="no" data-almuerzo="ni" data-lluvia="ni" data-min="3" data-max="7">
+        <th scope="row"><a href="#f-eic">English in Colours</a><small>Av. Ricardo Rojas 7395</small></th>
+        <td>3 a 7 años (sin pañal)</td>
+        <td class="wide">Desde el 4/1<span class="note">Fecha de cierre no informada.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="wide">9 a 12:30</td>
+        <td><span class="b no">No</span></td>
+        <td class="hl">Pre-hora a 12:30 hs</td>
+        <td><span class="b si">Sí</span><span class="note">Pre-hora $8.000 por día (horario no aclarado).</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span><span class="note">Mini piletas y alfombra deslizante.</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span><span class="note">Se reserva con el 50%.</span></td>
+        <td class="money">$35.000</td>
+        <td class="money">$150.000</td>
+        <td class="money">$240.000</td>
+        <td class="money">$380.000</td>
+        <td>10%</td>
+      </tr>
+
+      <tr class="group"><td colspan="18">Sin horario informado</td></tr>
+
+      <!-- MAMMANA -->
+      <tr data-id="mammana" data-cubre="0" data-pileta="si" data-almuerzo="no" data-lluvia="ni" data-min="" data-max="">
+        <th scope="row"><a href="#f-mammana">Mammana</a><small>Barrio Urca, según las familias. El flyer dice José Henry 5265, Villa Belgrano.</small></th>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td><span class="b no">No</span></td>
+        <td><span class="b no">No</span></td>
+        <td><span class="b si">Sí</span></td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$50.000</td>
+        <td><span class="b ni">No informado</span></td>
+        <td class="money">$150.000<span class="note">3 semanas: $250.000.</span></td>
+        <td class="money">$200.000</td>
+        <td class="money">$280.000<span class="note">Ciclo de 4 semanas.</span></td>
+        <td>Sí<span class="note">Porcentaje no informado. También para grupos escolares.</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="costos">
+  <h2>Cuánto sale cubrir de 8 a 14/15 hs durante 4 semanas</h2>
+  <p class="lead">Cálculo propio para comparar con el mismo criterio: un chico, 4 semanas de lunes a viernes, armando el horario más parecido a 8 a 14/15 hs con lo que ofrece cada colonia. No incluye inscripción ni descuentos. Conviene confirmar cada número con la colonia.</p>
+
+  <div class="lanes-chart">
+    <div class="lane">
+      <h3>Colegio Peña<span class="sched">8 a 14 hs, con vianda propia</span></h3>
+      <div><div class="track"><div class="bar" style="width:27%"></div></div></div>
+      <p class="breakdown"><span class="val">$300.000</span> por ciclo. Turno mañana $150.000 + permanencia al mediodía $50.000 + ingreso anticipado $100.000. De 8 a 17 hs (ambos turnos): $450.000.</p>
+    </div>
+    <div class="lane">
+      <h3>Payana<span class="sched">8 a 15 hs, con desayuno y almuerzo</span></h3>
+      <div><div class="track"><div class="bar" style="width:50%"></div></div></div>
+      <p class="breakdown"><span class="val">$550.000</span> el mes de enero o febrero en jornada completa.</p>
+    </div>
+    <div class="lane">
+      <h3>Padre Claret<span class="sched">8 a 14 hs</span></h3>
+      <div><div class="track"><div class="bar" style="width:52%"></div></div></div>
+      <p class="breakdown"><span class="val">$570.000</span> por los ciclos 2 y 3 (4/1 al 29/1). Media jornada mañana $190.000 × 2 + hora 8 a 9 $47.500 × 2 + hora 13 a 14 $47.500 × 2. De 8 a 18 hs: $855.000.</p>
+    </div>
+    <div class="lane">
+      <h3>Aldea de Valle<span class="sched">8 a 14 hs, con pileta todos los días</span></h3>
+      <div><div class="track"><div class="bar" style="width:58%"></div></div></div>
+      <p class="breakdown"><span class="val">$640.000</span> 4 semanas turno mañana $400.000 + pre-hora 8 a 9 $120.000 + post-hora 13 a 14 $120.000. De 8 a 17 hs (completa + pre-hora): $838.000.</p>
+    </div>
+    <div class="lane">
+      <h3>Costa Warcalde<span class="sched">8:30 a 15 hs, con almuerzo (4 a 13 años)</span></h3>
+      <div><div class="track"><div class="bar" style="width:79%"></div></div></div>
+      <p class="breakdown"><span class="val">$870.000</span> aprox. Mes jornada completa $760.000 (promo hasta 01/12) + pre-hora $110.000, suponiendo que ese valor es mensual. Sin promo: $945.000.</p>
+    </div>
+    <div class="lane">
+      <h3>Revolución Cosmo<span class="sched">8 a 16 hs, con vianda propia</span></h3>
+      <div><div class="track"><div class="bar" style="width:90%"></div></div></div>
+      <p class="breakdown"><span class="val">$990.000</span> Mensual jornada completa (20 días) $790.000 + pack de 20 horas extra para la pre-hora $200.000.</p>
+    </div>
+    <div class="lane">
+      <h3>Colegio Alemán<span class="sched">8 a 15 hs, con comedor</span></h3>
+      <div><div class="track"><div class="bar" style="width:100%"></div></div></div>
+      <p class="breakdown"><span class="val">$1.105.470</span> 4 semanas $799.190 + extensión 8 a 9 $153.140 + extensión 14 a 15 $153.140.</p>
+    </div>
+  </div>
+  <p class="na-list">No se puede calcular: Alouette (la jornada extendida de 8 a 14 es a consultar).</p>
+</section>
+
+<section id="fechas">
+  <h2>Fechas límite y promos</h2>
+  <p class="lead">Ordenadas por fecha. Las tachadas ya vencieron al 16/11.</p>
+  <ol class="dates">
+    <li class="past"><time>15/11</time>Aldea de Valle: terminó la preventa con 15% off. La inscripción pasó de $35.000 a $50.000.</li>
+    <li><time>20/11</time>Revolución Cosmo: pagar inscripción y seña del 50% congela el precio; el saldo se paga antes de empezar.</li>
+    <li><time>26/11</time>Colegio Alemán: hasta esta fecha, 10% de descuento o 2 pagos sin interés.</li>
+    <li><time>01/12</time>Costa Warcalde: termina la promo de lanzamiento (4 a 13 años).</li>
+    <li><time>12/12</time>Padre Claret: último día con los precios publicados.</li>
+    <li><time>14, 16 y 18/12</time>Colegio Peña: preinscripciones en el colegio, de 10 a 14 hs.</li>
+    <li><time>22/12</time>Colegio Alemán: desde esta fecha los aranceles pueden cambiar.</li>
+  </ol>
+</section>
+
+<section id="detalle">
+  <h2>Detalle de cada colonia</h2>
+  <p class="lead">Todo lo que informó cada colonia, incluidos actividades, comidas, condiciones, formas de pago y contacto.</p>
+
+  <div class="fichas">
+
+    <article class="ficha top" id="f-payana" data-id="payana">
+      <h3>Payana</h3>
+      <p class="where">Ubicación y contacto no informados en el mensaje.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Colonia recreativa: cada día hay una actividad principal y otras complementarias, como búsqueda del tesoro, taller de cocina, disfraces, títeres, pintura y creatividad, y juegos con agua.</dd></div>
+        <div><dt>Instalaciones</dt><dd>Deslizador inflable acuático, tobogán gigante, cama elástica y canchita de fútbol de césped sintético.</dd></div>
+        <div><dt>Horarios y precios por mes</dt><dd>
+          <table class="mini"><tr><th>Modalidad</th><th>Horario</th><th>Valor</th></tr>
+          <tr><td>Turno mañana</td><td>8 a 12, con desayuno</td><td>$400.000</td></tr>
+          <tr><td>Turno tarde (enero)</td><td>14 a 18, con merienda</td><td>$400.000</td></tr>
+          <tr><td>Jornada completa</td><td>8 a 15, desayuno y almuerzo</td><td>$550.000</td></tr></table>
+          Quincena, semana y día: consultar. Inscripción: $100.000.</dd></div>
+        <div><dt>Desayuno y merienda</dt><dd>Chocolatada, té, mate cocido, jugos, cereales, galletitas, budines, criollos, frutas o yogur, variado cada día.</dd></div>
+        <div><dt>Almuerzo</dt><dd>Milanesas de pollo con puré, pollo al horno con papas, fideos con crema, pizzas y empanadas, costeletas con arroz. De postre: flan, gelatina o frutas.</dd></div>
+        <div><dt>Lluvia</dt><dd>No se suspende.</dd></div>
+        <div><dt>Fechas</dt><dd>Diciembre a coordinar según la demanda. Enero del 4 al 29. Febrero del 1 al 26.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-cosmo" data-id="cosmo">
+      <h3>Revolución Cosmo</h3>
+      <p class="where">La Torrecilla, a 7 cuadras de La Mujer Urbana. Contacto por formulario de inscripción.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Cuatro ejes: conectividad, rescate (reciclado), cuentos imposibles y arte sin límites. Experiencias de pintura heurística y manualidades; teatro, narraciones, danza y movimiento; instalaciones Reggio Emilia y exploraciones sensoriales; juegos con agua y naturaleza; cocina; rescate ecológico y reciclado.</dd></div>
+        <div><dt>Calendario</dt><dd>Del 14/12 al 26/2: 13 jornadas en diciembre, 20 en enero y 20 en febrero. No abre el 25/12 ni el 1/1.</dd></div>
+        <div><dt>Un día típico</dt><dd>Mañana: 9 bienvenida, 9:20 desayuno compartido, 10 a 11 experiencia central, 11 a 11:40 juego libre y agua, 11:40 cierre. Tarde: 13 bienvenida, 13:20 juego libre y agua, 14 a 15 experiencia central, 15 merienda, 15:30 cierre.</dd></div>
+        <div><dt>Precios</dt><dd>
+          <table class="mini"><tr><th></th><th>Simple (3 h)</th><th>Completa (7 h)</th></tr>
+          <tr><td>Día suelto</td><td>$32.000</td><td>$65.000</td></tr>
+          <tr><td>Pack 2 días</td><td>$60.000</td><td>$126.000</td></tr>
+          <tr><td>Pack 3 días</td><td>$85.500</td><td>$175.500</td></tr>
+          <tr><td>Semana</td><td>$135.000</td><td>$260.750</td></tr>
+          <tr><td>Ciclo 1 (8 días)</td><td>$198.000</td><td>$392.000</td></tr>
+          <tr><td>Ciclos 2 a 5 (10 días)</td><td>$230.000</td><td>$462.000</td></tr>
+          <tr><td>Mensual (20 días)</td><td>$420.000</td><td>$790.000</td></tr></table>
+          Horas extra (pre-hora 8 a 9, almuerzo 12 a 13, post-hora 16 a 17): suelta $12.000; pack 10 h $110.000; 20 h $200.000; 40 h $360.000. Inscripción $35.000 con mochila de regalo.</dd></div>
+        <div><dt>Qué llevar</dt><dd>Malla puesta, protector solar, ojotas o crocs, muda de recambio, toallón, bolsa para la ropa mojada y botella con agua. Turno mañana: desayuno. Turno tarde: almuerzo y merienda. Desayuno y merienda se comparten, salvo indicaciones especiales (por ejemplo sin TACC). Si usa pañales: 3 pañales y toallitas. Todo con nombre. Hay microondas y heladera.</dd></div>
+        <div><dt>Condiciones</dt><dd><ul>
+          <li>Las jornadas no se recuperan y no se pueden mover días entre semanas o ciclos.</li>
+          <li>Los packs semanales vencen al terminar la semana y los ciclos al terminar sus dos semanas.</li>
+          <li>Los días sueltos se pagan antes.</li>
+          <li>No se pueden cambiar los días acordados. Pasado el tiempo de tolerancia, la llegada tarde se cobra como post-hora.</li>
+          <li>Si no se paga en fecha, se libera el cupo y se pierde el seguro de ese período.</li></ul></dd></div>
+        <div><dt>Reserva</dt><dd>Completar el formulario y pagar inscripción y seña del 50% antes del 20/11 (congela el precio). El saldo se paga antes de empezar.</dd></div>
+        <div><dt>Hermanos</dt><dd>2.º hijo 10% off; 3.º hijo 20% off.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-claret" data-id="claret">
+      <h3>Padre Claret</h3>
+      <p class="where">Instagram @escueladeveranoclaret. WhatsApp 351 551 2066.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Juegos, natación, vida en la naturaleza, talleres de música, arte y cocina, iniciación deportiva, salida (3 a 6 años), campamento (más de 7 años) y fiesta del agua. Los sábados, un taller distinto cada semana. 13 años de experiencia. Desde los 3 años.</dd></div>
+        <div><dt>Horarios</dt><dd>Turno mañana 9 a 13, turno tarde 14 a 18, jornada completa 9 a 18 (no se cobra la hora de almuerzo). Horas extra: 8 a 9 y 13 a 14.</dd></div>
+        <div><dt>Precios de lunes a viernes</dt><dd>
+          <table class="mini"><tr><th>Ciclo</th><th>Media</th><th>Completa</th><th>Hora extra</th></tr>
+          <tr><td>1: 14/12 al 1/1</td><td>$208.000</td><td>$416.000</td><td>$52.000</td></tr>
+          <tr><td>2: 4/1 al 15/1</td><td>$190.000</td><td>$380.000</td><td>$47.500</td></tr>
+          <tr><td>3: 18/1 al 29/1</td><td>$190.000</td><td>$380.000</td><td>$47.500</td></tr>
+          <tr><td>4: 1/2 al 19/2</td><td>$247.000</td><td>$494.000</td><td>$61.000</td></tr></table>
+          La hora extra se paga por ciclo.</dd></div>
+        <div><dt>Opción lunes a sábado</dt><dd>Ciclos: 14/12 al 2/1, 4/1 al 16/1, 18/1 al 30/1 y 1/2 al 20/2. Los sábados solo turno mañana. Solo se informó el precio del ciclo 4: media $307.000, completa $554.000 y hora extra $76.000. Los otros ciclos hay que consultarlos.</dd></div>
+        <div><dt>Otros costos y descuentos</dt><dd>Inscripción única $40.000. Hermanos: 13% el primero y 18% el segundo, sin aplicar a inscripción ni hora extra. Precios válidos hasta el 12/12.</dd></div>
+        <div><dt>A tener en cuenta</dt><dd>El ciclo 1 incluye los feriados del 25/12 y el 1/1. No se informa si incluye comidas ni qué pasa con la lluvia.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-aldea" data-id="aldea">
+      <h3>Aldea de Valle × Glorin</h3>
+      <p class="where">Valle Escondido. WhatsApp de la administración 351 530-8489. Inscripción y presupuesto online.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Natación y pileta todos los días, karate, patín, gimnasia, fútbol, arte, música y naturaleza. De 3 a 13 años, en grupos por edad.</dd></div>
+        <div><dt>Horarios</dt><dd>Mañana 9 a 13, tarde 13:30 a 17, jornada completa 9 a 17. Pre-hora 8 a 9 (mañana o completa) y post-hora 13 a 14 (mañana): $30.000 por semana cada una. Almuerzo en jornada completa: $10.000 por día.</dd></div>
+        <div><dt>Precios por chico</dt><dd>
+          <table class="mini"><tr><th></th><th>Semana</th><th>Quincena</th><th>4 semanas</th><th>Temporada</th></tr>
+          <tr><td>Mañana</td><td>$105.000</td><td>$200.000</td><td>$400.000</td><td>$840.000</td></tr>
+          <tr><td>Tarde</td><td>$94.000</td><td>$180.000</td><td>$360.000</td><td>$756.000</td></tr>
+          <tr><td>Completa</td><td>$189.000</td><td>$359.000</td><td>$718.000</td><td>$1.512.000</td></tr></table>
+          Inscripción $50.000. Hermanos: 20% el 2.º y 30% el 3.º, sobre la cuota.</dd></div>
+        <div><dt>Fechas</dt><dd>Del 14/12 al 19/2, de lunes a viernes, por semana o por días sueltos. Sin actividad el 25/12, el 1/1 y en Carnaval (8 y 9/2). El 24 y el 31/12 la salida es a las 14.</dd></div>
+        <div><dt>Reserva y pago</dt><dd>Se reserva con la inscripción + 50% de seña; el saldo, antes de empezar. Hasta el 13/12 se paga por transferencia, sin recargo. Inscripción online, con el precio calculado al instante.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-pena" data-id="pena">
+      <h3>Colegio Peña</h3>
+      <p class="where">Ingreso por calle Pedroni, entre la iglesia y el jardín. WhatsApp 351 307 8934.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Escuela de verano deportiva y recreativa, abierta a alumnos de todos los colegios. Natación todos los días en pileta techada y climatizada, con personal especializado. Iniciación en básquet, vóley, handball, sóftbol y fútbol. Campamento o acantonamiento confirmado según el clima. De 3 años (sin pañal) a 15.</dd></div>
+        <div><dt>Lluvia o frío</dt><dd>No se suspende: hay polideportivo, aulas y salones techados.</dd></div>
+        <div><dt>Horarios</dt><dd>Mañana 9 a 12, tarde 14 a 17, uno o ambos turnos. Permanencia al mediodía 12 a 14 con vianda propia ($50.000 por ciclo). Ingreso 1 hora antes ($100.000 por ciclo).</dd></div>
+        <div><dt>Precios por ciclo de 4 semanas</dt><dd>
+          <table class="mini"><tr><th>Familia</th><th>Un turno</th><th>Ambos</th></tr>
+          <tr><td>1 chico</td><td>$150.000</td><td>$300.000</td></tr>
+          <tr><td>2 hermanos</td><td>$285.000</td><td>$585.000</td></tr>
+          <tr><td>3 hermanos</td><td>$420.000</td><td>$870.000</td></tr>
+          <tr><td>4 hermanos</td><td>$555.000</td><td>$1.110.000</td></tr></table>
+          Por semana: 1 semana $50.000, 2 semanas $100.000, 3 semanas $150.000. Inscripción $50.000 con matrícula, seguro y gorra.</dd></div>
+        <div><dt>Ciclos</dt><dd>Ciclo 1: 21/12 al 15/1. Ciclo 2: 18/1 al 12/2.</dd></div>
+        <div><dt>Inscripción y pago</dt><dd>Preinscripciones el lunes 14, miércoles 16 y viernes 18 de diciembre, de 10 a 14 hs en el colegio. Pago del 100% por adelantado, en efectivo o por transferencia. Llevar fotocopia del DNI.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-aleman" data-id="aleman">
+      <h3>Colegio Alemán</h3>
+      <p class="where">Administración: Neper 6275.</p>
+      <dl>
+        <div><dt>Destinatarios</dt><dd>De 3 a 12 años. Los ingresantes a sala de 3 de 2027 solo si son alumnos del colegio.</dd></div>
+        <div><dt>Horario</dt><dd>Lunes a viernes de 9 a 14 con comedor incluido. Extensión opcional de 8 a 9 y/o de 14 a 15.</dd></div>
+        <div><dt>Precios</dt><dd>
+          <table class="mini"><tr><th>Período</th><th>9 a 14</th><th>Cada extensión</th></tr>
+          <tr><td>6 semanas</td><td>$1.089.330</td><td>$208.740</td></tr>
+          <tr><td>4 semanas</td><td>$799.190</td><td>$153.140</td></tr>
+          <tr><td>2 semanas</td><td>$399.600</td><td>$76.570</td></tr>
+          <tr><td>2 semanas de diciembre</td><td>$347.480</td><td>$66.590</td></tr></table></dd></div>
+        <div><dt>Descuentos y pago</dt><dd>Inscribiéndose hasta el 26/11: 10% de descuento facturado junto con los aranceles de diciembre, o 2 cuotas sin interés (diciembre y enero). Hermanos: 15% el 2.º y 20% el 3.º. Desde el 22/12 los aranceles pueden cambiar.</dd></div>
+        <div><dt>Cómo inscribirse</dt><dd>Alumnos del colegio: por FAELE. Externos: en forma presencial en la Administración (Neper 6275), con DNI y CUS.</dd></div>
+        <div><dt>Fechas</dt><dd>Del 21/12/2026 al 29/1/2027.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha top" id="f-cw" data-id="cw">
+      <h3>Costa Warcalde</h3>
+      <p class="where">Eguía Zanón 9630, Villa Warcalde. Costa Warcalde 351 915 2222; Lorena Canessini 351 343 0386; Cecilia De Vertiz 351 530 7017.</p>
+      <dl>
+        <div><dt>Destinatarios</dt><dd>De 2 años y medio a 13 años.</dd></div>
+        <div><dt>Precios de 4 a 13 años (promo hasta el 01/12)</dt><dd>
+          <table class="mini"><tr><th></th><th>Quincena</th><th>Mes</th></tr>
+          <tr><td>Media jornada 10 a 13</td><td>$235.000</td><td>$405.000</td></tr>
+          <tr><td>Jornada completa 10 a 15, con almuerzo</td><td>$415.000</td><td>$760.000</td></tr>
+          <tr><td>Completa sin promo</td><td>$470.000</td><td>$835.000</td></tr></table></dd></div>
+        <div><dt>Precios de 2 y medio a 3 años</dt><dd>Solo media jornada de 10 a 13: quincena $300.000, mes $520.000.</dd></div>
+        <div><dt>Opcionales</dt><dd>Almuerzo (plato principal, bebida y postre): $95.000 por quincena. Pre-hora de 1 h 30: $140.000 para 2 y medio a 3 años y $110.000 para 4 a 13.</dd></div>
+        <div><dt>Inscripción y cobertura</dt><dd>$55.000 por única vez, incluye revisación médica y kit de verano. Cobertura médica de URG Urgencias toda la temporada.</dd></div>
+        <div><dt>Descuentos y pago</dt><dd>Efectivo 5%, hermanos 5%, Briskbox 5%, convenio Rosarito 10%. Pago en efectivo o transferencia. Atención de lunes a viernes de 9 a 17.</dd></div>
+      </dl>
+      <p class="alert">Faltan las fechas de inicio y fin, y si la pre-hora se cobra por quincena o por mes.</p>
+    </article>
+
+    <article class="ficha top" id="f-alouette" data-id="alouette">
+      <h3>Alouette</h3>
+      <p class="where">Ubicación y contacto no informados en el mensaje.</p>
+      <dl>
+        <div><dt>Ciclos y precios (10 a 13 hs)</dt><dd>
+          <table class="mini"><tr><th>Ciclo</th><th>Fechas</th><th>Valor</th></tr>
+          <tr><td>Diciembre</td><td>14/12 al 1/1</td><td>$250.000</td></tr>
+          <tr><td>Enero</td><td>4/1 al 29/1</td><td>$350.000</td></tr>
+          <tr><td>Febrero</td><td>1/2 al 26/2</td><td>$367.000</td></tr></table></dd></div>
+        <div><dt>Jornada extendida</dt><dd>De 8 a 14, precio a consultar.</dd></div>
+        <div><dt>Lluvia</dt><dd>No se suspende.</dd></div>
+        <div><dt>Cupos</dt><dd>Solo 40 cupos.</dd></div>
+      </dl>
+      <p class="alert">Ofrecen enviar más información sobre actividades, profesoras e institución a quien la pida.</p>
+    </article>
+
+    <article class="ficha" id="f-castel" data-id="castel">
+      <h3>Castelfranco (Verano del Castel)</h3>
+      <p class="where">Círculo de Oficiales de la Policía de Córdoba, Enrique Cavendish 5810 esquina Av. Gauss. Prof. Nadia 351 668 9109; Prof. Esteban 351 256 1837; vacaciones@castelfranco.edu.ar.</p>
+      <dl>
+        <div><dt>Datos generales</dt><dd>Del 14/12/2026 al 29/1/2027, de 9 a 13, con pre-hora opcional de 8 a 9. De 3 a 13 años.</dd></div>
+        <div><dt>Tarifas</dt><dd>
+          <table class="mini"><tr><th></th><th>General</th><th>Alumnos del colegio</th></tr>
+          <tr><td>Mes completo</td><td>$392.000</td><td>$346.500</td></tr>
+          <tr><td>Quincena</td><td>$228.000</td><td>$200.000</td></tr></table>
+          Pre-hora: $31.000. Hermanos: 10% el 2.º, 15% el 3.º y 20% el 4.º.</dd></div>
+        <div><dt>Inscripción y pago</dt><dd>Completar el formulario <a href="https://forms.gle/JD5ncfEaz8KAGbo38">forms.gle/JD5ncfEaz8KAGbo38</a> y pagar por transferencia (alias escuela.castel, Banco Galicia, Asociación Civil Italo Argentina Castelfranco). Mandar foto del comprobante a vacaciones@castelfranco.edu.ar con el nombre del chico y si es quincena o mes.</dd></div>
+        <div><dt>Importante</dt><dd>Cupos limitados. Sin inscripción previa no se puede ingresar, por el seguro. No se aceptan alumnos por día.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha" id="f-eic" data-id="eic">
+      <h3>English in Colours</h3>
+      <p class="where">Av. Ricardo Rojas 7395.</p>
+      <dl>
+        <div><dt>Propuesta</dt><dd>Arte, inglés y juegos con agua, sin pileta. Sectores de juego, biblioteca infantil, sector de arte, alfombra deslizante, mini piletas, pelotero e inflable. Incluye todos los materiales. De 3 a 7 años, sin pañal.</dd></div>
+        <div><dt>Horario y fechas</dt><dd>De 9 a 12:30, desde el lunes 4 de enero. Pre-hora: $8.000 por día.</dd></div>
+        <div><dt>Precios</dt><dd>Día suelto $35.000, semana $150.000, quincena $240.000, mes $380.000. 10% de descuento para hermanos.</dd></div>
+        <div><dt>Reserva</dt><dd>Con el 50% al alias englishincolours (a nombre de María Belén Rinaldi). Cupos limitados.</dd></div>
+      </dl>
+    </article>
+
+    <article class="ficha" id="f-mammana" data-id="mammana">
+      <h3>Mammana</h3>
+      <p class="where">Barrio Urca, según la información de las familias. El flyer indica José Henry 5265, Villa Belgrano.</p>
+      <dl>
+        <div><dt>Precios</dt><dd>
+          <table class="mini"><tr><th>Período</th><th>Valor</th></tr>
+          <tr><td>1 semana</td><td>$150.000</td></tr>
+          <tr><td>2 semanas</td><td>$200.000</td></tr>
+          <tr><td>3 semanas</td><td>$250.000</td></tr>
+          <tr><td>Ciclo de 4 semanas</td><td>$280.000</td></tr></table>
+          Inscripción $50.000. Descuentos por hermanos y para grupos escolares.</dd></div>
+        <div><dt>Pileta y comidas</dt><dd>Tiene pileta. No incluye comida.</dd></div>
+      </dl>
+      <p class="alert">Faltan horarios, fechas, edades y qué pasa los días de lluvia. Conviene confirmar también la dirección.</p>
+    </article>
+
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Armado con la información que cada colonia envió por WhatsApp o en sus folletos, al 16 de noviembre de 2026. Los precios y condiciones pueden cambiar: confirmá con cada colonia antes de inscribir. “No informado” significa que la colonia no lo aclaró, no que no lo tenga.
+  </div>
+</footer>
+
+<script>
+(function(){
+  var state={cubre:false,pileta:false,almuerzo:false,lluvia:false};
+  var chips=document.querySelectorAll('[data-filter]');
+  var edad=document.getElementById('edad');
+  var rows=document.querySelectorAll('tbody tr[data-id]');
+  var groups=document.querySelectorAll('tbody tr.group');
+  var count=document.getElementById('count');
+
+  function apply(){
+    var age=edad.value===''?null:parseFloat(edad.value);
+    var shown=0;
+    rows.forEach(function(r){
+      var d=r.dataset, ok=true;
+      if(state.cubre && d.cubre!=='1') ok=false;
+      if(state.pileta && d.pileta!=='si') ok=false;
+      if(state.almuerzo && d.almuerzo!=='si') ok=false;
+      if(state.lluvia && d.lluvia!=='si') ok=false;
+      if(age!==null){
+        if(d.min!=='' && age<parseFloat(d.min)) ok=false;
+        if(d.max!=='' && age>parseFloat(d.max)) ok=false;
+      }
+      r.hidden=!ok;
+      var f=document.querySelector('.ficha[data-id="'+d.id+'"]');
+      if(f) f.hidden=!ok;
+      if(ok) shown++;
+    });
+    groups.forEach(function(g){
+      var n=g.nextElementSibling, any=false;
+      while(n && !n.classList.contains('group')){ if(!n.hidden) any=true; n=n.nextElementSibling; }
+      g.hidden=!any;
+    });
+    count.textContent = shown===rows.length ? 'Mostrando las '+rows.length+' colonias'
+      : shown===0 ? 'Ninguna colonia cumple todos los filtros. Probá quitar alguno.'
+      : 'Mostrando '+shown+' de '+rows.length+' colonias';
+  }
+  chips.forEach(function(c){
+    c.addEventListener('click',function(){
+      var k=c.dataset.filter; state[k]=!state[k];
+      c.setAttribute('aria-pressed',state[k]?'true':'false'); apply();
+    });
+  });
+  edad.addEventListener('change',apply);
+  document.getElementById('reset').addEventListener('click',function(){
+    Object.keys(state).forEach(function(k){state[k]=false});
+    chips.forEach(function(c){c.setAttribute('aria-pressed','false')});
+    edad.value=''; apply();
+  });
+})();
+</script>
+</body>
+</html>
