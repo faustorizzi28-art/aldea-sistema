@@ -67,7 +67,7 @@ const CONFIG = {
       'La seña congela el precio de lo señado. Si después sumás semanas, se pagan al valor vigente.', 'La inscripción y la seña no se devuelven si la familia cancela.'] },
     { n: 3, titulo: 'Valores y descuentos', destacado: 'Los descuentos son solo sobre la cuota (semanal, quincenal o de temporada).', items: [
       'Inscripción, almuerzo ($10.000 por día), pre y post-hora, campamentos y salidas especiales no tienen descuento.',
-      'Preventa: los valores publicados ya tienen el 15% de descuento. No se vuelve a descontar al momento de pagar.',
+      'Las promociones (por ejemplo, la inscripción bonificada) valen pagando la seña dentro de la fecha. Si no, se pasa al valor vigente.',
       'Los campamentos, salidas y actividades extras no están incluidos en la cuota: se pagan por separado.',
       'Hermanos: 20% en la cuota del 2.º hermano y 30% desde el 3.º. No se suma a otros descuentos: se aplica el mayor.',
       'Forma de pago: en efectivo en la sede (precio más conveniente) o por transferencia y Mercado Pago, con el recargo vigente.',
@@ -116,7 +116,7 @@ const CONFIG = {
       destacado: ['Viernes', 'Día temático con show de GLORIN'],
       ficha: [
         ['Edades', 'De 3 a 13 años, grupos por edad, cada grupo con sus profes'],
-        ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h'],
+        ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h · Pack 8 a 14 h'],
         ['Opcionales', 'Pre-hora 8 a 9 h · Post-hora 13 a 14 h · Almuerzo $10.000/día (jornada completa)'],
         ['Comidas', 'Desayuno y merienda: los traen o los compran en Aldea · Almuerzo $10.000 por día'],
         ['Lluvia', 'No se suspende: si llueve hay actividad igual'],
@@ -127,23 +127,32 @@ const CONFIG = {
         // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
         // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
         etapas: [
-          { id: 'preventa', nombre: 'Preventa', hasta: '2026-11-15', inscripcion: 35000,
-            turnos: { manana:   { semana: 89000,  quincena: 170000, temporada: 714000,  dia: 27000 },    // dia: a confirmar
+          { id: 'preventa', nombre: 'Preventa', hasta: '2026-11-15', inscripcion: 35000, badge: '15% OFF', leyenda: 'Precios con el 15% OFF ya aplicado',
+            turnos: { manana:   { semana: 89000,  quincena: 170000, temporada: 714000,  dia: 27000 },
                       tarde:    { semana: 80000,  quincena: 153000, temporada: 643000,  dia: 24000 },
-                      completa: { semana: 161000, quincena: 305000, temporada: 1285000, dia: 48000 } } },
-          { id: 'regular', nombre: 'Precio regular', inscripcion: 50000,                             // ⚠️ desde el 16/11: preventa / 0,85, a confirmar
-            turnos: { manana:   { semana: 105000, quincena: 200000, temporada: 840000,  dia: 32000 },
-                      tarde:    { semana: 94000,  quincena: 180000, temporada: 756000,  dia: 28000 },
-                      completa: { semana: 189000, quincena: 359000, temporada: 1512000, dia: 56000 } } }
+                      completa: { semana: 161000, quincena: 305000, temporada: 1285000, dia: 48000 },
+                      pack:     { semana: 119000, quincena: 221000, temporada: 926000,  dia: 32000 } } },
+          // Valores nuevos desde el 17/11/2026 (pensados para competir: ver difusion/comparativa). Promo: inscripción $35.000 si señan hasta el 30/11.
+          { id: 'promo', nombre: 'Promo inscripción', hasta: '2026-11-30', inscripcion: 35000, badge: 'INSCRIPCIÓN $35.000', leyenda: 'Inscripción a $35.000 pagando la seña',
+            turnos: { manana:   { semana: 100000, quincena: 190000, temporada: 800000,  dia: 30000 },
+                      tarde:    { semana: 90000,  quincena: 170000, temporada: 715000,  dia: 27000 },
+                      completa: { semana: 180000, quincena: 340000, temporada: 1430000, dia: 54000 },
+                      pack:     { semana: 140000, quincena: 260000, temporada: 1090000, dia: 38000 } } },
+          { id: 'regular', nombre: 'Precio regular', inscripcion: 50000,
+            turnos: { manana:   { semana: 100000, quincena: 190000, temporada: 800000,  dia: 30000 },
+                      tarde:    { semana: 90000,  quincena: 170000, temporada: 715000,  dia: 27000 },
+                      completa: { semana: 180000, quincena: 340000, temporada: 1430000, dia: 54000 },
+                      pack:     { semana: 140000, quincena: 260000, temporada: 1090000, dia: 38000 } } }
         ],
         turnos: [
           { id: 'manana',   nombre: 'Mañana',   horario: '9 a 13 h',     fin: '13:00', color: '#FFA21F' },
           { id: 'tarde',    nombre: 'Tarde',    horario: '13:30 a 17 h', fin: '17:00', color: '#F25FA8' },
-          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     fin: '17:00', color: '#6CC23A' }
+          { id: 'completa', nombre: 'Completa', horario: '9 a 17 h',     fin: '17:00', color: '#6CC23A' },
+          { id: 'pack',     nombre: 'Pack 8 a 14', horario: '8 a 14 h',   fin: '14:00', color: '#1E7BC8' }   // mañana + pre-hora + post-hora a precio cerrado
         ],
         extras: [
-          { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 30000, precioDia: 6000, turnos: ['manana', 'completa'], detalle: 'Desde $30.000 por semana' },
-          { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 30000, precioDia: 6000, turnos: ['manana'], detalle: 'Desde $30.000 por semana' },
+          { id: 'prehora',  nombre: 'Pre-hora (8 a 9 h)',   precioSemana: 25000, precioDia: 5000, turnos: ['manana', 'completa'], detalle: '$25.000 por semana' },
+          { id: 'posthora', nombre: 'Post-hora (13 a 14 h)', precioSemana: 25000, precioDia: 5000, turnos: ['manana'], detalle: '$25.000 por semana' },
           { id: 'almuerzo', nombre: 'Almuerzo', precioDia: 10000, turnos: ['completa'], detalle: '$10.000 por día · jornada completa. Desayuno y merienda: los traen o los compran en Aldea' }
         ],
         descuentoHermanos: [0, 20, 30],   // % por hijo: el 2.º 20%, del 3.º en adelante 30%
@@ -1785,19 +1794,72 @@ function accRevisarComprobante_(d, sesion) {
 function pasarAPrecioRegular_(hoy) {
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   filas_('Inscripciones').forEach(i => {
-    if (i.estado === 'Cancelada' || esEvento_(i) || i.etapa !== 'Preventa' || !Number(i.totalRegular)) return;
-    const pre = CONFIG.sedes[i.sede].precios.etapas.filter(e => e.id === 'preventa')[0];
-    if (!pre || hoy <= pre.hasta || (Number(i.pagado) || 0) >= (Number(i.sena) || 0)) return;
+    if (i.estado === 'Cancelada' || esEvento_(i) || !Number(i.totalRegular)) return;
+    const et = (CONFIG.sedes[i.sede] ? CONFIG.sedes[i.sede].precios.etapas : []).filter(e => e.hasta && e.nombre === i.etapa)[0];
+    if (!et || hoy <= et.hasta || (Number(i.pagado) || 0) >= (Number(i.sena) || 0)) return;
     actualizar_('Inscripciones', i._fila, { total: Number(i.totalRegular), sena: Number(i.senaRegular), etapa: 'Precio regular',
-      notas: (i.notas ? i.notas + ' · ' : '') + 'Pasó a precio regular: no señó antes del ' + fechaCorta_(pre.hasta) });
+      notas: (i.notas ? i.notas + ' · ' : '') + 'Pasó a precio regular: no señó antes del ' + fechaCorta_(et.hasta) });
     const r = recalcularInsc_(i.id), f = fams[i.familiaId];
     if (f && f.email) try {
-      enviarMail_(f.email, 'Terminó la preventa · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! La preventa terminó el ' + fechaLarga_(pre.hasta) +
+      enviarMail_(f.email, 'Terminó la ' + et.nombre.toLowerCase() + ' · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! La ' + esc_(et.nombre.toLowerCase()) + ' terminó el ' + fechaLarga_(et.hasta) +
         ' y la inscripción de ' + esc_(i.chico) + ' no tenía la seña, así que pasó al precio regular: <b>' + pesos_(i.totalRegular) + '</b>.</p>' +
         boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar la seña', colorSede_(i.sede)), i.sede);
     } catch (e) { Logger.log(e); }
   });
 }
+
+/**
+ * Valores nuevos (17/11/2026): recalcula las inscripciones activas con los precios de la promo y,
+ * si el precio nuevo es MENOR, se lo aplica (nunca sube un precio). Correr una vez desde el editor;
+ * también corre sola una vez en el aviso diario. Con avisar = true manda un mail a cada familia.
+ */
+function actualizarPreciosNuevos(avisar) {
+  const cfg = config_();
+  const hoy = hoy_(), lista = filas_('Inscripciones').filter(i => i.estado !== 'Cancelada' && !esEvento_(i));
+  const grupos = {};
+  lista.forEach(i => {
+    const t = i.creado instanceof Date ? Math.floor(i.creado.getTime() / 120000) : String(i.creado).slice(0, 15);
+    const k = [i.familiaId, t, iso_(i.fechaInicio), i.turno, i.extras, i.dias].join('|');
+    (grupos[k] = grupos[k] || []).push(i);
+  });
+  const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
+  let n = 0; const cambios = [];
+  Object.keys(grupos).forEach(k => {
+    const g = grupos[k].sort((a, b) => (a._fila - b._fila)), i0 = g[0], sede = CONFIG.sedes[i0.sede];
+    if (!sede) return;
+    const P = sede.precios, dias = String(i0.dias || '').split(',').filter(Boolean);
+    const t = P.turnos.filter(x => x.nombre === i0.turno || x.id === i0.turno)[0];
+    if (!t || !dias.length) return;
+    const pub = accPublico_().sedes.filter(x => x.id === i0.sede)[0];
+    const semanas = pub.semanas.filter(w => w.dias.some(d => dias.indexOf(d) >= 0)).map(w => w.id);
+    const extras = P.extras.filter(e => String(i0.extras || '').indexOf(e.nombre) >= 0).map(e => e.id);
+    const plan = String(i0.modalidad).toLowerCase().indexOf('sem') === 0 ? { modalidad: 'semanas', semanas, turno: t.id, extras } : { modalidad: 'dias', dias, turno: t.id, extras };
+    const sinMatricula = g.map(i => !(Number(i.matricula) > 0));
+    const q = cotizarPuro_(pub, plan, g.length, { hoy, sinMatricula, etapaId: 'promo' });
+    const qr = cotizarPuro_(pub, plan, g.length, { hoy, sinMatricula, etapaId: 'regular' });
+    g.forEach((i, x) => {
+      const nuevo = q.porChico[x], viejo = Number(i.total) || 0;
+      if (!nuevo || nuevo.total >= viejo) return;
+      if ((Number(i.pagado) || 0) >= (Number(i.sena) || 1)) return;   // ya señó: la seña congeló su precio (bajarlo dejaría saldo a favor)
+      actualizar_('Inscripciones', i._fila, { subtotal: nuevo.subtotal, descuento: nuevo.descuento, matricula: nuevo.matricula, total: nuevo.total, sena: nuevo.sena,
+        etapa: 'Promo inscripción', totalRegular: qr.porChico[x].total, senaRegular: qr.porChico[x].sena,
+        notas: (i.notas ? i.notas + ' · ' : '') + 'Precio actualizado el ' + fechaCorta_(hoy) + ' (antes ' + pesos_(viejo) + ')' });
+      recalcularInsc_(i.id); n++;
+      cambios.push(i.chico + ': ' + pesos_(viejo) + ' → ' + pesos_(nuevo.total));
+      const f = fams[i.familiaId];
+      if (avisar === true && f && f.email) try {
+        enviarMail_(f.email, '☀️ Buenas noticias: bajamos los valores · ' + i.chico, '<p>¡Hola ' + esc_(primerNombre_(f.adulto)) + '! Actualizamos los valores de la escuela de verano y la inscripción de ' +
+          esc_(i.chico) + ' quedó en <b>' + pesos_(nuevo.total) + '</b> (antes ' + pesos_(viejo) + ').</p><p>Pagando la seña de <b>' + pesos_(nuevo.sena) + '</b> hasta el ' +
+          fechaLarga_(P.etapas.filter(e => e.id === 'promo')[0].hasta) + ' mantenés la inscripción a $35.000.</p>' + boton_(urlPago_(tokenPago_([i.id])), '💳 Pagar la seña', colorSede_(i.sede)), i.sede);
+      } catch (e) { Logger.log(e); }
+    });
+  });
+  guardarConfig_('preciosActualizados', hoy, 'Día en que se aplicaron los valores nuevos a las inscripciones ya hechas');
+  Logger.log(n + ' inscripciones actualizadas:\n' + cambios.join('\n'));
+  return { actualizadas: n, cambios };
+}
+/** Para correr desde el editor: actualiza y avisa por mail a las familias. */
+function actualizarPreciosNuevosConMail() { return actualizarPreciosNuevos(true); }
 
 // ======== EFECTIVO / TRANSFERENCIA ========
 /** Antes de que arranque el cobro en efectivo, solo se paga por transferencia (y sin recargo). */
@@ -2085,6 +2147,7 @@ function accGuardarMP_(d, sesion) {
 // ======== AVISOS AUTOMÁTICOS ========
 function tareaDiaria() {
   const hoy = hoy_();
+  if (!config_().preciosActualizados) try { actualizarPreciosNuevos(false); } catch (e) { Logger.log(e); }   // valores nuevos del 17/11: una sola vez
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   const todas = filas_('Inscripciones').filter(i => i.estado !== 'Cancelada');
   const ultimoDia = {};

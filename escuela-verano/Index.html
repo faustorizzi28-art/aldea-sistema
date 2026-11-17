@@ -358,7 +358,7 @@ function tablaPrecios(s, E) {
       const celda = k => `<td>${pesos(v[k])}${R && r[k] > v[k] ? `<s>${pesos(r[k])}</s>` : ''}</td>`;
       return `<tr><td class="et"><span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><small>${esc(t.horario)}</small></td>
       ${celda('semana')}${celda('quincena')}${celda('temporada')}</tr>`; }).join('')}</table></div>
-    ${R ? `<p class="muted chico" style="margin:6px 0 0">Tachado: el valor desde el ${fCorta(sumarDiaIso(E.hasta))}.</p>` : ''}`;
+    ${R && JSON.stringify(R.turnos) !== JSON.stringify(E.turnos) ? `<p class="muted chico" style="margin:6px 0 0">Tachado: el valor desde el ${fCorta(sumarDiaIso(E.hasta))}.</p>` : ''}`;
 }
 
 function vInicio() { vElegirSede(); }
@@ -392,7 +392,7 @@ function vPuerta(id) {
     <h1 style="margin-top:18px">UN VERANO<br>EN ${esc((s.nombre.split(' ').pop() === 'Valle' ? 'Aldea' : s.nombre.split(' ').pop()).toUpperCase())}</h1>
     <p style="margin:6px 0 0;font-weight:700">${fLarga(s.inicio).replace(/^\S+ /, '')} al ${fLarga(s.fin).replace(/^\S+ /, '')} · de ${PUB.edadMin} a ${PUB.edadMax} años</p>
     ${s.conGlorin ? '<p class="chico" style="margin:2px 0 0;font-weight:600;opacity:.95">Aldea de Valle × GLORIN Animaciones</p>' : ''}
-    ${E.hasta ? `<div class="badge-preventa"><b>${esc(E.nombre.toUpperCase())}</b><small>hasta el ${fCorta(E.hasta)}</small>${(s.precios.etapas.length > 1 && E === s.precios.etapas[0]) ? '<i>15% OFF</i><small>ya aplicado en todos los precios</small>' : ''}<small>+ inscripción ${pesos(E.inscripcion)}</small></div>` : ''}
+    ${E.hasta ? `<div class="badge-preventa"><b>${E.id === 'preventa' ? esc(E.nombre.toUpperCase()) : 'PROMO'}</b><small>hasta el ${fCorta(E.hasta)}</small>${E.badge ? '<i>' + esc(E.badge.replace(/^INSCRIPCIÓN /, '')) + '</i><small>' + (E.id === 'preventa' ? 'ya aplicado en todos los precios' : 'inscripción<br>con la seña') + '</small>' : ''}${E.id === 'preventa' ? '<small>+ inscripción ' + pesos(E.inscripcion) + '</small>' : ''}</div>` : ''}
   </div></section>
   <div class="wrap">
     <div class="card" style="margin-top:16px;border:2px solid var(--c1)">
@@ -455,15 +455,15 @@ function vSede(id) {
         ${w.tematica && w.tematica.descripcion ? `<div class="chico">${esc(w.tematica.descripcion)}</div>` : ''}</div>
         ${w.hasta < hoy ? '<span class="chip">Terminó</span>' : ''}</div>`).join('')}
     </div>
-    <div class="card"><h3>${etapaActual(s).hasta ? 'Valores de ' + esc(etapaActual(s).nombre.toLowerCase()) : 'Valores'}</h3>
-      ${etapaActual(s).hasta ? `<p style="margin:0 0 6px"><span class="temporada-pill" style="font:700 13px var(--f-texto);padding:6px 14px">Precios con el 15% OFF ya aplicado · hasta el ${fCorta(etapaActual(s).hasta)}</span></p>` : ''}
+    <div class="card"><h3>${etapaActual(s).id === 'preventa' ? 'Valores de preventa' : 'Valores'}</h3>
+      ${etapaActual(s).hasta ? `<p style="margin:0 0 6px"><span class="temporada-pill" style="font:700 13px var(--f-texto);padding:6px 14px">${esc(etapaActual(s).leyenda || 'Valores')} · hasta el ${fCorta(etapaActual(s).hasta)}</span></p>` : ''}
       ${tablaPrecios(s, etapaActual(s))}
       <div class="info2" style="margin-top:10px">
-        <div><b>Inscripción</b>${pesos(etapaActual(s).inscripcion)}${etapaActual(s).hasta ? ' en ' + esc(etapaActual(s).nombre.toLowerCase()) : ''}</div>
+        <div><b>Inscripción</b>${pesos(etapaActual(s).inscripcion)}${etapaActual(s).hasta ? (etapaActual(s).id === 'preventa' ? ' en preventa' : ' pagando la seña hasta el ' + fCorta(etapaActual(s).hasta)) : ''}</div>
         <div><b style="color:var(--verde)">Hermanos</b>${descHermanos(s).slice(1).map((p, i) => p + '% ' + (i ? 'del ' + (i + 2) + '.º en adelante' : 'al 2.º')).join(' · ')}</div>
       </div>
       ${P.extras.map(e => `<div class="franja marino" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b style="font:var(--w-titulo) 17px var(--f-titulo);text-transform:uppercase;color:var(--rosa)">${esc(e.nombre)}</b><span>${e.precioSemana ? 'desde ' + pesos(e.precioSemana) + ' por semana' : pesos(e.precioDia) + ' por día'}${e.turnos ? ' · ' + e.turnos.map(t => (P.turnos.find(x => x.id === t) || {}).nombre).join(' / ').toLowerCase() : ''}</span></div>`).join('')}
-      ${etapaActual(s).hasta && P.etapas[P.etapas.indexOf(etapaActual(s)) + 1] ? `<div class="franja coral" style="text-align:center"><b class="t" style="display:block;margin:0">Desde el ${fCorta(sumarDias(etapaActual(s).hasta, 1))} los valores aumentan</b>y la inscripción pasa a ${pesos(P.etapas[P.etapas.indexOf(etapaActual(s)) + 1].inscripcion)}</div>` : ''}
+      ${etapaActual(s).hasta && P.etapas[P.etapas.indexOf(etapaActual(s)) + 1] ? `<div class="franja coral" style="text-align:center"><b class="t" style="display:block;margin:0">Desde el ${fCorta(sumarDias(etapaActual(s).hasta, 1))} ${JSON.stringify(etapaActual(s).turnos) === JSON.stringify(P.etapas[P.etapas.indexOf(etapaActual(s)) + 1].turnos) ? 'sube la inscripción' : 'los valores aumentan'}</b>y pasa a ${pesos(P.etapas[P.etapas.indexOf(etapaActual(s)) + 1].inscripcion)}</div>` : ''}
       ${soloT() ? `<p class="banner" style="margin:12px 0 8px">💳 <b>Hasta el ${fCorta(sumarDias(PUB.efectivoDesde, -1))} se paga por transferencia</b>, sin recargo. En efectivo, desde el ${efDesde()} en la sede.</p>` : ''}
       ${PUB.recargo ? `<p class="banner" style="margin:12px 0 8px">💵 <b>Precios en efectivo.</b> Por transferencia o Mercado Pago: +${PUB.recargo}%.</p>` : ''}
       <p class="muted chico">Los días sueltos nunca cuestan más que la semana completa.</p>

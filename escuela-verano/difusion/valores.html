@@ -18,19 +18,23 @@ body{width:1080px;height:1350px;overflow:hidden;font-family:'Archivo',sans-serif
 .aldea svg{height:56px;width:auto;color:var(--amarillo)}
 .aldea b{display:block;font:40px/0.9 'Lilita One';color:var(--amarillo)}
 .aldea small{display:block;font:19px/1 'Lilita One';color:#fff;letter-spacing:.12em;margin-top:4px}
-.ceja{margin-top:34px;font:800 30px 'Archivo';letter-spacing:.24em;color:#fff;text-transform:uppercase}
-.titulo{font:112px/0.9 'Lilita One';color:var(--amarillo);-webkit-text-stroke:7px var(--marino);paint-order:stroke fill;text-shadow:0 8px 0 var(--marino);margin-top:4px}
+.ceja{margin-top:26px;font:800 30px 'Archivo';letter-spacing:.24em;color:#fff;text-transform:uppercase}
+.titulo{font:100px/0.9 'Lilita One';color:var(--amarillo);-webkit-text-stroke:7px var(--marino);paint-order:stroke fill;text-shadow:0 8px 0 var(--marino);margin-top:4px}
 .sub{font:800 28px/1.2 'Archivo';color:#fff;margin-top:14px}
 .tabla{margin-top:26px;background:#fff;border:5px solid var(--marino);border-radius:28px;box-shadow:8px 8px 0 var(--marino);padding:14px 18px 10px}
 table{width:100%;border-collapse:separate;border-spacing:6px}
 th{background:var(--amarillo);border-radius:12px;padding:10px 4px;font:26px 'Lilita One';text-transform:uppercase}
 th small{display:block;font:700 15px 'Archivo';text-transform:none}
 th.vacio{background:none}
-td{background:#FFF6CF;border-radius:12px;padding:14px 4px;text-align:center;font:900 31px 'Archivo';font-variant-numeric:tabular-nums}
+td{background:#FFF6CF;border-radius:12px;padding:10px 4px;text-align:center;font:900 31px 'Archivo';font-variant-numeric:tabular-nums}
 td.et{background:none;text-align:left;padding-left:4px}
 td.et b{display:block;font:34px/1 'Lilita One';text-transform:uppercase}
 td.et span{font:800 19px 'Archivo'}
-.m b{color:var(--naranja)}.t b{color:var(--rosa)}.c b{color:#3E9A1F}
+.m b{color:var(--naranja)}.t b{color:var(--rosa)}.c b{color:#3E9A1F}.p b{color:var(--azul)}
+tr.pk td:not(.et){background:#DDF0FF;border:3px solid var(--azul)}
+.sello{position:absolute;top:190px;right:56px;width:190px;height:190px;border-radius:50%;background:var(--coral);border:5px solid var(--marino);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(10deg);box-shadow:6px 6px 0 var(--marino)}
+.sello b{font:44px/0.9 'Lilita One';color:var(--amarillo);-webkit-text-stroke:2px var(--marino);paint-order:stroke fill}
+.sello span{font:800 17px/1.15 'Archivo'}
 .fila{display:flex;gap:14px;margin-top:22px}
 .box{flex:1;background:var(--marino);color:#fff;border:4px solid #fff;border-radius:22px;padding:14px 18px}
 .box h3{font:28px/1 'Lilita One';color:var(--amarillo);text-transform:uppercase;margin-bottom:8px}
@@ -46,20 +50,22 @@ td.et span{font:800 19px 'Archivo'}
 .herm span{font:800 20px/1.1 'Archivo';color:var(--marino);margin-top:4px}
 </style></head><body>
 <div class="ondas"></div><div class="rayos"></div><div class="sol"></div>
+<div class="sello"><span>PROMO</span><b>$35.000</b><span>inscripción<br>hasta el 30/11</span></div>
 <div class="wrap">
   <div class="marcas"><div class="aldea">CARPA<div><b>ALDEA</b><small>DE VALLE</small></div></div></div>
   <div class="ceja">Escuela de verano 2026-27</div>
   <div class="titulo">VALORES</div>
-  <div class="sub">14/12 al 19/2 · de 3 a 13 años · por chico</div>
+  <div class="sub">14/12 al 19/2 · de 3 a 13 años · por chico · efectivo</div>
   <div class="tabla"><table>
     <tr><th class="vacio"></th><th>Semana</th><th>Quincena</th><th>Temporada<small>10 semanas</small></th></tr>
-    <tr><td class="et m"><b>Mañana</b><span>9 a 13 h</span></td><td>$105.000</td><td>$200.000</td><td>$840.000</td></tr>
-    <tr><td class="et t"><b>Tarde</b><span>13:30 a 17 h</span></td><td>$94.000</td><td>$180.000</td><td>$756.000</td></tr>
-    <tr><td class="et c"><b>Completa</b><span>9 a 17 h</span></td><td>$189.000</td><td>$359.000</td><td>$1.512.000</td></tr>
+    <tr><td class="et m"><b>Mañana</b><span>9 a 13 h</span></td><td>$100.000</td><td>$190.000</td><td>$800.000</td></tr>
+    <tr><td class="et t"><b>Tarde</b><span>13:30 a 17 h</span></td><td>$90.000</td><td>$170.000</td><td>$715.000</td></tr>
+    <tr><td class="et c"><b>Completa</b><span>9 a 17 h</span></td><td>$180.000</td><td>$340.000</td><td>$1.430.000</td></tr>
+    <tr class="pk"><td class="et p"><b>Pack 8 a 14</b><span>mañana + pre + post</span></td><td>$140.000</td><td>$260.000</td><td>$1.090.000</td></tr>
   </table></div>
   <div class="fila">
-    <div class="box"><h3>Inscripción</h3><p><b>$50.000</b> por chico, una vez por temporada.<br>Reservás con inscripción + <b>50% de seña</b>.</p></div>
-    <div class="box"><h3>Opcionales</h3><p>Pre-hora 8 h · <b>$30.000</b>/sem<br>Post-hora 14 h · <b>$30.000</b>/sem<br>Almuerzo · <b>$10.000</b>/día</p></div>
+    <div class="box"><h3>Inscripción</h3><p><b>$35.000</b> pagando la seña hasta el <b>30/11</b> (después $50.000).<br>Reservás con inscripción + <b>50%</b>.</p></div>
+    <div class="box"><h3>Opcionales</h3><p>Pre-hora 8 h · <b>$25.000</b>/sem<br>Post-hora 14 h · <b>$25.000</b>/sem<br>Almuerzo · <b>$10.000</b>/día</p></div>
   </div>
 </div>
 <div class="pie">
