@@ -692,7 +692,7 @@ function vListo(r) {
     <div class="card" style="border:2px solid var(--c1)">${paso(2, 'Pagá la seña de ' + pesos(r.sena) + ' para confirmar')}
       <p class="muted chico">${soloT() ? `Total ${pesos(r.total)}. La seña se paga por transferencia${(s.mercadoPago ? ' o Mercado Pago' : '')} (en efectivo cobramos desde el ${efDesde()}).` : `Total ${pesos(r.total)} en efectivo${PUB.recargo ? ' (' + pesos(conTransf(r.total)) + ' por transferencia)' : ''}. La seña en efectivo la pagás en la sede; por transferencia, ${pesos(conTransf(r.sena))}.`} El saldo, antes del primer día.</p>
       <button class="btn full acento" style="margin-bottom:12px" onclick="vPagar('${esc(r.tokenPago)}')">💳 Pagar la seña ahora${s.mercadoPago ? ' (Mercado Pago o transferencia)' : ''}</button>
-      ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias para transferir</div><b style="font-size:24px">${esc(alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
+      ${alias ? `<div class="banner"><div class="muted chico" style="color:inherit;opacity:.7">Alias para transferir</div><b style="font-size:24px">${esc(alias)}</b><br>${esc([p.banco, p.titular].filter(Boolean).join(' · '))}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>
       <div class="fila"><button class="btn claro" onclick="copiar('${esc(alias)}')">Copiar alias</button><a class="btn wa crece" href="${esc(r.waComprobante)}" target="_blank">💬 Mandar comprobante</a></div>`
       : `<div class="banner">Te pasamos el alias para transferir por WhatsApp.</div><a class="btn wa full" href="${esc(r.waComprobante.replace(/Te%20mando%20el%20comprobante/, 'Me%20pasás%20los%20datos%20para%20la%20seña'))}" target="_blank">💬 Pedir el alias</a>`}
       <p class="muted chico" style="margin:10px 0 0">Cuando se acredita la seña te llega un mail: <b>🎉 Inscripción confirmada</b>.</p>
@@ -853,7 +853,7 @@ function pintarPagos() {
       ${c.mercadoPago ? `<button class="btn full" style="background:#009EE3;margin-top:8px" onclick="pagarMP(this,'${i.id}','${que}')">Pagar ${pesos(conTransf(monto, true))} con Mercado Pago</button>
         <p class="muted chico" style="margin:6px 0 0;text-align:center">Tarjeta de débito, crédito o dinero en cuenta. Se acredita al instante.</p>` : ''}
       <details style="margin-top:12px" ${c.mercadoPago && !PG.soloTransf ? '' : 'open'}><summary><b>Pagar por transferencia · ${pesos(conTransf(monto))}</b></summary>
-        ${c.pago && c.pago.alias ? `<div class="banner" style="margin-top:10px"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:22px">${esc(c.pago.alias)}</b><br>${esc(c.pago.banco)} · ${esc(c.pago.titular)}${c.pago.cbu ? '<br>CBU ' + esc(c.pago.cbu) : ''}</div>
+        ${c.pago && c.pago.alias ? `<div class="banner" style="margin-top:10px"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:22px">${esc(c.pago.alias)}</b><br>${esc([c.pago.banco, c.pago.titular].filter(Boolean).join(' · '))}${c.pago.cbu ? '<br>CBU ' + esc(c.pago.cbu) : ''}</div>
           <button class="btn xs claro" onclick="copiar('${esc(c.pago.alias)}')">Copiar alias</button>`
           : `<p class="chico">Pedile los datos para transferir a la administración: <a target="_blank" href="${wa(c.whatsapp, '¡Hola! Me pasás los datos para transferir la escuela de verano de ' + i.chico + '?')}">escribile por WhatsApp</a>.</p>`}
         <button class="btn full claro" style="margin-top:10px" onclick="formComprobante('${i.id}',${conTransf(monto)})">🧾 Ya transferí: subir comprobante</button></details>
@@ -946,7 +946,7 @@ function subirApto(input, id) {
 function verPago() {
   const i = C.inscripciones.find(x => x.saldo > 0 && x.estado !== 'Cancelada');
   const s = sede(i ? i.sede : C.chicos[0].sede), p = s.pago;
-  modal(`<h3>Cómo pagar</h3>${p.alias ? `<div class="banner"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:24px">${esc(p.alias)}</b><br>${esc(p.banco)} · ${esc(p.titular)}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>` : '<div class="banner">Escribinos y te pasamos los datos para transferir.</div>'}
+  modal(`<h3>Cómo pagar</h3>${p.alias ? `<div class="banner"><div class="chico" style="opacity:.7">Alias</div><b style="font-size:24px">${esc(p.alias)}</b><br>${esc([p.banco, p.titular].filter(Boolean).join(' · '))}${p.cbu ? '<br>CBU ' + esc(p.cbu) : ''}</div>` : '<div class="banner">Escribinos y te pasamos los datos para transferir.</div>'}
     <div class="fila">${p.alias ? `<button class="btn claro" onclick="copiar('${esc(p.alias)}')">Copiar alias</button>` : ''}
     <a class="btn wa crece" target="_blank" href="${wa(s.whatsapp, '¡Hola! Te mando el comprobante de la escuela de verano (' + C.familia.adulto + ').')}">💬 Mandar comprobante</a></div>`);
 }

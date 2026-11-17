@@ -122,7 +122,7 @@ const CONFIG = {
         ['Lluvia', 'No se suspende: si llueve hay actividad igual'],
         ['Viernes', 'Día temático con show de GLORIN']
       ],
-      pago: { alias: '', banco: '', titular: '', cbu: '' },   // alias de Aldea: a confirmar (vacío = se pasa por WhatsApp)
+      pago: { alias: 'aldea.de.valle', banco: '', titular: 'Fausto Agustino Rizzi Szkolka', cbu: '' },
       precios: {
         // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
         // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
@@ -2246,7 +2246,7 @@ function boton_(url, texto, color) {
 function datosPagoTexto_(sedeId) {
   const p = CONFIG.sedes[sedeId].pago;
   if (!p.alias && !p.cbu) return 'Te pasamos los datos para transferir por WhatsApp.';
-  return ['Alias: ' + p.alias, p.cbu ? 'CBU/CVU: ' + p.cbu : '', 'Banco: ' + p.banco, 'Titular: ' + p.titular].filter(Boolean).join('\n');
+  return ['Alias: ' + p.alias, p.cbu ? 'CBU/CVU: ' + p.cbu : '', p.banco ? 'Banco: ' + p.banco : '', p.titular ? 'Titular: ' + p.titular : ''].filter(Boolean).join('\n');
 }
 function urlCuenta_() { return ScriptApp.getService().getUrl() + '?p=cuenta'; }
 function urlPago_(t) { return ScriptApp.getService().getUrl() + '?p=pagar&t=' + encodeURIComponent(t); }
