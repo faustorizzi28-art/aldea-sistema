@@ -50,8 +50,8 @@ const CONFIG = {
   // (se cambia también desde Administración → Ajustes)
   recargoTransferenciaPct: 10,  // ⚠️ de ejemplo: confirmar
   mailFotosDelDia: true,        // a las 19 h, mail a las familias de los chicos que fueron con el link a las fotos del día
-  efectivoDesde: '2026-12-14',             // hasta el 13/12 se cobra solo por transferencia (sin recargo); el efectivo arranca el 14/12 en la sede
-  transferenciaSinRecargoHasta: '2026-12-13',
+  efectivoDesde: '',                       // vacío = se acepta efectivo desde ya. Con una fecha (AAAA-MM-DD), antes de esa fecha se cobra solo por transferencia y sin recargo
+  transferenciaSinRecargoHasta: '',        // vacío = el recargo por transferencia rige desde ya (el % se pone en Administración → Ajustes)
   salidaTemprana: { '2026-12-24': '14:00', '2026-12-31': '14:00' },   // reglamento: esos días la salida es hasta las 14 h
   toleranciaRetiroMin: 15,      // reglamento: pasados 15 minutos de la salida se cobra la post-hora
   cobrarRetiroTarde: true,
@@ -70,7 +70,7 @@ const CONFIG = {
       'Preventa: los valores publicados ya tienen el 15% de descuento. No se vuelve a descontar al momento de pagar.',
       'Los campamentos, salidas y actividades extras no están incluidos en la cuota: se pagan por separado.',
       'Hermanos: 20% en la cuota del 2.º hermano y 30% desde el 3.º. No se suma a otros descuentos: se aplica el mayor.',
-      'Forma de pago: hasta el 13/12 se paga por transferencia, sin recargo. Desde el 14/12 también en efectivo en la sede (la transferencia y Mercado Pago pueden tener recargo).',
+      'Forma de pago: en efectivo en la sede (precio más conveniente) o por transferencia y Mercado Pago, con el recargo vigente.',
       'Cada pago lleva su comprobante. Lo señado mantiene su precio.'] },
     { n: 4, titulo: 'Asistencia, faltas y cambios', destacado: 'Las semanas pagadas son fijas: las faltas no se recuperan ni se descuentan.', items: [
       'Esto vale también para las faltas por enfermedad o viaje.', 'Cambios de turno o de semana: por WhatsApp a la administración, con 48 h de anticipación y según cupo.',
