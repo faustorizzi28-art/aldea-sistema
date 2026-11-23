@@ -291,6 +291,7 @@ const ACCIONES = {
   // administración
   tablero:         ['admin', accTablero_],
   registrarPago:   ['admin', accRegistrarPago_],
+  anularPago:      ['admin', accAnularPago_],
   cambiarEstado:   ['admin', accCambiarEstado_],
   asignarGrupo:    ['admin', accAsignarGrupo_],
   recordar:        ['admin', accRecordar_],
@@ -1439,6 +1440,15 @@ function accRegistrarPago_(d, sesion) {
   } finally { lock.releaseLock(); }
 }
 
+/** Anula un pago cargado por error (queda en la planilla como "Anulado", con el motivo, y deja de contar). */
+function accAnularPago_(d, sesion) {
+  const p = filas_('Pagos').filter(x => x.id === d.pagoId)[0];
+  if (!p || (sesion.s !== 'todas' && p.sede !== sesion.s)) throw new Error('No encuentro ese pago.');
+  if (/^Anulado/.test(String(p.medio))) throw new Error('Ese pago ya estaba anulado.');
+  actualizar_('Pagos', p._fila, { acredita: 0, medio: 'Anulado (' + p.medio + ')',
+    nota: 'ANULADO el ' + fechaCorta_(hoy_()) + (d.motivo ? ': ' + limpio_(d.motivo) : '') + (p.nota ? ' · ' + p.nota : '') });
+  return recalcularInsc_(p.inscripcionId);
+}
 function recalcularInsc_(id) {
   const i = filas_('Inscripciones').filter(x => x.id === id)[0];
   // "pagado" se cuenta en pesos de efectivo: una transferencia cubre su monto menos el recargo

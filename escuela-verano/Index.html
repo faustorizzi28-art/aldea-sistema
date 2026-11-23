@@ -1395,6 +1395,24 @@ function htmlDeuda(i) {
     <b>${pesos(i.saldo)}</b><div class="fila" style="gap:4px"><button class="btn xs" onclick="formPago('${i.id}')">Pago</button><a class="btn xs wa" target="_blank" href="${esc(i.wa)}">WA</a><button class="btn xs claro" onclick="recordar(this,'${i.id}','deuda')">Mail</button></div></div>`;
 }
 function recordar(btn, id, tipo) { conBoton(btn, async () => { await api('recordar', { inscripcionId: id, tipo }, 'admin'); toast('Mail enviado ✓'); }); }
+async function registrarPagoForm(btn, id) {
+  const i = A.inscripciones.find(x => x.id === id), medio = val('pgMedio'), fecha = val('pgFecha'), nota = val('pgNota');
+  const avisar = document.getElementById('pgAvisar').checked, fam = document.getElementById('pgFamilia');
+  let monto = Math.round(Number(String(val('pgMonto')).replace(/[^\d,-]/g, '').replace(',', '.')) || 0);
+  if (!monto) return toast('Poné el monto.', true);
+  const partes = [];
+  if (fam && fam.checked) {
+    const lista = [i].concat(hermanosDe(i).filter(h => h.saldo > 0));
+    lista.forEach((x, k) => { const necesita = medio === 'Efectivo' ? x.saldo : conTransf(x.saldo); const m = k === lista.length - 1 ? monto : Math.min(monto, Math.max(0, necesita)); if (m > 0) { partes.push([x, m]); monto -= m; } });
+  } else partes.push([i, monto]);
+  conBoton(btn, async () => {
+    for (let k = 0; k < partes.length; k++) {
+      const [x, m] = partes[k];
+      await api('registrarPago', { inscripcionId: x.id, monto: m, fecha, medio, nota: (nota ? nota + ' · ' : '') + (partes.length > 1 ? 'pago de la familia' : ''), avisar: avisar && k === partes.length - 1 }, 'admin');
+    }
+    cerrarModal(); toast(partes.length > 1 ? 'Pago repartido entre ' + partes.length + ' hermanos ✓' : 'Pago registrado ✓'); adminCargar();
+  });
+}
 function formPago(id) {
   const i = A.inscripciones.find(x => x.id === id);
   modal(`<h3>Registrar pago</h3><p><b>${esc(i.chico)}</b> · ${esc(i.adulto)}<br><span class="muted chico">${i.modalidad === 'Evento' || i.modalidad === 'Cargo' ? (i.modalidad === 'Cargo' ? '⏰ ' : '🎉 ') + esc(i.turno) + ' · ' : ''}Total ${pesos(i.total)} · pagado ${pesos(i.pagado)} · <b>saldo ${pesos(i.saldo)}${PUB.recargo ? ' en efectivo' : ''}</b></span></p>
@@ -1402,8 +1420,9 @@ function formPago(id) {
     <label>Medio</label><select id="pgMedio" onchange="document.getElementById('pgMonto').value=this.value==='Efectivo'?${i.saldo}:${conTransf(i.saldo)}">${soloT() ? '<option>Transferencia</option><option>Efectivo</option>' : '<option>Efectivo</option><option>Transferencia</option>'}<option>Mercado Pago</option><option>Otro</option></select>
     <p class="muted chico" style="margin:4px 0 0">Poné la plata que entró.${PUB.recargo ? ` Si fue por transferencia (${pesos(conTransf(i.saldo))} el saldo completo), se descuenta el ${PUB.recargo}% de recargo y queda en cero.` : ''}</p>
     <label>Nota</label><input type="text" id="pgNota">
+    ${(() => { const hs = hermanosDe(i).filter(h => h.saldo > 0); return hs.length ? `<label class="opcion"><input type="checkbox" id="pgFamilia"><div><b>Es un pago de toda la familia:</b> repartirlo entre ${esc(i.chico.split(' ')[0])} y ${hs.map(h => esc(h.chico.split(' ')[0])).join(', ')}<div class="muted chico">Saldo de la familia: ${pesos(i.saldo + hs.reduce((a, h) => a + h.saldo, 0))}. Se cubre primero el saldo de cada uno, en orden.</div></div></label>` : ''; })()}
     <label class="opcion on"><input type="checkbox" id="pgAvisar" checked><div>Mandarle a la familia el mail de “recibimos tu pago”</div></label>
-    <button class="btn full" onclick="conBoton(this, async()=>{await api('registrarPago',{inscripcionId:'${id}',monto:val('pgMonto'),fecha:val('pgFecha'),medio:val('pgMedio'),nota:val('pgNota'),avisar:document.getElementById('pgAvisar').checked},'admin');cerrarModal();toast('Pago registrado ✓');adminCargar()})">Guardar pago</button>`);
+    <button class="btn full" onclick="registrarPagoForm(this,'${id}')">Guardar pago</button>`);
 }
 let FI = { q: '', estado: '', grupo: '', vigentes: true };
 function aInsc() {
@@ -1434,6 +1453,9 @@ function fichaAdmin(id) {
     <table class="t">${r('Total', pesos(i.total))}${r('Pagado', pesos(i.pagado))}${r('Saldo', pesos(i.saldo))}${r('Estado', i.estado)}${r('Notas', i.notas)}
     ${r('Nacimiento', fLarga(c.nacimiento || ''))}${r('Alergias', c.alergias)}${r('Medicación', c.medicacion)}${r('A tener en cuenta', c.condiciones)}${r('Obra social', c.obraSocial)}${r('Sabe nadar', c.sabeNadar)}${r('Fotos', c.autorizaFotos)}${r('Apto físico', c.apto || 'Falta entregar')}${c.aptoArchivo ? `<tr><td></td><td><a href="${esc(c.aptoArchivo)}" target="_blank" rel="noopener">Ver apto ↗</a></td></tr>` : ''}
     ${r('Adulto', f.adulto)}${r('Mail', f.email)}${r('WhatsApp', f.whatsapp)}${r('Emergencia', f.emergencia)}${r('Retiran', f.autorizados)}${r('Nos conoció por', f.comoNosConocio)}</table>
+    ${(() => { const hs = hermanosDe(i); return hs.length ? `<h4 style="margin:14px 0 4px">👨‍👩‍👧 Hermanos (misma familia)</h4>${hs.map(h => `<div class="lista-item"><div class="crece"><b>${esc(h.chico)}</b><div class="muted chico">${esc(h.turno)} · ${fCorta(h.desde)} al ${fCorta(h.hasta)} · ${esc(h.estado)}</div></div><div class="derecha"><b>${h.saldo > 0 ? 'Debe ' + pesos(h.saldo) : h.saldo < 0 ? 'A favor ' + pesos(-h.saldo) : 'Pagado ✓'}</b><br><button class="btn xs claro" onclick="fichaAdmin('${h.id}')">Ver ficha</button></div></div>`).join('')}
+      <p class="muted chico" style="margin:4px 0 0">Familia: total ${pesos([i].concat(hs).reduce((a, x) => a + x.total, 0))} · pagado ${pesos([i].concat(hs).reduce((a, x) => a + x.pagado, 0))} · saldo <b>${pesos([i].concat(hs).reduce((a, x) => a + x.saldo, 0))}</b></p>` : ''; })()}
+    ${(() => { const ps = (A.pagos || []).filter(x => x.inscripcionId === i.id); return ps.length ? `<h4 style="margin:14px 0 4px">💳 Pagos de ${esc(i.chico.split(' ')[0])}</h4>${ps.map(x => `<div class="lista-item"><div class="crece"><b>${pesos(x.monto)}</b> · ${esc(x.medio)}<div class="muted chico">${fCorta(x.fecha)}${x.nota ? ' · ' + esc(x.nota) : ''}</div></div>${/^Anulado/.test(x.medio) ? '<span class="chip">Anulado</span>' : `<button class="btn xs mal" onclick="anularPago(this,'${x.id}','${id}')">Anular</button>`}</div>`).join('')}` : ''; })()}
     <label>Grupo</label><select id="fgGrupo">${gruposDe(i.sede).map(g => `<option value="${g.id}" ${g.id === i.grupo ? 'selected' : ''}>${g.emoji} ${esc(g.nombre)}</option>`).join('')}</select>
     <div class="grid2"><div><label>Total (corregir precio)</label><input type="number" id="fgTotal" value="${i.total}"></div><div><label>Notas</label><input type="text" id="fgNotas" value="${esc(i.notas || '')}"></div></div>
     <div class="fila" style="margin-top:14px">
@@ -1443,6 +1465,12 @@ function fichaAdmin(id) {
       <a class="btn wa" target="_blank" href="${wa(f.whatsapp, 'Hola ' + (f.adulto || '').split(' ')[0] + '! Te escribimos de la escuela de verano por ' + i.chico + '.')}">WhatsApp</a>
       ${i.estado === 'Cancelada' ? `<button class="btn claro" onclick="estadoInsc(this,'${id}','Pendiente')">Reactivar</button>` : `<button class="btn mal" onclick="if(confirm('¿Cancelar esta inscripción? Libera el cupo.'))estadoInsc(this,'${id}','Cancelada')">Cancelar</button>`}
     </div>`);
+}
+function hermanosDe(i) { return A.inscripciones.filter(x => x.familiaId === i.familiaId && x.id !== i.id && x.estado !== 'Cancelada' && x.modalidad !== 'Evento' && x.modalidad !== 'Cargo'); }
+function anularPago(btn, pagoId, inscId) {
+  const motivo = prompt('¿Por qué se anula este pago? (por ejemplo: cargado dos veces, era del hermano)');
+  if (motivo === null) return;
+  conBoton(btn, async () => { await api('anularPago', { pagoId, motivo }, 'admin'); toast('Pago anulado ✓'); await adminCargar(); fichaAdmin(inscId); });
 }
 function guardarFicha(btn, id) {
   const i = A.inscripciones.find(x => x.id === id);
