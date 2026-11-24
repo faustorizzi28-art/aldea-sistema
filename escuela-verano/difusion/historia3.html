@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Lilita One';src:url(fonts/fontsource-lilita-one-5.3.0/files/lilita-one-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:700;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:800;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-800-normal.woff2) format('woff2');}
+:root{--azul:#1E7BC8;--marino:#16306A;--amarillo:#F2CA11;--coral:#FF6B5B;--verde:#6CC23A;--naranja:#FFA21F;--rosa:#F25FA8;--celeste:#8FD3FF}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1920px;overflow:hidden;font-family:'Archivo',sans-serif;color:var(--marino);background:radial-gradient(circle at 50% 25%,#46A8EA 0,#1E7BC8 55%,#165FA3 100%);position:relative}
+.ondas{position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 25%,rgba(255,255,255,.07) 0 40px,transparent 40px 80px)}
+.rayos{position:absolute;top:-240px;left:-240px;width:540px;height:540px;border-radius:50%;background:repeating-conic-gradient(#FFD93B 0 7deg,transparent 7deg 22deg)}
+.sol{position:absolute;top:-170px;left:-170px;width:400px;height:400px;border-radius:50%;background:var(--amarillo);border:7px solid var(--marino)}
+.agua{position:absolute;left:0;right:0;bottom:0;height:330px;background:#0F5FA8}
+.agua::before{content:"";position:absolute;left:-40px;right:-40px;top:-60px;height:120px;background:radial-gradient(ellipse 90px 60px at 90px 60px,#0F5FA8 98%,transparent) repeat-x;background-size:180px 120px}
+.wrap{position:relative;padding:220px 60px 0}
+.top{display:flex;justify-content:flex-end}
+.aldea{display:inline-flex;align-items:center;gap:12px;background:#1F8F4E;border:6px solid var(--marino);border-radius:24px;padding:12px 22px 12px 14px;transform:rotate(3deg);box-shadow:7px 7px 0 var(--marino)}
+.aldea svg{height:60px;width:auto;color:var(--amarillo)}
+.aldea b{display:block;font:42px/0.9 'Lilita One';color:var(--amarillo)}
+.aldea small{display:block;font:19px/1 'Lilita One';color:#fff;letter-spacing:.12em;margin-top:4px}
+.pre{margin-top:40px;font:800 36px 'Archivo';color:#fff}
+.titulo{font:112px/0.92 'Lilita One';color:#fff;-webkit-text-stroke:8px var(--marino);paint-order:stroke fill;text-shadow:0 9px 0 var(--marino);margin-top:8px}
+.titulo em{font-style:normal;color:var(--amarillo)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:44px}
+.t{border:5px solid var(--marino);border-radius:28px;box-shadow:7px 7px 0 var(--marino);padding:20px 22px;display:flex;gap:16px;align-items:center;background:#FBFBF8}
+.t .e{font-size:70px;line-height:1;flex:0 0 auto}
+.t b{display:block;font:36px/1 'Lilita One';text-transform:uppercase}
+.t span{display:block;font:700 23px/1.2 'Archivo';margin-top:6px;color:#2B3E66}
+.t.grande{grid-column:1 / -1;background:var(--amarillo)}
+.t.grande b{font-size:46px}
+.t.c1{transform:rotate(-1deg)}.t.c2{transform:rotate(1deg)}
+.cta{position:absolute;left:60px;right:60px;bottom:250px;text-align:center}
+.cta .a{font:74px/1 'Lilita One';color:#fff;-webkit-text-stroke:5px var(--marino);paint-order:stroke fill;text-shadow:0 6px 0 var(--marino)}
+.flecha{font:70px/1 'Archivo';color:var(--amarillo);margin-top:4px}
+</style></head><body>
+<div class="ondas"></div><div class="rayos"></div><div class="sol"></div><div class="agua"></div>
+<div class="wrap">
+  <div class="top"><div class="aldea">CARPA<div><b>ALDEA</b><small>DE VALLE</small></div></div></div>
+  <div class="pre">Este verano en Aldea tus hijos van a…</div>
+  <div class="titulo">VIVIR EL <em>MEJOR</em><br>VERANO</div>
+  <div class="grid">
+    <div class="t grande"><div class="e">🏊</div><div><b>Al agua todos los días</b><span>Natación y juegos en la pileta, con guardavidas</span></div></div>
+    <div class="t c1"><div class="e">🥋</div><div><b>Karate</b><span>Disciplina y energía</span></div></div>
+    <div class="t c2"><div class="e">🛼</div><div><b>Patín</b><span>¡A rodar!</span></div></div>
+    <div class="t c2"><div class="e">⚽</div><div><b>Fútbol</b><span>y mil juegos más</span></div></div>
+    <div class="t c1"><div class="e">🤸</div><div><b>Gimnasia</b><span>Saltos y acrobacias</span></div></div>
+    <div class="t c1"><div class="e">🎨</div><div><b>Arte</b><span>Crear y ensuciarse</span></div></div>
+    <div class="t c2"><div class="e">🎵</div><div><b>Música</b><span>Cantar y bailar</span></div></div>
+    <div class="t c2"><div class="e">🌳</div><div><b>Naturaleza</b><span>Aire libre en el valle</span></div></div>
+    <div class="t c1"><div class="e">🏕️</div><div><b>Campamento</b><span>Una aventura en enero</span></div></div>
+    <div class="t grande"><div class="e">📸</div><div><b>Y vos lo ves todo</b><span>Fotos del día y asistencia en la app de la familia</span></div></div>
+  </div>
+</div>
+<div class="cta"><div class="a">¡RESERVÁ SU LUGAR!</div><div class="flecha">↓</div></div>
+</body></html>
