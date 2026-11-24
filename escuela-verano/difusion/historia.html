@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Lilita One';src:url(fonts/fontsource-lilita-one-5.3.0/files/lilita-one-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:700;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Archivo';font-weight:800;src:url(fonts/fontsource-archivo-5.3.0/files/archivo-latin-800-normal.woff2) format('woff2');}
+:root{--azul:#1E7BC8;--marino:#16306A;--amarillo:#F2CA11;--coral:#FF6B5B;--verde:#6CC23A;--naranja:#FFA21F;--rosa:#F25FA8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1920px;overflow:hidden;font-family:'Archivo',sans-serif;color:var(--marino);background:radial-gradient(circle at 50% 30%,#46A8EA 0,#1E7BC8 55%,#165FA3 100%);position:relative}
+.ondas{position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 30%,rgba(255,255,255,.07) 0 40px,transparent 40px 80px)}
+.rayos{position:absolute;top:-200px;right:-200px;width:620px;height:620px;border-radius:50%;background:repeating-conic-gradient(#FFD93B 0 7deg,transparent 7deg 22deg)}
+.sol{position:absolute;top:-140px;right:-140px;width:470px;height:470px;border-radius:50%;background:var(--amarillo);border:7px solid var(--marino)}
+.agua{position:absolute;left:0;right:0;bottom:0;height:520px;background:#0F5FA8}
+.agua::before{content:"";position:absolute;left:-40px;right:-40px;top:-60px;height:120px;background:radial-gradient(ellipse 90px 60px at 90px 60px,#0F5FA8 98%,transparent) repeat-x;background-size:180px 120px}
+.wrap{position:relative;padding:220px 70px 0}
+.aldea{display:inline-flex;align-items:center;gap:14px;background:#1F8F4E;border:6px solid var(--marino);border-radius:26px;padding:14px 24px 14px 16px;transform:rotate(-3deg);box-shadow:8px 8px 0 var(--marino)}
+.aldea svg{height:74px;width:auto;color:var(--amarillo)}
+.aldea b{display:block;font:52px/0.9 'Lilita One';color:var(--amarillo)}
+.aldea small{display:block;font:24px/1 'Lilita One';color:#fff;letter-spacing:.12em;margin-top:5px}
+.ceja{margin-top:44px;font:800 38px 'Archivo';letter-spacing:.28em;color:#fff;text-transform:uppercase}
+.verano{font:190px/0.86 'Lilita One';margin-top:8px}
+.verano span{display:inline-block;-webkit-text-stroke:9px var(--marino);paint-order:stroke fill;text-shadow:0 11px 0 var(--marino)}
+.l1{color:var(--amarillo)}.l2{color:var(--coral)}.l3{color:var(--verde)}.l4{color:var(--naranja)}.l5{color:var(--rosa)}
+.sub{font:64px/1 'Lilita One';color:#fff;-webkit-text-stroke:6px var(--marino);paint-order:stroke fill;text-shadow:0 7px 0 var(--marino);margin-top:26px}
+.promo{margin-top:46px;background:var(--amarillo);border:7px solid var(--marino);border-radius:36px;box-shadow:10px 10px 0 var(--marino);padding:34px 40px;transform:rotate(-1.5deg)}
+.promo .t{font:800 34px 'Archivo';text-transform:uppercase;letter-spacing:.06em}
+.promo .p{font:140px/0.9 'Lilita One';color:var(--coral);-webkit-text-stroke:6px var(--marino);paint-order:stroke fill;margin:10px 0 6px}
+.promo .v{font:800 38px/1.2 'Archivo'}
+.promo .v s{opacity:.6}
+.chips{display:flex;flex-wrap:wrap;gap:14px;margin-top:40px}
+.chip{background:#fff;border:5px solid var(--marino);border-radius:999px;padding:14px 26px;font:38px/1 'Lilita One';text-transform:uppercase}
+.chip.y{background:var(--marino);color:var(--amarillo)}
+.cta{position:absolute;left:70px;right:70px;bottom:290px;text-align:center}
+.cta .a{font:88px/1 'Lilita One';color:#fff;-webkit-text-stroke:6px var(--marino);paint-order:stroke fill;text-shadow:0 7px 0 var(--marino)}
+.cta .b{font:800 36px 'Archivo';color:#fff;margin-top:22px}
+.flecha{font:90px/1 'Archivo';color:var(--amarillo);margin-top:6px}
+</style></head><body>
+<div class="ondas"></div><div class="rayos"></div><div class="sol"></div><div class="agua"></div>
+<div class="wrap">
+  <div class="aldea">CARPA<div><b>ALDEA</b><small>DE VALLE</small></div></div>
+  <div class="ceja">Escuela de</div>
+  <div class="verano"><span class="l1">V</span><span class="l2">E</span><span class="l3">R</span><span class="l4">A</span><span class="l5">N</span><span class="l1">O</span></div>
+  <div class="sub">14/12 AL 19/2 · DE 3 A 13 AÑOS</div>
+  <div class="promo">
+    <div class="t">⏰ Solo hasta el 30/11</div>
+    <div class="p">$35.000</div>
+    <div class="v">de inscripción pagando la seña <s>$50.000</s></div>
+  </div>
+  <div class="chips">
+    <span class="chip y">🏊 Pileta todos los días</span><span class="chip">Pack 8 a 14</span><span class="chip">Karate</span><span class="chip">Patín</span><span class="chip y">20% off hermanos</span>
+  </div>
+</div>
+<div class="cta">
+  <div class="a">¡INSCRIBITE ACÁ!</div>
+  <div class="b">Presupuesto online en 5 minutos</div>
+  <div class="flecha">↓</div>
+</div>
+</body></html>
