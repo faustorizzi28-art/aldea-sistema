@@ -122,7 +122,7 @@ const CONFIG = {
         ['Lluvia', 'No se suspende: si llueve hay actividad igual'],
         ['Viernes', 'Día temático con show de GLORIN']
       ],
-      pago: { alias: 'aldea.de.valle', banco: '', titular: 'Fausto Agustino Rizzi Szkolka', cbu: '' },
+      pago: { alias: 'Aldeadvalle', banco: 'Personal Pay', titular: 'Evelyn Ayalen Caviglia', cbu: '' },
       precios: {
         // Valores POR CHICO en EFECTIVO (folleto Escuela de Verano 2026-27). Preventa = -15% hasta el 15/11.
         // Las semanas sueltas se arman con quincenas + semanas y nunca superan el valor de la temporada.
