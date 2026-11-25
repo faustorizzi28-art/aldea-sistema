@@ -106,20 +106,19 @@ Está en `CONFIG.reglamento` de `Code.gs`, dividido en secciones: reserva y pago
    **Implementar → Administrar implementaciones → Editar → Nueva versión**, así el link no cambia.
 8. Compartí los calendarios **Aldea · Eventos** y **Aldea · Citas** con Milagros, Luli y Nati, para que los vean en el celular.
 
-### Eventos que ya están confirmados (planilla de Milagros)
+### Eventos que ya están confirmados (AGENDA EVENTOS ALDEA)
 
-No hace falta cargarlos de nuevo: la página lee sola la pestaña **CONFIRMADOS** de la planilla
-"EVENTOS CONFIRMADOS" (`CONFIG.planillaConfirmados`) y bloquea esas fechas, horarios y sectores.
-Milagros sigue anotando como siempre:
-- Una fila de mes (JULIO, AGOSTO… o `ENERO 2027`) y debajo la fila de títulos FECHA · NOMBRE · … · HORA · MOTIVO · OBSERVACIONES · CERRADO.
-- **FECHA**: alcanza con el día ("SABADO 15", "viernes 2/10", "04/12/26").
-- **HORA**: "16 a 18:30", "19 a 2am", "sunset", "mediodía". Sin hora, bloquea el día entero.
-- **Sector**: se lee de OBSERVACIONES/MOTIVO. "salon", "patio", "cancha de 11", "quincho", "cancha", "parrilla", "deck" o
-  "todo el predio" / "uso exclusivo". Si no dice nada, un cumple infantil ocupa el quincho y cualquier otro evento ocupa todo el predio.
-- Si en CERRADO u OBSERVACIONES dice **REPROGRAMA** o **CANCELADO**, esa fila no bloquea nada.
-- Los cambios se ven en la página en hasta 5 minutos. Al reservar se vuelve a chequear al instante.
+La página lee sola la planilla **AGENDA EVENTOS ALDEA 2026-2027** (`CONFIG.planillaConfirmados`, la primera de la lista)
+y bloquea esas fechas, horarios y **solo el sector de cada evento**. Es la planilla para compartir con Aldea India y administración.
+- Una fila por evento: FECHA (`28/11/2026`) · DIA · HORA · **SECTOR** · MOTIVO · NOMBRE · CONTACTO · PERSONAS · MONTO · SEÑA · SALDO · VENDE · OBSERVACIONES · **ESTADO**.
+- **SECTOR**: `quincho`, `patio`, `salon`, `deck` o `predio` (todo). Se pueden poner dos: `salon, quincho`.
+  Si queda vacío, se adivina por el texto, y si no dice nada el evento bloquea todo el predio: por eso conviene completarlo siempre.
+- **HORA**: "16 a 18:30", "19 a 2am", "8.30am a 12", "sunset", "mediodía". Una hora sola ("20") ocupa 4 horas. Sin hora, bloquea el día entero.
+- **ESTADO**: `Confirmado`, `A confirmar`, `Realizado`. Con `Cancelado` o `Reprogramado` la fila deja de bloquear.
 
-La cuenta que instala el Apps Script tiene que poder abrir esa planilla (hoy es de Milagros y está compartida con Fausto).
+La planilla vieja de Milagros (pestaña CONFIRMADOS) se sigue leyendo como respaldo, pero solo para los días que
+no están en la agenda. Los cambios se ven en la página en hasta 5 minutos; al reservar se vuelve a chequear al instante.
+La cuenta que instala el Apps Script tiene que poder abrir las dos planillas.
 
 Para bloquear un día o un sector a mano: evento de todo el día en el calendario **Aldea · Eventos** con `BLOQUEADO`
 en el título (o `BLOQUEADO salon` para un solo sector).

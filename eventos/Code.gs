@@ -63,7 +63,12 @@ const CONFIG = {
   bufferMin: 60,                        // limpieza/armado entre dos eventos del mismo sector
   // Planilla donde Milagros anota los eventos cerrados a mano: la página la lee y bloquea esas fechas solas.
   // Sirve la pestaña con columnas FECHA · HORA · MOTIVO · OBSERVACIONES y filas de mes (JULIO, AGOSTO…).
-  planillaConfirmados: { id: '1Ktc4mNAiNJhatjpQ7Ojp9oEQHKhWk0hcsLqcsTFhOJs', hoja: 'CONFIRMADOS' },
+  // Planillas de eventos ya cerrados que bloquean fechas en la web. La primera (AGENDA, con columna SECTOR) manda:
+  // de la vieja solo se toman los eventos de días que no estén ya en la agenda. hoja vacía = primera pestaña.
+  planillaConfirmados: [
+    { id: '1JzNLM271zleWM4QjUM4tVAdwIOG7GqwjiGhLXU94Lg8', hoja: '' },
+    { id: '1Ktc4mNAiNJhatjpQ7Ojp9oEQHKhWk0hcsLqcsTFhOJs', hoja: 'CONFIRMADOS' }
+  ],
   finMaximo: '02:00',                   // ningún evento termina después de esta hora
   validezPresupuestoDias: 7,
   horarios: ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
@@ -548,19 +553,34 @@ function leerOcupados_(fresco) {
 
 // ======== PLANILLA DE EVENTOS CONFIRMADOS (la que se lleva a mano) ========
 function leerConfirmados_(fresco) {
-  const pc = CONFIG.planillaConfirmados;
-  if (!pc || !pc.id) return [];
+  const lista = [].concat(CONFIG.planillaConfirmados || []).filter(function (pc) { return pc && pc.id; });
+  if (!lista.length) return [];
   const cache = CacheService.getScriptCache();
   if (!fresco) { const c = cache.get('confirmados'); if (c) return JSON.parse(c); }
-  let filas;
-  try {
-    const sh = SpreadsheetApp.openById(pc.id).getSheetByName(pc.hoja);
-    if (!sh) return [];
-    filas = sh.getDataRange().getDisplayValues();
-  } catch (e) { console.error('No pude leer la planilla de confirmados: ' + e.message); return []; }
-  const r = parsearConfirmados_(filas, new Date());
+  const listas = lista.map(function (pc) {
+    try {
+      const ss = SpreadsheetApp.openById(pc.id);
+      const sh = pc.hoja ? ss.getSheetByName(pc.hoja) : ss.getSheets()[0];
+      return sh ? parsearConfirmados_(sh.getDataRange().getDisplayValues(), new Date()) : [];
+    } catch (e) { console.error('No pude leer la planilla ' + pc.id + ': ' + e.message); return []; }
+  });
+  const r = unirConfirmados_(listas);
   try { cache.put('confirmados', JSON.stringify(r), 300); } catch (e) {}
   return r;
+}
+
+// La primera planilla (la AGENDA) manda: de las siguientes solo se suman los eventos de días que la agenda no tiene.
+// Así un evento cargado en las dos no bloquea doble, y uno que Milagros anotó solo en la vieja igual bloquea.
+function unirConfirmados_(listas) {
+  const diasAgenda = {}, out = [];
+  listas.forEach(function (l, i) {
+    l.forEach(function (e) {
+      if (i > 0 && diasAgenda[e.fecha]) return;
+      out.push(e);
+    });
+    if (i === 0) l.forEach(function (e) { diasAgenda[e.fecha] = true; });
+  });
+  return out;
 }
 
 const MESES_ = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
@@ -568,7 +588,8 @@ const MESES_ = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 
 function sinTildes_(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 
 // Convierte las filas de la planilla en [{ fecha, ini, fin, sectores, texto }].
-// El mes sale de la fila de título (JULIO, AGOSTO… o "ENERO 2027") y el día del primer número de FECHA.
+// Sirve para la AGENDA (FECHA dd/mm/aaaa, SECTOR, ESTADO) y para la planilla vieja de Milagros
+// (fila de mes JULIO / "ENERO 2027" en cualquier columna, y el día en FECHA).
 function parsearConfirmados_(filas, hoy) {
   const out = [];
   let mes = -1, anio = hoy.getFullYear(), col = null;
@@ -578,48 +599,67 @@ function parsearConfirmados_(filas, hoy) {
     return new Date(y, m + 1, 0).getTime() < hoy.getTime() - 183 * 86400000 ? y + 1 : y;
   };
   filas.forEach(function (f) {
-    const a = sinTildes_(f[0]).trim().toUpperCase();
-    const mm = /^([A-Z]+)(?:\s+(\d{4}))?$/.exec(a);
-    if (mm && MESES_.indexOf(mm[1]) >= 0) { mes = MESES_.indexOf(mm[1]); anio = mm[2] ? Number(mm[2]) : anioPara(mes); return; }
-    if (a === 'FECHA') {
+    const celdas = f.map(function (x) { return sinTildes_(x).trim().toUpperCase(); });
+    if (celdas.indexOf('FECHA') >= 0) {
       col = {};
-      f.forEach(function (h, i) { col[sinTildes_(h).trim().toUpperCase()] = i; });
+      celdas.forEach(function (h, i) { if (h && col[h] === undefined) col[h] = i; });
       return;
     }
-    if (mes < 0 || !col || !a) return;
+    const llenas = celdas.filter(function (x) { return x; });
+    if (llenas.length === 1) {
+      const mm = /^([A-Z]+)(?:\s+(\d{4}))?$/.exec(llenas[0]);
+      if (mm && MESES_.indexOf(mm[1]) >= 0) { mes = MESES_.indexOf(mm[1]); anio = mm[2] ? Number(mm[2]) : anioPara(mes); return; }
+    }
+    if (!col) return;
     const g = function (n) { return col[n] === undefined ? '' : String(f[col[n]] || ''); };
+    const a = sinTildes_(g('FECHA')).trim().toUpperCase();
+    if (!a) return;
     // Fila con solo la fecha (sin nombre, hora ni motivo): está vacía, no bloquea
     if (!g('NOMBRE').trim() && !g('HORA').trim() && !g('MOTIVO').trim()) return;
-    const extra = g('CERRADO') + ' ' + g('OBSERVACIONES');
-    if (/REPROGRAM|CANCELAD|SUSPENDID/i.test(extra)) return;
-    const d = /(\d{1,2})(?:\s*[\/.\-]\s*\d{1,2}(?:\s*[\/.\-]\s*(\d{2,4}))?)?/.exec(a);
-    if (!d || Number(d[1]) < 1 || Number(d[1]) > 31) return;
-    let y = anio;
-    if (d[2]) y = d[2].length === 2 ? 2000 + Number(d[2]) : Number(d[2]);
-    const fecha = new Date(y, mes, Number(d[1]));
-    if (fecha.getMonth() !== mes) return;
+    if (/REPROGRAM|CANCELAD|SUSPENDID/i.test(g('CERRADO') + ' ' + g('OBSERVACIONES') + ' ' + g('ESTADO'))) return;
+    let dd, mi = mes, y = anio;
+    const full = /(\d{1,2})\s*[\/.\-]\s*(\d{1,2})\s*[\/.\-]\s*(\d{2,4})/.exec(a);
+    if (full) {
+      dd = Number(full[1]); mi = Number(full[2]) - 1;
+      y = full[3].length === 2 ? 2000 + Number(full[3]) : Number(full[3]);
+    } else {
+      if (mes < 0) return;
+      const d = /(\d{1,2})/.exec(a);
+      if (!d) return;
+      dd = Number(d[1]);
+    }
+    const fecha = new Date(y, mi, dd);
+    if (dd < 1 || fecha.getMonth() !== mi) return;
     const r = rangoHora_(g('HORA'));
-    const texto = [g('NOMBRE'), g('MOTIVO'), g('OBSERVACIONES')].join(' · ');
+    const sector = g('SECTOR').trim();
     out.push({
-      fecha: y + '-' + ('0' + (mes + 1)).slice(-2) + '-' + ('0' + Number(d[1])).slice(-2),
-      ini: r[0], fin: r[1], sectores: sectoresConfirmado_(g('OBSERVACIONES') + ' ' + g('MOTIVO') + ' ' + g('NOMBRE')), texto: texto
+      fecha: y + '-' + ('0' + (mi + 1)).slice(-2) + '-' + ('0' + dd).slice(-2),
+      ini: r[0], fin: r[1],
+      sectores: sectoresConfirmado_(sector || (g('OBSERVACIONES') + ' ' + g('MOTIVO') + ' ' + g('NOMBRE'))),
+      texto: [g('NOMBRE'), g('MOTIVO'), g('OBSERVACIONES')].join(' · ')
     });
   });
   return out;
 }
 
-// "16 a 18:30hs" · "19 a 2am" · "16:45 - 19:30" · "sunset" · "MEDIODIA". Si no hay hora, ocupa todo el día.
+// "16 a 18:30hs" · "19 a 2am" · "8.30am a 12" · "16:45 - 19:30" · "20" · "sunset" · "MEDIODIA". Si no hay hora, ocupa todo el día.
 function rangoHora_(txt) {
   const t = sinTildes_(txt).toLowerCase().replace(/\s+/g, ' ');
-  const m = /(\d{1,2})(?:[:.,;](\d{2}))?\s*(?:hs?)?\s*(?:a|-|al|hasta)\s*(\d{1,2})(?:[:.,;](\d{2}))?/.exec(t);
+  const hm = function (h, m, ap) {
+    h = Number(h);
+    if (ap === 'pm' && h < 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+    return h * 60 + Number(m || 0);
+  };
+  const m = /(\d{1,2})(?:[:.,;](\d{2}))?\s*(am|pm|hs?)?\s*(?:a|-|al|hasta)\s*(\d{1,2})(?:[:.,;](\d{2}))?\s*(am|pm|hs?)?/.exec(t);
   if (m) {
-    const ini = Number(m[1]) * 60 + Number(m[2] || 0);
-    let fin = Number(m[3]) * 60 + Number(m[4] || 0);
+    const ini = hm(m[1], m[2], m[3]);
+    let fin = hm(m[4], m[5], m[6]);
     if (fin <= ini) fin += 1440;
     return [ini, fin];
   }
-  const uno = /(\d{1,2})(?:[:.,;](\d{2}))?\s*hs?/.exec(t);
-  if (uno) { const i = Number(uno[1]) * 60 + Number(uno[2] || 0); return [i, i + 240]; }
+  const uno = /(?:^|\D)(\d{1,2})(?:[:.,;](\d{2}))?\s*(am|pm|hs?)?(?:\D|$)/.exec(t);
+  if (uno && Number(uno[1]) <= 23) { const i = hm(uno[1], uno[2], uno[3]); return [i, i + 240]; }
   if (/sunset|atardecer/.test(t)) return [17 * 60, 24 * 60];
   if (/mediodia/.test(t)) return [12 * 60, 17 * 60];
   if (/manana/.test(t)) return [9 * 60, 13 * 60];
