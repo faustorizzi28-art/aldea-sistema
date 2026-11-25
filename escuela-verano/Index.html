@@ -516,6 +516,7 @@ function htmlPlan() {
   p.extras = p.extras.filter(id => extrasOk(s.precios.extras.find(e => e.id === id) || {}));
   return `
     <label style="margin-top:0">1. Elegí el horario <small>(tocá uno)</small></label>
+    ${PUB.edadMin <= 2 ? '<p class="muted chico" style="margin:-4px 0 8px">🌱 ¿Tenés un nene o nena de 2 o 3 años? Va a la Sala de 2 y 3: elegí <b>Mañana</b> (para ellos es de 9 a 12 h) sin opcionales.</p>' : ''}
     <div class="fila" style="gap:8px">${T.map(t => { const v = E.turnos[t.id] || {}; return `<button class="opcion turno-btn ${p.turno === t.id ? 'on' : ''}" style="flex:1 1 100px;margin:0;flex-direction:column;align-items:center;gap:2px;text-align:center" onclick="plSet('turno','${t.id}')">
       <span class="turno-et" style="color:${t.color}">${esc(t.nombre)}</span><span class="chico" style="font-weight:700">${esc(t.horario)}</span><span class="muted chico">semana ${pesos(v.semana)}</span>
       <span class="elegido">${p.turno === t.id ? '✓ Elegido' : 'Elegir'}</span></button>`; }).join('')}</div>
@@ -603,7 +604,7 @@ function htmlChico(c, i) {
     ${g ? `<p style="margin:8px 0 0"><span class="chip info">${g.emoji} Grupo ${esc(g.nombre)} · ${edad} años al empezar</span></p>` : ''}
     <label>DNI</label><input type="tel" id="ch${i}_dni" value="${esc(c.dni)}" inputmode="numeric">
     ${edad !== null && edad < PUB.edadMin ? `<p class="chip mal" style="margin-top:6px">Es desde los ${PUB.edadMin} años</p>` : ''}
-    ${edad !== null && edad <= 3 && edad >= PUB.edadMin ? `<label class="opcion ${c.controlEsfinteres ? 'on' : ''}" style="margin-top:10px"><input type="checkbox" id="ch${i}_controlEsfinteres" ${c.controlEsfinteres ? 'checked' : ''}><div><b>Confirmo que tiene control de esfínteres</b><div class="muted chico">Es requisito para los chicos de 3 años (reglamento).</div></div></label>` : ''}
+    ${edad !== null && edad <= 3 && edad >= PUB.edadMin ? `<p class="banner chico" style="margin-top:10px">🌱 Va a la <b>Sala de 2 y 3</b>, con seños de jardín: <b>solo de mañana, de 9 a 12 h</b> (mismo valor que el turno mañana, sin pre-hora ni post-hora). Si está dejando los pañales, no hay problema: mandá pañales y una muda de ropa en la mochila.</p>` : ''}
     <label>Obra social / prepaga <small>y número de afiliado</small></label><input type="text" id="ch${i}_obraSocial" value="${esc(c.obraSocial)}">
     <label>Alergias <small>(alimentos, picaduras, remedios…)</small></label><input type="text" id="ch${i}_alergias" value="${esc(c.alergias)}" placeholder="Ninguna">
     <label>Medicación que toma <small>(solo damos medicación con receta médica y autorización firmada)</small></label><input type="text" id="ch${i}_medicacion" value="${esc(c.medicacion)}" placeholder="Ninguna">
@@ -659,7 +660,7 @@ function pasoSig() {
       if (!c.nombre) return toast('Falta el nombre de cada chico.', true);
       if (!c.nacimiento) return toast('Falta la fecha de nacimiento de ' + c.nombre + '.', true);
       if (edadEn(c.nacimiento, s.inicio) < PUB.edadMin) return toast(c.nombre + ' tiene que tener al menos ' + PUB.edadMin + ' años.', true);
-      if (edadEn(c.nacimiento, s.inicio) <= 3 && !c.controlEsfinteres) return toast('Para los chicos de 3 años confirmá que tienen control de esfínteres.', true);
+      if (edadEn(c.nacimiento, s.inicio) <= 3 && (W.plan.turno !== 'manana' || W.plan.extras.length)) return toast('La Sala de 2 y 3 es solo de mañana, de 9 a 12 h. Volvé al paso 1 y elegí Mañana sin opcionales para ' + c.nombre + '. Si un hermano va en otro horario, inscribilo aparte con el mismo mail.', true);
     }
   }
   if (W.paso === 3) {

@@ -33,7 +33,7 @@ const TZ = 'America/Argentina/Buenos_Aires';
 const CONFIG = {
   marca: 'Escuela de Verano',
   temporada: '2026-2027',
-  edadMin: 3,
+  edadMin: 2,
   edadMax: 13,
   horaAvisoDiario: 8,
   diasAvisoRenovacion: 2,       // cuántos días antes de que termine se le ofrece renovar
@@ -58,9 +58,9 @@ const CONFIG = {
   diasAvisoApto: 7,             // recordar el apto físico a las familias que empiezan en los próximos 7 días
   // Reglamento 2026-27 (se muestra al inscribirse y en la app; la familia lo acepta al completar el formulario)
   reglamento: [
-    { n: 1, titulo: 'Datos generales', destacado: 'De lunes a viernes, del 14/12/2026 al 19/02/2027, para chicos y chicas de 3 a 13 años.', items: [
+    { n: 1, titulo: 'Datos generales', destacado: 'De lunes a viernes, del 14/12/2026 al 19/02/2027, para chicos y chicas de 2 a 13 años.', items: [
       'Opcionales: pre-hora de 8 a 9 h y post-hora de 13 a 14 h.', 'No hay actividad los feriados: 25/12, 1/1 y Carnaval (8 y 9/2).',
-      'Los 24 y 31 de diciembre la salida es hasta las 14 h.', 'Grupos por edad, cada uno con sus profes.', 'Los chicos de 3 años tienen que tener control de esfínteres.'] },
+      'Los 24 y 31 de diciembre la salida es hasta las 14 h.', 'Grupos por edad, cada uno con sus profes.', 'Sala de 2 y 3 años con seños de jardín: solo de mañana, de 9 a 12 h, mismo valor que el turno mañana. Si todavía está dejando los pañales, lo acompañamos: mandá pañales y una muda de ropa.'] },
     { n: 2, titulo: 'Inscripción y reserva', destacado: 'El lugar queda reservado con el formulario completo, la inscripción y la seña del 50%.', items: [
       'Completá el formulario de inscripción: uno por cada chico.', 'Pagá la inscripción: $35.000 hasta el 15/11 y $50.000 desde el 16/11. Se paga una vez por temporada.',
       'Pagá la seña del 50% del paquete elegido.', 'Aboná el saldo antes de empezar la primera semana reservada.',
@@ -94,7 +94,8 @@ const CONFIG = {
   glorin: { nombre: 'GLORIN Animaciones', detalle: 'Animación de cumpleaños y eventos',
             url: 'https://script.google.com/macros/s/AKfycbzOiwz0lWWgExbIeJ7nF7bwWm2GSPg7NRR3C3zZRh81RhQ6NHVqX9u8sN8eJKOlxd1N/exec' },
   grupos: [
-    { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 3,  edadMax: 4 },
+    { id: 'sala23',       nombre: 'Sala de 2 y 3', emoji: '🌱', edadMin: 2,  edadMax: 3 },
+    { id: 'pollitos',     nombre: 'Pollitos',     emoji: '🐣', edadMin: 4,  edadMax: 4 },
     { id: 'exploradores', nombre: 'Exploradores', emoji: '🧭', edadMin: 5,  edadMax: 6 },
     { id: 'aventureros',  nombre: 'Aventureros',  emoji: '🏕️', edadMin: 7,  edadMax: 9 },
     { id: 'leyendas',     nombre: 'Leyendas',     emoji: '⚡', edadMin: 10, edadMax: 13 }
@@ -115,7 +116,7 @@ const CONFIG = {
       actividades: ['Natación y pileta', 'Karate', 'Patín', 'Gimnasia', 'Fútbol', 'Arte', 'Música', 'Naturaleza'],
       destacado: ['Viernes', 'Día temático con show de GLORIN'],
       ficha: [
-        ['Edades', 'De 3 a 13 años, grupos por edad, cada grupo con sus profes'],
+        ['Edades', 'De 2 a 13 años, grupos por edad. Sala de 2 y 3 con seños de jardín, de 9 a 12 h'],
         ['Horarios', 'Mañana 9 a 13 h · Tarde 13:30 a 17 h · Completa 9 a 17 h · Pack 8 a 14 h'],
         ['Opcionales', 'Pre-hora 8 a 9 h · Post-hora 13 a 14 h · Almuerzo $10.000/día (jornada completa)'],
         ['Comidas', 'Desayuno y merienda: los traen o los compran en Aldea · Almuerzo $10.000 por día'],
@@ -536,7 +537,7 @@ function accInscribir_(d) {
     if (q.errores.length) throw new Error(q.errores[0]);
     asignarGrupos_(sede.id, chicos.map(c => {
       const ex = fam && filas_('Chicos').filter(x => x.familiaId === fam.id && normNombre_(x.nombre) === normNombre_(c.nombre))[0];
-      validarChico_(c, sede);
+      validarChico_(c, sede); chequearSala23_([c], d.plan || {}, sede);
       return { id: ex ? ex.id : '', nombre: c.nombre, nacimiento: c.nacimiento, grupo: ex ? ex.grupo : '' };
     }), q.dias);
     const datosFam = {
@@ -559,12 +560,19 @@ function accInscribir_(d) {
   } finally { lock.releaseLock(); }
 }
 
+/** Sala de 2 y 3: solo turno mañana (9 a 12 h), sin pre-hora ni post-hora. Mismo valor que el turno mañana. */
+function chequearSala23_(chicos, plan, sede) {
+  chicos.forEach(c => {
+    if (!c.nacimiento || edadEn_(iso_(c.nacimiento), sede.inicio) > 3) return;
+    if (plan.turno !== 'manana' || (plan.extras || []).length)
+      throw new Error('La Sala de 2 y 3 es solo de mañana, de 9 a 12 h, sin pre-hora ni post-hora. Para ' + c.nombre + ' elegí el turno Mañana sin opcionales. Si un hermano va en otro horario, inscribilo aparte con el mismo mail (el descuento de hermanos se mantiene).');
+  });
+}
 function validarChico_(c, sede) {
   if (!limpio_(c.nacimiento) || !/^\d{4}-\d{2}-\d{2}$/.test(c.nacimiento)) throw new Error('Falta la fecha de nacimiento de ' + c.nombre + '.');
   const edad = edadEn_(c.nacimiento, sede.inicio);
   if (edad < CONFIG.edadMin) throw new Error(c.nombre + ' tiene que tener al menos ' + CONFIG.edadMin + ' años al empezar la temporada.');
   if (edad > CONFIG.edadMax + 1) throw new Error('La escuela es hasta los ' + CONFIG.edadMax + ' años. Escribile a la administración por WhatsApp para ver si hay lugar para ' + c.nombre + '.');
-  if (edad <= 3 && !esSi_(c.controlEsfinteres)) throw new Error('Para los chicos de 3 años hace falta que tengan control de esfínteres (reglamento). Confirmalo en el formulario de ' + c.nombre + '.');
 }
 
 function guardarChico_(fam, c, sedeId) {
@@ -602,6 +610,7 @@ function resumenWhatsApp_(fam, chicos, items, q, sede) {
   return L.join('\n');
 }
 function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
+  chequearSala23_(chicos, plan || {}, sedeCfg_(sedeId));
   const sinMatricula = chicos.map(c => yaTieneMatricula_(c.id));
   // Hermanos ya inscriptos antes (con otras fechas): cuentan para el descuento de hermanos
   const ids = chicos.map(c => c.id), previos = {};
@@ -2170,7 +2179,8 @@ function accGuardarMP_(d, sesion) {
 // ======== AVISOS AUTOMÁTICOS ========
 function tareaDiaria() {
   const hoy = hoy_();
-  if (!config_().preciosActualizados) try { actualizarPreciosNuevos(false); } catch (e) { Logger.log(e); }   // valores nuevos del 17/11: una sola vez
+  if (!config_().preciosActualizados) try { actualizarPreciosNuevos(false); } catch (e) { Logger.log(e); }
+  if (!config_().sala23) try { moverASala23(); } catch (e) { Logger.log(e); }   // sala de 2 y 3: una sola vez   // valores nuevos del 17/11: una sola vez
   const fams = {}; filas_('Familias').forEach(f => { fams[f.id] = f; });
   const todas = filas_('Inscripciones').filter(i => i.estado !== 'Cancelada');
   const ultimoDia = {};
@@ -2403,6 +2413,19 @@ function geo_(id) {
   const lat = cfg['lat_' + id] !== undefined && cfg['lat_' + id] !== '' ? num(cfg['lat_' + id]) : s.lat;
   const lng = cfg['lng_' + id] !== undefined && cfg['lng_' + id] !== '' ? num(cfg['lng_' + id]) : s.lng;
   return { lat: lat || null, lng: lng || null, radio: Number(cfg['radio_' + id]) || s.radio || 150 };
+}
+
+/** Una sola vez: los chicos de 3 años que estaban en Pollitos pasan a la Sala de 2 y 3 (también en sus inscripciones). */
+function moverASala23() {
+  const mov = {};
+  filas_('Chicos').forEach(c => {
+    const sede = CONFIG.sedes[c.sede]; if (!sede || c.grupo !== 'pollitos' || !c.nacimiento) return;
+    if (edadEn_(iso_(c.nacimiento), sede.inicio) <= 3) { actualizar_('Chicos', c._fila, { grupo: 'sala23' }); mov[c.id] = c.nombre; }
+  });
+  filas_('Inscripciones').forEach(i => { if (mov[i.chicoId] && i.grupo === 'pollitos') actualizar_('Inscripciones', i._fila, { grupo: 'sala23' }); });
+  guardarConfig_('sala23', hoy_(), 'Día en que los chicos de 3 años pasaron de Pollitos a la Sala de 2 y 3');
+  Logger.log('Pasaron a la Sala de 2 y 3: ' + Object.values(mov).join(', '));
+  return Object.values(mov);
 }
 
 // ======== UTILIDADES ========
