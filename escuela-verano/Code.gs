@@ -62,7 +62,7 @@ const CONFIG = {
       'Opcionales: pre-hora de 8 a 9 h y post-hora de 13 a 14 h.', 'No hay actividad los feriados: 25/12, 1/1 y Carnaval (8 y 9/2).',
       'Los 24 y 31 de diciembre la salida es hasta las 14 h.', 'Grupos por edad, cada uno con sus profes.', 'Sala de 2 y 3 años con seños de jardín: solo de mañana, de 9 a 12 h, mismo valor que el turno mañana. Si todavía está dejando los pañales, lo acompañamos: mandá pañales y una muda de ropa.'] },
     { n: 2, titulo: 'Inscripción y reserva', destacado: 'El lugar queda reservado con el formulario completo, la inscripción y la seña del 50%.', items: [
-      'Completá el formulario de inscripción: uno por cada chico.', 'Pagá la inscripción: $35.000 hasta el 15/11 y $50.000 desde el 16/11. Se paga una vez por temporada.',
+      'Completá el formulario de inscripción: uno por cada chico.', 'Pagá la inscripción: $35.000 pagando la seña hasta el 30/11 y $50.000 desde el 1/12. Se paga una vez por temporada.',
       'Pagá la seña del 50% del paquete elegido.', 'Aboná el saldo antes de empezar la primera semana reservada.',
       'La seña congela el precio de lo señado. Si después sumás semanas, se pagan al valor vigente.', 'La inscripción y la seña no se devuelven si la familia cancela.'] },
     { n: 3, titulo: 'Valores y descuentos', destacado: 'Los descuentos son solo sobre la cuota (semanal, quincenal o de temporada).', items: [
