@@ -484,8 +484,8 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   for (var i = 0; i < Math.max(1, cantChicos); i++) {
     // Reglamento: el descuento es solo sobre la cuota (no inscripción, almuerzo ni pre/post-hora) y no se suman: va el mayor
     var sub = base + extrasTotal, pct = 0, motivos = [];
-    var ph = H.length ? H[Math.min(i, H.length - 1)] : 0, pr = ctx.renovacion ? (P.descuentoRenovacion || 0) : 0;
-    if (ph && ph >= pr) { pct = ph; motivos.push((i + 1) + '.º hermano ' + ph + '% sobre la cuota'); }
+    var nH = i + (ctx.hermanosPrevios || 0), ph = H.length ? H[Math.min(nH, H.length - 1)] : 0, pr = ctx.renovacion ? (P.descuentoRenovacion || 0) : 0;
+    if (ph && ph >= pr) { pct = ph; motivos.push((nH + 1) + '.º hermano ' + ph + '% sobre la cuota'); }
     else if (pr) { pct = pr; motivos.push('renovación ' + pr + '% sobre la cuota'); }
     var desc = r100(base * pct / 100);
     var mat = ctx.sinMatricula && ctx.sinMatricula[i] ? 0 : (E.inscripcion || 0);
@@ -603,10 +603,14 @@ function resumenWhatsApp_(fam, chicos, items, q, sede) {
 }
 function crearInscripciones_(fam, chicos, sedeId, plan, origen, renovacion) {
   const sinMatricula = chicos.map(c => yaTieneMatricula_(c.id));
-  const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula });
+  // Hermanos ya inscriptos antes (con otras fechas): cuentan para el descuento de hermanos
+  const ids = chicos.map(c => c.id), previos = {};
+  filas_('Inscripciones').forEach(i => { if (i.familiaId === fam.id && i.chicoId && ids.indexOf(i.chicoId) < 0 && i.estado !== 'Cancelada' && !esEvento_(i)) previos[i.chicoId] = 1; });
+  const hermanosPrevios = Object.keys(previos).length;
+  const q = cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula, hermanosPrevios });
   // Precio regular del mismo paquete: si no señan antes de que termine la preventa, pasa a este valor
   const etapas = CONFIG.sedes[sedeId].precios.etapas;
-  const qr = q.etapaId !== etapas[etapas.length - 1].id ? cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula, etapaId: etapas[etapas.length - 1].id }) : q;
+  const qr = q.etapaId !== etapas[etapas.length - 1].id ? cotizarServidor_(sedeId, plan, chicos.length, renovacion, { sinMatricula, hermanosPrevios, etapaId: etapas[etapas.length - 1].id }) : q;
   if (q.errores.length) throw new Error(q.errores[0]);
   const sede = sedeCfg_(sedeId);
   const asign = asignarGrupos_(sedeId, chicos.map(c => ({ id: c.id, nombre: c.nombre, nacimiento: iso_(c.nacimiento), grupo: c.grupo })), q.dias);

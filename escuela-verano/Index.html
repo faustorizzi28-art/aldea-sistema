@@ -538,7 +538,7 @@ function plTogg(k, v) {
   if (k === 'semanas') { const w = sede(PL.sede).semanas.find(x => x.id === v); if (w) PL.plan.dias = PL.plan.dias.filter(d => !w.dias.includes(d)); }
   const a = PL.plan[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); PL.alCambiar(); }
 function plTodas() { PL.plan.semanas = sede(PL.sede).semanas.filter(w => w.dias[0] >= PUB.hoy).map(w => w.id); PL.alCambiar(); }
-function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.cant), { hoy: PUB.hoy, renovacion: PL.renov }); }
+function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.cant), { hoy: PUB.hoy, renovacion: PL.renov, hermanosPrevios: PL.prev || 0 }); }
 function htmlPresu(q, texto, accion) {
   const cant = Math.max(1, PL.cant);
   return `<div class="presu"><div class="crece"><small>${q.cantDias ? esc(q.detalleBase) + ' · ' + cant + (cant > 1 ? ' chicos' : ' chico') : 'Elegí cuándo viene'}</small>
@@ -640,6 +640,7 @@ function htmlAdulto(a) {
   return `<div class="card"><h3>Adulto responsable</h3>
     ${campo('nombre', 'Nombre y apellido')}
     ${campo('email', 'Mail <small>(con este mail entrás a tu cuenta)</small>', 'email', 'inputmode="email" autocomplete="email"')}
+    <p class="muted chico" style="margin-top:-4px">¿Ya inscribiste a otro hijo antes? Usá el <b>mismo mail</b>: el descuento de hermanos se aplica solo al confirmar.</p>
     <div class="grid2"><div>${campo('whatsapp', 'WhatsApp', 'tel', 'inputmode="tel" placeholder="351 123 4567"')}</div><div>${campo('dni', 'DNI', 'tel', 'inputmode="numeric"')}</div></div>
     ${campo('direccion', 'Dirección')}</div>
   <div class="card"><h3>Seguridad</h3>
@@ -1038,7 +1039,8 @@ function pintarRenovar() {
   tema(R.sede);
   const hoy = C.hoy;
   const renov = C.inscripciones.some(i => R.chicoIds.includes(i.chicoId) && i.estado !== 'Cancelada' && i.hasta >= sumarDias(hoy, -7));
-  PL = { sede: R.sede, plan: R.plan, cant: R.chicoIds.length, renov, alCambiar: pintarRenovar };
+  const prev = new Set(C.inscripciones.filter(i => !R.chicoIds.includes(i.chicoId) && i.estado !== 'Cancelada' && i.modalidad !== 'Evento' && i.modalidad !== 'Cargo').map(i => i.chicoId)).size;
+  PL = { sede: R.sede, plan: R.plan, cant: R.chicoIds.length, renov, prev, alCambiar: pintarRenovar };
   const q = plCotizar();
   pintar(`<header class="top"><button onclick="vCuenta('inicio')">←</button><div class="marca">Sumar días</div></header>
   <div class="wrap">
