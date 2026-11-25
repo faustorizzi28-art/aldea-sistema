@@ -133,6 +133,7 @@
   .dia-tit{font-size:12px;font-weight:800;color:var(--gris);margin:14px 0 2px;}
   .x{border:none;background:var(--gris-claro);border-radius:8px;width:32px;height:32px;font-size:14px;flex-shrink:0;}
   .presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .presets button.on{background:var(--marca);color:#fff;border-style:solid;border-color:var(--marca);}
   .presets button{border:1.5px dashed var(--borde);background:#fff;border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;}
   .inactivo{opacity:.55;}
 
@@ -233,6 +234,12 @@
       <button class="btn ghost full oculto" id="btn-fuera" style="margin-top:10px;" onclick="marcarFuera()">🚗 Estoy trabajando fuera de Aldea</button>
     </div>
 
+    <div class="card" id="emp-corr-card">
+      <div id="emp-olvidos"></div>
+      <div id="emp-corr-pend"></div>
+      <button class="btn ghost full" onclick="abrirCorreccion()">📝 ¿Te olvidaste de marcar? Pedí una corrección</button>
+    </div>
+
     <div class="card oculto" id="emp-tareas-card">
       <h2>📝 Tus tareas de hoy</h2>
       <div class="sub" style="margin-bottom:8px;">Las vas a tildar al marcar la salida.</div>
@@ -297,6 +304,7 @@
         <div class="ahora" id="adm-ahora"></div>
       </div>
       <div id="adm-alertas"></div>
+      <div id="adm-correcciones"></div>
       <div id="adm-asistencia"></div>
       <div class="total-mes">
         <div><div class="l">Total a pagar en el mes</div><div class="v" id="adm-total">$0</div><div class="l" id="adm-saldo" style="margin-top:4px;"></div></div>
@@ -534,6 +542,34 @@
       <button class="btn" onclick="guardarAjuste()">Guardar</button>
     </div>
     <div class="msg" id="ma-msg"></div>
+  </div>
+</div>
+
+<div class="modal oculto" id="m-correccion" onclick="if(event.target===this)cerrarModal('m-correccion')">
+  <div class="caja">
+    <h3>📝 Pedir corrección</h3>
+    <p class="sub" style="margin-bottom:12px;">Se la mandamos al administrador. Cuando la apruebe, se suma sola a tus horas.</p>
+    <div class="field"><label>¿Qué pasó?</label>
+      <div class="presets" id="co-tipos">
+        <button type="button" data-t="SALIDA" onclick="tipoCorr('SALIDA')">Me olvidé la SALIDA</button>
+        <button type="button" data-t="ENTRADA" onclick="tipoCorr('ENTRADA')">Me olvidé la ENTRADA</button>
+        <button type="button" data-t="TURNO" onclick="tipoCorr('TURNO')">No marqué nada ese día</button>
+      </div></div>
+    <div class="field" id="co-ent-box"><label>¿Cuándo entraste?</label><input id="co-ent" type="datetime-local"/></div>
+    <div class="field" id="co-sal-box"><label>¿Cuándo te fuiste?</label><input id="co-sal" type="datetime-local"/></div>
+    <div class="field"><label>Motivo</label>
+      <div class="presets">
+        <button type="button" onclick="$('co-mot').value='Me olvidé de marcar'">Me olvidé</button>
+        <button type="button" onclick="$('co-mot').value='No tenía internet'">Sin internet</button>
+        <button type="button" onclick="$('co-mot').value='El GPS no me dejaba marcar'">No andaba el GPS</button>
+        <button type="button" onclick="$('co-mot').value='Se me quedó sin batería el celular'">Sin batería</button>
+      </div>
+      <input id="co-mot" placeholder="Contá qué pasó"/></div>
+    <div class="grid2">
+      <button class="btn ghost" onclick="cerrarModal('m-correccion')">Cancelar</button>
+      <button class="btn" onclick="enviarCorreccion()">Enviar</button>
+    </div>
+    <div class="msg" id="co-msg"></div>
   </div>
 </div>
 
@@ -793,6 +829,7 @@ function mostrarEmpleado(j, ses){
   pintarMesEmp(j);
   pintarDesafiosEmp(j.desafios || []);
   pintarTareasEmp(j);
+  pintarCorreccionesEmp(j.correcciones || {pendientes:[], olvidos:[]});
   $('btn-fuera').classList.toggle('oculto', !(j.empleado && j.empleado.marcaFuera));
   $('btn-fuera').textContent = j.adentro ? '🚗 Marcar salida (trabajo fuera de Aldea)' : '🚗 Estoy trabajando fuera de Aldea';
 }
@@ -957,7 +994,24 @@ function pintarAdmin(){
   pintarResumen(); pintarMarcajes(); pintarEquipo(); pintarAjustes(); pintarDesafiosAdm();
 }
 
+function pintarCorreccionesAdm(){
+  const cs = adm.correcciones || [];
+  const fd = s => s ? cap(new Date(s).toLocaleString('es-AR',{weekday:'short',day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})) : '';
+  $('adm-correcciones').innerHTML = cs.length ? `<div class="alerta azul"><div class="fila"><b style="margin:0;">📝 ${cs.length} ${cs.length===1?'corrección':'correcciones'} para aprobar</b>${cs.length>1?'<button class="btn chico" onclick="revisarCorreccion(null,true)">✓ Aprobar todas</button>':''}</div>${cs.map(c=>`
+    <div class="it"><span><b style="display:inline;">${esc(c.nombre)}</b> · ${c.tipo==='TURNO'?'turno '+fd(c.entrada)+' → '+fd(c.salida):c.tipo==='SALIDA'?'salida '+fd(c.salida):'entrada '+fd(c.entrada)}<br/><span class="sub">“${esc(c.motivo)}”</span></span>
+    <span style="display:flex;flex-direction:column;gap:4px;"><button class="btn chico" onclick="revisarCorreccion('${c.id}',true)">Aprobar</button><button class="btn chico ghost" onclick="revisarCorreccion('${c.id}',false)">No</button></span></div>`).join('')}</div>` : '';
+}
+async function revisarCorreccion(id, aprobar){
+  const ids = id ? [id] : (adm.correcciones||[]).map(c=>c.id);
+  if(!aprobar && !confirm('¿Rechazar esta corrección? No se van a sumar esas horas.')) return;
+  if(!id && !confirm(`¿Aprobar las ${ids.length} correcciones?`)) return;
+  cargando(true,'Guardando…');
+  try{ await apiAdm('revisarCorreccion', {ids, aprobar}); await cargarAdmin(); }
+  catch(e){ alert(e.message); }
+  finally{ cargando(false); }
+}
 function pintarResumen(){
+  pintarCorreccionesAdm();
   const cfg = adm.config;
   $('adm-alerta-ubic').innerHTML = (!cfg.centroLat || !cfg.centroLng)
     ? `<div class="alerta"><b>📍 Falta fijar la ubicación de Aldea</b>Hasta que la fijes nadie puede marcar. <button class="link" onclick="tab('ajustes')">Ir a Ajustes</button></div>` : '';
@@ -1218,6 +1272,47 @@ async function borrarAjuste(id){
   if(!confirm('¿Borrar este extra/descuento?')) return;
   try{ const empId = $('ma-emp').value; await apiAdm('borrarAjuste', {id}); await cargarAdmin(); abrirAjuste(empId); }
   catch(e){ msg('ma-msg', e.message, 'err'); }
+}
+
+/* ───── Correcciones (empleado) ───── */
+let tipoCorrSel = 'SALIDA';
+const fmtDT = iso => cap(new Date(iso).toLocaleString('es-AR',{weekday:'short',day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}));
+function pintarCorreccionesEmp(c){
+  $('emp-olvidos').innerHTML = c.olvidos.length ? `<div class="alerta" style="margin-bottom:10px;"><b>⚠️ La app detectó ${c.olvidos.length===1?'un olvido':c.olvidos.length+' olvidos'}</b>${c.olvidos.map((o,i)=>`
+    <div class="it"><span>${o.falta==='SALIDA' ? 'Entraste el '+fmtDT(o.entrada)+' y no marcaste la salida' : 'Saliste el '+fmtDT(o.salida)+' sin marcar la entrada'}</span>
+    <button class="btn chico" onclick="corregirOlvido(${i})">Corregir</button></div>`).join('')}</div>` : '';
+  $('emp-corr-pend').innerHTML = c.pendientes.length ? c.pendientes.map(p=>`<div class="turno"><span>⏳ ${p.tipo==='TURNO'?'Turno':p.tipo==='SALIDA'?'Salida':'Entrada'} ${p.entrada?fmtDT(p.entrada):''}${p.salida?(p.entrada?' → ':'')+fmtDT(p.salida):''}</span><span class="tag">esperando aprobación</span></div>`).join('') : '';
+  window._olvidos = c.olvidos;
+}
+function tipoCorr(t){
+  tipoCorrSel = t;
+  [...$('co-tipos').children].forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  $('co-ent-box').classList.toggle('oculto', t==='SALIDA');
+  $('co-sal-box').classList.toggle('oculto', t==='ENTRADA');
+}
+function abrirCorreccion(tipo, ent, sal){
+  tipoCorr(tipo || 'SALIDA');
+  $('co-ent').value = ent || ''; $('co-sal').value = sal || ''; $('co-mot').value = '';
+  $('co-ent').max = $('co-sal').max = localInput(new Date());
+  msg('co-msg','');
+  $('m-correccion').classList.remove('oculto');
+}
+function corregirOlvido(i){
+  const o = window._olvidos[i];
+  if(o.falta==='SALIDA') abrirCorreccion('SALIDA', o.entrada, o.entrada);
+  else abrirCorreccion('ENTRADA', o.salida, o.salida);
+  msg('co-msg', o.falta==='SALIDA' ? 'Cambiá la hora (y el día, si te fuiste después de medianoche) a la que te fuiste.' : 'Cambiá la hora a la que entraste.', 'info');
+}
+async function enviarCorreccion(){
+  const datos = { tipo: tipoCorrSel, entrada: $('co-ent').value, salida: $('co-sal').value, motivo: $('co-mot').value, mes: mesHoy() };
+  if(tipoCorrSel==='SALIDA') datos.entrada = '';
+  if(tipoCorrSel==='ENTRADA') datos.salida = '';
+  msg('co-msg','Enviando…','info');
+  try{
+    const j = await api('pedirCorreccion', Object.assign({}, sesionEmp, datos));
+    cerrarModal('m-correccion'); mostrarEmpleado(j, sesionEmp);
+    msg('marcar-msg','✅ Corrección enviada. Cuando el administrador la apruebe se suma a tus horas.','ok');
+  }catch(e){ msg('co-msg', e.message, 'err'); }
 }
 
 /* ───── Tareas diarias (empleado) ───── */

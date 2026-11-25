@@ -20,6 +20,7 @@ const HOJAS = {
   Config:    ['clave', 'valor', 'descripcion'],
   Ajustes:   ['id', 'mes', 'empleadoId', 'nombre', 'monto', 'concepto', 'creado'],
   Pagos:     ['id', 'mes', 'fecha', 'empleadoId', 'nombre', 'tipo', 'monto', 'nota', 'creado'],
+  Correcciones: ['id', 'empleadoId', 'nombre', 'tipo', 'entrada', 'salida', 'motivo', 'estado', 'creado', 'revisado'],
   Tareas:    ['id', 'fecha', 'empleadoId', 'nombre', 'hechas', 'pendientes', 'creado'],
   Desafios:  ['id', 'titulo', 'detalle', 'premio', 'para', 'vence', 'estado', 'empleadoId', 'nombre', 'tomado', 'hecho', 'foto', 'mes', 'creado', 'desde'],
 };
@@ -86,6 +87,7 @@ function autorizarFotos() {
   hojaOCrear_('Desafios');
   hojaOCrear_('Pagos');
   hojaOCrear_('Tareas');
+  hojaOCrear_('Correcciones');
   SpreadsheetApp.getActive().toast('Listo: permisos dados y hojas creadas.', 'Aldea — Marcaje', 6);
 }
 
@@ -123,6 +125,8 @@ function manejar_(d) {
       borrarMarcaje: conAdmin_(accBorrarMarcaje_),
       guardarAjuste: conAdmin_(accGuardarAjuste_),
       borrarAjuste: conAdmin_(accBorrarAjuste_),
+      pedirCorreccion: accPedirCorreccion_,
+      revisarCorreccion: conAdmin_(accRevisarCorreccion_),
       tomarDesafio: accTomarDesafio_,
       soltarDesafio: accSoltarDesafio_,
       terminarDesafio: accTerminarDesafio_,
@@ -187,6 +191,7 @@ function accEstado_(d) {
     mes,
     liquidacion: liq,
     desafios: desafiosDe_(e),
+    correcciones: correccionesDe_(e, marcajes),
     ubicacionLista: cfg.centroLat !== '' && cfg.centroLng !== '',
     radio: Number(cfg.radio) || 100,
   };
@@ -273,6 +278,7 @@ function accAdminDatos_(d) {
     topeDesafios: topeDesafios_(),
     usadoDesafios: desafios_().filter(x => x.estado === 'aprobado' && x.mes === mes).reduce((a, x) => a + x.premio, 0),
     premioPresentismo: premioPresentismo_(),
+    correcciones: correcciones_().filter(c => c.estado === 'pendiente').map(c => Object.assign({}, c, { _fila: undefined })),
   };
 }
 
@@ -446,7 +452,10 @@ function accGuardarLiquidacion_(d) {
 
 /** Arma los turnos (entrada→salida) de un empleado en orden cronológico. */
 function turnos_(marcajes, empleadoId) {
-  const ms = marcajes.filter(m => m.empleadoId === empleadoId).sort((a, b) => a.fechaHora - b.fechaHora);
+  // Los marcajes repetidos (mismo tipo, mismo minuto) se cuentan una sola vez.
+  const vistos = {};
+  const ms = marcajes.filter(m => m.empleadoId === empleadoId).sort((a, b) => a.fechaHora - b.fechaHora)
+    .filter(m => { const k = m.tipo + Math.floor(m.fechaHora / 60000); if (vistos[k]) return false; vistos[k] = true; return true; });
   const turnos = [];
   let abierta = null;
   ms.forEach(m => {
@@ -772,6 +781,87 @@ function presentismo_(e, mes, marcajes) {
   if (!semanas.length) return null;
   const ganadas = semanas.filter(x => x.gana).length;
   return { semanas, ganadas, premio, monto: ganadas * premio };
+}
+
+/* ───────────────────────── Correcciones pedidas por los empleados ───────────────────────── */
+let _correcciones = null;
+function correcciones_() {
+  if (_correcciones) return _correcciones;
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Correcciones');
+  if (!sh) return (_correcciones = []);
+  const txt = v => v instanceof Date ? Utilities.formatDate(v, TZ, "yyyy-MM-dd'T'HH:mm") : String(v || '');
+  _correcciones = filas_('Correcciones').map(c => ({
+    _fila: c._fila, id: String(c.id), empleadoId: String(c.empleadoId), nombre: String(c.nombre), tipo: String(c.tipo),
+    entrada: txt(c.entrada), salida: txt(c.salida), motivo: String(c.motivo || ''), estado: String(c.estado || 'pendiente'),
+    creado: c.creado instanceof Date ? c.creado.toISOString() : String(c.creado || ''),
+  }));
+  return _correcciones;
+}
+
+/** Para el empleado: sus pedidos pendientes y los olvidos que la app detecta (últimos 35 días). */
+function correccionesDe_(e, marcajes) {
+  const pendientes = correcciones_().filter(c => c.empleadoId === e.id && c.estado === 'pendiente')
+    .map(c => ({ id: c.id, tipo: c.tipo, entrada: c.entrada, salida: c.salida, motivo: c.motivo }));
+  const limite = Date.now() - 35 * 86400000;
+  const local = f => Utilities.formatDate(f, TZ, "yyyy-MM-dd'T'HH:mm");
+  const olvidos = turnos_(marcajes, e.id)
+    .filter(t => !t.enCurso && (!t.entrada || !t.salida) && (t.entrada || t.salida).fechaHora.getTime() > limite)
+    .map(t => t.entrada ? { falta: 'SALIDA', entrada: local(t.entrada.fechaHora) } : { falta: 'ENTRADA', salida: local(t.salida.fechaHora) })
+    .filter(o => !pendientes.some(p => (o.entrada && p.entrada && p.entrada.slice(0, 10) === o.entrada.slice(0, 10)) || (o.salida && p.salida && p.salida.slice(0, 10) === o.salida.slice(0, 10))));
+  return { pendientes, olvidos };
+}
+
+function accPedirCorreccion_(d) {
+  const e = validarEmpleado_(d);
+  const tipo = ['ENTRADA', 'SALIDA', 'TURNO'].includes(d.tipo) ? d.tipo : '';
+  if (!tipo) return { ok: false, error: 'Elegí qué te olvidaste de marcar.' };
+  const entrada = tipo !== 'SALIDA' ? parseLocal_(d.entrada) : null;
+  const salida = tipo !== 'ENTRADA' ? parseLocal_(d.salida) : null;
+  if (tipo !== 'SALIDA' && !entrada) return { ok: false, error: 'Poné la fecha y hora de entrada.' };
+  if (tipo !== 'ENTRADA' && !salida) return { ok: false, error: 'Poné la fecha y hora de salida.' };
+  if (entrada && salida && !(salida > entrada)) return { ok: false, error: 'La salida tiene que ser después de la entrada.' };
+  if (entrada && salida && (salida - entrada) / 3600000 > HORAS_MAX_TURNO) return { ok: false, error: `Un turno no puede durar más de ${HORAS_MAX_TURNO} horas. Revisá las fechas.` };
+  const ahora = Date.now();
+  if ((entrada && entrada > ahora) || (salida && salida > ahora)) return { ok: false, error: 'No se puede pedir una corrección para una hora que todavía no pasó.' };
+  if ((entrada || salida) < ahora - 60 * 86400000) return { ok: false, error: 'Solo se pueden corregir los últimos 60 días. Hablalo con el administrador.' };
+  const motivo = String(d.motivo || '').trim();
+  if (!motivo) return { ok: false, error: 'Contá qué pasó (por ejemplo: me olvidé, no tenía internet).' };
+  hojaOCrear_('Correcciones').appendRow([uid_(), e.id, e.nombre, tipo,
+    entrada ? "'" + String(d.entrada) : '', salida ? "'" + String(d.salida) : '', motivo, 'pendiente', new Date(), '']);
+  const resp = accEstado_(d);
+  resp.pedido = true;
+  return resp;
+}
+
+/** Aprobar crea los marcajes manuales; también se puede corregir la hora al aprobar. */
+function accRevisarCorreccion_(d) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    _correcciones = null;
+    const ids = Array.isArray(d.ids) ? d.ids.map(String) : [String(d.id)];
+    const sh = hoja_('Correcciones');
+    const enc = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    const colEstado = enc.indexOf('estado') + 1, colRev = enc.indexOf('revisado') + 1;
+    let hechas = 0;
+    ids.forEach(id => {
+      const c = correcciones_().find(x => x.id === id);
+      if (!c || c.estado !== 'pendiente') return;
+      if (d.aprobar) {
+        const entrada = c.tipo !== 'SALIDA' ? parseLocal_(d.entrada && ids.length === 1 ? d.entrada : c.entrada) : null;
+        const salida = c.tipo !== 'ENTRADA' ? parseLocal_(d.salida && ids.length === 1 ? d.salida : c.salida) : null;
+        const nota = `Corrección pedida por ${c.nombre}: ${c.motivo}`;
+        if (entrada) hoja_('Marcajes').appendRow([uid_(), c.empleadoId, c.nombre, 'ENTRADA', entrada, '', '', '', '', 'manual', nota]);
+        if (salida) hoja_('Marcajes').appendRow([uid_(), c.empleadoId, c.nombre, 'SALIDA', salida, '', '', '', '', 'manual', nota]);
+      }
+      sh.getRange(c._fila, colEstado).setValue(d.aprobar ? 'aprobada' : 'rechazada');
+      sh.getRange(c._fila, colRev).setValue(new Date());
+      hechas++;
+    });
+    return { ok: true, hechas };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /* ───────────────────────── Desafíos ───────────────────────── */
