@@ -1,0 +1,551 @@
+<title>Eventos Aldea · Staff</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: herramienta de mostrador. Cabecera de marca, barra fija con 3 pestañas
+   (Cotizar / Respuestas / Datos) y una columna de trabajo de 860px. */
+:root {
+  --bg:#F2EEE3; --surface:#FFFDF7; --field:#F8F5EC; --fg:#22382A; --muted:#5B6B5C;
+  --line:#D9D2BF; --brand:#2F4A38; --brand-fg:#F4EFE3; --sun:#F2CA11; --clay:#A9502C;
+  --wa:#1E9E52; --ok:#2E7D4F; --ok-bg:#DDEFE2; --warn-bg:#FBF0D2; --warn:#7A5A00; --india:#6B3A8C; --india-bg:#EFE5F5;
+  --display:'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --body:'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#141D17; --surface:#1C2820; --field:#17221B; --fg:#E7EDE4; --muted:#A8B7AA; --line:#33463A;
+  --brand:#2F4A38; --brand-fg:#F4EFE3; --sun:#F2CA11; --clay:#E08A63; --wa:#2DB866; --ok:#8FD7A9; --ok-bg:#1C3A27;
+  --warn-bg:#3A3015; --warn:#F2D27A; --india:#C9A6E3; --india-bg:#2E2238; color-scheme:dark; } }
+:root[data-theme="dark"] {
+  --bg:#141D17; --surface:#1C2820; --field:#17221B; --fg:#E7EDE4; --muted:#A8B7AA; --line:#33463A;
+  --brand:#2F4A38; --brand-fg:#F4EFE3; --sun:#F2CA11; --clay:#E08A63; --wa:#2DB866; --ok:#8FD7A9; --ok-bg:#1C3A27;
+  --warn-bg:#3A3015; --warn:#F2D27A; --india:#C9A6E3; --india-bg:#2E2238; color-scheme:dark; }
+* { box-sizing:border-box }
+body { background:var(--bg); color:var(--fg); font:16px/1.45 var(--body); }
+.in { max-width:860px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+.hero { background:var(--brand); color:var(--brand-fg); margin-top:calc(-1 * env(safe-area-inset-top, 0px)); padding-top:calc(env(safe-area-inset-top, 0px) + 1.3rem); padding-bottom:1.1rem; }
+.hero .eyebrow { color:var(--sun); font-weight:700; font-size:.74rem; letter-spacing:.16em; text-transform:uppercase }
+.hero h1 { margin:.2rem 0 0; font-family:var(--display); font-weight:400; font-size:2.2rem; line-height:1.05; text-wrap:balance }
+.hero p { margin:.45rem 0 0; color:#D9E3D7; max-width:62ch; font-size:.95rem }
+.hero b { color:var(--sun) }
+body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg) }
+.barra { position:sticky; top:env(safe-area-inset-top, 0px); background:var(--bg); padding-block:.6rem; z-index:5; border-bottom:1px solid var(--line) }
+.tabs { display:flex; gap:.4rem }
+.tabs button { flex:1; border:2px solid var(--line); background:var(--surface); color:var(--fg); border-radius:12px; padding:.55rem .4rem; font:700 .95rem var(--body); cursor:pointer }
+.tabs button.on { background:var(--brand); color:var(--brand-fg); border-color:var(--brand) }
+main { padding-block:1rem 4rem }
+h2 { font-family:var(--display); font-weight:400; font-size:1.6rem; margin:1.4rem 0 .4rem; text-wrap:balance }
+h2:first-child { margin-top:.4rem }
+.sub { color:var(--muted); margin:0 0 .8rem; font-size:.92rem; max-width:65ch }
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1rem; }
+.grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:.8rem 1rem }
+.full { grid-column:1 / -1 }
+@media (max-width:560px) { .grid { grid-template-columns:minmax(0,1fr) } }
+label.l { display:block; font-weight:700; font-size:.85rem; margin-bottom:.3rem }
+label.l small { font-weight:500; color:var(--muted) }
+input[type=text], input[type=number], select, textarea { width:100%; padding:.6rem .7rem; border:1.5px solid var(--line); border-radius:10px; font:inherit; background:var(--field); color:var(--fg) }
+textarea { font-size:15px; line-height:1.45; resize:vertical }
+.seg { display:flex; gap:.35rem; flex-wrap:wrap }
+.seg button { border:1.5px solid var(--line); background:var(--field); color:var(--fg); border-radius:999px; padding:.4rem .8rem; font:600 .88rem var(--body); cursor:pointer }
+.seg button.on { background:var(--brand); color:var(--brand-fg); border-color:var(--brand) }
+.extras { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:.5rem }
+@media (max-width:560px) { .extras { grid-template-columns:minmax(0,1fr) } }
+.ex { display:flex; align-items:center; gap:.6rem; border:1.5px solid var(--line); border-radius:10px; padding:.5rem .6rem; background:var(--field) }
+.ex.on { border-color:var(--brand); background:var(--ok-bg) }
+.ex .t { flex:1; min-width:0; font-size:.9rem; font-weight:600 }
+.ex .t small { display:block; font-weight:500; color:var(--muted); font-size:.78rem }
+.step { display:flex; align-items:center; gap:.35rem }
+.step button { width:30px; height:30px; border-radius:50%; border:0; background:var(--brand); color:var(--brand-fg); font:800 1rem var(--body); cursor:pointer; line-height:1 }
+.step b { min-width:1.2rem; text-align:center; font-variant-numeric:tabular-nums }
+.check { display:flex; align-items:flex-start; gap:.55rem; font-size:.92rem; cursor:pointer }
+.check input { width:20px; height:20px; accent-color:var(--brand); flex:none; margin-top:.1rem }
+.check.india { background:var(--india-bg); border-radius:10px; padding:.6rem .7rem }
+.check.india b { color:var(--india) }
+.res { margin-top:1rem }
+table.des { width:100%; border-collapse:collapse; font-size:.92rem }
+table.des td { padding:.4rem 0; border-bottom:1px dashed var(--line); vertical-align:top }
+table.des td:last-child { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; font-weight:600; padding-left:.8rem }
+table.des tr.neg td:last-child { color:var(--ok) }
+.totales { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:.6rem; margin-top:.8rem }
+@media (max-width:560px) { .totales { grid-template-columns:minmax(0,1fr) } }
+.tot { border-radius:12px; padding:.6rem .8rem; background:var(--field); border:1px solid var(--line) }
+.tot small { display:block; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted) }
+.tot b { font-family:var(--display); font-weight:400; font-size:1.8rem; line-height:1.1; font-variant-numeric:tabular-nums }
+.tot.main { background:var(--sun); border-color:var(--sun); color:#22382A }
+.tot.main small { color:#4B5A2E }
+.reparto { margin-top:.8rem; background:var(--india-bg); border-radius:12px; padding:.7rem .9rem; font-size:.92rem }
+.reparto h3 { margin:0 0 .3rem; font-size:.95rem; color:var(--india) }
+.reparto dl { display:grid; grid-template-columns:1fr auto; gap:.2rem 1rem; margin:0 }
+.reparto dd { margin:0; font-weight:700; font-variant-numeric:tabular-nums; text-align:right }
+.nota { background:var(--warn-bg); color:var(--warn); border-radius:10px; padding:.55rem .75rem; font-size:.86rem; margin-top:.6rem }
+.acc { display:flex; gap:.45rem; flex-wrap:wrap; margin-top:.5rem }
+.acc button, .acc a { border:0; border-radius:10px; padding:.55rem .85rem; font:700 .92rem var(--body); cursor:pointer; text-decoration:none; display:inline-flex; align-items:center }
+.copiar { background:var(--brand); color:var(--brand-fg) }
+.wa { background:var(--wa); color:#FFFFFF }
+.rest { background:var(--field); color:var(--fg); border:1.5px solid var(--line) !important }
+#q { width:100%; padding:.65rem .85rem; border:2px solid var(--fg); border-radius:12px; font:inherit; background:var(--surface); color:var(--fg) }
+.cats { display:flex; gap:.4rem; overflow-x:auto; padding:.6rem 0 .2rem; scrollbar-width:none }
+.cats::-webkit-scrollbar { display:none }
+.cats button { flex:0 0 auto; border:1.5px solid var(--line); background:var(--surface); color:var(--fg); border-radius:999px; padding:.35rem .8rem; font:600 .88rem var(--body); cursor:pointer }
+.cats button.on { background:var(--fg); color:var(--bg); border-color:var(--fg) }
+.r { background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:.75rem .85rem; margin-bottom:.7rem }
+.r h3 { margin:0; font-size:1rem; display:flex; gap:.5rem; align-items:baseline; flex-wrap:wrap }
+.r .cuando { margin:.15rem 0 .5rem; font-size:.84rem; color:var(--muted) }
+.r textarea { min-height:7rem; field-sizing:content; max-height:28rem }
+.editado { font-size:.72rem; font-weight:700; background:var(--ok-bg); color:var(--ok); border-radius:999px; padding:.05rem .5rem }
+h2.cat { font-family:var(--body); font-weight:800; font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--clay); margin:1.4rem 0 .5rem }
+.vacio { color:var(--muted); text-align:center; padding:2rem 0 }
+.datos dl { display:grid; grid-template-columns:minmax(110px, auto) 1fr; gap:.35rem 1rem; margin:0 }
+.datos dt { color:var(--muted); font-size:.9rem }
+.datos dd { margin:0; font-weight:600; overflow-wrap:anywhere }
+.tw { overflow-x:auto }
+table.pr { width:100%; border-collapse:collapse; font-size:.92rem }
+table.pr th { text-align:left; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); padding:.35rem .5rem; border-bottom:2px solid var(--line) }
+table.pr td { padding:.4rem .5rem; border-bottom:1px dashed var(--line) }
+table.pr td.n { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; font-weight:600 }
+.cols { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem }
+@media (max-width:640px) { .cols { grid-template-columns:minmax(0,1fr) } }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:3px solid var(--sun); outline-offset:2px }
+.toast { position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); background:var(--fg); color:var(--bg); padding:.55rem 1rem; border-radius:999px; font-weight:700; opacity:0; transition:opacity .2s; pointer-events:none; z-index:20 }
+.toast.on { opacity:1 }
+@media (prefers-reduced-motion: reduce) { .toast { transition:none } }
+</style>
+
+<header class="hero"><div class="in">
+  <div class="eyebrow">Aldea de Valle · Eventos</div>
+  <h1>Mostrador de eventos</h1>
+  <p>Para el equipo de Aldea y de Aldea India. <b>Cotizá</b> un evento en un minuto, <b>respondé</b> consultas con textos listos y tené a mano los <b>datos</b> de siempre. Los textos que edites quedan guardados en este celular.</p>
+</div></header>
+
+<div class="barra"><div class="in">
+  <div class="tabs" role="tablist">
+    <button type="button" data-v="cotizar" class="on">Cotizar</button>
+    <button type="button" data-v="respuestas">Respuestas</button>
+    <button type="button" data-v="datos">Datos</button>
+  </div>
+</div></div>
+
+<main class="in">
+
+<!-- ============ COTIZAR ============ -->
+<section id="v-cotizar">
+  <h2>Cotizar un evento</h2>
+  <p class="sub">Completá lo que sepas. El presupuesto y el mensaje para el cliente se arman solos. Los precios son los de la web de eventos.</p>
+  <div class="panel">
+    <div class="grid">
+      <div class="full">
+        <label class="l">Tipo de evento</label>
+        <div class="seg" id="tipo">
+          <button type="button" data-t="infantil">Cumple infantil</button>
+          <button type="button" data-t="adultos" class="on">Cumple de adultos</button>
+          <button type="button" data-t="quince">15 años</button>
+          <button type="button" data-t="recibida">Recibida</button>
+          <button type="button" data-t="celebracion">Bautismo / baby shower</button>
+          <button type="button" data-t="empresa">Empresa / fin de año</button>
+        </div>
+      </div>
+      <div><label class="l" for="personas" id="lPersonas">Personas</label><input id="personas" type="number" min="1" max="600" inputmode="numeric" value="60"></div>
+      <div><label class="l" for="horas">Duración</label><select id="horas"></select></div>
+      <div><label class="l" for="fecha">Fecha <small>(texto libre)</small></label><input id="fecha" type="text" value="Sábado 12 de diciembre"></div>
+      <div><label class="l" for="cliente">Nombre del cliente <small>(opcional)</small></label><input id="cliente" type="text" placeholder="Ej: Vero"></div>
+      <div class="full">
+        <label class="l">Bebida</label>
+        <div class="seg" id="modo">
+          <button type="button" data-m="ambas" class="on">Mostrar las dos opciones</button>
+          <button type="button" data-m="espacio">Solo espacio</button>
+          <button type="button" data-m="voucher">Espacio + voucher</button>
+        </div>
+      </div>
+      <div id="creditoWrap"><label class="l" for="credito">Voucher de bebida <small>(sugerido: $10.000 por persona)</small></label><input id="credito" type="number" min="0" step="10000" inputmode="numeric"></div>
+      <div id="sectorWrap"><label class="l" for="sector">Sector</label><select id="sector">
+        <option value="Quincho + cancha sintética">Quincho + cancha (hasta 40)</option>
+        <option value="Patio de piedra con parque y asadores" selected>Patio de piedra (hasta 80)</option>
+        <option value="Salón cerrado">Salón (hasta 100)</option>
+        <option value="Deck">Deck (hasta 40)</option>
+        <option value="Salón + patio de piedra">Salón + patio (hasta 180)</option>
+      </select></div>
+      <div class="full">
+        <label class="l">Extras</label>
+        <div class="extras" id="extras"></div>
+      </div>
+      <div class="full" style="display:grid;gap:.5rem">
+        <label class="check"><input type="checkbox" id="lunjue"> <span>Es de lunes a jueves <small style="color:var(--muted)">(15% off en el espacio, no aplica a 15 años ni empresas)</small></span></label>
+        <label class="check"><input type="checkbox" id="exclusivo"> <span>Predio completo en exclusiva <small style="color:var(--muted)">(+$500.000)</small></span></label>
+        <label class="check india"><input type="checkbox" id="india"> <span><b>Lo vende Aldea India</b> · el espacio sube 15% y ese 15% es para Aldea India</span></label>
+        <label class="check india" id="indiaVoucherWrap" hidden><input type="checkbox" id="indiaVoucher"> <span>Sumar el 15% también al voucher de bebida <small style="color:var(--muted)">(por defecto no: la bebida ya tiene margen de Aldea)</small></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel res" id="resultado"></div>
+
+  <h2>Mensaje para el cliente</h2>
+  <p class="sub">Revisalo, cambiá lo que quieras y mandalo.</p>
+  <div class="panel">
+    <textarea id="mensaje" rows="16" aria-label="Mensaje para el cliente"></textarea>
+    <div class="acc"><button type="button" class="copiar" id="copiarMsj">📋 Copiar</button><a class="wa" id="waMsj" target="_blank" rel="noopener">💬 WhatsApp</a></div>
+  </div>
+</section>
+
+<!-- ============ RESPUESTAS ============ -->
+<section id="v-respuestas" hidden>
+  <h2>Respuestas listas</h2>
+  <p class="sub">Buscá la duda, ajustá el texto (los <b>[corchetes]</b> se completan) y tocá Copiar o WhatsApp.</p>
+  <input id="q" type="search" placeholder="Buscar: precio, seña, alias, bebida, pileta, horario, lluvia…" aria-label="Buscar respuesta">
+  <div class="cats" id="cats"></div>
+  <div id="lista"></div>
+</section>
+
+<!-- ============ DATOS ============ -->
+<section id="v-datos" hidden>
+  <h2>Datos rápidos</h2>
+  <div class="panel datos"><dl>
+    <dt>Web de eventos</dt><dd>https://script.google.com/macros/s/AKfycbzjwI6A77LzWAYjOfTXfnTJtkn7sQT9Mkmqg6jmyKiE4avq4UXvUX_QpMXEac1PeBt2SA/exec</dd>
+    <dt>Planilla reservas</dt><dd>https://docs.google.com/spreadsheets/d/1QgJHpxIVMvdvegOHvX9wSVVg5lGQ0AgOem3jBfm7tHU/edit</dd>
+    <dt>Alias</dt><dd>aldea.de.valle · Titular: Fausto Agustino Rizzi Szkolka</dd>
+    <dt>WhatsApp eventos</dt><dd>351 530-8489 (Milagros)</dd>
+    <dt>Aldea India</dt><dd>351 511-9452 · @aldeaindia.eventos · aldeaindiaeventos@gmail.com</dd>
+    <dt>Dirección</dt><dd>República de China 1890, Valle Escondido, Córdoba</dd>
+    <dt>Seña</dt><dd>30% del total. Sin seña se libera a las 48 hs. Saldo el día del evento, antes de empezar.</dd>
+    <dt>Horario máximo</dt><dd>Hasta las 2 a.m. Tiempo extra: $45.000 la hora (se cobra de a media hora).</dd>
+    <dt>Citas</dt><dd>Lunes a viernes desde las 18 h · Milagros (Aldea) · Luli o Nati (Aldea India)</dd>
+    <dt>Salón</dt><dd>Lunes a viernes de 17 a 23 h está ocupado por clases</dd>
+    <dt>Escolares</dt><dd>Lunes, miércoles y viernes de 8 a 17 h</dd>
+  </dl></div>
+
+  <h2>Espacios y capacidad</h2>
+  <div class="panel tw"><table class="pr">
+    <thead><tr><th>Sector</th><th>Entran</th><th>Ideal para</th></tr></thead>
+    <tbody>
+      <tr><td>Quincho + cancha sintética</td><td class="n">40</td><td>Cumples infantiles, asados</td></tr>
+      <tr><td>Patio de piedra + parque + cancha de 11</td><td class="n">80</td><td>Cumples, sunset, recibidas</td></tr>
+      <tr><td>Salón cerrado</td><td class="n">100</td><td>Fiestas de noche, 15, lluvia</td></tr>
+      <tr><td>Deck</td><td class="n">40</td><td>Reuniones chicas</td></tr>
+      <tr><td>Predio completo</td><td class="n">400</td><td>15, casamientos, escuelas, empresas</td></tr>
+    </tbody></table></div>
+
+  <h2>Tarifario</h2>
+  <div class="cols">
+    <div class="panel tw"><table class="pr">
+      <thead><tr><th>Espacio (4 horas)</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Hasta 30 personas</td><td class="n">$380.000</td></tr>
+        <tr><td>31 a 50</td><td class="n">$480.000</td></tr>
+        <tr><td>51 a 80</td><td class="n">$650.000</td></tr>
+        <tr><td>81 a 100</td><td class="n">$800.000</td></tr>
+        <tr><td>101 a 150</td><td class="n">$1.000.000</td></tr>
+        <tr><td>Cada persona más de 150</td><td class="n">$8.000</td></tr>
+        <tr><td>Cumple infantil (30 chicos, 2 h 30)</td><td class="n">$380.000</td></tr>
+        <tr><td>Chico extra</td><td class="n">$9.000</td></tr>
+        <tr><td>Con voucher: espacio fijo</td><td class="n">$200.000</td></tr>
+        <tr><td>Voucher sugerido por persona</td><td class="n">$10.000</td></tr>
+      </tbody></table></div>
+    <div class="panel tw"><table class="pr">
+      <thead><tr><th>Extras</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Hora extra</td><td class="n">$45.000</td></tr>
+        <tr><td>Seguridad (por persona)</td><td class="n">$90.000</td></tr>
+        <tr><td>Parrillero</td><td class="n">$90.000</td></tr>
+        <tr><td>Barman</td><td class="n">$90.000</td></tr>
+        <tr><td>Fogonero</td><td class="n">$70.000</td></tr>
+        <tr><td>Cuidacoches</td><td class="n">$70.000</td></tr>
+        <tr><td>Limpieza durante el evento</td><td class="n">$50.000</td></tr>
+        <tr><td>Pileta + guardavidas (dic a mar)</td><td class="n">$120.000</td></tr>
+        <tr><td>Animación GLORIN 2 profes</td><td class="n">$195.000</td></tr>
+        <tr><td>Predio exclusivo</td><td class="n">$500.000</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <h2>Convenio con Aldea India</h2>
+  <div class="panel" style="font-size:.95rem">
+    Cuando el evento lo vende Aldea India, el <b>espacio se cobra 15% más</b> y ese 15% es para Aldea India. Aldea de Valle cobra lo mismo de siempre.<br><br>
+    Ejemplo: espacio para 60 personas $650.000 → al cliente $747.500 → Aldea de Valle $650.000 · Aldea India $97.500.<br><br>
+    El voucher de bebida y los extras (seguridad, pileta, etc.) <b>no llevan el 15%</b>, salvo que se acuerde otra cosa: la bebida ya deja margen en la barra y los extras son costo de personal.
+  </div>
+
+  <h2>Carta de bebidas</h2>
+  <div class="cols">
+    <div class="panel tw"><table class="pr"><tbody>
+      <tr><td>Fernet / Gin / Vodka (vaso grande)</td><td class="n">$18.000</td></tr>
+      <tr><td>Stella Artois (botella)</td><td class="n">$9.800</td></tr>
+      <tr><td>Vaso copón de cerveza</td><td class="n">$9.000</td></tr>
+      <tr><td>Vino Huelga de Amores</td><td class="n">$14.500</td></tr>
+      <tr><td>Vino Trumpeter</td><td class="n">$17.000</td></tr>
+      <tr><td>Champagne Nieto</td><td class="n">$28.000</td></tr>
+      <tr><td>Promo Fernet + 2 Coca</td><td class="n">$47.000</td></tr>
+      <tr><td>Promo Gin + Cepita</td><td class="n">$47.000</td></tr>
+      <tr><td>Promo Campari + Cepita</td><td class="n">$42.000</td></tr>
+      <tr><td>Promo Vino + 2 Coca</td><td class="n">$32.000</td></tr>
+    </tbody></table></div>
+    <div class="panel tw"><table class="pr"><tbody>
+      <tr><td>Coca / Sprite 500 ml</td><td class="n">$3.800</td></tr>
+      <tr><td>Coca 1,5 L</td><td class="n">$5.500</td></tr>
+      <tr><td>Coca 2,5 L</td><td class="n">$6.300</td></tr>
+      <tr><td>Agua 500 ml</td><td class="n">$2.600</td></tr>
+      <tr><td>Agua 2 L</td><td class="n">$4.300</td></tr>
+      <tr><td>Cepita 1 L</td><td class="n">$4.500</td></tr>
+      <tr><td>Fernet 750 (botella)</td><td class="n">$38.000</td></tr>
+      <tr><td>Campari / Gin Brighton (botella)</td><td class="n">$38.000</td></tr>
+      <tr><td>Gancia (botella)</td><td class="n">$30.000</td></tr>
+      <tr><td>Speed</td><td class="n">$5.000</td></tr>
+    </tbody></table></div>
+  </div>
+  <p class="sub" style="margin-top:.6rem">Precios de la carta cargada en la comanda. Si se actualizaron, manda la comanda.</p>
+</section>
+
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+var WEB = 'https://script.google.com/macros/s/AKfycbzjwI6A77LzWAYjOfTXfnTJtkn7sQT9Mkmqg6jmyKiE4avq4UXvUX_QpMXEac1PeBt2SA/exec';
+var ALIAS = 'aldea.de.valle (titular: Fausto Agustino Rizzi Szkolka)';
+var P = { tramos:[[30,380000],[50,480000],[80,650000],[100,800000],[150,1000000]], personaExtra:8000,
+  infantilBase:380000, infantilIncl:30, chicoExtra:9000, horaExtra:45000, voucherEspacio:200000, voucherPP:10000, voucherMin:300000,
+  exclusivo:500000, lunJue:15, india:15, sena:30 };
+var EXTRAS = [
+  ['seguridad','Seguridad','por persona',90000,4],
+  ['parrillero','Parrillero','opcional, las parrillas son libres',90000,2],
+  ['barman','Barman','ya incluido con voucher',90000,2],
+  ['fogonero','Fogonero','fogón toda la noche',70000,1],
+  ['cuidacoches','Cuidacoches','por persona',70000,2],
+  ['limpieza','Limpieza durante el evento','',50000,1],
+  ['pileta','Pileta + guardavidas','diciembre a marzo',120000,1],
+  ['glorin2','Animación GLORIN','2 profes, 2 h 30',195000,1],
+  ['glorin3','Animación GLORIN','3 profes, 2 h 30',235000,1]
+];
+var TIPOS = {
+  infantil:{n:'cumple infantil', base:2.5, horas:[2.5,3,3.5,4,5,6,7], unidad:'Chicos'},
+  adultos:{n:'cumple', base:4, horas:[3,4,5,6,7,8], unidad:'Personas'},
+  quince:{n:'cumple de 15', base:4, horas:[4,5,6], unidad:'Personas'},
+  recibida:{n:'recibida', base:4, horas:[3,4,5,6], unidad:'Personas'},
+  celebracion:{n:'celebración', base:4, horas:[3,4,5,6], unidad:'Personas'},
+  empresa:{n:'evento', base:4, horas:[3,4,5,6,7,8], unidad:'Personas'}
+};
+var S = { tipo:'adultos', modo:'ambas', ex:{}, creditoManual:false };
+function $(id){ return document.getElementById(id); }
+function plata(n){ n=Math.round(n); return (n<0?'-$':'$') + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function r1000(n){ return Math.round(n/1000)*1000; }
+function r100(n){ return Math.round(n/100)*100; }
+function hs(h){ var e=Math.floor(h), m=Math.round((h-e)*60); return e+' h'+(m?' '+m:''); }
+function tramo(n){ for (var i=0;i<P.tramos.length;i++) if (n<=P.tramos[i][0]) return P.tramos[i][1]; return P.tramos[P.tramos.length-1][1] + (n-150)*P.personaExtra; }
+function aviso(m){ var e=$('toast'); e.textContent=m; e.classList.add('on'); clearTimeout(aviso.t); aviso.t=setTimeout(function(){ e.classList.remove('on'); },1600); }
+function copiar(txt, el){
+  var ok=function(){ aviso('Copiado ✓'); };
+  var fb=function(){ if (el){ el.focus(); el.select(); } try { document.execCommand('copy'); ok(); } catch(x){ aviso('Seleccioné el texto: copialo con el menú'); } };
+  try { navigator.clipboard.writeText(txt).then(ok, fb); } catch(x){ fb(); }
+}
+
+/* ---------- pestañas ---------- */
+var tabs = document.querySelectorAll('.tabs button');
+function verVista(v){
+  if (['cotizar','respuestas','datos'].indexOf(v) < 0) v = 'cotizar';
+  tabs.forEach(function(b){ b.classList.toggle('on', b.dataset.v===v); });
+  ['cotizar','respuestas','datos'].forEach(function(x){ $('v-'+x).hidden = x!==v; });
+}
+tabs.forEach(function(b){ b.addEventListener('click', function(){ verVista(b.dataset.v); try { history.replaceState(null,'','#'+b.dataset.v); } catch(e){ location.hash=b.dataset.v; } window.scrollTo(0,0); }); });
+window.addEventListener('hashchange', function(){ verVista(location.hash.slice(1)); });
+
+/* ---------- cotizador ---------- */
+function armarHoras(){
+  var t=TIPOS[S.tipo], sel=$('horas'), prev=parseFloat(sel.value);
+  sel.innerHTML = t.horas.map(function(h){ var ex=Math.max(0,h-t.base); return '<option value="'+h+'"'+(h===(t.horas.indexOf(prev)>=0?prev:t.base)?' selected':'')+'>'+hs(h)+(ex?' (+'+plata(r1000(P.horaExtra*ex))+')':' (incluido)')+'</option>'; }).join('');
+  $('lPersonas').textContent = t.unidad;
+}
+function armarExtras(){
+  $('extras').innerHTML = EXTRAS.map(function(e){
+    var c=S.ex[e[0]]||0;
+    return '<div class="ex'+(c?' on':'')+'"><div class="t">'+e[1]+' · '+plata(e[3])+(e[2]?'<small>'+e[2]+'</small>':'')+'</div>'+
+      '<div class="step"><button type="button" data-e="'+e[0]+'" data-d="-1" aria-label="Quitar '+e[1]+'">−</button><b>'+c+'</b><button type="button" data-e="'+e[0]+'" data-d="1" aria-label="Agregar '+e[1]+'">+</button></div></div>';
+  }).join('');
+}
+$('extras').addEventListener('click', function(ev){
+  var b=ev.target.closest('button[data-e]'); if (!b) return;
+  var e=EXTRAS.filter(function(x){ return x[0]===b.dataset.e; })[0];
+  S.ex[e[0]] = Math.max(0, Math.min(e[4], (S.ex[e[0]]||0) + (+b.dataset.d)));
+  armarExtras(); calcular();
+});
+function segmentos(id, key, attr){
+  $(id).addEventListener('click', function(ev){
+    var b=ev.target.closest('button'); if (!b) return;
+    S[key]=b.dataset[attr];
+    $(id).querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); });
+    if (key==='tipo') armarHoras();
+    calcular();
+  });
+}
+segmentos('tipo','tipo','t'); segmentos('modo','modo','m');
+['personas','horas','fecha','cliente','sector','lunjue','exclusivo','india','indiaVoucher'].forEach(function(id){ $(id).addEventListener('input', calcular); $(id).addEventListener('change', calcular); });
+$('credito').addEventListener('input', function(){ S.creditoManual = this.value !== ''; calcular(); });
+
+function cotizar(modo){
+  var t=TIPOS[S.tipo], n=Math.max(1, Math.floor(+$('personas').value||0)), h=parseFloat($('horas').value)||t.base;
+  var india=$('india').checked, indiaV=india && $('indiaVoucher').checked;
+  var L=[], espacio, txtEsp;
+  if (S.tipo==='infantil'){ espacio=P.infantilBase; txtEsp='Cumple infantil (hasta '+P.infantilIncl+' chicos, 2 h 30)'; }
+  else if (modo==='voucher'){ espacio=P.voucherEspacio; txtEsp='Espacio (valor reducido con voucher)'; }
+  else { espacio=tramo(n); txtEsp='Espacio para '+n+' personas ('+hs(t.base)+')'; }
+  var esp=espacio; L.push([txtEsp, espacio]);
+  if ($('lunjue').checked && S.tipo!=='quince' && S.tipo!=='empresa' && modo!=='voucher'){ var d=r1000(esp*P.lunJue/100); L.push(['Descuento lunes a jueves ('+P.lunJue+'%)', -d]); esp-=d; }
+  if (S.tipo==='infantil' && n>P.infantilIncl){ var ext=n-P.infantilIncl; L.push([ext+' chico'+(ext>1?'s':'')+' extra', ext*P.chicoExtra]); esp+=ext*P.chicoExtra; }
+  var hx=Math.max(0,h-t.base); if (hx>0){ var vh=r1000(P.horaExtra*hx); L.push(['Tiempo extra ('+hs(hx)+')', vh]); esp+=vh; }
+  if ($('exclusivo').checked){ L.push(['Predio completo en exclusiva', P.exclusivo]); esp+=P.exclusivo; }
+  var comision=0;
+  if (india){ comision=r100(esp*P.india/100); L.push(['Gestión Aldea India (15% del espacio)', comision]); }
+  var credito=0;
+  if (modo==='voucher'){
+    credito = S.creditoManual ? Math.max(0, +$('credito').value||0) : Math.max(P.voucherMin, n*P.voucherPP);
+    L.push(['Voucher de bebida', credito]);
+    if (indiaV){ var cv=r100(credito*P.india/100); L.push(['Gestión Aldea India (15% del voucher)', cv]); comision+=cv; }
+  }
+  var extrasTxt=[];
+  EXTRAS.forEach(function(e){ var c=S.ex[e[0]]||0; if (!c) return; if (e[0]==='barman' && modo==='voucher') return;
+    L.push([e[1]+(c>1?' x'+c:'')+(e[0].indexOf('glorin')===0?' ('+e[2]+')':''), c*e[3]]); extrasTxt.push(e[1]+(c>1?' x'+c:'')); });
+  var total=0; L.forEach(function(x){ total+=x[1]; });
+  var sena=r100(total*P.sena/100);
+  return { L:L, total:total, sena:sena, saldo:total-sena, credito:credito, comision:comision, aldea:total-comision, n:n, h:h, extrasTxt:extrasTxt };
+}
+
+function bloque(titulo, c){
+  return '<h3 style="margin:.2rem 0 .4rem;font-size:1rem">'+titulo+'</h3><table class="des">'+c.L.map(function(x){ return '<tr'+(x[1]<0?' class="neg"':'')+'><td>'+x[0]+'</td><td>'+plata(x[1])+'</td></tr>'; }).join('')+'</table>'+
+    '<div class="totales"><div class="tot main"><small>Total</small><b>'+plata(c.total)+'</b></div><div class="tot"><small>Seña 30%</small><b>'+plata(c.sena)+'</b></div><div class="tot"><small>Saldo</small><b>'+plata(c.saldo)+'</b></div></div>'+
+    ($('india').checked ? '<div class="reparto"><h3>Reparto</h3><dl><dt>Cobra al cliente</dt><dd>'+plata(c.total)+'</dd><dt>Para Aldea de Valle</dt><dd>'+plata(c.aldea)+'</dd><dt>Para Aldea India</dt><dd>'+plata(c.comision)+'</dd></dl></div>' : '');
+}
+
+function mensaje(cs){
+  var t=TIPOS[S.tipo], cli=$('cliente').value.trim(), fecha=$('fecha').value.trim(), sector=$('sector').value;
+  var c0=cs[0].c, unidad = S.tipo==='infantil' ? 'chicos' : 'personas';
+  var m='¡Hola'+(cli?' '+cli:'')+'! 😊 Te paso el presupuesto para el '+t.n+(fecha?' del '+fecha:'')+' en Aldea de Valle 🌿\n\n';
+  m+='👥 '+c0.n+' '+unidad+' · 🕐 '+hs(c0.h)+'\n📍 '+sector+'\n\n';
+  m+='✅ Incluye: encargado, vajilla, mesas, sillas, limpieza y parrillas libres.\n\n';
+  cs.forEach(function(o, i){
+    if (cs.length>1) m+=(i===0?'1️⃣ ':'2️⃣ ');
+    if (o.modo==='voucher'){
+      m+='Espacio + voucher de bebida: *'+plata(o.c.total)+'*\nIncluye '+plata(o.c.credito)+' de crédito para tragos y bebidas en la barra (barman incluido).\nSeña 30%: '+plata(o.c.sena)+'\n\n';
+    } else {
+      m+=(S.tipo==='infantil'?'Cumple completo':'Solo espacio')+': *'+plata(o.c.total)+'*\n'+(S.tipo==='infantil'?'Incluye 6 gaseosas. ':'')+'La bebida se compra en la cantina durante el evento.\nSeña 30%: '+plata(o.c.sena)+'\n\n';
+    }
+  });
+  if (c0.extrasTxt.length) m+='➕ Ya incluye: '+c0.extrasTxt.join(', ')+'.\n\n';
+  if (cs.some(function(o){ return o.modo==='voucher'; })) m+='🍹 El voucher es solo para bebidas, se usa durante el evento y lo que no se consume no se devuelve. Si se termina, se sigue consumiendo pagando en el momento.\n\n';
+  m+='📌 Se reserva con el 30% al alias '+ALIAS+'. Una vez señado, el precio queda congelado.\n\n';
+  m+='¿Te lo dejo reservado? 🙌';
+  return m;
+}
+
+function calcular(){
+  var infantil = S.tipo==='infantil';
+  $('creditoWrap').hidden = infantil || S.modo==='espacio';
+  $('indiaVoucherWrap').hidden = !$('india').checked || infantil || S.modo==='espacio';
+  var n=Math.max(1, Math.floor(+$('personas').value||0));
+  if (!S.creditoManual) $('credito').placeholder = plata(Math.max(P.voucherMin, n*P.voucherPP));
+  var modos = infantil ? ['espacio'] : (S.modo==='ambas' ? ['espacio','voucher'] : [S.modo]);
+  var cs = modos.map(function(m){ return { modo:m, c:cotizar(m) }; });
+  var html = cs.map(function(o){ return bloque(o.modo==='voucher' ? 'Espacio + voucher de bebida' : (infantil?'Cumple infantil':'Solo espacio'), o.c); }).join('<hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">');
+  var avisos=[], sel=$('sector').value, cap={'Quincho + cancha sintética':40,'Patio de piedra con parque y asadores':80,'Salón cerrado':100,'Deck':40,'Salón + patio de piedra':180}[sel];
+  if (n>cap && !$('exclusivo').checked) avisos.push('En ese sector entran '+cap+' personas. Elegí otro sector o el predio completo.');
+  if (S.tipo==='quince') avisos.push('Es un 15: no se sirve alcohol a menores. Recomendá seguridad.');
+  if (n>=80 && !(S.ex.seguridad>0) && !infantil) avisos.push('Para '+n+' personas conviene sumar seguridad (1 cada 60 personas).');
+  if (avisos.length) html += avisos.map(function(a){ return '<div class="nota">'+a+'</div>'; }).join('');
+  $('resultado').innerHTML = html;
+  var msj = mensaje(cs);
+  $('mensaje').value = msj; $('waMsj').href = 'https://wa.me/?text='+encodeURIComponent(msj);
+}
+$('mensaje').addEventListener('input', function(){ $('waMsj').href='https://wa.me/?text='+encodeURIComponent(this.value); });
+$('copiarMsj').addEventListener('click', function(){ copiar($('mensaje').value, $('mensaje')); });
+
+/* ---------- respuestas ---------- */
+var R = [
+['info','Info general de eventos','Cuando piden "info" o no sabés por dónde empezar',
+'¡Hola! 😊 Gracias por escribirnos. En Aldea de Valle hacemos cumples infantiles, cumples de adultos, recibidas, bautismos, 15, casamientos y eventos de empresa 🌿\n\nTenemos varios espacios: quincho con cancha (hasta 40), patio de piedra con parque y asadores (hasta 80), salón cerrado (hasta 100), deck (40) y el predio completo.\n\nContame qué querés festejar, para cuántas personas y qué fecha tenés en mente, y te paso el presupuesto. También podés cotizar y ver fechas libres acá 👉 '+WEB,'info general hola consulta eventos'],
+['info','Espacios y capacidad','"¿Cuánta gente entra?"',
+'Te cuento los espacios 😊\n\n• Quincho + cancha sintética: hasta 40 personas\n• Patio de piedra + parque + asadores: hasta 80\n• Salón cerrado: hasta 100\n• Deck: hasta 40\n• Predio completo: hasta 400\n\nSe puede alquilar un sector o el predio entero en exclusiva.','espacios capacidad cuantos entran salon patio quincho deck'],
+['info','Dirección y cómo llegar','"¿Dónde queda?"',
+'Estamos en República de China 1890, Valle Escondido, Córdoba 📍 Cualquier cosa nos escribís por acá y te guiamos.','direccion donde queda ubicacion'],
+['info','Agendar visita para conocer','Cuando quieren ver el lugar',
+'¡Claro! Podés venir a conocer la Aldea de lunes a viernes desde las 18 h 😊 Decime qué día te queda bien y te espero. También podés agendar la visita acá 👉 '+WEB+'?cita=1','visita conocer cita ver lugar recorrer'],
+['precios','Cumple infantil','"¿Cuánto sale un cumple?"',
+'¡Hola! 🎈 El cumple infantil sale $380.000 e incluye:\n\n• Quincho + cancha sintética (o patio de piedra)\n• Hasta 30 chicos (cada chico extra $9.000)\n• 2 h 30 de evento\n• 6 gaseosas, encargado y limpieza\n• Parrillas libres\n\nDe lunes a jueves tiene 15% off. Podés sumar animación con profes, panchos, pizzas o pileta en verano.\n\nVer fechas y reservar 👉 '+WEB+'?tipo=infantil','cumple infantil precio cuanto chicos nenes'],
+['precios','Cumple de adultos (solo espacio y voucher)','"¿Cuánto sale para adultos?"',
+'¡Hola! 🥂 Te paso las dos opciones para [personas] personas:\n\n1️⃣ Solo espacio: $[monto]. La bebida se compra en la cantina durante el evento.\n2️⃣ Espacio + voucher de bebida: $[monto], de los cuales $[monto] son crédito para tragos y bebidas (barman incluido).\n\nIncluye encargado, vajilla, mesas, sillas, limpieza y parrillas libres. 4 horas de evento.\n\nSe reserva con el 30%. ¿Qué fecha tenés en mente?','adultos precio cuanto cumple 30 40 50 espacio'],
+['precios','Cómo funciona el voucher de bebida','"¿Qué es el crédito de barra?"',
+'🍹 El voucher funciona así: pagás un espacio reducido y el resto queda como crédito para la barra de Aldea.\n\n• Tus invitados piden en la barra y se descuenta del crédito.\n• Es solo para bebidas (no incluye comida ni kiosco).\n• Se usa durante el evento y lo que no se consume no se devuelve.\n• Si se termina, se sigue consumiendo pagando en el momento.\n• Barman incluido 🍸\n\nPagás menos de alquiler y todo lo que ponés en crédito lo disfrutan tus invitados.','voucher credito barra bebida como funciona'],
+['precios','Barra libre','Cuando piden barra libre',
+'Para eventos grandes no estamos ofreciendo barra libre, pero tenemos algo que funciona mejor: el voucher de bebida 🍹 Dejás pago un crédito para la barra (vos elegís el monto) y cuando se termina, cada uno sigue comprando lo suyo. Así no pagás de más por lo que no se toma. ¿Te armo un número?','barra libre tragos ilimitado'],
+['precios','15 años o casamiento','Eventos formales',
+'¡Felicitaciones! 💛 Para 15 y casamientos trabajamos junto con Aldea India, que se encarga del catering, DJ y ambientación. Nosotros ponemos el espacio, seguridad, limpieza y la barra.\n\nLo ideal es que vengas a conocer el lugar y armamos todo juntos. Te paso el contacto de Aldea India: 351 511-9452 · @aldeaindia.eventos 🌿','15 años quince casamiento boda formal aldea india'],
+['precios','Empresas y fin de año','Eventos corporativos',
+'¡Hola! Gracias por pensar en Aldea para el evento 🙌 Para armarte la mejor propuesta contame: fecha, horario, cantidad de personas y si van a querer catering o solo el espacio. Tenemos opciones con voucher de bebida para que el equipo consuma en la barra.','empresa fin de año corporativo trabajo'],
+['precios','Pileta','"¿Se puede usar la pileta?"',
+'¡Sí! 🏊 La pileta se puede sumar de diciembre a marzo, con guardavidas, por $120.000. Los chicos siempre con un adulto responsable, y traigan mallas, toallas y protector.','pileta piscina guardavidas verano'],
+['precios','Animación para chicos','"¿Tienen animadores?"',
+'¡Sí! 🎈 Trabajamos con los profes de GLORIN. Con 2 profes (hasta 30 chicos) sale $195.000 y con 3 profes $235.000, por 2 h 30 de juegos y recreación.','animacion animadores profes glorin juegos'],
+['reglas','No se puede ingresar bebida','Cuando quieren traer su bebida',
+'Te cuento que la bebida es exclusivamente de la barra y cantina de Aldea, no se puede ingresar 🙏 Para que te salga más conveniente, te podemos armar un voucher de bebida o un pack con lo que quieran tomar. ¿Te paso las opciones?','traer bebida ingresar propia descorche'],
+['reglas','Comida','"¿Podemos llevar comida?"',
+'¡Sí! La comida la pueden traer ustedes o contratar catering 😊 Las parrillas son de uso libre, y si preferís te ponemos un parrillero ($90.000). En la cantina también hay panchos, pizzas y empanadas.','comida traer asado parrilla catering'],
+['reglas','Horario máximo','"¿Hasta qué hora?"',
+'Los eventos pueden terminar hasta las 2 a.m. 🌙 Si querés extender dentro de ese horario, la hora extra sale $45.000.','horario hasta que hora tarde 2 am extender'],
+['reglas','Decoración','"¿Cuándo podemos entrar a decorar?"',
+'Pueden entrar a decorar 1 hora antes del evento 🎈 Para 15 y casamientos se coordina dejar las cosas el día anterior. La decoración se retira al terminar.','decorar decoracion antes entrar armar'],
+['reglas','Lluvia','"¿Y si llueve?"',
+'Si llueve y el evento es al aire libre, te ofrecemos un espacio techado si está disponible o reprogramar sin cargo 🌧️','lluvia llueve techado mal tiempo'],
+['reglas','Menores y alcohol','Fiestas de 15 o 18',
+'Te comento que no se sirve alcohol a menores de 18 años 🙏 La barra lo controla. Para fiestas de chicos te recomendamos sumar seguridad.','menores alcohol 18 adolescentes'],
+['reserva','Datos para la seña','"¿Cómo reservo?"',
+'¡Genial! 🙌 La fecha se reserva con la seña del 30%: $[monto].\n\nAlias: aldea.de.valle\nTitular: Fausto Agustino Rizzi Szkolka\n\nMandame el comprobante por acá y queda confirmado. El saldo se abona el día del evento, antes de empezar.','seña alias reservar pagar transferir datos'],
+['reserva','Recibí la seña','Confirmar una reserva',
+'¡Recibido, gracias! ✅ Tu evento quedó confirmado para el [fecha] a las [hora]. Una vez señado, el precio queda congelado. ¡Nos vemos en la Aldea! 🌿','comprobante recibido confirmado seña'],
+['reserva','Reprogramar','"¿Puedo cambiar la fecha?"',
+'Sí 😊 Se puede reprogramar sin cargo una vez, avisando con 7 días de anticipación y según disponibilidad. Decime qué fecha te sirve y me fijo.','reprogramar cambiar fecha mover'],
+['reserva','Cancelación','"¿Se devuelve la seña?"',
+'Te cuento que la seña no se devuelve, pero la podés usar para otra fecha dentro de los 6 meses siguientes 🙏','cancelar devolver seña reintegro'],
+['reserva','Fecha ocupada','Cuando la fecha no está libre',
+'¡Qué lástima! Ese día ya tenemos un evento en ese espacio 🙏 Te puedo ofrecer [otra fecha] o el mismo día en otro sector ([sector]). ¿Te sirve alguna?','ocupada no hay lugar fecha tomada otra'],
+['seguimiento','"Lo voy a pensar"','Seguimiento a indecisos',
+'¡Dale, sin problema! 😊 Te cuento que las fechas de fin de semana se van rápido. Si querés, te la guardo 48 hs para que lo charles. ¡Cualquier duda, escribime!','pensar despues indeciso seguimiento'],
+['seguimiento','Recordatorio de seña','Reservas sin seña',
+'¡Hola! Te escribimos de Aldea de Valle 🌿 Te guardamos la fecha del [fecha] pero todavía no nos llegó la seña. ¿La querés mantener? Alias aldea.de.valle.','recordatorio seña pendiente no pago'],
+['seguimiento','Recordatorio día antes','El día anterior al evento',
+'¡Hola! Mañana es tu evento en Aldea 🎉 Te esperamos a las [hora]. Recordá que el saldo es de $[monto]. ¡Nos vemos!','recordatorio mañana dia antes saldo'],
+['seguimiento','Gracias + reseña','Después del evento',
+'¡Gracias por elegir Aldea de Valle! 💛 Esperamos que la hayan pasado genial. Si les gustó, nos ayuda muchísimo una reseña o que nos recomienden. ¡Hasta la próxima!','gracias reseña despues opinion'],
+['seguimiento','Reclamo o queja','Respuesta empática para empezar',
+'Gracias por contarnos y perdón por lo que pasó 🙏 Queremos resolverlo. Lo hablo con Fausto y te escribo hoy mismo con una respuesta.','queja reclamo problema molesto']
+];
+var CAT = { todas:'Todas', info:'Info general', precios:'Precios', reglas:'Reglas', reserva:'Reserva y pagos', seguimiento:'Seguimiento' };
+var K = 'respuestas-eventos-aldea-v1', cat='todas';
+function leer(){ try { return JSON.parse(localStorage.getItem(K)||'{}'); } catch(e){ return {}; } }
+function guardar(o){ try { localStorage.setItem(K, JSON.stringify(o)); } catch(e){} }
+var ed = leer(), lista=$('lista'), cats=$('cats'), q=$('q');
+cats.innerHTML = Object.keys(CAT).map(function(k){ return '<button type="button" data-c="'+k+'"'+(k===cat?' class="on"':'')+'>'+CAT[k]+'</button>'; }).join('');
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function norm(s){ return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function pintar(){
+  var t=norm(q.value.trim()), html='', ult='';
+  R.forEach(function(r,i){
+    if (cat!=='todas' && r[0]!==cat) return;
+    if (t && norm(r[1]+' '+r[2]+' '+r[3]+' '+r[4]).indexOf(t)<0) return;
+    if (r[0]!==ult && !t && cat==='todas'){ html+='<h2 class="cat">'+CAT[r[0]]+'</h2>'; ult=r[0]; }
+    var txt = ed[i]!=null ? ed[i] : r[3];
+    html+='<article class="r" data-i="'+i+'"><h3>'+esc(r[1])+(ed[i]!=null?' <span class="editado">editado</span>':'')+'</h3><p class="cuando">'+esc(r[2])+'</p>'+
+      '<textarea id="resp-'+i+'" aria-label="Texto: '+esc(r[1])+'">'+esc(txt)+'</textarea>'+
+      '<div class="acc"><button type="button" class="copiar">📋 Copiar</button><a class="wa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(txt)+'">💬 WhatsApp</a>'+
+      (ed[i]!=null?'<button type="button" class="rest">↺ Volver al original</button>':'')+'</div></article>';
+  });
+  lista.innerHTML = html || '<p class="vacio">No encontré nada con eso. Probá con otra palabra: precio, seña, bebida, pileta.</p>';
+}
+cats.addEventListener('click', function(e){ var b=e.target.closest('button'); if (!b) return; cat=b.dataset.c; [].forEach.call(cats.children, function(x){ x.classList.toggle('on', x===b); }); pintar(); });
+q.addEventListener('input', pintar);
+lista.addEventListener('input', function(e){ if (!e.target.matches('textarea')) return; var c=e.target.closest('.r'), i=c.dataset.i; ed[i]=e.target.value; guardar(ed); c.querySelector('.wa').href='https://wa.me/?text='+encodeURIComponent(e.target.value); });
+lista.addEventListener('click', function(e){
+  var card=e.target.closest('.r'); if (!card) return;
+  var ta=card.querySelector('textarea'), i=card.dataset.i;
+  if (e.target.closest('.copiar')) copiar(ta.value, ta);
+  if (e.target.closest('.rest')){ delete ed[i]; guardar(ed); pintar(); aviso('Volvió al texto original'); }
+});
+
+/* ---------- arranque ---------- */
+armarHoras(); armarExtras(); calcular(); pintar();
+verVista(location.hash.slice(1));
+})();
+</script>
