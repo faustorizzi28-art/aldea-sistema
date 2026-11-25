@@ -24,6 +24,7 @@ import bunkaiCeremonia from "../guiones/bunkai-ceremonia.json";
 import bunkaiHomenaje from "../guiones/bunkai-ceremonia-homenaje.json";
 import { Teaser, GuionTeaser, duracionTeaser } from "./Teaser";
 import teaserDewey from "../guiones/teaser-colonia-dewey.json";
+import { IntroVerano } from "./IntroVerano";
 import { PortadaDewey, PortadaAldeaVerano, PortadaAldeaViernes } from "./Portada";
 import teaserAldea from "../guiones/teaser-aldea-verano.json";
 
@@ -218,6 +219,8 @@ export const RemotionRoot: React.FC = () => {
       defaultProps={teaserDewey as GuionTeaser}
       calculateMetadata={({ props }) => ({ durationInFrames: duracionTeaser(props) })}
     />
+    <Composition id="IntroVeranoH" component={IntroVerano} width={1920} height={1080} fps={30} durationInFrames={105} />
+    <Composition id="IntroVeranoV" component={IntroVerano} width={1080} height={1920} fps={30} durationInFrames={105} />
     <Composition id="PortadaDewey" component={PortadaDewey} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
     <Composition id="PortadaAldeaVerano" component={PortadaAldeaVerano} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
     <Composition id="PortadaAldeaViernes" component={PortadaAldeaViernes} width={ANCHO} height={ALTO} fps={FPS} durationInFrames={1} />
