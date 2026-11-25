@@ -440,7 +440,7 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   var buscar = function (lista, id) { for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; };
   var turno = buscar(P.turnos, plan.turno) || P.turnos[0];
   var V = E.turnos[turno.id];
-  var semanaDe = {}, dias = [], semanasSel = [];
+  var semanaDe = {}, dias = [], semanasSel = [], diasSueltos = [];
   sede.semanas.forEach(function (s) { s.dias.forEach(function (d) { semanaDe[d] = s.id; }); });
   if (plan.modalidad === 'semanas') {
     sede.semanas.forEach(function (s) {
@@ -448,6 +448,9 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
       if (s.dias[0] < hoy && !ctx.etapaId) { errores.push('La semana del ' + s.desde + ' ya empezó: elegí días sueltos.'); return; }
       semanasSel.push(s.id); dias = dias.concat(s.dias);
     });
+    // combinado: además de semanas completas, días sueltos de otras semanas
+    (plan.dias || []).forEach(function (d) { if (semanaDe[d] && semanasSel.indexOf(semanaDe[d]) < 0 && (d >= hoy || ctx.etapaId) && diasSueltos.indexOf(d) < 0) diasSueltos.push(d); });
+    dias = dias.concat(diasSueltos);
   } else {
     (plan.dias || []).forEach(function (d) { if (semanaDe[d] && (d >= hoy || ctx.etapaId) && dias.indexOf(d) < 0) dias.push(d); });
   }
@@ -457,7 +460,13 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
     var n = semanasSel.length;
     // quincenas + semana suelta; la temporada completa (o si conviene) sale el valor de temporada
     base = n >= sede.semanas.length ? V.temporada : Math.min(V.temporada, Math.floor(n / 2) * V.quincena + (n % 2) * V.semana);
-    detalleBase = n >= sede.semanas.length ? 'Temporada completa' : n + (n === 1 ? ' semana' : ' semanas');
+    detalleBase = n >= sede.semanas.length ? 'Temporada completa' : n ? n + (n === 1 ? ' semana' : ' semanas') : '';
+    if (diasSueltos.length) {
+      var porSem = {};
+      diasSueltos.forEach(function (d) { porSem[semanaDe[d]] = (porSem[semanaDe[d]] || 0) + 1; });
+      Object.keys(porSem).forEach(function (k) { base += Math.min(porSem[k] * V.dia, V.semana); });
+      detalleBase += (detalleBase ? ' + ' : '') + diasSueltos.length + (diasSueltos.length === 1 ? ' día suelto' : ' días sueltos');
+    }
   } else {
     // días sueltos: nunca más caro que la semana completa
     var porSemana = {};
@@ -467,7 +476,7 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
   }
   var extras = (plan.extras || []).map(function (id) { return buscar(P.extras, id); })
     .filter(function (e) { return e && (!e.turnos || e.turnos.indexOf(turno.id) >= 0); })
-    .map(function (e) { return { id: e.id, nombre: e.nombre, monto: plan.modalidad === 'semanas' && e.precioSemana ? e.precioSemana * semanasSel.length : e.precioDia * dias.length }; });
+    .map(function (e) { return { id: e.id, nombre: e.nombre, monto: plan.modalidad === 'semanas' && e.precioSemana ? e.precioSemana * semanasSel.length + e.precioDia * diasSueltos.length : e.precioDia * dias.length }; });
   var extrasTotal = extras.reduce(function (a, e) { return a + e.monto; }, 0);
   var H = P.descuentoHermanos || [];
   if (typeof H === 'number') H = [0, H];
@@ -484,7 +493,7 @@ function cotizarPuro_(sede, plan, cantChicos, ctx) {
     porChico.push({ subtotal: sub, descuento: desc, matricula: mat, total: sub - desc + mat, sena: senaChico, motivos: motivos });
     subtotal += sub; descuento += desc; matriculas += mat; sena += senaChico;
   }
-  if (!dias.length) errores.push(plan.modalidad === 'semanas' ? 'Elegí al menos una semana.' : 'Elegí al menos un día.');
+  if (!dias.length) errores.push(plan.modalidad === 'semanas' ? 'Elegí al menos una semana o algún día.' : 'Elegí al menos un día.');
   var total = subtotal - descuento + matriculas;
   return {
     dias: dias, cantDias: dias.length, semanas: semanasSel, turno: turno, extras: extras, base: base, detalleBase: detalleBase,
@@ -1841,9 +1850,9 @@ function actualizarPreciosNuevos(avisar) {
     const t = P.turnos.filter(x => x.nombre === i0.turno || x.id === i0.turno)[0];
     if (!t || !dias.length) return;
     const pub = accPublico_().sedes.filter(x => x.id === i0.sede)[0];
-    const semanas = pub.semanas.filter(w => w.dias.some(d => dias.indexOf(d) >= 0)).map(w => w.id);
+    const completas = pub.semanas.filter(w => w.dias.every(d => dias.indexOf(d) >= 0)), semanas = completas.map(w => w.id);
     const extras = P.extras.filter(e => String(i0.extras || '').indexOf(e.nombre) >= 0).map(e => e.id);
-    const plan = String(i0.modalidad).toLowerCase().indexOf('sem') === 0 ? { modalidad: 'semanas', semanas, turno: t.id, extras } : { modalidad: 'dias', dias, turno: t.id, extras };
+    const plan = String(i0.modalidad).toLowerCase().indexOf('sem') === 0 ? { modalidad: 'semanas', semanas, dias: dias.filter(d => !completas.some(w => w.dias.indexOf(d) >= 0)), turno: t.id, extras } : { modalidad: 'dias', dias, turno: t.id, extras };
     const sinMatricula = g.map(i => !(Number(i.matricula) > 0));
     const q = cotizarPuro_(pub, plan, g.length, { hoy, sinMatricula, etapaId: 'promo' });
     const qr = cotizarPuro_(pub, plan, g.length, { hoy, sinMatricula, etapaId: 'regular' });

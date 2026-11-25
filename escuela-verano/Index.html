@@ -494,10 +494,15 @@ function htmlPlan() {
   const semanasHtml = s.semanas.map((w, i) => {
     const empezo = w.dias[0] < hoy, termino = w.hasta < hoy;
     if (p.modalidad === 'semanas') {
-      const on = p.semanas.includes(w.id);
+      const on = p.semanas.includes(w.id), quedan = w.dias.filter(d => d >= hoy);
+      const sueltos = p.dias.filter(d => w.dias.includes(d)), abierta = empezo || sueltos.length || (p.abiertas || []).includes(w.id);
+      const filaDias = on || !quedan.length ? '' : abierta
+        ? `<div class="dias" style="margin:-4px 0 10px">${[0, 1, 2, 3, 4].map(k => sumarDias(w.id, k)).map(d => { const ok = quedan.includes(d), sel = p.dias.includes(d);
+            return `<button ${ok ? '' : 'disabled'} class="${sel ? 'on' : ''}" onclick="plTogg('dias','${d}')">${DSEM[fecha(d).getDay()]}<br>${fecha(d).getDate()}</button>`; }).join('')}</div>`
+        : `<button class="btn xs claro" style="margin:-4px 0 10px" onclick="plAbrir('${w.id}')">+ Solo algunos días de la semana ${i + 1}</button>`;
       return `<label class="opcion ${on ? 'on' : ''} ${empezo ? 'off' : ''}"><input type="checkbox" ${on ? 'checked' : ''} ${empezo ? 'disabled' : ''} onchange="plTogg('semanas','${w.id}')">
         <div class="crece"><b>Semana ${i + 1}</b> · ${fCorta(w.desde)} al ${fCorta(w.hasta)} ${w.dias.length < 5 ? '<span class="chip">' + w.dias.length + ' días</span>' : ''}${w.dias.filter(d => (PUB.salidaTemprana || {})[d]).map(d => ' <span class="chip aviso">' + fCorta(d) + ' salida ' + PUB.salidaTemprana[d].replace(':00', '') + ' h</span>').join('')}
-        <div class="muted chico">${w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : ''}${empezo ? ' · ya empezó (elegí días sueltos)' : ''}</div></div></label>`;
+        <div class="muted chico">${w.tematica ? esc((w.tematica.emoji || '') + ' ' + w.tematica.titulo) : ''}${empezo ? ' · ya empezó: tocá los días que quedan' : ''}</div></div></label>${filaDias}`;
     }
     if (termino) return '';
     const dias = [0, 1, 2, 3, 4].map(k => sumarDias(w.id, k));
@@ -516,7 +521,7 @@ function htmlPlan() {
       <span class="elegido">${p.turno === t.id ? '✓ Elegido' : 'Elegir'}</span></button>`; }).join('')}</div>
     <label>2. ¿Qué semanas viene?</label>
     <div class="seg"><button class="${p.modalidad === 'semanas' ? 'on' : ''}" onclick="plSet('modalidad','semanas')">Por semana</button><button class="${p.modalidad === 'dias' ? 'on' : ''}" onclick="plSet('modalidad','dias')">Días sueltos</button></div>
-    ${p.modalidad === 'semanas' ? `<div class="fila" style="margin-top:10px"><button class="btn xs claro" onclick="plTodas()">Elegir todas las que quedan</button>${p.semanas.length ? `<button class="btn xs claro" onclick="plSet('semanas',[])">Borrar</button>` : ''}</div>` : `<p class="muted chico">Tocá los días que viene. Si elegís muchos de una misma semana, nunca pagás más que la semana completa.</p>`}
+    ${p.modalidad === 'semanas' ? `<div class="fila" style="margin-top:10px"><button class="btn xs claro" onclick="plTodas()">Elegir todas las que quedan</button>${p.semanas.length ? `<button class="btn xs claro" onclick="plSet('semanas',[]);plSet('dias',[])">Borrar</button>` : ''}</div><p class="muted chico">Marcá las semanas completas. Si alguna semana viene solo algunos días, tocá “+ Solo algunos días”.</p>` : `<p class="muted chico">Tocá los días que viene. Si elegís muchos de una misma semana, nunca pagás más que la semana completa.</p>`}
     ${semanasHtml}
     ${s.precios.extras.length ? '<label>3. Opcionales <small>(si los necesitás)</small></label>' + s.precios.extras.map(e => { const ok = extrasOk(e);
       return `<label class="opcion ${p.extras.includes(e.id) ? 'on' : ''} ${ok ? '' : 'tenue'}"><input type="checkbox" ${p.extras.includes(e.id) ? 'checked' : ''} onchange="${ok ? `plTogg('extras','${e.id}')` : `plExtraOtroTurno('${e.id}','${e.turnos[0]}')`}"><div><b>${esc(e.nombre)}</b> · ${e.precioSemana && p.modalidad === 'semanas' ? pesos(e.precioSemana) + ' por semana' : pesos(e.precioDia) + ' por día'}
@@ -528,7 +533,10 @@ function plExtraOtroTurno(extra, turno) {
   PL.alCambiar(); toast('Cambiamos el horario a ' + (t.nombre || turno) + ' (' + (t.horario || '') + ') ✓');
 }
 function plSet(k, v) { PL.plan[k] = v; PL.alCambiar(); }
-function plTogg(k, v) { const a = PL.plan[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); PL.alCambiar(); }
+function plAbrir(id) { (PL.plan.abiertas = PL.plan.abiertas || []).push(id); PL.alCambiar(); }
+function plTogg(k, v) {
+  if (k === 'semanas') { const w = sede(PL.sede).semanas.find(x => x.id === v); if (w) PL.plan.dias = PL.plan.dias.filter(d => !w.dias.includes(d)); }
+  const a = PL.plan[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); PL.alCambiar(); }
 function plTodas() { PL.plan.semanas = sede(PL.sede).semanas.filter(w => w.dias[0] >= PUB.hoy).map(w => w.id); PL.alCambiar(); }
 function plCotizar() { return cotizar(sede(PL.sede), PL.plan, Math.max(1, PL.cant), { hoy: PUB.hoy, renovacion: PL.renov }); }
 function htmlPresu(q, texto, accion) {
