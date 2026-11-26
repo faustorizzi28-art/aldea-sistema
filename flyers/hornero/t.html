@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-900-italic.woff2);font-weight:900;font-style:italic}
+@font-face{font-family:Mont;src:url(file:///home/user/aldea-sistema/videos/public/fonts/montserrat-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:Bebas;src:url(file:///home/user/aldea-sistema/videos/public/fonts/bebas-neue-latin-400-normal.woff2)}
+body{margin:0;background:transparent}.c{width:1080px;height:1920px;position:relative;overflow:hidden}
+.p{display:inline-block;padding:16px 40px 10px;border-radius:24px;font:400 96px/1 Bebas;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.bg{background:radial-gradient(circle at 50% 35%,#FFE27A 0%,#FFB84D 40%,#F07C3B 100%)}
+.conf span{position:absolute;width:26px;height:14px;border-radius:4px}
+</style></head><body>
+<div class="c bg" id="a"><div class="conf" id="cf1"></div>
+ <div style="position:absolute;top:520px;left:0;right:0;text-align:center">
+  <div style="font:800 40px Mont;letter-spacing:.2em;color:#7A3B12">JARDÍN MUNICIPAL</div>
+  <div style="font:900 italic 140px/0.95 Mont;color:#fff;text-shadow:0 8px 0 #B9541F,0 14px 30px rgba(0,0,0,.25);margin-top:20px">Casita<br>del Hornero</div>
+  <div style="margin-top:60px"><span class="p" style="background:#fff;color:#E2542A">🏆 ¡PREMIOS!</span></div>
+ </div></div>
+<div class="c" id="b"><div style="position:absolute;top:380px;left:0;right:0;text-align:center"><span class="p" style="background:#E2542A;color:#fff;transform:rotate(-2deg)">¡MIREN LOS PREMIOS! 🎁</span></div></div>
+<div class="c" id="c"><div style="position:absolute;top:1460px;left:40px;right:40px;text-align:center"><span class="p" style="background:#fff;color:#E2542A;font-size:86px">TE ESPERAN EL LUNES 🎉</span></div></div>
+<div class="c bg" id="fin"><div class="conf" id="cf2"></div>
+ <div style="position:absolute;top:560px;left:0;right:0;text-align:center">
+  <div style="font:900 italic 120px/1 Mont;color:#fff;text-shadow:0 8px 0 #B9541F">¡Nos vemos<br>el lunes!</div>
+  <div style="margin-top:50px"><span class="p" style="background:#fff;color:#E2542A;font-size:80px">LOS PREMIOS TE ESPERAN 🎁</span></div>
+  <div style="font:800 38px Mont;letter-spacing:.14em;color:#7A3B12;margin-top:60px">JARDÍN MUNICIPAL<br>CASITA DEL HORNERO</div>
+ </div></div>
+<script>const col=['#fff','#E2542A','#2BB3A3','#7A3B12','#FFD23F','#3A7BD5'];for(const id of ['cf1','cf2']){const e=document.getElementById(id);for(let i=0;i<70;i++){const s=document.createElement('span');s.style.left=Math.random()*1080+'px';s.style.top=Math.random()*1920+'px';s.style.background=col[i%6];s.style.transform='rotate('+Math.random()*180+'deg)';e.append(s);}}</script>
+</body></html>
