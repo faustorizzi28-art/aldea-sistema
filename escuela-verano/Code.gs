@@ -79,7 +79,9 @@ const CONFIG = {
       'Completá en el formulario obra social, alergias, medicación y un contacto de emergencia.', 'Solo damos medicación con receta médica y autorización firmada.',
       'Con fiebre, vómitos o una enfermedad contagiosa, el chico se queda en casa.', 'Ante un accidente o malestar, actuamos con el servicio de emergencias y avisamos enseguida a la familia.'] },
     { n: 6, titulo: 'Pileta y seguridad', destacado: 'A la pileta se entra solo con guardavidas presentes y con su grupo.', items: [
-      'Natación todos los días, por grupo de edad y con profes en el agua.', 'Los que no saben nadar usan elementos de flotación en el sector bajo.',
+      'Natación todos los días, por grupo de edad, con profe de natación en el agua. A la mañana hay dos guardavidas y a la tarde uno.',
+      'Los que todavía no nadan empiezan en la pileta chica hasta que toman confianza. Aprenden sin bracitos ni chalecos, con su propio cuerpo.',
+      'Entran y salen de la pileta siempre acompañados por su seño o profe.',
       'Prohibido correr alrededor de la pileta o entrar sin autorización del profe.'] },
     { n: 7, titulo: 'Ingreso y retiro', destacado: 'Solo retiran los adultos autorizados en el formulario, con DNI.', items: [
       'Respetá los horarios: después de 15 minutos de tolerancia se cobra la post-hora.', 'Si lo retira otra persona, avisá antes por WhatsApp a la administración (o desde la app) con nombre y DNI.'] },
